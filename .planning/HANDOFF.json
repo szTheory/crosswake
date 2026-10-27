@@ -1,50 +1,46 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-27T11:47:32.343Z",
+  "timestamp": "2026-10-27T12:24:03Z",
   "workstream": "quality-ratchet-release",
   "phase": "195",
   "phase_name": "pipeline-repair-and-hygiene",
   "phase_dir": ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene",
   "plan": "195-21",
-  "task": 2,
+  "task": 3,
   "total_tasks": 3,
-  "status": "awaiting_decision",
+  "status": "verifying",
   "completed_tasks": [
     {
-      "id": "195-01..20",
-      "name": "Executed phase plans",
+      "id": "195-01..21",
+      "name": "All phase plans executed and summarized",
       "status": "done"
     },
     {
-      "id": "195-21-1",
-      "name": "Reviewed PR259, CI49/49 and candidate gate",
+      "id": "195-21-delivery",
+      "name": "Separately approved merge and automatic deletion completed once",
+      "status": "done"
+    },
+    {
+      "id": "195-21-main-proof",
+      "name": "Actual-main quick190/full327 and five process-derived controls",
+      "status": "done"
+    },
+    {
+      "id": "195-final-audits",
+      "name": "Independent Nyquist/security/UI scope audits complete",
       "status": "done"
     }
   ],
   "remaining_tasks": [
     {
-      "id": "195-21-2",
-      "name": "Separate fresh merge and automatic deletion decisions",
-      "status": "awaiting_decision"
-    },
-    {
-      "id": "195-21-3",
-      "name": "Approved delivery and actual-main process proof",
-      "status": "not_started"
+      "id": "195-parent-completion",
+      "name": "Consume canonical passed8/8 verdict and complete Phase195 lifecycle transaction",
+      "status": "pending"
     }
   ],
   "blockers": [],
   "async_jobs": [],
-  "human_actions_pending": [
-    {
-      "action": "Fresh merge PR259/head24baafa3: allow or hold",
-      "blocking": true
-    },
-    {
-      "action": "Automatic remote deletion of fix/secret-mask-structural: allow or hold",
-      "blocking": true
-    }
-  ],
+  "human_actions_pending": [],
   "decisions": [
     {
       "decision": "Re-run red example-host job once without a change",
@@ -70,12 +66,17 @@
       "decision": "Reopen only REL-03 in REQUIREMENTS.md",
       "rationale": "other seven phase requirements verified unchanged",
       "phase": "195"
+    },
+    {
+      "decision": "PR259 merged at reviewed24baafa3 as b8398c38; automatic branch deletion completed",
+      "rationale": "Separate current one-use allows consumed once; actual readbacks and main proof retained",
+      "phase": "195"
     }
   ],
   "uncommitted_files": [
-    "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt",
-    "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push2-195.txt"
+    "195 final verification audit/report updates and current lifecycle handoff refresh; inspect git status before any commit",
+    "two retained untracked privacy-push evidence files"
   ],
-  "next_action": "Reply separately to the fresh PR259 merge and automatic branch-deletion gates; prior display expired and no approval transfers.",
-  "context_notes": "Last completed194; Phase19520/21. PR259 CI49/49/candidate ready. Prior merge allow expired/unconsumed; helper safeguard restored after automatic-review rejection. Both fresh decisions pending; no irreversible operation/main proof."
+  "next_action": "Canonical verification.status returns passed8/8. Parent completes Phase195 lifecycle transaction; no repeat delivery, proof, CI or approval. Phase196 command becomes eligible only after completion.",
+  "context_notes": "Last completed194 until parent phase.complete; Phase195 all21 plans summarized and independently verified8/8. Current releasePR236 headf30bd49 run40499982698 has49successful jobs/0skip and all49contexts SUCCESS. No human action pending."
 }

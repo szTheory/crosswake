@@ -28,7 +28,7 @@ key-files:
 key-decisions:
   - Merge and automatic remote deletion each used a current one-use allow; neither previous expiry nor rejected guard change transferred authority.
   - A caller-authored green receipt is not main proof; landed executes source-bound suites and copied controls itself.
-  - Validation remains draft with Nyquist continuity audit explicitly incomplete.
+  - Validation was draft at plan close; the subsequent independent continuity audit is recorded in current 195-VALIDATION.md.
 coverage:
   - deliverable: Independently reviewed and approved exact-head delivery
     human_judgment: false
@@ -65,7 +65,7 @@ status: complete
 
 ## Actual outcome
 
-- PR259 head `24baafa3d5a65df6f84366209b372b7c5448cdbe` changed exactly the two planned code/test files from base `7621c0ce0c38edec76cc54209eccf5acf40feddf`. Crosswake CI run40449366324 passed49/49 on that head; the actual checkout was distinct synthetic SHA `86bc26ca1fc60a9bd9204f655cefc2b442100555`.
+- PR259 head `24baafa3d5a65df6f84366209b372b7c5448cdbe` changed exactly the two planned code/test files from base `7621c0ce0c38edec76cc54209eccf5acf40feddf`. Crosswake CI run40449366324 concluded success on that head:49jobs,48success and1skipped (`release-candidate-full-proof`); the actual checkout was distinct synthetic SHA `86bc26ca1fc60a9bd9204f655cefc2b442100555`.
 - Independent review initially found seven blockers and one warning. Four red/green source commits (`0c90fc28`, `a45078fa`, `29c1abd8`, `24baafa3`) repaired the nine regression families and escaped triple-delimiter follow-up. Final independent actual-checkout review passed9/9 families and327/327 Node tests with zero open findings.
 - The original displayed attempt expired. Its merge-only allow stayed historical and unconsumed. Automatic approval review rejected committing a proposed removal of the expiry safeguard; that helper change was restored, not delivered. A fresh attempt received explicit both-operation approval. The gate passed before one merge request; its actual readback was MERGED at2026-10-27T11:52:58Z.
 - Actual main merge `b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97` has exactly the approved base and fix-head parents. Automatic remote deletion of fix/secret-mask-structural occurred and consumed only its separately approved scope. Tag inventory stayed unchanged; no publish, release merge or tag operation ran. Local docs reconciled main by a normal merge without force/rebase/stash.
@@ -86,7 +86,7 @@ The final landed invocation safely detached the same checkout at actual main, ch
 
 The GAP3 matrix has35 unique relevant rows:34 fixed and the existing accepted GAP1-GR-06 receiver in Phase196. Full disposition totals are41:34 fixed,5 previously deferred,2 prior wontfix,0 open. Older reviews remain unchanged. The original cleanroom debt remains Phase197 and the historical HYG override is not extended.
 
-These tests establish supported identifier/shape rules, actual workflow-name inventory and named review cases. They do not prove arbitrary unlabelled secrets or arbitrary Bash safe. No new deferral was accepted. Validation remains draft/false because an independent per-commit Nyquist continuity audit has not run; that limitation is explicit rather than inferred away from passing suites.
+These tests establish supported identifier/shape rules, actual workflow-name inventory and named review cases. They do not prove arbitrary unlabelled secrets or arbitrary Bash safe. No new deferral was accepted. At plan close, validation remained draft/false because the independent per-commit Nyquist continuity audit had not run. The subsequent final verifier completed that audit and recorded validated/compliant status in 195-VALIDATION.md; this later audit does not change the timing or contents of the main proof.
 
 ## Deviations and observed repairs
 

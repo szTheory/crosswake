@@ -1,15 +1,15 @@
 ---
 phase: "195"
 slug: "pipeline-repair-and-hygiene"
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: "2026-10-26"
 ---
 
 # Phase 195 — Round-3 Gap Validation Strategy
 
-Scope: new gap plans 195-19 through 195-21, reopening REL-03 only. Execution is now evidenced below; this remains a draft sampling contract until its independent continuity audit. No RESEARCH.md exists: gap planning uses inspected existing code, prior execution evidence and actual reproduced leaks. Previous phase evidence and accepted GR-06/Phase197 deferrals remain retained; completed non-gap work is not repeated.
+Scope: gap plans 195-19 through 195-21, reopening REL-03 only. The independent continuity and behavior audit below is complete. No RESEARCH.md exists: gap planning uses inspected existing code, prior execution evidence and reproduced failures. Previous phase evidence and accepted GR-06/Phase197 deferrals remain retained; completed non-gap delivery work is not repeated.
 
 ## Test Infrastructure
 
@@ -94,7 +94,7 @@ Prior original review and GR cases remain in the same suite and are explicitly c
 
 ## Wave 0 Requirements
 
-No separate dependency/setup wave is needed. Existing infrastructure covers execution. Tests are added red first within each production task; the phase-local delivery helper and its self-tests are created by 21-01 before later modes run. The mapped tasks have now executed with retained summaries and live main proof; wave_0_complete remains false until the sampling-continuity audit is completed.
+No separate dependency/setup wave is needed. Existing infrastructure covers execution. Tests were added red first within each production task; the phase-local delivery helper and its self-tests were created by 21-01 before later modes ran. All nine mapped tasks have retained execution evidence and current main proof. The independent sampling audit found no missing setup or test infrastructure; wave_0_complete is true.
 
 ## Required Non-Vacuity and Negative Controls
 
@@ -114,24 +114,78 @@ None. All behavioral assertions, review evidence, CI checks and main verificatio
 
 ## Validation Sign-Off
 
-- [ ] All new tasks' automated commands executed with non-empty case floors.
-- [ ] Exact mandatory family identities were executed rather than skipped; zero-selection and missing-family command controls passed.
-- [ ] Red-first and copied negative-control evidence inspected without value leakage.
-- [ ] Raw-window controls cover line and byte truncation.
-- [ ] Every matching-rule family has bounded adversaries and independent timing rows.
-- [ ] Sampling continuity confirmed; no three consecutive tasks without automated feedback.
-- [ ] No watch-mode flags or dependency installation.
-- [ ] All three review rounds mapped and current GAP2 twelve findings accounted for.
-- [ ] Candidate CI head and distinct synthetic merge identity verified.
-- [ ] Actual merged main passes full checks before REL-03 completion.
-- [ ] Landed itself produced SHA-bound proof from live processes and rejected fabricated green/no-execution, missing-control, wrong-main and failure/timeout controls.
-- [ ] Existing GR-06/Phase197 deferrals and historical override preserved.
-- [ ] Actual audit completed before setting status validated / nyquist_compliant true.
+- [x] All new tasks' automated commands executed with non-empty case floors.
+- [x] Exact mandatory family identities were executed rather than skipped; zero-selection and missing-family command controls passed.
+- [x] Red-first and copied negative-control evidence inspected without value leakage.
+- [x] Raw-window controls cover line and byte truncation.
+- [x] Every matching-rule family has bounded adversaries and independent timing rows.
+- [x] Sampling continuity confirmed; no three consecutive tasks without automated feedback.
+- [x] No watch-mode flags or dependency installation.
+- [x] All three review rounds mapped and current GAP2 twelve findings accounted for.
+- [x] Candidate CI head and distinct synthetic merge identity verified.
+- [x] Actual merged main passes full checks before REL-03 completion.
+- [x] Landed itself produced SHA-bound proof from live processes and rejected fabricated green/no-execution, missing-control, wrong-main and failure/timeout controls.
+- [x] Existing GR-06/Phase197 deferrals and historical override preserved.
+- [x] Actual audit completed before setting status validated / nyquist_compliant true.
 
-Approval: pending automated audit. This draft does not claim tests, implementation, delivery or Nyquist compliance are complete. REL-03's unclassified edge probe remains flagged: supported-rule/inventory tests cannot prove all arbitrary secrets safe.
+Approval: independent automated coverage audit completed 2026-10-27. REL-03's finite boundary remains explicit: supported-rule/inventory tests cannot prove all arbitrary unlabelled secrets or arbitrary Bash safe. This is no new deferral and does not expand GR-06.
 
 ## Post-execution evidence and remaining audit
 
 All9 mapped tasks have executed: plans19/20 summaries retain red-first, exact-family/zero-selection/omission controls, numeric rows and live guard census; plan21 retains the independent35-row review, CI49/49, separately scoped approvals/consumption and actual-main proof on b8398c38. The phase-only helper has98 passing selftests after the reproduced TMPDIR repair. The process-derived main receipt covers190 quick tests,327 full tests,213 timing rows, all required registered identities and five positive control families with zero masked leaks.
 
-Status stays draft, nyquist_compliant:false and wave_0_complete:false: no independent per-commit sampling-continuity/Nyquist audit has been completed. These fields are not inferred from a green suite. This validation debt does not replace the final phase-goal verifier or alter the finite coverage limitation.
+The independent audit below supersedes the former draft flags. The compliance fields derive from task mapping, commit-order inspection, substantive assertions, exact-family/empty-selection controls, bound main execution evidence and fresh focused checks; they are not inferred solely from a green suite.
+
+## Independent Sampling and Coverage Audit
+
+Input state A; validate-phase capability enabled. All 21 PLAN/SUMMARY pairs were inspected for requirement/task intent and retained evidence; this round's nine tasks map only REL-03. The other seven Phase195 requirements retain their prior verified status and unchanged controls. No new test or production edit was needed, so validate-phase Step3 proceeds directly to Step6.
+
+| Task | Requirement coverage found | Current evidence | Audit |
+|---|---|---|---|
+| 195-19-01 | Real failing child, inventory-derived names and bounded padding | Three exact required identities; raw seed presence and masked absence; 60-row size/whitespace matrix in current main proof | COVERED |
+| 195-19-02 | Containers, record-local name/value handling and wrapped tuples | Three exact identities; per-row raw windows, multiple seeded elements and malformed-value behavior | COVERED |
+| 195-19-03 | Complete/incomplete private-key armor | Exact layout/malformed families, following diagnostics and three bounded armor adversaries | COVERED |
+| 195-20-01 | Supported stdout registration and credential references | Exact echo/rejected-context/reference identities; real extracted fire-drill emulator, positive live floor and zero violations | COVERED |
+| 195-20-02 | Non-vacuous tail windows, independent baselines and diagnostic pins | Line/size/empty/omitted-family controls, copied quadratic rejection, value assertions and 213 current timing rows | COVERED |
+| 195-20-03 | Named provider/CLI/URL/encoding/JWT forms | 45 raw-window and identity controls, 43 pre-fix detections, zero candidate leaks; exact diagnostic and residual-adversary identities | COVERED |
+| 195-21-01 | Review, CI and privacy bound to the final head | 35 round-qualified review rows, exact source blobs, CI40449366324 overall success; 48 successful jobs and one skipped release-candidate-full-proof out of49 | COVERED |
+| 195-21-02 | Current separate irreversible operation scopes | Current attempt binds base/head/run/synthetic identity; separate merge/deletion answers each consumed once; no previous allow transferred | COVERED |
+| 195-21-03 | Actual main proof generated from real processes | Main SHA/two parents/source blobs, current helper/receipt/review digests, quick190/full327, all190 registered identities, five controls and safe docs restoration | COVERED |
+
+### Commit and Feedback Continuity
+
+Git parent/diff inspection verifies the six planned RED→GREEN pairs, in exact order:
+
+| Task | RED commit | GREEN commit | Substantive transition |
+|---|---|---|---|
+| 19-01 | edb0084c | 37f450f6 | Test-only signing/inventory/padding additions precede production classifier repair |
+| 19-02 | 5934c715 | c2030f72 | Test-only container/record/tuple additions precede balanced consumers |
+| 19-03 | 2f1ad9eb | b0233b8e | Test-only armor additions precede terminator/EOF scanner |
+| 20-01 | 0e0804a6 | 7ee7f994 | Test-local guard failures precede registration/reference repair in the same test module |
+| 20-02 | 2c716d15 | c7a0fed6 | Window/diagnostic failures precede synchronous children, real windows and quote repair |
+| 20-03 | bb325826 | 8c519bff | Named residual failures precede bounded production rules |
+
+Each GREEN is the immediate child of its RED; each later RED descends from the previous GREEN. The RED diffs add assertions against the existing import/interface, rather than removing a module or intentionally breaking test setup. Recorded failure labels/counts align with those assertions. Old RED commands were not rerun against historical attack inputs; commit inspection and retained red evidence establish sequencing. Current real-main tests establish behavior after delivery.
+
+Review repairs also retain test-first pairs 0c90fc28→a45078fa and29c1abd8→24baafa3. Plan21's evidence tasks each use their executable helper gate; its final successful proof is after the approved merge. No three consecutive tasks lack automated feedback. No new framework, package or watch mode was introduced.
+
+### Fresh Independent Checks
+
+- Existing focused command `node --test --test-name-pattern '^round3 review ' test/js/ci_secret_masking.test.mjs`:9pass,0fail,0skip;1.742s;11numeric interaction rows, maximum28.526ms, each within bound.
+- Phase helper `--self-test --ws quality-ratchet-release`:98pass. Its test-only fake adapter cannot satisfy real landed execution or create a main-proof receipt.
+- Artifact binding check: proof/main/reviewed/working source blobs equal; current helper, review and delivery SHA256 digests exactly equal proof fields; all213 unique metric rows satisfy their bounds. Main b8398c38 has approved parents7621c0ce and24baafa3.
+- Source audit: no disabled requirement tests; expected masking results are handwritten exact pins or independently specified raw-presence/absence/diagnostic assertions. No expected-value regeneration from the masker is used. Controlled fixture input is supplied by real subprocesses and the live workflow path, not substituted for production inventory.
+- The main proof is process-derived: quick190pass/full327pass, five non-empty controls, zero masked leaks. It requires every registered masking identity, prior-round identities and current all-round findings. Main execution was not repeated during report edits.
+- Manifest regression gate supplied by the parent: Phase194 referenced tests84pass/0fail in this verification session; no repeated full suite.
+
+### Audit Outcome
+
+Gaps found:0. Resolved:0. Escalated:0. Manual-only:0. All nine mapped tasks COVERED. Existing GR-06/Phase196, original clean-room Phase197 debt and the historical HYG-02 exception remain exactly scoped. Lifecycle completion remains the orchestrator's separate transaction.
+
+## Validation Audit 2026-10-27
+
+| Metric | Count |
+|---|---|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |

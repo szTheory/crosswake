@@ -1,9 +1,35 @@
 ---
 phase: 195-pipeline-repair-and-hygiene
-verified: 2026-10-26T23:00:00Z
-status: gaps_found
-score: 7/8 must-haves verified
+verified: "2026-10-27T12:20:37Z"
+status: passed
+score: 8/8 must-haves verified
 covered_files:
+  - .github/dependabot.yml
+  - .github/workflows/clean-room-proof-rehearsal.yml
+  - .github/workflows/crosswake-ci.yml
+  - .github/workflows/exact-public-proof.yml
+  - .github/workflows/hex-publish.yml
+  - .github/workflows/ios-mirror-backfill.yml
+  - .github/workflows/ios-tag-recovery.yml
+  - .github/workflows/maven-publish-fire-drill.yml
+  - .github/workflows/native-collateral-advisory.yml
+  - .github/workflows/phase130-proof.yml
+  - .github/workflows/phase132-proof.yml
+  - .github/workflows/phase23-proof.yml
+  - .github/workflows/phase34-proof.yml
+  - .github/workflows/phase43-proof.yml
+  - .github/workflows/phase45-proof.yml
+  - .github/workflows/phase48-proof.yml
+  - .github/workflows/phase52-proof.yml
+  - .github/workflows/phase58-proof.yml
+  - .github/workflows/phase70-proof.yml
+  - .github/workflows/phase71-proof.yml
+  - .github/workflows/phase73-proof.yml
+  - .github/workflows/phase74-proof.yml
+  - .github/workflows/phase96-proof-advisory.yml
+  - .github/workflows/release-please.yml
+  - .github/workflows/see-it-run-collateral.yml
+  - .github/workflows/see-it-run-native.yml
   - .github/workflows/weekly-canary.yml
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-01-PLAN.md
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-01-SUMMARY.md
@@ -41,10 +67,114 @@ covered_files:
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-17-SUMMARY.md
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-18-PLAN.md
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-18-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-19-PLAN.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-19-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-20-PLAN.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-20-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-21-PLAN.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-21-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/branches-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/bundle-check-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/cleanroom-0.2.11-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/cleanroom-negative-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/gap3-delivery.json
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/gap3-main-proof.json
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/lanes-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/lanes-main-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-control-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gap-control-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gap-main-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gap-red-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gr-crit-control-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gr-crit-red-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gr-main-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gr-warn-control-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-gr-warn-red-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/mask-round3-plan20-timings.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/normalized-fields-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr-age-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr-queue-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr1-ci-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr1-merge-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr2-ci-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr2-merge-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr3-ci-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr3-merge-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr4-ci-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr4-merge-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr5-ci-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/pr5-merge-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-closeout-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-gap3.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-pr1-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-pr2-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-pr3-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-pr4-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-pr5-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push2-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/rehearsal-rel01-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/rehearsal-rel02-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/release-pr-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/review-route-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/review-route2-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/root-files-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/secret-derivation-audit-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/seed003-mirror-tag-195.txt
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-PLAN-CHECK.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-REVIEW-DISPOSITION.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-REVIEW-GAP.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-REVIEW-GAP2.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-REVIEW-GAP3.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-REVIEW.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-SECURITY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-UI-REVIEW.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-VALIDATION.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/COVERAGE.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/scripts/verify-gap3-evidence.mjs
+  - AGENTS.md
+  - README.md
+  - brandbook/collateral/see-it-run/README.md
+  - docs/COMPANION-PUBLISH-RUNBOOK.md
+  - docs/RELEASE-INCIDENT-RESPONSE.md
+  - docs/SETUP.md
+  - examples/phoenix_host/mix.lock
+  - lib/crosswake/planning/first_adopter_context.ex
+  - script/check_phase165_efficient_ci.sh
+  - script/ci_docs_allowlist.json
+  - script/collection_assertion_ledger.json
+  - script/collection_assertion_remediation.json
+  - script/repository_verification_stages.json
+  - script/required_check_policy.json
   - script/verify_published_cleanroom.sh
   - script/verify_repository.mjs
+  - scripts/ci_monitor.cjs
+  - test/crosswake/bearings_report_test.exs
+  - test/crosswake/guides/release_boundaries_test.exs
+  - test/crosswake/guides/see_it_run_collateral_test.exs
+  - test/crosswake/manifest/host_command_seam_fixture_test.exs
+  - test/crosswake/planning/agents_contract_test.exs
+  - test/crosswake/proof/ci_recurring_lanes_test.exs
+  - test/crosswake/proof/phase153_ios_mirror_unblock_test.exs
+  - test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs
+  - test/crosswake/proof/phase165_ci_integrity_test.exs
+  - test/crosswake/proof/phase165_ci_policy_test.exs
+  - test/crosswake/proof/phase165_evidence_test.exs
+  - test/crosswake/proof/phase175_release_recovery_test.exs
+  - test/crosswake/release/published_cleanroom_test.exs
+  - test/crosswake/release_candidate/companion_receipt_test.exs
+  - test/crosswake/release_candidate/evidence_gate_test.exs
+  - test/crosswake/repository_root_allowlist_test.exs
+  - test/crosswake/test_support/version_stamp_test.exs
+  - test/fixtures/shell/ios/production_generation.sha256.json
   - test/js/ci_secret_masking.test.mjs
-covered_digest: "v3:sha256:788a73a48eee3ef3ab8e2a49cda35e4f35e701d17fc1188e522f20eee9bb36e0"
+  - test/js/repository_verification.test.mjs
+  - test/mix/tasks/crosswake_gen_shell_origin_mode_test.exs
+  - test/support/version_stamp.ex
+covered_digest: "v3:sha256:34f28f418b466893cf499a3333d4936d329b8ebcbe010593395df5a6a0eec4db"
+actual_main_sha: b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97
+reviewed_head_sha: 24baafa3d5a65df6f84366209b372b7c5448cdbe
+release_pr_head_sha: f30bd49b52dfbab817b078af690ae2b6f89630de
 behavior_unverified: 0
 overrides_applied: 1
 overrides:
@@ -56,113 +186,201 @@ re_verification:
   previous_status: gaps_found
   previous_score: 7/8
   gaps_closed:
-    - "REL-03 round 2: GR-01 (tuple, escaped-JSON, CLI-flag, quoted-Bearer, next-line forms) and GR-02 (single-quoted add-mask accepted by the guard) are closed on main for the shapes they named"
-  gaps_remaining:
-    - "REL-03: KEY_LINE is quadratic (CR-01)"
-    - "REL-03: PGP key block, key-name assignments and camel-case SecretAccessKey print unmasked (CR-02)"
+    - "REL-03 GAP2 CR-01: KEY_LINE padding quadratic, with bounded rule-family and copied quadratic controls"
+    - "REL-03 GAP2 CR-02: repository-held signing/deploy/camel-case identifiers and private-key armor leaks"
+    - "Related GAP2 warnings/info and new GAP3 interactions: all 20 round-qualified findings fixed with executed regressions"
+  gaps_remaining: []
   regressions: []
-gaps:
-  - requirement: REL-03
-    truth: "CI never echoes secrets: the root-proof failure tail masks credential values"
-    status: failed
-    reason: "Re-probed on main 7621c0ce. CR-01: the KEY_LINE regex is quadratic (token: plus 40k spaces and x takes 0.9 s; space-tab pairs 3.6 s at 40k; time quadruples when input doubles), so a padded line hangs the failure path where the tail is the only diagnostic. CR-02: an ASCII-armored PGP private-key block, signingInMemoryKey=, deploy_key:, MIRROR_DEPLOY_KEY= and camel-case SecretAccessKey all print unmasked. signingInMemoryKey and MIRROR_DEPLOY_KEY are secrets this repository's workflows actually hold. Related review warnings WR-01 (Elixir inspect forms, e.g. a cookie map) also reproduce."
-    artifacts:
-      - path: "script/verify_repository.mjs"
-        issue: "KEY_LINE (line 119) has two adjacent optional-whitespace quantifiers; PEM_KEY does not accept PRIVATE KEY BLOCK; CREDENTIAL_WORDS lacks bare key-name forms; secret-access-key rule needs a separator"
-      - path: "test/js/ci_secret_masking.test.mjs"
-        issue: "linear-time suite has no key, separator, long-whitespace-run, non-space input, so it cannot fail for CR-01; no seed per repository secret name"
-    missing:
-      - "Move trailing [ \\t]* inside the optional block-indicator group of KEY_LINE; add whitespace-run LINEAR_INPUTS rows (space, tab, space-tab) for KEY_LINE and the other separator rules"
-      - "Accept an optional BLOCK in the PEM marker; make secret-access-key separators optional; add signing/deploy/auth key names and secretstring to the credential words"
-      - "Add a seed row per secret name the workflows hold (signingInMemoryKey, signingInMemoryKeyPassword, MIRROR_DEPLOY_KEY) so the inventory and masker cannot drift"
 deferred:
-  - truth: "Derived-secret guard grammar (GR-06: local/declare/readonly, +=, read, printf -v, GITHUB_ENV writes)"
+  - truth: "Derived-secret guard grammar: declarations, append/read/printf, GITHUB_ENV/output, multiple assignments and inline use (GAP1-GR-06)"
     addressed_in: "Phase 196"
-    evidence: "Phase 196 ROADMAP carried line: 'GR-06 (derived-secret guard grammar ...) in test/js/ci_secret_masking.test.mjs; see 195-REVIEW-DISPOSITION.md'; zero census on the live tree"
+    evidence: "Existing review-route2 answer accept, zero census and named Phase196 roadmap receiver; no expansion by this report."
+  - truth: "Original clean-room hardening WR-04/05/06 and IN-03"
+    addressed_in: "Phase 197"
+    evidence: "Existing review-route answer accept and named Phase197 carried line; original review IDs, distinct from fixed GAP2 IDs."
+decision_coverage:
+  honored: 0
+  total: 0
+  not_honored: []
 human_verification: []
 ---
 
 # Phase 195: Pipeline Repair and Hygiene Verification Report
 
 **Phase Goal:** `main`, the release PR and the PR queue are green and trustworthy, CI runs only recurring lanes and never echoes secrets, the repository holds no scratch state, and one fail-closed clean-room command is proven against real published artifacts.
-**Verified:** 2026-10-26
-**Status:** gaps_found
-**Re-verification:** Yes, after round-2 gap closure (plans 195-16 to 195-18, PR #257, merge commit 7621c0ce)
+**Verified:** 2026-10-27T12:20:37Z
+**Status:** passed
+**Re-verification:** Yes — previous 7/8 baseline; REL-03 gap closure after plans19–21.
 
-## What was checked and what I found
+The carried REL-03 gap is closed on actual main. Fresh independent source/artifact checks, nine existing behavioral families and 98 evidence-helper selftests support the bound actual-main proof. The current release PR was still running when this audit began; it was allowed to finish without a rerun. Run40499982698 now succeeds on current headf30bd49 with49/49 jobs and all49 rollup contexts, including Crosswake CI, SUCCESS. No human action is pending. This verifier changed reports, the explicitly authorized summary clarification and current handoff only; it made no production or external mutation.
 
-I imported the exported `maskSecretShapes` from `script/verify_repository.mjs` on the checkout (which matches main 7621c0ce for `script` and `test/js`) and fed it synthetic fake values built from fragments. The round-2 shapes (GR-01, GR-02) are closed and `node --test test/js/ci_secret_masking.test.mjs` passes (138 pass, 0 fail). But both critical findings in 195-REVIEW-GAP2.md reproduce on the merged code, so REL-03 ("CI never echoes secrets") is not met. Nothing was changed except this report. Next action: a third gap plan for REL-03 (CR-01, CR-02, then WR-01 to WR-03), then re-verify. Phase 196 should not start on the strength of REL-03 until that lands.
+## Goal Achievement
 
-## REL-03 independent probe results
+### Observable Truths
 
-| Probe (fake values, built from fragments) | Result |
-|-------|--------|
-| ASCII-armored PGP private-key block (marker, blank line, body, END marker) | LEAK, body prints |
-| `signingInMemoryKey=<fake>` | LEAK |
-| `deploy_key: <fake>` | LEAK |
-| `MIRROR_DEPLOY_KEY=<fake>` | LEAK |
-| `{"SecretAccessKey":"<fake>"}` | LEAK |
-| `%{"cookie" => ["sid=<fake>"]}` (Elixir inspect, WR-01) | LEAK |
-| `password=<fake>` (control) | masked |
-| `token:` + 20,000 spaces + `x` | 218 ms |
-| `token:` + 40,000 spaces + `x` | 884 ms (4x for 2x input: quadratic) |
-| `token:` + 40,000 tabs + `x` | 955 ms |
-| `token:` + 40,000 space-tab pairs + `x` | 3,606 ms |
+The original eight requirement-level truths are retained for re-verification. The roadmap's five success criteria are fully accounted for in the next table; plan detail never narrows that contract.
 
-CR-01 and CR-02 are therefore real, not review speculation. Weighing them honestly: GitHub's own runner masking still covers values it knows as `secrets.*` when they appear verbatim, so the practical exposure is narrower than the masker's gaps suggest. But the requirement text and the plan's own claim are that the failure-tail masker covers credential shapes, and the shapes that fail are the forms of the secrets this repository's workflows hold (`ORG_GRADLE_PROJECT_signingInMemoryKey`, `MIRROR_DEPLOY_KEY`). CR-01 also turns the failure path into a hang on a padded line. I do not accept a pass here; two rounds of closing named shapes have each left more unprobed shapes, and the masker remains shape-based.
+| # | Requirement | Truth | Status | Code and execution evidence |
+|---|---|---|---|---|
+| 1 | REL-01 | Version-derived fixture changes normalize; current release PR is green with zero hand edits | VERIFIED | VersionStamp prefix/key-only functions feed golden/seam comparisons with stamp floors. Existing negative tests preserve non-version/template changes. Retained real release-diff red/green evidence. Release PR236 remains OPEN atf30bd49, one release commit and zero non-release commits; release-please run40499465246 succeeded on mainb8398c38. Fresh CI40499982698:49success/49jobs, including the eight named jobs and aggregate. |
+| 2 | REL-02 | Action pin assertions use SHA/version shape; the old Dependabot PRs are resolved | VERIFIED (regression retention) | phase153 pin predicate requires40lowercase hex and version comment; tag-only/comment-less negative tests. phase175 captures a matching Beam SHA. pr-queue ledger and main merge ancestry retain #210/#211 merges. Round3 touches neither test. |
+| 3 | REL-03 | Supported credential values are masked before CI output; required masking controls fail when protection is removed | VERIFIED | Main proof executes quick190/full327 with every190 registered masking identity,213 bounded timing rows, five non-empty controls,0maskedLeaks and0live guard violations. Source order is armor-first/complete-value masking before detail/tail slicing. TOKEN/AUTH register before use. Focused fresh9/9 exercises repaired review interactions; exact blob/digest binding below. Finite boundary is explicit. |
+| 4 | REL-04 | Recurring CI topology is enforced; retired controllers are absent; web capture is independent | VERIFIED (regression retention) | No phase-proof schedule; exact empty scheduled set with >=14-file floor/control. One read-only weekly main canary invokes root-proof with required Node pin. Removed controller/selector and named monitor refusal; native dispatch-only workflow separated, assemble-pr needs only web-and-gif. Retained main canary/web success evidence and unchanged source checks. |
+| 5 | REL-05 | Monthly grouped action updates, security updates and accountable queue | VERIFIED (regression retention) | dependabot.yml has one monthly version-updates group; live security-fixes enabled:true. Old #239/#240/#241/#238 merges retained. Current open PRs236,252,253,258; only236 is >14days and its recorded reason names Phase199 REL-07. Other PRs are one/two days old. |
+| 6 | REL-06 | Real published 0.2.11 clean-room proof is retained and fails closed; SEED-003 resolved | VERIFIED (regression retention) | Actual script pins/checks Hex checksum/version, checks Maven artifacts and builds mirror tag. Retained real three-leg PASS/rc0, missing version FAIL/rc1 and tampered AAR checksum FAIL/rc1. Override result is SELFTEST, never PASS. SEED-003 harvested with mirror/monorepo tree identity and deploy-key parity evidence. Existing hardening debt remains Phase197. |
+| 7 | HYG-01 | Tracked root is allowlisted; scratch/bundle removed safely; setup guide has no personal contact data | VERIFIED (regression retention) | Root allowlist test uses NUL-separated git index, >=10root floor and root/bundle controls.13scratch files and bundle are absent; bundle ancestor proof retained and denylist string kept. docs/SETUP.md exists; root SETUP absent. Source and main tree checks retain this behavior. |
+| 8 | HYG-02 | Remote cleanup preserves work and one checkout remains | PASSED (override) | Existing narrowly scoped user exception for final17historical operations carried verbatim. Archive tips/readbacks and leased-delete ledger retained. Fresh remote heads are main/release plus current open-PR/docs refs; PR259 branch absent after its separately approved deletion. Worktree list has exactly one main checkout. No exception transfers to a new operation. |
 
-## Observable Truths
+**Score:** 8/8 truths verified; 0 present-but-behavior-unverified; one existing override.
 
-| # | Requirement | Truth | Status | Evidence |
-|---|-------------|-------|--------|----------|
-| 1 | REL-01 | Version-line-insensitive goldens; release PR passes with no hand edits | VERIFIED (regression check) | PR #236 open, reason recorded (release merge is Phase 199) |
-| 2 | REL-02 | Parity test uses SHA plus version comment | VERIFIED (regression check) | unchanged by plans 16 to 18 |
-| 3 | REL-03 | CI masks derived secrets; failure tail masks bearer, secret-access-key, cookie, short-value shapes | FAILED | probes above; CR-01 and CR-02 reproduce on 7621c0ce |
-| 4 | REL-04 | Only recurring lanes; one weekly canary | VERIFIED (regression check) | Weekly Canary success on 0b28e6d; Release Please runs success on 7621c0ce, 5862a3d, ff63e5d |
-| 5 | REL-05 | Grouped monthly actions PR; no open PR older than 14 days without a reason | VERIFIED (regression check) | Open PRs: #236 (reason recorded, created 2026-10-11), #252 and #253 (created today) |
-| 6 | REL-06 | SEED-003 closed; fail-closed clean-room run against real 0.2.11 artifacts | VERIFIED (regression check) | evidence retained; `script/verify_published_cleanroom.sh` untouched by 16 to 18 |
-| 7 | HYG-01 | Root holds only allowlisted files; no bundle | VERIFIED (regression check) | `git ls-tree origin/main` root shows allowlisted entries only |
-| 8 | HYG-02 | Branches deleted or tagged; worktrees only main | VERIFIED (override) | override carried forward; `git worktree list` shows only the main checkout |
+### Roadmap Contract Coverage
 
-**Score:** 7/8 truths verified (0 present-but-behavior-unverified).
+| Success criterion | Supporting truths | Verdict |
+|---|---|---|
+| SC1: version-insensitive goldens/seam and current release head's eight jobs without hand edits | REL-01; current release head/run readback, all49contexts SUCCESS | VERIFIED |
+| SC2: pin shape, monthly/security config, all named queue dispositions and14-day reasons | REL-02, REL-05 | VERIFIED |
+| SC3: seeded output/tail protection with removal control, recurring topology/canary and independent web capture | REL-03, REL-04 | VERIFIED |
+| SC4: root/bundle controls, safe removal, sanitized moved guide, remote cleanup and one checkout | HYG-01, HYG-02; exact historical exception above | VERIFIED, existing override limited to HYG-02 |
+| SC5: SEED-003 mirror evidence and real published three-leg proof with failing negative controls | REL-06 | VERIFIED |
 
-## Deviations in 195-18, weighed
+Plan-specific detail is checked through the nine-task audited map in195-VALIDATION.md, plus all35unique round-qualified masker review rows in195-REVIEW-GAP3.md. The final matrix covers original masker findings, GR-01..10, all12GAP2findings and all8GAP3findings;34fixed and only the previously accepted GR-06 receiver. The full disposition register separately retains41rows:34fixed,5previously deferred,2prior wontfix,0open.
 
-- JWT left-boundary fix and the 250 ms floor: the floor still separates quadratic from linear at 200k characters (IN-03), but it did not catch CR-01 because no input exercises that rule. Not a gap by itself.
-- Re-run of a red example-host job with no change: noted as a flake reconciliation, not evidence of a defect; main Release Please runs are green. Keep watching.
-- Merge performed by the user: consistent with the AGENTS.md gate (merge to main needs the user's allow).
+### Required Artifacts
 
-## Requirements Coverage
+| Artifact | Existence/substance | Wiring and behavior | Final status |
+|---|---|---|---|
+| script/verify_repository.mjs | Structural identifier classifier, balanced/scalar readers, armor/URL/JWT scanners and failure-tail exports | Actual root-proof failure path invokes masking once before windows; real child regressions and copied controls pass | VERIFIED |
+| test/js/ci_secret_masking.test.mjs | Inventory-derived rows, exact outputs, raw-window controls, runner emulator and independent timing children | Crosswake CI node glob includes it; actual main requires all190registered identities, no skips | VERIFIED |
+| Phase scripts/verify-gap3-evidence.mjs | Closed schema, separate candidate/gate/landed modes, real private continuation and98selftests | Landed spawns actual main suites/controls, rechecks SHA/blobs and restores docs before constructing proof; fake adapter cannot satisfy real mode | VERIFIED |
+| 195-EVIDENCE/gap3-delivery.json and gap3-main-proof.json | Current review/receipt/helper digests; operation scopes and process-derived metrics | Independently cross-checked to git/API/main source and each other; proof source is actual main | VERIFIED |
+| 195-REVIEW-GAP3.md and195-REVIEW-DISPOSITION.md | Exact finding/case map and scoped receivers | Test identities executed in bound main proof; source blobs identical to reviewed head | VERIFIED |
+| test/support/version_stamp.ex and comparison consumers | Prefix/key-only normalization, count floors, independent negative controls | Imported and called in actual golden/seam comparisons, exact equality retained outside normalized values | VERIFIED (retained) |
+| test/crosswake/proof/ci_recurring_lanes_test.exs; weekly-canary/native/Dependabot workflows | Real live tree predicates and negative fixtures; enforced recurring topology | CI root proof runs tests; main run receipts retained | VERIFIED (retained) |
+| test/crosswake/repository_root_allowlist_test.exs; docs/SETUP.md | Real git index listing and both negative controls; moved sanitized guide | Runs under mix test; tracked main tree conforms | VERIFIED (retained) |
+| script/verify_published_cleanroom.sh and its test/evidence | Three real registry legs with failure/SELFTEST distinction | Retained real published run plus missing/tampered controls; no current round changes | VERIFIED (retained) |
 
-| Requirement | Status |
-|-------------|--------|
-| REL-01 | SATISFIED |
-| REL-02 | SATISFIED |
-| REL-03 | BLOCKED (CR-01, CR-02) |
-| REL-04 | SATISFIED |
-| REL-05 | SATISFIED |
-| REL-06 | SATISFIED |
-| HYG-01 | SATISFIED |
-| HYG-02 | SATISFIED (override) |
+CLI verify.artifacts returned2/2 for plan19 and3/3 for plan21. Plan19 key-link CLI returned0/2 because its from/to entries are conceptual descriptions rather than relative file paths. This is a metadata-locator limitation, not missing implementation: the actual links were traced manually below. No source gap was inferred from that locator result.
 
-All eight IDs are claimed by plans and mapped to Phase 195 in REQUIREMENTS.md. No orphans. REL-03 is currently ticked complete in REQUIREMENTS.md and the traceability table; it should be reopened until the gap closes.
+### Key Link Verification
 
-## Anti-Patterns and Open Items
+| From | To | Concrete path | Status |
+|---|---|---|---|
+| Failed root-proof process result | Public failure detail/tail | emitRootProofFailureTail → rootProofFailureTail → maskSecretShapes → detail/tail line/size slicing | WIRED; source order and actual failing-child tests |
+| Tracked workflow source | Inventory-based regression matrix | workflowCredentialInventory uses git ls-files/readFileSync; round3InventoryRows creates independent fake input per name/alias; positive floors | WIRED; real inventory,0violations |
+| Secret-bound workflow env | Supported runner registration | Maven TOKEN/AUTH assignment → immediate add-mask → use; derivedSecretViolations and derivationScript share exact supported registration predicate | WIRED; real extracted script/emulator and removed-registration control |
+| crosswake-ci.yml Node step | Masking tests | node --test test/js/*.mjs includes the actual test file | WIRED; exact-head CI and actual-main full suite |
+| Reviewed source | Landed main source | PR259 exact head + distinct synthetic checkout + separate permission scopes → two-parent merge → same two source blobs | WIRED; git/API/digests checked independently |
+| Actual main processes | Proof and REL-03 verdict | private continuation runs quick/full/controls; parses identities/metrics; re-fetches main; restores saved docs; only then emits proof | WIRED; implementation inspection, bound fresh receipt and98selftests |
+| VersionStamp helpers | Golden/digest/seam comparisons | Actual consumers call scoped normalization, then compare bytes and assert stamp counts | WIRED; retained behavioral controls |
+| Clean-room legs | Overall verdict | all three functions set FAILED; any failure exits1; overrides report SELFTEST | WIRED; source plus retained real/negative evidence |
 
-| Item | Severity | Note |
-|------|----------|------|
-| CR-01 quadratic KEY_LINE | Blocker | see gap |
-| CR-02 unmasked repo-held secret forms | Blocker | see gap |
-| WR-01 to WR-03 (Elixir inspect forms, name/value JSON, PEM body layouts) | Warning | reproduce in part (cookie map); fold into the next gap plan |
-| WR-04 to WR-06, IN-01 to IN-04 | Warning/Info | triage in the next gap plan; GR-06 stays deferred to Phase 196 |
-| Debt markers in the two masker files | None found | |
-| `privacy-push-195.txt`, `privacy-push2-195.txt` untracked | Info | intentional evidence |
+### Data-Flow Trace (Level4)
 
-## Gaps Summary
+| Output | Real source | Flow | Verdict |
+|---|---|---|---|
+| Root-proof diagnostic text | Spawned child stdout/stderr and actual failed-stage result | Mask entire combined text, then derive bounded detail/tail | FLOWING |
+| Workflow regression inventory | Tracked .github/workflows YAML names and env aliases | git listing → names-only rows → raw child window → masked absence | FLOWING |
+| Current main proof | Detached main source and subprocess TAP/timing/control results | Real execution → checked counts/identities/census → generated JSON | FLOWING |
+| Release CI state | Live GitHub run40499982698 and PR236 status checks | Current headf30bd49 → completed success/49contexts; no static fallback | FLOWING |
+| Published clean-room results | Public Hex/Maven/mirror artifacts in retained real run | Fetch/resolve/check/build → all-leg PASS; negatives fail | FLOWING (retained one-time proof) |
 
-One gap, REL-03, blocks the phase goal ("never echoes secrets"). The fix is small and well specified in 195-REVIEW-GAP2.md CR-01 and CR-02. Recommended: seed-first plan with a probe per repo secret name and a whitespace-run linear-time row, then re-verify.
+No dynamic product UI or database output is introduced; no hollow prop/static mock replaces a production data source.
+
+### Behavioral Spot-Checks
+
+| Check | Command/evidence | Result |
+|---|---|---|
+| Existing review interactions | node --test --test-name-pattern '^round3 review ' test/js/ci_secret_masking.test.mjs | Fresh9pass,0fail,0skip;1.742s;11numeric interaction rows, max28.526ms within bound |
+| Phase evidence checker | node phase/scripts/verify-gap3-evidence.mjs --self-test --ws quality-ratchet-release | Fresh98selftests pass |
+| Source/proof binding | Independent SHA256/git hash-object/rev-parse/two-parent assertions | Current helper/receipt/review digests match; reviewed/main/working blobs equal;213unique timing rows within bounds |
+| Exact-head delivery CI | gh run view40449366324 and gh pr view259 | MERGED at approved head; overall CI success:48successful jobs,1skipped release-candidate-full-proof,49total |
+| Current release gate | gh run view40499982698; gh pr view236 | OPEN onf30bd49;49successful jobs/0skipped,49SUCCESScontexts including aggregate |
+| Prior-phase regression gate | Parent's fresh mix test on bearings_report_test.exs and planning/agents_contract_test.exs; summary line independently read | 84tests,0failures |
+| Root/ref sanity | Git source/main tree, remote heads, worktree list and diff --check | One checkout; no PR259 branch; tracked hygiene retained; whitespace clean |
+
+The full workspace suite was not repeated by this verifier. The actual-main process proof already executed quick190/full327 and all controls in this verification session; its exact input/digest bindings were checked independently. Earlier review archive failures and prior CI failures remain historical; they were not relabelled green or used as current proof.
+
+### Probe Execution
+
+No conventional scripts/*/tests/probe-*.sh is declared for this active round. The phase-local checker was independently run in self-test mode, exit0/98pass. Candidate/gate modes concern the now-completed one-use delivery and are not rerun after consumption. Landed was freshly run by the parent before report edits and independently audited here through its implementation and digest-bound process artifact; it is not rerun while the report tree is dirty. No SUMMARY pass narration is substituted for those process results.
+
+The bound landed proof records45raw-window controls,45identity detections,43pre-fix detections,1removed-registration detection,1quadratic-copy rejection and0maskedLeaks. It requires positive actual executions, all190registered masking identities and every referenced prior/current case identity, with no skipped tests.
+
+### Requirements Coverage
+
+| Requirement | Plans | Status | Evidence |
+|---|---|---|---|
+| REL-01 | 01,02,13 | SATISFIED | Scoped normalization and current release head's49SUCCESScontexts |
+| REL-02 | 01,03 | SATISFIED | Shape predicates, controls and merged named queue PRs |
+| REL-03 | 04,14–21 | SATISFIED | Actual-main real-child/registration/window/performance proof; all carried/new masking findings fixed |
+| REL-04 | 05–09 | SATISFIED | Recurring topology, retired routes, advisory canary and independent web receipt |
+| REL-05 | 03,08,09,13 | SATISFIED | Monthly config, live security setting and accountable current/old queue |
+| REL-06 | 11,12 | SATISFIED | Retained real three-leg0.2.11 run, two fail-closed negatives and SEED-003 closure |
+| HYG-01 | 10,12 | SATISFIED | Root/bundle controls, safe provenance, sanitized docs and main tree |
+| HYG-02 | 13 | SATISFIED (existing override) | Historical ledger/exception; current single checkout and scoped new deletion receipt |
+
+All eight phase-mapped IDs appear in plan requirements; no orphan. REL-03 is intentionally still Pending in REQUIREMENTS.md until the parent consumes this verdict in its lifecycle transaction. REL-07 release/publish remains Phase199; no release operation was performed or repeated.
+
+### Validation, Security, UI and Review Hooks
+
+- Nyquist hook:195-VALIDATION.md now validated, nyquist_compliant:true, wave_0_complete:true. All9round3tasks COVERED; six immediate RED→GREEN pairs and two review-repair pairs inspected. Real assertions, family floors, omitted-family/zero-selection controls and feedback continuity found no gaps. No implementation-mirroring test was added.
+- Security hook:195-SECURITY.md verifies91plan-qualified rows/83unique IDs across all21authored models at ASVS L1; threats_open:0. Existing authored accepted risks and user-accepted receivers are preserved. The L1 all-closed short-circuit applies; no new threat/probe inventory was invented.
+- UI hook:195-UI-REVIEW.md N/A. Safety query frontend/hasUiFiles/hasUiSpec/block allfalse; scopeStatus degraded due to absent task-commit rows was independently backstopped by git scope inspection. No visual score or manual UAT is fabricated.
+- Code-review reuse: GAP3 independently inspected/retested the final reviewed head; both source blobs exactly equal main and working files. Its35row matrix and current dispositions are valid for this same source. Old REVIEW/GAP/GAP2 reports were preserved unchanged.
+- Regression gate: fresh Phase194 referenced tests84pass/0fail; no repeat full run needed.
+
+### Test Quality Audit
+
+| Test/evidence | Linked requirement | Active/skip evidence | Expected-value provenance and strongest assertion | Verdict |
+|---|---|---|---|---|
+| ci_secret_masking.test.mjs | REL-03 | Main190executed/0skipped; focused9/9fresh | Fragment-built input, explicit exact pins, raw-presence then masked-absence, real child failure, independent provider/workflow names and meaningful mutation controls | Behavioral; valid |
+| Phase helper selftests | REL-03 delivery/proof | 98freshpass | Closed malformed/stale/permission/omitted-family/wrong-main/child-failure controls; separate fake adapter cannot write a real main proof | Behavioral; valid |
+| VersionStamp/consumers | REL-01/02 | Prior passing evidence retained; unchanged round3 | Narrow normalization, handwritten negative changes and real bot-diff rehearsal; genuine non-version changes stay unequal | Value/behavioral; retained |
+| Recurring lanes/root allowlist | REL-04/HYG-01 | Prior pass plus current source/live-tree retention | Live non-empty git/glob floors, exact predicates and independent negative fixtures/controls | Behavioral; retained |
+| Published clean-room tests/evidence | REL-06 | Prior real run and active12-test hermetic file retained | Real registry checksum/build output; independent missing/corrupt artifacts; SELFTEST cannot become real PASS | Behavioral; retained |
+
+No actual disabled requirement test or circular masker-generated expected fixture was found. Apparent scan matches in process.exit and mktemp's template are ordinary implementation, not skipped tests or unresolved debt markers. Test fixtures provide input; production subprocess/workflow paths establish the same relevant preconditions. No specific undeclared precondition, incidental ordering or fixture-only reliance was identified for a VERIFIED truth.
+
+### Anti-Patterns Found
+
+| Item | Severity | Disposition |
+|---|---|---|
+| Unsupported broader Bash grammar | Retained accepted debt | Existing GAP1-GR-06/Phase196 only |
+| Original clean-room hardening | Retained accepted debt | Original WR-04/05/06, IN-03/Phase197 only |
+| Finite diagnostic masking coverage and explicit conservative overmasks | Scope limitation | Supported rules/live inventory/named review cases proven; arbitrary unlabelled secrets/Bash not certified |
+| Unresolved debt markers, stub/hollow wiring, disabled sole proving test | None found in verified scope | No new blocker |
+
+### Advisory (New Scope, Unevidenced)
+
+None. The re-verification convergence evidence gate was applied; no unevidenced new opinion was promoted into a blocker and no completed must-have was reopened.
+
+### Deferred Items
+
+| Item | Receiver | Existing acceptance evidence |
+|---|---|---|
+| Broader derived-secret guard grammar | Phase196 | review-route2 answer accept; named roadmap carry; zero census retained |
+| Original clean-room timeout/protocol/reason/POM/tools hardening | Phase197 | review-route answer accept; named roadmap carry |
+
+These entries preserve existing decisions. No new deferral was accepted, and no repaired GAP2/GAP3 finding was silently moved to a later phase.
+
+### Decision Coverage
+
+No CONTEXT.md — nothing to check. Owner query returned skipped:true, blocking:false, total0/honored0. This advisory gate has no verdict impact.
+
+### Prohibitions and Operation Scope
+
+Legacy plan prohibitions were checked against the corresponding code controls, retained bot/rehearsal/privacy/queue records and current delivery readback. The only accepted departure is the existing historical HYG-02 exception quoted verbatim above. Current merge/deletion each had its own fresh allow and were consumed once. No force/admin/tag/publish/release merge, repeated uncertain delivery or new acceptance occurred. Privacy-sensitive assertions/evidence use fixed labels and counts; no raw seed/credential/private machine path is copied into this report.
+
+### Human Verification Required
+
+None. This is infrastructure/tooling scope with machine-checkable behavior, and every relevant behavior-dependent truth has execution evidence. No manual UAT or checkpoint is created.
+
+### Gaps Summary and Boundary
+
+No actionable gap remains. GAP2 CR-01/CR-02 and their related cases are fixed on actual main, along with the independently found GAP3 interactions. The phase goal is achieved within its supported-rule/workflow-inventory contract. This is not a universal arbitrary-secret or arbitrary-Bash guarantee; conservative diagnostic losses remain explicitly pinned, broader GR-06 grammar retains its existing receiver, and original clean-room hardening remains Phase197.
+
+The covered-input fingerprint was obtained from the owner CLI over implementation/evidence inputs; it automatically includes all21PLAN/SUMMARY pairs. It excludes this report and mutable STATE/ROADMAP/REQUIREMENTS/PROJECT/HANDOFF/CHECKPOINT lifecycle paths. The parent owns the subsequent completion transaction. No commit was made.
 
 ---
 
-_Verified: 2026-10-26_
-_Verifier: Claude (gsd-verifier)_
+_Verifier: independent gsd-verifier._
