@@ -88,7 +88,6 @@ const REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES = new Set([
 const CREDENTIAL_FAMILY_TOKENS = new Set(["token", "secret", "password", "passwd", "passphrase", "credential", "cookie", "authorization"]);
 const KEY_QUALIFIER_TOKENS = new Set(["api", "auth", "access", "private", "deploy", "signing", "memory"]);
 const CREDENTIAL_METADATA_SUFFIXES = new Set(["count", "length", "size"]);
-
 function credentialIdentifierTokens(identifier) {
   return String(identifier)
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -102,7 +101,7 @@ function isCredentialIdentifier(identifier) {
   if (REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES.has(String(identifier).replace(/[^A-Za-z0-9]/g, "_").toUpperCase())) return true;
   const tokens = credentialIdentifierTokens(identifier);
   if (CREDENTIAL_METADATA_SUFFIXES.has(tokens.at(-1))) return false;
-  if (tokens.some((token) => CREDENTIAL_FAMILY_TOKENS.has(token))) return true;
+  if (tokens.some((token) => CREDENTIAL_FAMILY_TOKENS.has(token) || CREDENTIAL_FAMILY_TOKENS.has(token.replace(/s$/, "")))) return true;
   return tokens.includes("key") && tokens.some((token) => KEY_QUALIFIER_TOKENS.has(token));
 }
 
@@ -120,6 +119,187 @@ const STRUCTURAL_KEY_LINE = new RegExp(
 function maskStructuralCredential(match, prefix, identifier, ...rest) {
   if (!isCredentialIdentifier(identifier)) return match;
   return maskValue(match, prefix, rest[rest.length - 1]);
+}
+
+const CREDENTIAL_ASSIGNMENT_PREFIX = /(?<![A-Za-z0-9_-])(?:(?<quote>["'])(?<quotedIdentifier>[A-Za-z_][A-Za-z0-9_-]*)\k<quote>|(?<identifier>[A-Za-z_][A-Za-z0-9_-]*))[ \t]*(?:=>|[:=]{1,3})[ \t]*/g;
+const CREDENTIAL_TUPLE_PREFIX = /\{[ \t]*(?::(?<atom>[A-Za-z0-9_-]+)|(?<quote>["'])(?<quoted>[A-Za-z0-9_-]+)\k<quote>)[ \t]*,[ \t]*/g;
+const STRUCTURAL_TUPLE_KEY_LINE = /^\s*\{\s*(?::(?<atom>[A-Za-z0-9_-]+)|(?:"(?<double>[A-Za-z0-9_-]+)"|'(?<single>[A-Za-z0-9_-]+)'))\s*,\s*$/;
+
+function readQuotedValueEnd(text, start) {
+  let quoteAt = start;
+  while (text[quoteAt] === "\\") quoteAt += 1;
+  const quote = text[quoteAt];
+  if (quote !== "'" && quote !== '"') return null;
+  let i = quoteAt + 1;
+  while (i < text.length) {
+    if (text[i] === "\\") { i += 2; continue; }
+    if (text[i] === quote) {
+      let closeStart = i;
+      while (closeStart > quoteAt + 1 && text[closeStart - 1] === "\\") closeStart -= 1;
+      return { end: i + 1, replacement: `${text.slice(start, quoteAt + 1)}***${text.slice(closeStart, i + 1)}` };
+    }
+    i += 1;
+  }
+  let end = text.indexOf("\n", start);
+  if (end < 0) end = text.length;
+  return { end, replacement: `${text.slice(start, quoteAt + 1)}***` };
+}
+
+function skipQuotedSpan(text, start) {
+  const quote = text[start];
+  let i = start + 1;
+  while (i < text.length) {
+    if (text[i] === "\\") { i += 2; continue; }
+    if (text[i] === quote) return i + 1;
+    i += 1;
+  }
+  return -1;
+}
+
+function readContainerStart(text, start) {
+  if (text.startsWith("%{", start) || text.startsWith("#{", start)) return { prefix: text.slice(start, start + 2), opener: "{", openAt: start + 1 };
+  if (text.startsWith("<<", start)) return { prefix: "<<", opener: "<<", openAt: start };
+  const paired = { "{": "}", "[": "]", "(": ")" };
+  if (Object.hasOwn(paired, text[start])) return { prefix: text[start], opener: text[start], openAt: start };
+  if (text[start] === "~" && /[A-Za-z]/.test(text[start + 1] ?? "")) {
+    const delimiterAt = start + 2;
+    const delimiter = text[delimiterAt];
+    const sigilClosers = { "{": "}", "[": "]", "(": ")", "<": ">", "|": "|", "/": "/", "'": "'", '"': '"' };
+    if (Object.hasOwn(sigilClosers, delimiter)) return { prefix: text.slice(start, delimiterAt + 1), opener: delimiter, openAt: delimiterAt };
+  }
+  return null;
+}
+
+function readBalancedCredentialValue(text, start) {
+  const container = readContainerStart(text, start);
+  if (!container) return null;
+  const closerFor = { "{": "}", "[": "]", "(": ")", "<<": ">>" };
+  const initialCloser = closerFor[container.opener] ?? container.opener;
+  const stack = [initialCloser];
+  let i = container.openAt + container.opener.length;
+  while (i < text.length) {
+    const top = stack[stack.length - 1];
+    if ((top === "'" || top === '"') && text[i] === top) {
+      const end = i + 1;
+      stack.pop();
+      if (stack.length === 0) return { end, replacement: `${container.prefix}***${top}` };
+      i = end;
+      continue;
+    }
+    if (text[i] === "'" || text[i] === '"' || text[i] === "`") {
+      const end = skipQuotedSpan(text, i);
+      if (end < 0) return { end: text.length, replacement: `${container.prefix}***` };
+      i = end;
+      continue;
+    }
+    if (text[i] === "\\") { i += 2; continue; }
+    if (text.startsWith("<<", i)) { stack.push(">>"); i += 2; continue; }
+    if (text[i] === "{" || text[i] === "[" || text[i] === "(") {
+      stack.push(closerFor[text[i]]);
+      i += 1;
+      continue;
+    }
+    if (text.startsWith(">>", i) || text[i] === "}" || text[i] === "]" || text[i] === ")") {
+      const closer = text.startsWith(">>", i) ? ">>" : text[i];
+      if (closer !== top) return { end: text.length, replacement: `${container.prefix}***` };
+      const end = i + closer.length;
+      stack.pop();
+      if (stack.length === 0) return { end, replacement: `${container.prefix}***${closer}` };
+      i = end;
+      continue;
+    }
+    i += 1;
+  }
+  return { end: text.length, replacement: `${container.prefix}***` };
+}
+
+function looksLikeAssignmentAfterComma(text, commaAt) {
+  let i = commaAt + 1;
+  while (text[i] === " " || text[i] === "\t" || text[i] === "\r" || text[i] === "\n") i += 1;
+  if (text[i] === '"' || text[i] === "'") {
+    const quote = text[i++];
+    while (/[A-Za-z0-9_-]/.test(text[i] ?? "")) i += 1;
+    if (text[i] !== quote) return false;
+    i += 1;
+  } else {
+    if (!/[A-Za-z_]/.test(text[i] ?? "")) return false;
+    i += 1;
+    while (/[A-Za-z0-9_-]/.test(text[i] ?? "")) i += 1;
+  }
+  while (text[i] === " " || text[i] === "\t") i += 1;
+  return text.startsWith("=>", i) || text[i] === ":" || text[i] === "=";
+}
+
+function readBareCredentialValue(text, start, { tuple = false, multiword = false } = {}) {
+  let i = start;
+  while (i < text.length) {
+    const char = text[i];
+    if (char === "\r" || char === "\n" || char === "}" || char === "]" || char === ")" || char === ";") break;
+    if (char === "," && (tuple || looksLikeAssignmentAfterComma(text, i))) break;
+    i += 1;
+  }
+  let end = i;
+  while (end > start && (text[end - 1] === " " || text[end - 1] === "\t")) end -= 1;
+  const value = text.slice(start, end);
+  if (value === "" || /^(?:nil|true|false|null|undefined)$/i.test(value)) return null;
+  if (value.length < 3 && !/[ \t]/.test(value)) return null;
+  if (!multiword && value.length < 3) return null;
+  return { end, replacement: "***" };
+}
+
+function readCompleteCredentialValue(text, start, options = {}) {
+  return readBalancedCredentialValue(text, start)
+    ?? readQuotedValueEnd(text, start)
+    ?? readBareCredentialValue(text, start, options);
+}
+
+function maskStructuredCredentialAssignments(text) {
+  const rule = new RegExp(CREDENTIAL_ASSIGNMENT_PREFIX.source, "g");
+  let result = "";
+  let cursor = 0;
+  let match;
+  while ((match = rule.exec(text)) !== null) {
+    const identifier = match.groups.quotedIdentifier ?? match.groups.identifier;
+    if (!isCredentialIdentifier(identifier)) continue;
+    const valueStart = rule.lastIndex;
+    const value = readCompleteCredentialValue(text, valueStart, { multiword: true });
+    if (!value) continue;
+    result += text.slice(cursor, valueStart) + value.replacement;
+    cursor = value.end;
+    rule.lastIndex = value.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+function maskCredentialNameValueRecords(text) {
+  const flatObject = /\{[^{}]*\}/g;
+  const nameValuePrefix = /(?:["']?name["']?)\s*:\s*(["'])(?<name>[A-Za-z0-9_-]+)\1\s*,\s*(?:["']?value["']?)\s*:\s*/i;
+  return text.replace(flatObject, (record) => {
+    const match = nameValuePrefix.exec(record);
+    if (!match || !isCredentialIdentifier(match.groups.name)) return record;
+    const valueStart = match.index + match[0].length;
+    const value = readCompleteCredentialValue(record, valueStart, { multiword: true });
+    if (!value) return record;
+    return record.slice(0, valueStart) + value.replacement + record.slice(value.end);
+  });
+}
+
+function maskCredentialTupleValues(text) {
+  const rule = new RegExp(CREDENTIAL_TUPLE_PREFIX.source, "g");
+  let result = "";
+  let cursor = 0;
+  let match;
+  while ((match = rule.exec(text)) !== null) {
+    const identifier = match.groups.atom ?? match.groups.quoted;
+    if (!isCredentialIdentifier(identifier)) continue;
+    const valueStart = rule.lastIndex;
+    const value = readCompleteCredentialValue(text, valueStart, { tuple: true, multiword: true });
+    if (!value) continue;
+    result += text.slice(cursor, valueStart) + value.replacement;
+    cursor = value.end;
+    rule.lastIndex = value.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
 }
 
 // PEM private-key block: the BEGIN marker survives, then body items (each starts with a line break, real or a
@@ -184,6 +364,9 @@ function maskNextLineValues(text) {
     active = false;
     const keyLine = STRUCTURAL_KEY_LINE.exec(line);
     if (keyLine && isCredentialIdentifier(keyLine.groups.identifier)) { active = true; waiting = true; keyIndent = indent; }
+    const tupleLine = STRUCTURAL_TUPLE_KEY_LINE.exec(line);
+    const tupleIdentifier = tupleLine?.groups.atom ?? tupleLine?.groups.double ?? tupleLine?.groups.single;
+    if (tupleIdentifier && isCredentialIdentifier(tupleIdentifier)) { active = true; waiting = true; keyIndent = indent; }
   }
   return lines.join("\n");
 }
@@ -218,8 +401,11 @@ function maskNextLineValues(text) {
 // followed by plain text, `--no-password prompt`, a port before a path containing `@`, `secrets: inherit`,
 // numeric values (`max_token: 1000`), `Authorization: required for route`, `stale cookie: expired at line`.
 export function maskSecretShapes(text) {
-  return maskNextLineValues(String(text ?? ""))
-    .replace(STRUCTURAL_CREDENTIAL_RULE, maskStructuralCredential)
+  let masked = maskNextLineValues(String(text ?? ""));
+  masked = maskCredentialNameValueRecords(masked);
+  masked = maskCredentialTupleValues(masked);
+  masked = maskStructuredCredentialAssignments(masked);
+  return masked.replace(STRUCTURAL_CREDENTIAL_RULE, maskStructuralCredential)
     .replace(PEM_RULE, "$1***")
     .replace(AUTHORIZATION_RULE, "$1***")
     .replace(COOKIE_RULE, "$1***")

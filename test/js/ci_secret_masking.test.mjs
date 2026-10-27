@@ -253,10 +253,11 @@ function runRound3TailRows(rows, { diagnosticsBeforeLast = false } = {}) {
 function assertRound3TailRows(outcome, family) {
   const rawHits = outcome.seeds.filter((seed) => outcome.rawTail.includes(seed)).length;
   const maskedHits = outcome.seeds.filter((seed) => outcome.tail.includes(seed)).length;
+  const leakingRows = outcome.rows.filter((row) => row.seeds.some((seed) => outcome.tail.includes(seed))).map((row) => row.name);
   assert.ok(outcome.rows.length > 0 && outcome.seeds.length > 0, `${family} family executed zero rows`);
   assert.ok(outcome.result.status === 2, `${family} child did not fail as required`);
   assert.ok(rawHits === outcome.seeds.length, `${family} raw tail window contains ${rawHits} of ${outcome.seeds.length} seeds`);
-  assert.ok(maskedHits === 0, `${family} masked tail contains ${maskedHits} of ${outcome.seeds.length} seeds`);
+  assert.ok(maskedHits === 0, `${family} masked tail contains ${maskedHits} of ${outcome.seeds.length} seeds (${leakingRows.join(", ")})`);
 }
 
 test("round3 container inspect values", () => {
@@ -713,7 +714,13 @@ for (const row of GAP_SHAPES) {
     const maskedHits = leakedSecrets(masked, row.seeds).length;
     assert.ok(rawHasAll, `gap shape ${row.name}: detector missed a seed in the raw line`);
     assert.ok(maskedHits === 0, `gap shape ${row.name}: ${maskedHits} of ${row.seeds.length} seeds present after masking`);
-    assert.ok(masked === row.expected, `gap shape ${row.name}: output differs from expected, ${maskedHits} of ${row.seeds.length} seeds present`);
+    if (masked !== row.expected) {
+      let mismatchAt = 0;
+      while (mismatchAt < Math.min(masked.length, row.expected.length) && masked[mismatchAt] === row.expected[mismatchAt]) mismatchAt += 1;
+      const expectedCode = row.expected.codePointAt(mismatchAt) ?? -1;
+      const actualCode = masked.codePointAt(mismatchAt) ?? -1;
+      assert.ok(false, `gap shape ${row.name}: output differs at ${mismatchAt}, expected/actual lengths ${row.expected.length}/${masked.length}, code points ${expectedCode}/${actualCode}`);
+    }
   });
 }
 
