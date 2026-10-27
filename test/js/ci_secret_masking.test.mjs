@@ -810,6 +810,7 @@ test("gap shapes from a spawned child never reach the root-proof tail", () => {
 });
 
 const PROSE_LINES = [
+  { name: "boolean container", text: "{:ok, %{token: true, password: nil}}" },
   { name: "token expired for user", text: "token expired for user" },
   { name: "password mismatch for account", text: "password mismatch for account" },
   { name: "secret not found in vault", text: "secret not found in vault" },
@@ -840,6 +841,24 @@ const PROSE_LINES = [
 
 // Over-masks accepted as the safe direction. Each is pinned exactly so it can never drift silently.
 const ACCEPTED_OVERMASK = [
+  { name: "bearer_required", text: "bearer token is required", expected: "bearer *** is required", reason: "a short bearer value cannot be distinguished from the word token" },
+  { name: "bearer_authentication_error", text: "Bearer authentication failed", expected: "Bearer *** failed", reason: "short bearer credentials retain protection" },
+  { name: "bearer_scheme_error", text: "the Bearer scheme is not supported", expected: "the Bearer *** is not supported", reason: "scheme is indistinguishable from a short bearer value" },
+  { name: "changeset_minimum", text: "password: should be at least 12 character(s)", expected: "password: ***", reason: "credential assignment context consumes the complete diagnostic value" },
+  { name: "changeset_blank", text: "* password: can't be blank", expected: "* password: ***", reason: "the full value is hidden without tearing at the apostrophe" },
+  { name: "invalid_token_error", text: "** (ArgumentError) invalid token: expected a binary", expected: "** (ArgumentError) invalid token: ***", reason: "credential assignment prose is indistinguishable from a multiword secret" },
+  { name: "refresh_token_prose", text: "refresh token: rotated", expected: "refresh token: ***", reason: "short assignment values remain protected" },
+  { name: "use_token_prose", text: "use token: foo", expected: "use token: ***", reason: "short assignment values remain protected" },
+  { name: "cookie_number", text: "cookie: 1", expected: "cookie: ***", reason: "cookie header content is opaque" },
+  { name: "credential_missing", text: "credential: missing", expected: "credential: ***", reason: "credential assignment content is opaque" },
+  { name: "numeric_token", text: "token: 123", expected: "token: ***", reason: "numeric secrets are possible" },
+  { name: "numeric_tuple", text: "{:token, 123}", expected: "{:token, ***}", reason: "numeric secrets remain hidden while the known tuple closer survives" },
+  { name: "atom_container", text: "[token: :bad]", expected: "[token: ***]", reason: "atom-valued secrets remain hidden while the known list closer survives" },
+  { name: "jwt_version_prose", text: "version eyJ1.2", expected: "version eyJ***", reason: "a short JWT-shaped version cannot safely be distinguished" },
+  { name: "jwt_word_prose", text: "eyJhello.world", expected: "eyJ***", reason: "JWT-shaped diagnostic words remain masked" },
+  { name: "lone_private_key_marker", text: PEM_B, expected: `${PEM_B}***`, reason: "unterminated armor deliberately consumes EOF" },
+  { name: "ps_user_flag", text: "ps -u root:wheel", expected: "ps -u root:***", reason: "the existing separated user flag contract conservatively covers commandless diagnostics" },
+  { name: "short_user_flag", text: "-u admin:admin", expected: "-u admin:***", reason: "commandless short user credentials remain protected" },
   { name: "code_assert_token_equals", text: 'code: assert token == "expected-value"', expected: 'code: assert token == "***"' },
   { name: "key_then_plain_line", text: "enter password:\nnext line text", expected: "enter password:\n***" },
   { name: "cli_negated_flag", text: "run --no-password prompt", expected: "run --no-password ***" },
@@ -1279,6 +1298,23 @@ test("live fire-drill derivation never leaks seeded or derived values into the e
 test("derivationScript refuses to extract network lines", () => {
   const text = fixture(`TOKEN=$(curl -s "$MAVEN_PASSWORD")`);
   assert.throws(() => derivationScript(text, ["TOKEN"]), /refusing/);
+});
+
+test("round3 raw window and inventory controls", () => {
+  const seed = round3Fake("Window", 1);
+  const oversized = runRound3TailRows([{ name: "early byte seed", line: () => `password=${seed}\n${"z".repeat(ROOT_PROOF_TAIL_BYTES + 1)}`, seeds: [seed] }]);
+  assert.ok(oversized.rawTail.length <= ROOT_PROOF_TAIL_BYTES, "raw window must enforce the byte cap");
+  assert.throws(() => assertRound3TailRows(oversized, "early byte control"), /raw tail window/, "out-of-byte-window seed qualified");
+  const earlyLine = runRound3TailRows([{ name: "early line seed", line: () => `password=${seed}\n${"safe line\n".repeat(ROOT_PROOF_TAIL_LINES + 1)}`, seeds: [seed] }]);
+  assert.throws(() => assertRound3TailRows(earlyLine, "early line control"), /raw tail window/, "out-of-line-window seed qualified");
+  assert.throws(() => assertRound3TailRows({ rows: [], seeds: [], result: { status: 2 }, rawTail: "", tail: "" }, "empty inventory"), /zero rows/);
+  const valid = runRound3TailRows([{ name: "identity control", line: () => `password=${seed}`, seeds: [seed] }]);
+  assertRound3TailRows(valid, "valid window");
+  assert.throws(() => assertRound3TailRows({ ...valid, tail: valid.rawTail }, "removed mask"), /masked tail/);
+  const groups = new Map([["window", [1]], ["diagnostic", [1]], ["timing", [1]]]);
+  const requireGroups = (map) => { for (const group of ["window", "diagnostic", "timing"]) assert.ok(map.get(group)?.length > 0, "required case group missing"); };
+  requireGroups(groups);
+  for (const group of groups.keys()) { const omitted = new Map(groups); omitted.delete(group); assert.throws(() => requireGroups(omitted), /required case group missing/); }
 });
 
 test("round3 guard exact stdout registration", () => {
