@@ -1540,6 +1540,7 @@ const REVIEW_IDENTIFIER_ROWS = [
 const REVIEW_QUOTED_ROWS = [
   { name: "triple quoted inline", line: () => `token: """${round3Fake("ReviewQuoted", 1)}"""`, seeds: [round3Fake("ReviewQuoted", 1)] },
   { name: "triple quoted heredoc", line: () => `token: """\n${round3Fake("ReviewQuoted", 2)}\n"""`, seeds: [round3Fake("ReviewQuoted", 2)] },
+  { name: "escaped triple delimiter inside heredoc", line: () => `token: """\n${BS}"""\n${round3Fake("ReviewQuoted", 6)}\n"""`, seeds: [round3Fake("ReviewQuoted", 6)] },
   { name: "triple single quoted", line: () => `token: '''\n${round3Fake("ReviewQuoted", 3)}\n'''`, seeds: [round3Fake("ReviewQuoted", 3)] },
   { name: "single quoted concatenation", line: () => `token: 'prefix'${round3Fake("ReviewQuoted", 4)}`, seeds: [round3Fake("ReviewQuoted", 4)] },
   { name: "double quoted concatenation", line: () => `token: "prefix"${round3Fake("ReviewQuoted", 5)}"suffix"`, seeds: [round3Fake("ReviewQuoted", 5)] }
