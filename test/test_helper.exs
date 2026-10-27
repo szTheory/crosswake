@@ -13,6 +13,12 @@ ExUnit.start()
 exclude =
   []
   |> then(fn acc ->
+    # Any supplied value requests real generated evidence, including an empty path.
+    if is_nil(System.get_env("CROSSWAKE_EVIDENCE_MANIFEST_PATH")),
+      do: [{:generated_manifest, true} | acc],
+      else: acc
+  end)
+  |> then(fn acc ->
     if System.get_env("MIX_INCLUDE_RULESTEAD") == "1",
       do: acc,
       else: [{:advisory_only, true} | acc]
