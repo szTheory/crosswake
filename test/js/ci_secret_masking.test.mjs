@@ -1141,6 +1141,7 @@ function supportedRegistration(lines, assignment, maskIndex) {
   for (let k = bounds.start + 1; k < index; k += 1) {
     const line = lines[k].trim();
     if (line.startsWith("#")) continue;
+    if (/^exec(?:\s|$)/.test(line)) return false; // persistent stdout/fd authority is unproved
     if (/<<|\\$/.test(line)) return false;
     const singleSubshell = /^\(\s+[^()]*\)\s*$/.test(line);
     const singleLoop = /^(?:for|while|until)\b.*\bdone\b/.test(line);
@@ -1533,7 +1534,8 @@ const REVIEW_IDENTIFIER_ROWS = [
   { name: "CLI container", line: () => `tool --password ["${round3Fake("ReviewIdentifier", 4)}"]`, seeds: [round3Fake("ReviewIdentifier", 4)] },
   { name: "CLI nested container", line: () => `tool --signingInMemoryKey {"value":["${round3Fake("ReviewIdentifier", 5)}"]}`, seeds: [round3Fake("ReviewIdentifier", 5)] },
   { name: "CLI long identifier", line: () => `tool --${"x".repeat(80)}-password ${round3Fake("ReviewIdentifier", 6)}`, seeds: [round3Fake("ReviewIdentifier", 6)] },
-  { name: "escaped quoted camel CRLF", line: () => `${BS}"signingInMemoryKey${BS}":\r\n  ["${round3Fake("ReviewIdentifier", 7)}"]`, seeds: [round3Fake("ReviewIdentifier", 7)] }
+  { name: "escaped quoted camel CRLF", line: () => `${BS}"signingInMemoryKey${BS}":\r\n  ["${round3Fake("ReviewIdentifier", 7)}"]`, seeds: [round3Fake("ReviewIdentifier", 7)] },
+  { name: "unindented quoted continuation container", line: () => `"signingInMemoryKey":\n[\n"${round3Fake("ReviewIdentifier", 8)}"\n]`, seeds: [round3Fake("ReviewIdentifier", 8)] }
 ];
 const REVIEW_QUOTED_ROWS = [
   { name: "triple quoted inline", line: () => `token: """${round3Fake("ReviewQuoted", 1)}"""`, seeds: [round3Fake("ReviewQuoted", 1)] },
@@ -1586,10 +1588,19 @@ test("round3 review persistent stdout context", () => {
   }
 });
 
-test("round3 review curl missing separators bounded", { timeout: 10000 }, (t) => {
+test("round3 review curl missing separators bounded", { timeout: 55000 }, (t) => {
   const rows = [
     { label: "review/curl_short_missing_colon", input: `curl ${"-u".repeat(100000)}` },
-    { label: "review/curl_long_missing_colon", input: `curl ${"--user=".repeat(30000)}` }
+    { label: "review/curl_long_missing_colon", input: `curl ${"--user=".repeat(30000)}` },
+    { label: "review/keyed_armor_unterminated", input: `private_key: ${PGP_BEGIN}${"A".repeat(200000)}` },
+    { label: "review/record_nested_values", input: '{"name":"TOKEN","value":{"raw":"x"}}'.repeat(6000) },
+    { label: "review/record_nested_non_names", input: '{"name":'.repeat(25000) + "0" + "}".repeat(25000) },
+    { label: "review/escaped_container_slash_run", input: `password: [${BS.repeat(200000)}]` },
+    { label: "review/escaped_record_value", input: `{"name":"TOKEN","value":[${BS}"${"A".repeat(200000)}${BS}"]}` },
+    { label: "review/cli_long_name", input: `tool --${"x".repeat(200000)}-password value` },
+    { label: "review/triple_quote_repeat", input: `token: ${'"""'.repeat(70000)}` },
+    { label: "review/sigil_escaped_delimiters", input: `token: ~s/${`${BS}/`.repeat(100000)}` },
+    { label: "review/container_deep_nesting", input: `password: ${"[".repeat(100000)}${"]".repeat(100000)}` }
   ];
   assert.ok(rows.length > 0, "curl missing-separator inventory empty");
   for (const row of rows) reportMetric(t, measureRound3Padding(row));

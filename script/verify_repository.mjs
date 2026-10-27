@@ -112,50 +112,65 @@ const STRUCTURAL_CREDENTIAL_RULE = new RegExp(
   `((?<![A-Za-z0-9_-])(?<identifier>[A-Za-z_][A-Za-z0-9_-]*)[ \\t]*(?:=>|[:=]{1,3})[ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`,
   "gi"
 );
-const STRUCTURAL_KEY_LINE = new RegExp(
-  `(?<![A-Za-z0-9_-])(?<identifier>[A-Za-z_][A-Za-z0-9_-]*)[ \\t]*(?:=>|[:=])[ \\t]*(?:(?:[|>][+-]?[0-9]?[+-]?)[ \\t]*)?\\r?$`,
-  "i"
-);
+// One quoted/unquoted identifier grammar for assignment and continuation selection. The left
+// boundary excludes backslashes so failed escaped-quote matches cannot restart inside a slash run.
+const CREDENTIAL_KEY_SOURCE = String.raw`(?<![A-Za-z0-9_\\-])(?:(?<escape>\\*)(?<quote>["'])(?<quotedIdentifier>[A-Za-z_][A-Za-z0-9_-]*)\k<escape>\k<quote>|(?<identifier>[A-Za-z_][A-Za-z0-9_-]*))`;
+const CREDENTIAL_SEPARATOR_SOURCE = String.raw`[ \t]*(?:=>|[:=：]{1,3})[ \t\r\n]*`;
+const STRUCTURAL_KEY_LINE = new RegExp(`${CREDENTIAL_KEY_SOURCE}${CREDENTIAL_SEPARATOR_SOURCE}(?:(?:[|>][+-]?[0-9]?[+-]?)[ \\t]*)?\\r?$`, "i");
 
 function maskStructuralCredential(match, prefix, identifier, ...rest) {
   if (!isCredentialIdentifier(identifier)) return match;
   return maskValue(match, prefix, rest[rest.length - 1]);
 }
 
-const CREDENTIAL_ASSIGNMENT_PREFIX = /(?<![A-Za-z0-9_-])(?:(?<quote>["'])(?<quotedIdentifier>[A-Za-z_][A-Za-z0-9_-]*)\k<quote>|(?<identifier>[A-Za-z_][A-Za-z0-9_-]*))[ \t]*(?:=>|[:=：]{1,3})[ \t]*/g;
-const CREDENTIAL_TUPLE_PREFIX = /\{[ \t]*(?::(?<atom>[A-Za-z0-9_-]+)|(?<quote>["'])(?<quoted>[A-Za-z0-9_-]+)\k<quote>)[ \t]*,[ \t]*/g;
+const CREDENTIAL_ASSIGNMENT_PREFIX = new RegExp(`${CREDENTIAL_KEY_SOURCE}${CREDENTIAL_SEPARATOR_SOURCE}`, "g");
+const CREDENTIAL_TUPLE_PREFIX = /\{[ \t]*(?::(?<atom>[A-Za-z0-9_-]+)|(?<escape>\\*)(?<quote>["'])(?<quoted>[A-Za-z0-9_-]+)\k<escape>\k<quote>)[ \t]*,[ \t]*/g;
 const STRUCTURAL_TUPLE_KEY_LINE = /^\s*\{\s*(?::(?<atom>[A-Za-z0-9_-]+)|(?:"(?<double>[A-Za-z0-9_-]+)"|'(?<single>[A-Za-z0-9_-]+)'))\s*,\s*$/;
 
-function readQuotedValueEnd(text, start) {
+function readQuoteSpan(text, start, { multiline = false } = {}) {
   let quoteAt = start;
   while (text[quoteAt] === "\\") quoteAt += 1;
   const quote = text[quoteAt];
-  if (quote !== "'" && quote !== '"') return null;
+  if (quote !== "'" && quote !== '"' && quote !== "`") return null;
+  const slashCount = quoteAt - start;
+  const triple = slashCount === 0 && text.startsWith(quote.repeat(3), quoteAt);
+  const openEnd = quoteAt + (triple ? 3 : 1);
+  if (triple) {
+    const closeAt = text.indexOf(quote.repeat(3), openEnd);
+    return { openEnd, closeAt: closeAt < 0 ? text.length : closeAt, end: closeAt < 0 ? text.length : closeAt + 3, closed: closeAt >= 0 };
+  }
   let i = quoteAt + 1;
   while (i < text.length) {
-    if (text[i] === "\n" || text[i] === "\r") return { end: i, replacement: `${text.slice(start, quoteAt + 1)}***` };
-    if (text[i] === "\\") { i += 2; continue; }
-    if (text[i] === quote) {
-      let closeStart = i;
-      while (closeStart > quoteAt + 1 && text[closeStart - 1] === "\\") closeStart -= 1;
-      return { end: i + 1, replacement: `${text.slice(start, quoteAt + 1)}***${text.slice(closeStart, i + 1)}` };
+    if (!multiline && (text[i] === "\n" || text[i] === "\r")) return { openEnd, closeAt: i, end: i, closed: false };
+    if (text[i] === "\\") {
+      const slashStart = i;
+      while (text[i] === "\\") i += 1;
+      if (slashCount > 0 && i - slashStart === slashCount && text[i] === quote) return { openEnd, closeAt: slashStart, end: i + 1, closed: true };
+      if (slashCount === 0 && (i - slashStart) % 2 === 1) i += 1;
+      continue;
     }
+    if (slashCount === 0 && text[i] === quote) return { openEnd, closeAt: i, end: i + 1, closed: true };
     i += 1;
   }
-  let end = text.indexOf("\n", start);
-  if (end < 0) end = text.length;
-  return { end, replacement: `${text.slice(start, quoteAt + 1)}***` };
+  return { openEnd, closeAt: text.length, end: text.length, closed: false };
+}
+
+function readQuotedValueEnd(text, start) {
+  const span = readQuoteSpan(text, start);
+  if (!span) return null;
+  let end = span.end;
+  // Shell concatenation and adjacent diagnostic quote runs are one credential value. A closing
+  // quote is not a trusted boundary when an unseparated suffix still follows it.
+  if (span.closed && end < text.length && !/[\s,;)}\]]/.test(text[end])) {
+    const suffix = readBareCredentialValue(text, end, { tokenOnly: true });
+    if (suffix) end = suffix.end;
+  }
+  return { end, replacement: `${text.slice(start, span.openEnd)}***${span.closed ? text.slice(span.closeAt, span.end) : ""}` };
 }
 
 function skipQuotedSpan(text, start) {
-  const quote = text[start];
-  let i = start + 1;
-  while (i < text.length) {
-    if (text[i] === "\\") { i += 2; continue; }
-    if (text[i] === quote) return i + 1;
-    i += 1;
-  }
-  return -1;
+  const span = readQuoteSpan(text, start, { multiline: true });
+  return span?.closed ? span.end : -1;
 }
 
 function readContainerStart(text, start) {
@@ -175,26 +190,36 @@ function readContainerStart(text, start) {
 function readBalancedCredentialValue(text, start) {
   const container = readContainerStart(text, start);
   if (!container) return null;
-  const closerFor = { "{": "}", "[": "]", "(": ")", "<<": ">>" };
+  const closerFor = { "{": "}", "[": "]", "(": ")", "<": ">", "<<": ">>" };
   const initialCloser = closerFor[container.opener] ?? container.opener;
   const stack = [initialCloser];
   let i = container.openAt + container.opener.length;
   while (i < text.length) {
     const top = stack[stack.length - 1];
-    if ((top === "'" || top === '"') && text[i] === top) {
-      const end = i + 1;
+    if (text[i] === "\\") {
+      let slashEnd = i;
+      while (text[slashEnd] === "\\") slashEnd += 1;
+      const escapedQuote = text[slashEnd] === '"' || text[slashEnd] === "'" ? readQuoteSpan(text, i, { multiline: true }) : null;
+      if (escapedQuote) {
+        if (!escapedQuote.closed) return { end: text.length, replacement: `${container.prefix}***` };
+        i = escapedQuote.end;
+      } else i = slashEnd + (slashEnd < text.length ? 1 : 0);
+      continue;
+    }
+    if (text.startsWith(top, i)) {
+      const end = i + top.length;
       stack.pop();
       if (stack.length === 0) return { end, replacement: `${container.prefix}***${top}` };
       i = end;
       continue;
     }
+    if (!closerFor[container.opener] && stack.length === 1) { i += 1; continue; }
     if (text[i] === "'" || text[i] === '"' || text[i] === "`") {
       const end = skipQuotedSpan(text, i);
       if (end < 0) return { end: text.length, replacement: `${container.prefix}***` };
       i = end;
       continue;
     }
-    if (text[i] === "\\") { i += 2; continue; }
     if (text.startsWith("<<", i)) { stack.push(">>"); i += 2; continue; }
     if (text[i] === "{" || text[i] === "[" || text[i] === "(") {
       stack.push(closerFor[text[i]]);
@@ -232,12 +257,13 @@ function looksLikeAssignmentAfterComma(text, commaAt) {
   return text.startsWith("=>", i) || text[i] === ":" || text[i] === "=";
 }
 
-function readBareCredentialValue(text, start, { tuple = false, multiword = false } = {}) {
+function readBareCredentialValue(text, start, { tuple = false, multiword = false, tokenOnly = false } = {}) {
   let i = start;
   const closers = [];
   while (i < text.length) {
     const char = text[i];
     if (char === "\r" || char === "\n" || char === ";") break;
+    if (tokenOnly && (char === " " || char === "\t")) break;
     if (char === "(" || char === "[" || char === "{") closers.push({ "(": ")", "[": "]", "{": "}" }[char]);
     if (char === "}" || char === "]" || char === ")") {
       if (closers.at(-1) !== char) break;
@@ -270,6 +296,9 @@ function maskStructuredCredentialAssignments(text) {
     const identifier = match.groups.quotedIdentifier ?? match.groups.identifier;
     if (!isCredentialIdentifier(identifier)) continue;
     const valueStart = rule.lastIndex;
+    // Parse typed continuation values before the line pass can erase their opener. Bare
+    // next-line/YAML-block handling stays with the diagnostic-aware continuation pass.
+    if (/[\r\n]/.test(match[0]) && !readContainerStart(text, valueStart) && !readQuoteSpan(text, valueStart)) continue;
     const value = readCompleteCredentialValue(text, valueStart, { multiword: true });
     if (!value) continue;
     result += text.slice(cursor, valueStart) + value.replacement;
@@ -280,16 +309,75 @@ function maskStructuredCredentialAssignments(text) {
 }
 
 function maskCredentialNameValueRecords(text) {
-  const flatObject = /\{[^{}]*\}/g;
-  const nameValuePrefix = /(?:["']?name["']?)\s*:\s*(["'])(?<name>[A-Za-z0-9_-]+)\1\s*,\s*(?:["']?value["']?)\s*:\s*/i;
-  return text.replace(flatObject, (record) => {
-    const match = nameValuePrefix.exec(record);
-    if (!match || !isCredentialIdentifier(match.groups.name)) return record;
-    const valueStart = match.index + match[0].length;
-    const value = readCompleteCredentialValue(record, valueStart, { multiword: true });
-    if (!value) return record;
-    return record.slice(0, valueStart) + value.replacement + record.slice(value.end);
-  });
+  // Collect direct fields with one lexical walk. Record-local ownership prevents name/value
+  // pairing across siblings; arrays and nested objects retain their own delimiter stack.
+  // Duplicate names are ambiguous: any credential name makes every value field in that record
+  // sensitive. Ranges are merged before value consumption so nested records never rescan suffixes.
+  const fieldPrefix = /[ \t\r\n]*(?:(?<escape>\\*)(?<quote>["'])(?<quoted>[A-Za-z_][A-Za-z0-9_-]*)\k<escape>\k<quote>|(?<bare>[A-Za-z_][A-Za-z0-9_-]*))[ \t\r\n]*:[ \t\r\n]*/y;
+  const stack = [];
+  const records = [];
+  const closeField = (node, end) => { if (node?.active) { node.active.end = end; node.active = null; } };
+  const openField = (node, start) => {
+    if (node?.closer !== "}") return;
+    fieldPrefix.lastIndex = start;
+    const match = fieldPrefix.exec(text);
+    if (!match) return;
+    const field = { key: (match.groups.quoted ?? match.groups.bare).toLowerCase(), start: fieldPrefix.lastIndex, end: text.length };
+    node.fields.push(field);
+    node.active = field;
+  };
+  for (let i = 0; i < text.length;) {
+    if (text[i] === '"' || text[i] === "'" || text[i] === "\\") {
+      let quoteAt = i;
+      while (text[quoteAt] === "\\") quoteAt += 1;
+      if (text[quoteAt] === '"' || text[quoteAt] === "'") {
+        const span = readQuoteSpan(text, i, { multiline: true });
+        i = span.end;
+        continue;
+      }
+      i = quoteAt + (quoteAt < text.length ? 1 : 0);
+      continue;
+    }
+    if (text[i] === "{" || text[i] === "[") {
+      const node = { closer: text[i] === "{" ? "}" : "]", fields: [], active: null };
+      stack.push(node);
+      if (node.closer === "}") { records.push(node); openField(node, i + 1); }
+    } else if (text[i] === ",") {
+      const node = stack.at(-1);
+      closeField(node, i);
+      openField(node, i + 1);
+    } else if (text[i] === "}" || text[i] === "]") {
+      const node = stack.at(-1);
+      if (node?.closer === text[i]) { closeField(node, i); stack.pop(); }
+      else break; // no trusted closing boundary after malformed nesting
+    }
+    i += 1;
+  }
+  const ranges = new Map();
+  for (const record of records) {
+    const credential = record.fields.some((field) => {
+      if (field.key !== "name") return false;
+      if (!/[A-Za-z_"']/.test(text[field.start] ?? "")) return false;
+      const name = text.slice(field.start, field.end).trim();
+      const match = /^(?:["']([A-Za-z0-9_-]+)["']|([A-Za-z0-9_-]+))$/.exec(name);
+      return match && isCredentialIdentifier(match[1] ?? match[2]);
+    });
+    if (credential) for (const field of record.fields) if (field.key === "value") ranges.set(field.start, field);
+  }
+  if (ranges.size === 0) return text;
+  let cursor = 0;
+  let result = "";
+  for (let start = 0; start < text.length;) {
+    const range = ranges.get(start);
+    if (!range) { start += 1; continue; }
+    const valueText = text.slice(range.start, range.end).trimEnd();
+    const value = readCompleteCredentialValue(valueText, 0, { multiword: true });
+    if (!value) { start += 1; continue; }
+    result += text.slice(cursor, range.start) + value.replacement;
+    cursor = range.start + value.end;
+    start = cursor;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
 }
 
 function maskCredentialTupleValues(text) {
@@ -366,12 +454,6 @@ function maskBearer(match, prefix, ...rest) {
   if (g.sq !== undefined) return `${prefix}'***${g.sqc}`;
   return `${prefix}***`;
 }
-// Elixir tuple `{:token, "v"}` / `{"password", "v"}`: an atom or a closed-quote key, then a comma. A comma after a
-// bare word (`invalid token, retrying`) never qualifies.
-const TUPLE_RULE = new RegExp(
-  `((?::[A-Za-z0-9_-]{0,64}?(?:${CREDENTIAL_WORDS})(?:\\\\*["'])?|["'][A-Za-z0-9_-]{0,64}?(?:${CREDENTIAL_WORDS})\\\\*["'])[ \\t]*,[ \\t]*)${SECRET_VALUE_SOURCE}`,
-  "gi"
-);
 // CLI flag `--<name containing a credential word> <value>`; `--password-file` (name continues) does not match.
 const CLI_FLAG_RULE = new RegExp(`(--[A-Za-z0-9_-]{0,64}?(?:${CREDENTIAL_WORDS})[ \\t]+)${SECRET_VALUE_SOURCE}`, "gi");
 // curl basic auth `-u user:<v>` / `--user user:<v>`.
@@ -442,11 +524,53 @@ function maskJwtTokens(text) {
 
 // Ambiguous short flags are scoped to the named command on that line. Existing separated
 // -u coverage remains conservative for commandless diagnostics (pinned in ACCEPTED_OVERMASK).
+function maskLongCredentialFlags(text) {
+  const flags = /(?:^|[ \t\n])--(?<identifier>[A-Za-z_][A-Za-z0-9_-]*)(?:[ \t]+|=)/g;
+  let cursor = 0;
+  let result = "";
+  let match;
+  while ((match = flags.exec(text)) !== null) {
+    const identifier = match.groups.identifier;
+    if (!isCredentialIdentifier(identifier) || credentialIdentifierTokens(identifier).at(-1) === "file") continue;
+    const start = flags.lastIndex;
+    const value = readCompleteCredentialValue(text, start, { tokenOnly: true });
+    if (!value) continue;
+    result += text.slice(cursor, start) + value.replacement;
+    cursor = value.end;
+    flags.lastIndex = value.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+function maskCurlUserCredentials(line) {
+  const flags = /(?:^|[ \t])(?:--user(?:=|[ \t]+)|-u[ \t]*)/g;
+  let cursor = 0;
+  let result = "";
+  let match;
+  while ((match = flags.exec(line)) !== null) {
+    const start = flags.lastIndex;
+    const quote = readQuoteSpan(line, start);
+    const bodyStart = quote ? quote.openEnd : start;
+    let bodyEnd = quote ? quote.closeAt : start;
+    if (!quote) while (bodyEnd < line.length && !/[ \t\r\n]/.test(line[bodyEnd])) bodyEnd += 1;
+    let colon = bodyStart;
+    while (colon < bodyEnd && line[colon] !== ":") colon += 1;
+    if (colon < bodyEnd) {
+      result += line.slice(cursor, colon + 1) + "***";
+      cursor = bodyEnd;
+    }
+    // Skip the whole value token even on failure: a repeated -u/--user= run without
+    // a colon must not restart an unbounded user scan at each embedded flag.
+    flags.lastIndex = quote ? quote.end : bodyEnd;
+  }
+  return cursor === 0 ? line : result + line.slice(cursor);
+}
+
 function maskCommandCredentials(text) {
-  return text.split("\n").map((line) => {
+  return maskLongCredentialFlags(text).split("\n").map((line) => {
     if (/\b(?:docker|sshpass|mysql)\b/.test(line)) line = line.replace(/(\s-p[ \t]*)([^\s"']+|"[^"\n]*"|'[^'\n]*')/g, "$1***");
     if (/\bmix\s+hex\.publish\b/.test(line)) line = line.replace(/(--key[ \t]+)([^\s"']+|"[^"\n]*"|'[^'\n]*')/g, "$1***");
-    if (/\bcurl\b/.test(line)) line = line.replace(/((?:--user(?:=|[ \t]+)|-u[ \t]*)[^\s:]+:)[^\s"']+/g, "$1***");
+    if (/\bcurl\b/.test(line)) line = maskCurlUserCredentials(line);
     if (/\bopenssl\b/.test(line)) line = line.replace(/(-pass[ \t]+pass:)[^\s"']+/g, "$1***");
     return line;
   }).join("\n");
@@ -483,7 +607,7 @@ function maskNextLineValues(text) {
     }
     active = false;
     const keyLine = STRUCTURAL_KEY_LINE.exec(line);
-    if (keyLine && isCredentialIdentifier(keyLine.groups.identifier)) { active = true; waiting = true; keyIndent = indent; }
+    if (keyLine && isCredentialIdentifier(keyLine.groups.quotedIdentifier ?? keyLine.groups.identifier)) { active = true; waiting = true; keyIndent = indent; }
     const tupleLine = STRUCTURAL_TUPLE_KEY_LINE.exec(line);
     const tupleIdentifier = tupleLine?.groups.atom ?? tupleLine?.groups.double ?? tupleLine?.groups.single;
     if (tupleIdentifier && isCredentialIdentifier(tupleIdentifier)) { active = true; waiting = true; keyIndent = indent; }
@@ -527,13 +651,15 @@ function maskNextLineValues(text) {
 // followed by plain text, `--no-password prompt`, a port before a path containing `@`, `secrets: inherit`,
 // numeric values (`max_token: 1000`), `Authorization: required for route`, `stale cookie: expired at line`.
 export function maskSecretShapes(text) {
-  let masked = maskNextLineValues(String(text ?? "").replace(CSI_CONTROL, ""));
-  masked = maskStandaloneNextLineAuthorization(masked);
+  // Protect armor syntax before any other pass can consume its BEGIN marker. Subsequent
+  // structural passes may mask the retained public label, but the body is already absent.
+  let masked = maskPrivateKeyBlocks(String(text ?? "").replace(CSI_CONTROL, ""));
   masked = maskCommandCredentials(masked);
   masked = maskCredentialNameValueRecords(masked);
   masked = maskCredentialTupleValues(masked);
   masked = maskStructuredCredentialAssignments(masked);
-  masked = maskPrivateKeyBlocks(masked);
+  masked = maskNextLineValues(masked);
+  masked = maskStandaloneNextLineAuthorization(masked);
   masked = maskUrlUserinfo(masked);
   masked = maskJwtTokens(masked);
   return masked.replace(STRUCTURAL_CREDENTIAL_RULE, maskStructuralCredential)
@@ -551,7 +677,6 @@ export function maskSecretShapes(text) {
     .replace(/(https:\/\/hooks\.slack\.com\/services\/)[^\s/"'?#]+\/[^\s/"'?#]+\/[^\s/"'?#]+/g, "$1***")
     .replace(/(?<![A-Z0-9])(A[KS]IA)[A-Z0-9]{16}/g, "$1***")
     .replace(QUERY_CREDENTIAL_RULE, "$1***")
-    .replace(TUPLE_RULE, maskValue)
     .replace(CLI_FLAG_RULE, maskValue)
     .replace(CURL_USER_RULE, maskValue)
     .replace(GENERIC_CREDENTIAL_RULE, maskValue);
