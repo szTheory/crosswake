@@ -76,6 +76,52 @@ const KEY_QUOTE = String.raw`(?:\\*["'])?`;
 // left boundary so `preauthorization` is not a credential key (an underscore or hyphen before it still is).
 const CREDENTIAL_WORDS = String.raw`tokens?|secret[_-]key[_-]base|secret[_-]key|secrets?|passwords?|passwd|passphrase|api[_-]?key|private[_-]?key|credentials?|cookies?|(?<![A-Za-z0-9])authorization`;
 
+// These workflow names are credential-bearing even though their spelling does not contain a
+// credential family word. Keep only reviewed identifiers here; workflow YAML is inventory input
+// for tests and is never read by the diagnostic path.
+const REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES = new Set([
+  "CROSSWAKE_PLAY_BILLING_SANDBOX_READY",
+  "CROSSWAKE_STOREKIT_SANDBOX_READY",
+  "MAVEN_USERNAME",
+  "ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME"
+]);
+const CREDENTIAL_FAMILY_TOKENS = new Set(["token", "secret", "password", "passwd", "passphrase", "credential", "cookie", "authorization"]);
+const KEY_QUALIFIER_TOKENS = new Set(["api", "auth", "access", "private", "deploy", "signing", "memory"]);
+const CREDENTIAL_METADATA_SUFFIXES = new Set(["count", "length", "size"]);
+
+function credentialIdentifierTokens(identifier) {
+  return String(identifier)
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((token) => token.toLowerCase());
+}
+
+function isCredentialIdentifier(identifier) {
+  if (REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES.has(String(identifier).replace(/[^A-Za-z0-9]/g, "_").toUpperCase())) return true;
+  const tokens = credentialIdentifierTokens(identifier);
+  if (CREDENTIAL_METADATA_SUFFIXES.has(tokens.at(-1))) return false;
+  if (tokens.some((token) => CREDENTIAL_FAMILY_TOKENS.has(token))) return true;
+  return tokens.includes("key") && tokens.some((token) => KEY_QUALIFIER_TOKENS.has(token));
+}
+
+// Broad identifier capture followed by a value is classified structurally. The lookahead after
+// the separator makes a failed short bare value disjoint from the whitespace scan.
+const STRUCTURAL_CREDENTIAL_RULE = new RegExp(
+  `((?<![A-Za-z0-9_-])(?<identifier>[A-Za-z_][A-Za-z0-9_-]*)[ \\t]*(?:=>|[:=]{1,3})[ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`,
+  "gi"
+);
+const STRUCTURAL_KEY_LINE = new RegExp(
+  `(?<![A-Za-z0-9_-])(?<identifier>[A-Za-z_][A-Za-z0-9_-]*)[ \\t]*(?:=>|[:=])[ \\t]*(?:(?:[|>][+-]?[0-9]?[+-]?)[ \\t]*)?\\r?$`,
+  "i"
+);
+
+function maskStructuralCredential(match, prefix, identifier, ...rest) {
+  if (!isCredentialIdentifier(identifier)) return match;
+  return maskValue(match, prefix, rest[rest.length - 1]);
+}
+
 // PEM private-key block: the BEGIN marker survives, then body items (each starts with a line break, real or a
 // literal backslash-n) until a line that is not base64, a Proc-Type/DEK-Info header or blank, then an optional END
 // marker. The dashes are a quantifier so this source never holds a literal marker.
@@ -90,7 +136,7 @@ const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|X-Amz-Signature|X-Amz-C
 
 const AUTHORIZATION_RULE = new RegExp(`((?<![A-Za-z0-9])authorization${KEY_QUOTE}[ \\t]*[:=][ \\t]*)[^\\n]+`, "gi");
 const COOKIE_RULE = new RegExp(`(\\bcookies?${KEY_QUOTE}[ \\t]*:[ \\t]*)[^\\n]+`, "gi");
-const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi");
+const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`, "gi");
 // Bearer: a quoted value keeps its quotes around `***`; `realm="v"` style (non-space run then a quoted span)
 // and a 3+ character bare run become `***`. The separator is `[ \t]+`, so a line-final `Bearer` never reaches the next line.
 const BEARER_RULE = /\b(bearer[ \t]+)(?:"(?<dq>[^"\n]*)(?<dqc>"?)|'(?<sq>[^'\n]*)(?<sqc>'?)|[^\s"']*(?:"[^"\n]*"?|'[^'\n]*'?)|[^\s"']{3,})/gi;
@@ -111,12 +157,9 @@ const CLI_FLAG_RULE = new RegExp(`(--[A-Za-z0-9_-]{0,64}?(?:${CREDENTIAL_WORDS})
 // curl basic auth `-u user:<v>` / `--user user:<v>`.
 const CURL_USER_RULE = new RegExp(`((?<![^ \\t\\n])(?:-u|--user)[ \\t]+[^\\s:]{1,256}:)${SECRET_VALUE_SOURCE}`, "g");
 const GENERIC_CREDENTIAL_RULE = new RegExp(
-  `((?:${CREDENTIAL_WORDS})${KEY_QUOTE}[ \\t]*(?:=>|[:=]{1,3})[ \\t]*)${SECRET_VALUE_SOURCE}`,
+  `((?:${CREDENTIAL_WORDS})${KEY_QUOTE}[ \\t]*(?:=>|[:=]{1,3})[ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`,
   "gi"
 );
-
-// A line that ends in a credential key, a separator and optionally a YAML block indicator (`|`, `>`, chomping).
-const KEY_LINE = new RegExp(`(?:${CREDENTIAL_WORDS})${KEY_QUOTE}[ \\t]*(?:=>|[:=])[ \\t]*(?:[|>][+-]?[0-9]?[+-]?)?[ \\t]*\\r?$`, "i");
 const STRUCTURAL_LINE = /^\s*\d+\) (?:test|doctest|property) |^Finished in /;
 
 // First pass: when a line ends in a credential key plus separator, the value sits on a following line. Mask the
@@ -139,7 +182,8 @@ function maskNextLineValues(text) {
       continue;
     }
     active = false;
-    if (KEY_LINE.test(line)) { active = true; waiting = true; keyIndent = indent; }
+    const keyLine = STRUCTURAL_KEY_LINE.exec(line);
+    if (keyLine && isCredentialIdentifier(keyLine.groups.identifier)) { active = true; waiting = true; keyIndent = indent; }
   }
   return lines.join("\n");
 }
@@ -175,6 +219,7 @@ function maskNextLineValues(text) {
 // numeric values (`max_token: 1000`), `Authorization: required for route`, `stale cookie: expired at line`.
 export function maskSecretShapes(text) {
   return maskNextLineValues(String(text ?? ""))
+    .replace(STRUCTURAL_CREDENTIAL_RULE, maskStructuralCredential)
     .replace(PEM_RULE, "$1***")
     .replace(AUTHORIZATION_RULE, "$1***")
     .replace(COOKIE_RULE, "$1***")
