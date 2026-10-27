@@ -373,6 +373,61 @@ const pemB2 = frag("fake", "Pem", "Body52");
 const pemB3 = frag("fake", "Pem", "Body53");
 const pemB4 = frag("fake", "Pem", "Body54");
 const pemB5 = frag("fake", "Pem", "Body55");
+const PGP_BEGIN = frag(DASH5, "BEG", "IN ", "PGP ", "PRIV", "ATE ", "KEY ", "BLOCK", DASH5);
+const PGP_END = frag(DASH5, "END PGP ", "PRIV", "ATE ", "KEY ", "BLOCK", DASH5);
+const OTHER_PRIVATE_KEY_END = frag(DASH5, "END RSA ", "PRIV", "ATE ", "KEY", DASH5);
+const round3ArmorFake = (index) => frag("fake", "Round3", "Armor", "Seed", String(index).padStart(2, "0"), "Val");
+const ROUND3_ARMOR_COMPLETE_ROWS = [
+  { name: "PGP ordinary LF with blank body line", line: () => `${PGP_BEGIN}  \n\n  ${round3ArmorFake(31)}!?\n${PGP_END}\nAFTER_ARMOR_SAFE_LF`, seeds: [round3ArmorFake(31)], after: "AFTER_ARMOR_SAFE_LF" },
+  { name: "PGP same-line body and end", line: () => `${PGP_BEGIN}${round3ArmorFake(32)}${PGP_END}\nAFTER_ARMOR_SAFE_SAME_LINE`, seeds: [round3ArmorFake(32)], after: "AFTER_ARMOR_SAFE_SAME_LINE" },
+  { name: "PGP arbitrary timestamp prefix and body alphabet", line: () => `2026-10-26T12:00:00Z WARN ${PGP_BEGIN}\nbody-${round3ArmorFake(33)}_+/=?\n${PGP_END}\nAFTER_ARMOR_SAFE_PREFIX`, seeds: [round3ArmorFake(33)], after: "AFTER_ARMOR_SAFE_PREFIX" },
+  { name: "existing private key CRLF with whitespace body", line: () => `${PEM_B} \r\n \r\n${round3ArmorFake(34)} !?\r\n${PEM_E}\r\nAFTER_ARMOR_SAFE_CRLf`, seeds: [round3ArmorFake(34)], after: "AFTER_ARMOR_SAFE_CRLf" },
+  { name: "PGP bare CR layout", line: () => `${PGP_BEGIN}\r${round3ArmorFake(35)}\r${PGP_END}\rAFTER_ARMOR_SAFE_CR`, seeds: [round3ArmorFake(35)], after: "AFTER_ARMOR_SAFE_CR" },
+  { name: "PGP literal backslash newline layout", line: () => `${PGP_BEGIN}${String.fromCharCode(92)}n${round3ArmorFake(36)}${String.fromCharCode(92)}n${PGP_END}${String.fromCharCode(92)}nAFTER_ARMOR_SAFE_LITERAL`, seeds: [round3ArmorFake(36)], after: "AFTER_ARMOR_SAFE_LITERAL" },
+  { name: "PGP double-escaped newline layout", line: () => `${PGP_BEGIN}${String.fromCharCode(92).repeat(2)}n${round3ArmorFake(37)}${String.fromCharCode(92).repeat(2)}n${PGP_END}${String.fromCharCode(92).repeat(2)}nAFTER_ARMOR_SAFE_DOUBLE`, seeds: [round3ArmorFake(37)], after: "AFTER_ARMOR_SAFE_DOUBLE" },
+  { name: "PGP prefixed same-line body", line: () => `[ci] ${PGP_BEGIN} ${round3ArmorFake(38)} ${PGP_END}\nAFTER_ARMOR_SAFE_PREFIXED_SAME`, seeds: [round3ArmorFake(38)], after: "AFTER_ARMOR_SAFE_PREFIXED_SAME" }
+];
+const ROUND3_ARMOR_INCOMPLETE_ROWS = [
+  { name: "PGP missing end", line: () => `${PGP_BEGIN}\n${round3ArmorFake(39)}\nmissing end body remains hidden`, seeds: [round3ArmorFake(39)] },
+  { name: "PGP mismatched end label", line: () => `${PGP_BEGIN}\n${round3ArmorFake(40)}\n${OTHER_PRIVATE_KEY_END}\nwrong end must remain hidden`, seeds: [round3ArmorFake(40)] }
+];
+
+test("round3 private key armor complete layouts", (t) => {
+  let rowCount = 0;
+  for (const row of ROUND3_ARMOR_COMPLETE_ROWS) {
+    const outcome = runRound3TailRows([row]);
+    assertRound3TailRows(outcome, row.name);
+    assert.ok(outcome.tail.includes(row.after), `${row.name} lost safe post-END diagnostics`);
+    rowCount += 1;
+  }
+  assert.ok(rowCount > 0, "private-key armor family executed zero rows");
+});
+
+test("round3 private key armor malformed boundaries", () => {
+  let rowCount = 0;
+  for (const row of ROUND3_ARMOR_INCOMPLETE_ROWS) {
+    const outcome = runRound3TailRows([row], { diagnosticsBeforeLast: true });
+    assertRound3TailRows(outcome, row.name);
+    assert.ok(outcome.tail.includes("test something") && outcome.tail.includes("Finished in"), `${row.name} lost preceding failure diagnostics`);
+    rowCount += 1;
+  }
+  assert.ok(rowCount > 0, "malformed armor family executed zero rows");
+});
+
+test("round3 armor bounded adversaries", (t) => {
+  const bs = String.fromCharCode(92);
+  const rows = [
+    { label: "armor/repeated-begin", input: `${`${PGP_BEGIN}\n`.repeat(5000)}body` },
+    { label: "armor/missing-end", input: `${PGP_BEGIN}\n${"A".repeat(200000)}` },
+    { label: "armor/mixed-prefix-escape", input: `[ci] ${PGP_BEGIN}${bs.repeat(2)}n${"A".repeat(80)}${bs}n${PGP_END}${bs.repeat(2)}n`.repeat(1000) }
+  ];
+  for (const row of rows) {
+    const metric = measureRound3Padding(row);
+    t.diagnostic(`armor ${row.label}: ${Math.round(metric.measuredMs)} ms, baseline ${Math.round(metric.baselineMs)} ms`);
+  }
+  assert.ok(rows.length > 0, "armor bounded family executed zero rows");
+});
+
 const ueV = frag("fake", "Userinfo", "Empty56");
 const usA = frag("fake", "Userinfo", "Slash57");
 const usB = frag("fake", "Userinfo", "Slash58");
