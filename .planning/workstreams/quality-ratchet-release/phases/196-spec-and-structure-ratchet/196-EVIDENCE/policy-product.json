@@ -10,5 +10,15 @@
     "target_assertions_executed": true,
     "semantic_assessment": "Grouped unknown keys collapsed to runtime; invalid sync had nil key; invalid-first input shifted duplicate and semantic source metadata. Both target assertions failed, with no load or fixture failures.",
     "raw_output_retained": false
+  },
+  "diagnostic_green": {
+    "command": "mix test test/crosswake/policy/compiler_test.exs",
+    "exit_code": 0,
+    "tests": 9,
+    "failures": 0,
+    "real_dependency": "NimbleOptions 1.1.1 installed source and actual Route.new errors",
+    "structured_cases": 7,
+    "provenance_inputs": 4,
+    "provenance_diagnostics": 5
   }
 }
