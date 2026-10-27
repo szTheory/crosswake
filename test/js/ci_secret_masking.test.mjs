@@ -57,6 +57,152 @@ function runChildLines(lines) {
   });
 }
 
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+function workflowCredentialInventory() {
+  const listed = spawnSync("git", ["ls-files", "--", ".github/workflows/*.yml", ".github/workflows/*.yaml"], {
+    cwd: repoRoot,
+    encoding: "utf8"
+  });
+  if (listed.status !== 0) return { secretNames: [], envAliases: [] };
+
+  const secretNames = new Set();
+  const envAliases = new Set();
+  const files = listed.stdout.split("\n").filter(Boolean);
+  for (const file of files) {
+    const source = readFileSync(path.join(repoRoot, file), "utf8");
+    for (const match of source.matchAll(/\$\{\{\s*secrets\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}/g)) secretNames.add(match[1]);
+    for (const match of source.matchAll(/\$\{\{\s*secrets\s*\[\s*(["'])([A-Za-z_][A-Za-z0-9_]*)\1\s*\]\s*\}\}/g)) secretNames.add(match[2]);
+    if (/\$\{\{\s*github\.token\s*\}\}/i.test(source)) secretNames.add("GITHUB_TOKEN");
+    for (const line of source.split("\n")) {
+      if (!/\$\{\{\s*(?:secrets(?:\.|\s*\[)|github\.token)/i.test(line)) continue;
+      const alias = line.match(/^\s*(?:-\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*:/);
+      if (alias) envAliases.add(alias[1]);
+    }
+  }
+  return { secretNames: [...secretNames].sort(), envAliases: [...envAliases].sort() };
+}
+
+function round3InventoryRows() {
+  const inventory = workflowCredentialInventory();
+  let index = 0;
+  return [
+    ...inventory.secretNames.map((identifier) => ({ kind: "workflow secret name", identifier, seed: frag("fake", "Workflow", "Secret", String(++index).padStart(3, "0"), "Val") })),
+    ...inventory.envAliases.map((identifier) => ({ kind: "secret-bound env alias", identifier, seed: frag("fake", "Workflow", "Alias", String(++index).padStart(3, "0"), "Val") }))
+  ];
+}
+
+const MASK_PERF_CHILD = `
+import { maskSecretShapes } from "./script/verify_repository.mjs";
+let input = "";
+for await (const chunk of process.stdin) input += chunk;
+const row = JSON.parse(input);
+const fastestMs = (text) => {
+  let best = Infinity;
+  for (let i = 0; i < 3; i += 1) {
+    const started = performance.now();
+    maskSecretShapes(text);
+    best = Math.min(best, performance.now() - started);
+  }
+  return best;
+};
+const prose = "ordinary diagnostic prose ".repeat(Math.ceil(row.input.length / 27)).slice(0, row.input.length);
+const baselineMs = fastestMs(prose);
+const measuredMs = fastestMs(row.input);
+const boundMs = Math.max(250, 10 * baselineMs);
+process.stdout.write(JSON.stringify({ label: row.label, length: row.input.length, measuredMs, baselineMs, boundMs }));
+if (measuredMs > boundMs) process.exitCode = 2;
+`;
+
+function measureRound3Padding(row) {
+  const result = spawnSync(process.execPath, ["--input-type=module", "-e", MASK_PERF_CHILD], {
+    cwd: repoRoot,
+    env: { PATH: process.env.PATH },
+    encoding: "utf8",
+    input: JSON.stringify(row),
+    timeout: 2000,
+    maxBuffer: 64 * 1024
+  });
+  if (result.error?.code === "ETIMEDOUT") assert.fail(`padding child timed out: ${row.label}`);
+  assert.ok(!result.error, `padding child failed: ${row.label}`);
+  let metric;
+  try { metric = JSON.parse(result.stdout); } catch { assert.fail(`padding child returned no metric: ${row.label}`); }
+  assert.ok(metric.label === row.label && result.status === 0, `padding bound failed: ${row.label} (${Math.round(metric.measuredMs)} ms; bound ${Math.round(metric.boundMs)} ms)`);
+  return metric;
+}
+
+const ROUND3_PADDING_FAMILIES = [
+  { name: "token", prefix: "token:" },
+  { name: "authorization", prefix: "Authorization:" },
+  { name: "cookie", prefix: "Cookie:" },
+  { name: "generic", prefix: "password=" },
+  { name: "secret_access_key", prefix: "SecretAccessKey:" }
+];
+const ROUND3_PADDING_WHITESPACE = [
+  { name: "space", make: (n) => " ".repeat(n) },
+  { name: "tab", make: (n) => "\t".repeat(n) },
+  { name: "mixed", make: (n) => " \t".repeat(Math.ceil(n / 2)).slice(0, n) }
+];
+const ROUND3_PADDING_SIZES = [10000, 20000, 40000, 200000];
+
+test("round3 structural repository signing assignment", () => {
+  const rows = [
+    { identifier: frag("ORG_GRADLE_PROJECT_", "signing", "InMemory", "Key"), seed: frag("fake", "Repository", "Signing", "Seed", "Val31") },
+    { identifier: frag("MIRROR_", "DEPLOY_", "KEY"), seed: frag("fake", "Repository", "Mirror", "Seed", "Val32") },
+    { identifier: frag("signing", "InMemory", "Key", "Password"), seed: frag("fake", "Repository", "Signing", "Password", "Val33") },
+    { identifier: frag("Secret", "Access", "Key"), seed: frag("fake", "Repository", "Access", "Seed", "Val34") }
+  ];
+  const result = runChildLines([...rows.map((row) => `${row.identifier}=${row.seed}`), "  1) test something (RepositoryTest)", "Finished in 0.1 seconds"]);
+  const raw = `${result.stdout}${result.stderr}`;
+  const rawTail = raw.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
+  const tail = rootProofFailureTail("failed", result);
+  const rawHits = rows.filter((row) => rawTail.includes(row.seed)).length;
+  const maskedHits = rows.filter((row) => tail.includes(row.seed)).length;
+  const readableNames = rows.filter((row) => tail.includes(row.identifier)).length;
+  assert.ok(result.status === 2, "signing child did not fail as required");
+  assert.ok(rawHits === rows.length, `raw tail window contains ${rawHits} of ${rows.length} repository signing seeds`);
+  assert.ok(maskedHits === 0, `masked tail contains ${maskedHits} of ${rows.length} repository signing seeds`);
+  assert.ok(readableNames === rows.length, `tail preserves ${readableNames} of ${rows.length} repository signing identifiers`);
+  assert.ok(tail.includes("test something") && tail.includes("Finished in"), "failure diagnostics disappeared");
+});
+
+test("round3 inventory all workflow secret names", () => {
+  const rows = round3InventoryRows();
+  const inventory = workflowCredentialInventory();
+  const secretRowCount = rows.filter((row) => row.kind === "workflow secret name").length;
+  const aliasRowCount = rows.filter((row) => row.kind === "secret-bound env alias").length;
+  assert.ok(inventory.secretNames.length > 0 && secretRowCount === inventory.secretNames.length, "workflow secret-name inventory is empty or incomplete");
+  assert.ok(inventory.envAliases.length > 0 && aliasRowCount === inventory.envAliases.length, "secret-bound env-alias inventory is empty or incomplete");
+  const lines = rows.map((row) => `${row.identifier}: ${row.seed}`);
+  const result = runChildLines([...lines, "  1) test something (RepositoryTest)", "Finished in 0.1 seconds"]);
+  const raw = `${result.stdout}${result.stderr}`;
+  const rawTail = raw.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
+  const tail = rootProofFailureTail("failed", result);
+  const rawHits = rows.filter((row) => rawTail.includes(row.seed)).length;
+  const maskedHits = rows.filter((row) => tail.includes(row.seed)).length;
+  const readableNames = rows.filter((row) => tail.includes(row.identifier)).length;
+  assert.ok(result.status === 2, "workflow-inventory child did not fail as required");
+  assert.ok(rawHits === rows.length, `raw tail window contains ${rawHits} of ${rows.length} inventory seeds`);
+  assert.ok(maskedHits === 0, `masked tail contains ${maskedHits} of ${rows.length} inventory seeds`);
+  assert.ok(readableNames === rows.length, `tail preserves ${readableNames} of ${rows.length} inventory identifiers`);
+  assert.ok(tail.includes("test something") && tail.includes("Finished in"), "failure diagnostics disappeared");
+});
+
+test("round3 padding credential whitespace matrix", (t) => {
+  let rowCount = 0;
+  for (const family of ROUND3_PADDING_FAMILIES) {
+    for (const whitespace of ROUND3_PADDING_WHITESPACE) {
+      for (const size of ROUND3_PADDING_SIZES) {
+        const label = `${family.name}/${whitespace.name}/${size}`;
+        const metric = measureRound3Padding({ label, input: `${family.prefix}${whitespace.make(size)}x` });
+        rowCount += 1;
+        if (size === 200000) t.diagnostic(`padding ${label}: ${Math.round(metric.measuredMs)} ms, baseline ${Math.round(metric.baselineMs)} ms`);
+      }
+    }
+  }
+  assert.ok(rowCount > 0, "padding family executed zero rows");
+});
+
 function runSeededChild(s) {
   return runChildLines(seedLines(s));
 }
@@ -710,7 +856,6 @@ test("maskSecretShapes edge cases are byte-stable", () => {
 // by Actions, so it must be registered with ::add-mask:: before any other line uses it.
 // Line-based scan (no YAML dependency); one-assignment-per-line is the workflow convention.
 // ---------------------------------------------------------------------------------------------
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
