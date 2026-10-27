@@ -16,6 +16,12 @@ const specs = {
     loaded: 15, completed: 9, excluded: 'native_only',
     plan: [{ command: 'mix', args: ['test', 'test/crosswake/bridge/bridge_behavioral_vector_test.exs'], cwd: '.' }],
   },
+  'swift-request': {
+    resource: 'packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json',
+    owner: 'packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift',
+    loaded: 15, completed: 14, excluded: 'elixir_only',
+    plan: [{ command: 'swift', args: ['test', '--filter', 'BridgeConformanceTests'], cwd: 'packages/crosswake-shell-core-ios' }],
+  },
 };
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 function specFor(mode) { assert.ok(Object.hasOwn(specs, mode), 'unknown-reader'); return specs[mode]; }
@@ -62,7 +68,11 @@ function quick(mode) {
     }
   });
   test(`quick ${mode}: exact command plan, real child failure and finally restoration`, () => {
-    assert.deepEqual(spec.plan, [{ command: 'mix', args: ['test', 'test/crosswake/bridge/bridge_behavioral_vector_test.exs'], cwd: '.' }]);
+    const expectedPlan = mode === 'elixir'
+      ? [{ command: 'mix', args: ['test', 'test/crosswake/bridge/bridge_behavioral_vector_test.exs'], cwd: '.' }]
+      : [{ command: 'swift', args: ['package', 'clean'], cwd: 'packages/crosswake-shell-core-ios' },
+         { command: 'swift', args: ['test', '--filter', 'BridgeConformanceTests'], cwd: 'packages/crosswake-shell-core-ios' }];
+    assert.deepEqual(spec.plan, expectedPlan);
     const dir = mkdtempSync(join(tmpdir(), 'crosswake-vector-quick-'));
     const path = join(dir, 'synthetic');
     const bytes = Buffer.from('synthetic-original');
