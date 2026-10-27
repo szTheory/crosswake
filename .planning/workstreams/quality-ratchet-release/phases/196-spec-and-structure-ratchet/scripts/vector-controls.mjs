@@ -193,7 +193,7 @@ const otherSpecs = {
     kind: 'behavioral', resource: sharedResource, collection: 'reply_leg_vectors', loaded: 2, completed: 2,
     controls: ['missing', 'removed', 'empty', 'all-suppressed'] }],
   'swift-metadata': [
-    { suite: 'ActivationConformanceTests', symbol: 'test_activation_success_resolves_to_liveView', completed: 14 },
+    { suite: 'ActivationConformanceTests', symbol: 'test_activation_success_resolves_to_liveView', completed: null },
     { suite: 'OfflineIslandAdmissionTests', symbol: 'test_offline_island_route_resolves_to_offlineIsland_presentation', completed: null },
     { suite: 'Phase180TwinFeasibilityTests', symbol: 'test_G3_invariant_activation_does_not_manufacture_registered_host_command', completed: null },
   ].map(spec => ({ ...spec, readerSymbol: 'setUpWithError', kind: 'metadata-only', resource: sharedResource,
