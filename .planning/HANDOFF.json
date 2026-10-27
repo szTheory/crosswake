@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-27T04:47:20.087Z",
+  "timestamp": "2026-10-27T11:47:32.343Z",
   "workstream": "quality-ratchet-release",
   "phase": "195",
   "phase_name": "pipeline-repair-and-hygiene",
@@ -37,7 +37,7 @@
   "async_jobs": [],
   "human_actions_pending": [
     {
-      "action": "Merge PR259 at reviewed head24baafa3: allow or hold",
+      "action": "Fresh merge PR259/head24baafa3: allow or hold",
       "blocking": true
     },
     {
@@ -76,6 +76,6 @@
     "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt",
     "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push2-195.txt"
   ],
-  "next_action": "Reply separately to the current PR259 merge and automatic branch-deletion allow/hold gates; no phase command is eligible yet.",
-  "context_notes": "Last completed194. Phase19520/21; Task21-1 complete, Task21-2 awaiting decisions. CI49/49 and candidate pass. REL-03 remains7/8 pending actual-main proof. Current attempt receipts are pending/unconsumed; no irreversible operation."
+  "next_action": "Reply separately to the fresh PR259 merge and automatic branch-deletion gates; prior display expired and no approval transfers.",
+  "context_notes": "Last completed194; Phase19520/21. PR259 CI49/49/candidate ready. Prior merge allow expired/unconsumed; helper safeguard restored after automatic-review rejection. Both fresh decisions pending; no irreversible operation/main proof."
 }

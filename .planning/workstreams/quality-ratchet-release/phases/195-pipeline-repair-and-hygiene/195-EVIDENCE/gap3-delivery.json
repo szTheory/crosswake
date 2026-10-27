@@ -379,8 +379,8 @@
     "path": ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-gap3.txt"
   },
   "approvals": {
-    "attempt": "03b7adfaed1c9423d2a345168b34a211",
-    "displayedAt": "2026-10-27T04:47:20.087Z",
+    "attempt": "d00052b42c254fba3255930b75da574f",
+    "displayedAt": "2026-10-27T11:47:32.343Z",
     "prNumber": 259,
     "branch": "fix/secret-mask-structural",
     "deleteBranchOnMerge": true,
