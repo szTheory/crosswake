@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Phase-only tooling. Scratch contains tools or synthetic git fixtures, never candidate product state.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -105,7 +105,8 @@ function verifySourceAt(root, record) {
   const roster = sourceRoster(root, record.main_sha);
   need(Array.isArray(record.source_roster) && record.source_roster.length > 0, "empty_source_roster");
   need(same(roster, record.source_roster) && roster.length === record.source_count && sha(JSON.stringify(roster)) === record.source_roster_sha256, "source_roster_mismatch");
-  need(git(root, ["diff", "--name-only", record.main_sha, "HEAD", "--", ":!.planning"]) === "", "unexpected_supported_code");
+  // Preparation is immutable; later committed product work is verified against its own HEAD.
+  need(git(root, ["diff", "--name-only", record.main_sha, record.transfer_sha, "--", ":!.planning"]) === "", "unexpected_supported_code");
   const changes = git(root, ["diff", "--name-only", "HEAD"]).split("\n").filter(Boolean);
   const staged = git(root, ["diff", "--cached", "--name-only"]).split("\n").filter(Boolean);
   need([...changes, ...staged].every((p) => p.startsWith(".planning/")), "dirty_supported_code");
@@ -122,7 +123,7 @@ function verifySourceAt(root, record) {
   need(same(protectedFiles, record.protected_files) && RECEIPTS.every((p) => protectedFiles.some((f) => f.path === p)), "protected_scope_mismatch");
   for (const item of protectedFiles) need(sha(fileAt(root, item.path)) === item.sha256, "protected_hash_mismatch");
   // Independently hash the worktree as well: a clean index alone is not evidence.
-  for (const item of roster) {
+  for (const item of sourceRoster(root, "HEAD")) {
     const bytes = fileAt(root, item.path);
     const blob = createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
     need(blob === item.blob, "supported_blob_mismatch");
@@ -132,7 +133,7 @@ function verifySourceAt(root, record) {
 function parse(argv) {
   const [mode, ...rest] = argv;
   const opts = {};
-  need(["prepare", "verify-source", "source-controls", "self-test", "capture"].includes(mode), "invalid_mode");
+  need(["prepare", "verify-source", "source-controls", "capture-controls", "self-test", "capture"].includes(mode), "invalid_mode");
   for (let i = 0; i < rest.length; i += 2) {
     need(/^--[a-z-]+$/.test(rest[i]) && rest[i + 1] && !(rest[i] in opts), "invalid_arguments");
     opts[rest[i].slice(2)] = rest[i + 1];
@@ -158,6 +159,24 @@ function fixture() {
   g("switch", "-c", BRANCH, main); g("cherry-pick", preserved);
   const record = sourceRecord(root, { main, preserved, transfer: "HEAD", original: preserved });
   return { root, put, g, record, cleanup: () => rmSync(root, { recursive: true, force: true }) };
+}
+async function captureAt(root, options, adapters = {}) {
+  return { schema_version: 1 };
+}
+function captureFixture() {
+  const f = fixture();
+  f.g("remote", "add", "origin", ".");
+  f.put("script/fixture-guard.mjs", `process.stdout.write('PHASE196_REPORT '+JSON.stringify({schema_version:1,guard:'absence',scanned_files:['lib/subject.ex'],counts:{files:1},findings:[]})+'\\n');\n`);
+  f.g("add", "script/fixture-guard.mjs"); f.g("commit", "-m", "fixture candidate tool");
+  f.options = { guard: "absence", candidate: "HEAD", output: `${PHASE}/196-EVIDENCE/fixture-report.json` };
+  return f;
+}
+function captureTests() {
+  test("capture refuses wrong fetched source before executing guard", async () => {
+    const f = captureFixture(); try {
+      await assert.rejects(captureAt(f.root, f.options, { expectedMain: "0".repeat(40) }), { code: "wrong_main_sha" });
+    } finally { f.cleanup(); }
+  });
 }
 function sourceTests() {
   test("source verifier accepts independently established clean source", () => {
@@ -185,6 +204,7 @@ function sourceTests() {
 async function main() {
   const { mode, opts } = parse(process.argv.slice(2));
   if (mode === "source-controls") { sourceTests(); return; }
+  if (mode === "capture-controls") { captureTests(); return; }
   const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
   need(realpathSync(root) === realpathSync(process.cwd()), "wrong_working_directory");
   if (mode === "prepare") {
