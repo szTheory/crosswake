@@ -1,5 +1,5 @@
 defmodule Crosswake.CompatibilityTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Crosswake.Compatibility
   alias Crosswake.Bridge.Contract
@@ -9,6 +9,124 @@ defmodule Crosswake.CompatibilityTest do
   alias Crosswake.Packs.Inventory
   alias Crosswake.Shell.Denial
   alias Crosswake.SupportMatrix
+
+  defmodule ExtensionFailure do
+    defexception message: "synthetic_extension_private_payload"
+  end
+
+  defmodule FailingExtension do
+    def companion_id, do: :synthetic_extension
+    def enabled?(_), do: true
+    def auth_authority?, do: true
+
+    def validate_dependency do
+      case Process.get(:extension_failure) do
+        :raise -> raise ExtensionFailure
+        :throw -> throw(:synthetic_extension_private_payload)
+        :exit -> exit(:synthetic_extension_private_payload)
+        _ -> :ok
+      end
+    end
+
+    def evaluate_auth(_, _, _), do: raise(ExtensionFailure)
+    def kill_switch_active?(_), do: false
+    def route_gated?(_, _), do: :pass
+  end
+
+  test "arbitrary extension failures deny with bounded metadata and preserve catch semantics" do
+    previous = Application.get_env(:crosswake, :companions)
+    Application.put_env(:crosswake, :companions, [FailingExtension])
+
+    on_exit(fn ->
+      if previous == nil,
+        do: Application.delete_env(:crosswake, :companions),
+        else: Application.put_env(:crosswake, :companions, previous)
+    end)
+
+    handler = {__MODULE__, make_ref()}
+    owner = self()
+
+    :ok =
+      :telemetry.attach_many(
+        handler,
+        Enum.map([:start, :stop, :exception], &[:crosswake, :companion, :dependency_check, &1]),
+        fn event, measurements, metadata, pid ->
+          send(pid, {:extension_telemetry, event, measurements, metadata})
+        end,
+        owner
+      )
+
+    on_exit(fn -> :telemetry.detach(handler) end)
+
+    manifest = manifest_fixture()
+    route = %{manifest.routes["camera"] | gated_by: :synthetic_gate}
+    manifest = %{manifest | routes: Map.put(manifest.routes, "camera", route)}
+
+    target = %Target{
+      manifest_schema_version: Types.manifest_schema_version(),
+      bridge_protocol_version: Contract.version(),
+      native_runtime_version: "1.0.0",
+      manifest_source: :bundled,
+      capabilities: %{"camera" => "1.0.0"},
+      packs: %{"camera.assets" => "2.0.0"},
+      origin: Types.default_origin()
+    }
+
+    for kind <- [:raise, :throw] do
+      Process.put(:extension_failure, kind)
+      decision = RouteGate.evaluate(manifest, "camera", target)
+      assert decision.status == :deny
+      assert decision.denial.reason == :dependency_missing
+
+      assert decision.denial.details == %{
+               "companion_id" => "synthetic_extension",
+               "missing_kind" => "adapter_unloadable"
+             }
+
+      refute inspect(decision) =~ "synthetic_extension_private_payload"
+
+      assert_receive {:extension_telemetry, [:crosswake, :companion, :dependency_check, :start],
+                      _, _}
+
+      assert_receive {:extension_telemetry, [:crosswake, :companion, :dependency_check, :stop], _,
+                      metadata}
+
+      assert metadata == %{
+               companion_id: :synthetic_extension,
+               route_id: "camera",
+               exception: true,
+               telemetry_span_context: metadata.telemetry_span_context
+             }
+
+      refute inspect(metadata) =~ "synthetic_extension_private_payload"
+    end
+
+    Process.put(:extension_failure, :exit)
+
+    assert catch_exit(RouteGate.evaluate(manifest, "camera", target)) ==
+             :synthetic_extension_private_payload
+
+    Process.delete(:extension_failure)
+    auth_route = %{route | gated_by: nil, auth_min_level: :authenticated}
+
+    decision =
+      RouteGate.evaluate(
+        %{manifest | routes: Map.put(manifest.routes, "camera", auth_route)},
+        "camera",
+        target
+      )
+
+    assert decision.status == :deny
+    assert decision.denial.reason == :dependency_missing
+    assert decision.denial.details == %{"companion_id" => "synthetic_extension"}
+    refute inspect(decision) =~ "synthetic_extension_private_payload"
+  end
+
+  test "extension whole-exception clauses are named for exact semantic review" do
+    source = File.read!("lib/crosswake/compatibility/route_gate.ex")
+    refute source =~ ~r/rescue\s+_\s*->/
+    assert length(Regex.scan(~r/rescue\s+_extension_error\s*->/, source)) == 2
+  end
 
   test "compatibility findings cover runtime, capability, and declared pack mismatches separately" do
     manifest = manifest_fixture()
