@@ -1,0 +1,33 @@
+{
+  "mutations": [
+    {
+      "error": null,
+      "status": "survived",
+      "description": "ReturnValue: replace return value of compile with nil",
+      "location": {
+        "line": 18,
+        "file": "lib/crosswake/policy/compiler.ex"
+      },
+      "patch": {
+        "after": "def compile(source, opts \\\\ []) do\n  routes = routes_from_source(source)\n  source_module = source_module(source)\n  registry = host_command_registry(source, opts)\n\n  {managed_routes, unmanaged_routes} =\n    Enum.split_with(routes, fn route -> route |> route_metadata() |> Map.has_key?(:crosswake) end)\n\n  warnings = build_warnings(unmanaged_routes, source_module, opts)\n\n  {compiled_pairs, errors} =\n    Enum.reduce(managed_routes, {[], []}, fn route, {compiled, compile_errors} ->\n      case normalize_route(route) do\n        {:ok, compiled_route} ->\n          {[{compiled_route, route} | compiled], compile_errors}\n\n        {:error, error} ->\n          {compiled, Enum.reverse(normalization_errors(route, error), compile_errors)}\n      end\n    end)\n\n  compiled_pairs = Enum.reverse(compiled_pairs)\n  {compiled_routes, compiled_sources} = Enum.unzip(compiled_pairs)\n\n  errors =\n    errors\n    |> Enum.reverse()\n    |> Kernel.++(duplicate_id_errors(compiled_pairs))\n    |> Kernel.++(Validator.validate(compiled_routes, compiled_sources, host_commands: registry))\n\n  nil\nend",
+        "before": "def compile(source, opts \\\\ []) do\n  routes = routes_from_source(source)\n  source_module = source_module(source)\n  registry = host_command_registry(source, opts)\n\n  {managed_routes, unmanaged_routes} =\n    Enum.split_with(routes, fn route -> route |> route_metadata() |> Map.has_key?(:crosswake) end)\n\n  warnings = build_warnings(unmanaged_routes, source_module, opts)\n\n  {compiled_pairs, errors} =\n    Enum.reduce(managed_routes, {[], []}, fn route, {compiled, compile_errors} ->\n      case normalize_route(route) do\n        {:ok, compiled_route} ->\n          {[{compiled_route, route} | compiled], compile_errors}\n\n        {:error, error} ->\n          {compiled, Enum.reverse(normalization_errors(route, error), compile_errors)}\n      end\n    end)\n\n  compiled_pairs = Enum.reverse(compiled_pairs)\n  {compiled_routes, compiled_sources} = Enum.unzip(compiled_pairs)\n\n  errors =\n    errors\n    |> Enum.reverse()\n    |> Kernel.++(duplicate_id_errors(compiled_pairs))\n    |> Kernel.++(Validator.validate(compiled_routes, compiled_sources, host_commands: registry))\n\n  case errors do\n    [] ->\n      emit_warnings(warnings, opts)\n      {:ok, %{routes: compiled_routes, warnings: warnings}}\n\n    _errors ->\n      {:error, Diagnostic.new(module: source_module, errors: errors, warnings: [])}\n  end\nend"
+      },
+      "duration_ms": 1917,
+      "test_files": [
+        "test/crosswake/policy/compiler_test.exs"
+      ],
+      "mutator": "Muex.Mutator.ReturnValue"
+    }
+  ],
+  "summary": {
+    "timeout": 0,
+    "invalid": 0,
+    "killed": 0,
+    "total": 1,
+    "equivalent": 0,
+    "survived": 1,
+    "no_coverage": 0,
+    "mutation_score_high": 0.0,
+    "mutation_score_low": 0.0
+  }
+}

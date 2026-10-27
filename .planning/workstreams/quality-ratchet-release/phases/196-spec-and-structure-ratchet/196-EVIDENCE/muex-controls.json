@@ -1,0 +1,586 @@
+{
+  "schema": "crosswake-muex-controls/1",
+  "attempt": "27daad6d-8e3c-49c6-8f4f-9e89a9694692",
+  "status": "accepted",
+  "protocolSha256": "affd489d8a957fff92ca8b19300dcb54723da651101f1cc9e8c068eb91c5da0b",
+  "pairs": [
+    {
+      "file": "lib/crosswake/offline/safe_observation.ex",
+      "function": "new",
+      "killIdentity": "2512dd36035558479fd64631617a281d737e8978bb4de94807478e20486f5aef:0",
+      "kill": {
+        "status": "killed",
+        "identity": "2512dd36035558479fd64631617a281d737e8978bb4de94807478e20486f5aef:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-0-kill.json",
+        "reportSha256": "43e24e3703595de9a51e51264a5c51587902ae52bbef4117181cd5f2c7659e5a",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 1,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 0,
+          "no_coverage": 0,
+          "mutation_score_high": 100,
+          "mutation_score_low": 100
+        }
+      },
+      "execution": {
+        "mutantCallObserved": true,
+        "markerSha256": "1bda2e81e12efe1efdb1a5c4fdcf716b6dbdec9638ee95781e22ee824bdf6c79",
+        "weakSha256": "48e37dbfe4b980982ea5705068662147b1c5ced8c3960f19c6f9b062848ca077"
+      },
+      "survive": {
+        "status": "survived",
+        "identity": "2512dd36035558479fd64631617a281d737e8978bb4de94807478e20486f5aef:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-0-survive.json",
+        "reportSha256": "a8fa51fc3baee14ea0acd585ea6d9f4674f22879fdaff5785d1902e729f5999f",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 0,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 1,
+          "no_coverage": 0,
+          "mutation_score_high": 0,
+          "mutation_score_low": 0
+        }
+      }
+    },
+    {
+      "file": "lib/crosswake/offline/journal.ex",
+      "function": "new_entry",
+      "killIdentity": "a179647a341ada21e1d842fd4b4d274d43bf934616584826f7a2926baaf252ec:0",
+      "kill": {
+        "status": "killed",
+        "identity": "a179647a341ada21e1d842fd4b4d274d43bf934616584826f7a2926baaf252ec:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-1-kill.json",
+        "reportSha256": "9c74021a4a83afd5a34faa8c27a7336ade6ab6bcaa161a5dfe2f81170588ce94",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 1,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 0,
+          "no_coverage": 0,
+          "mutation_score_high": 100,
+          "mutation_score_low": 100
+        }
+      },
+      "execution": {
+        "mutantCallObserved": true,
+        "markerSha256": "1bda2e81e12efe1efdb1a5c4fdcf716b6dbdec9638ee95781e22ee824bdf6c79",
+        "weakSha256": "463bbaaee50796140517e9b82fd669100f02407d7f80910bb4a8a09da90f3179"
+      },
+      "survive": {
+        "status": "survived",
+        "identity": "a179647a341ada21e1d842fd4b4d274d43bf934616584826f7a2926baaf252ec:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-1-survive.json",
+        "reportSha256": "115391493f4970fdf70719543a07079d4092916520f727dd582356321d73b9a7",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 0,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 1,
+          "no_coverage": 0,
+          "mutation_score_high": 0,
+          "mutation_score_low": 0
+        }
+      }
+    },
+    {
+      "file": "lib/crosswake/policy/compiler.ex",
+      "function": "compile",
+      "killIdentity": "fe4ebb78b36636388e792c35add50f9b8854d07f94bd391147fc058ead16eb24:0",
+      "kill": {
+        "status": "killed",
+        "identity": "fe4ebb78b36636388e792c35add50f9b8854d07f94bd391147fc058ead16eb24:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-2-kill.json",
+        "reportSha256": "f84791750db05f6bc42ebd7a8c33f905ca645ef59c224daffb57bacafd3fd453",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 1,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 0,
+          "no_coverage": 0,
+          "mutation_score_high": 100,
+          "mutation_score_low": 100
+        }
+      },
+      "execution": {
+        "mutantCallObserved": true,
+        "markerSha256": "1bda2e81e12efe1efdb1a5c4fdcf716b6dbdec9638ee95781e22ee824bdf6c79",
+        "weakSha256": "34ec6fcef3c2a1c5e1e316117d0049e79087b0c50f13807b9ee9b6a79e843d18"
+      },
+      "survive": {
+        "status": "survived",
+        "identity": "fe4ebb78b36636388e792c35add50f9b8854d07f94bd391147fc058ead16eb24:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-2-survive.json",
+        "reportSha256": "55e7f9972115ec53acb732b0f5ad1a8ab7a33d60f5a392da941cb41f432f512d",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 0,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 1,
+          "no_coverage": 0,
+          "mutation_score_high": 0,
+          "mutation_score_low": 0
+        }
+      }
+    },
+    {
+      "file": "lib/crosswake/policy/route.ex",
+      "function": "new",
+      "killIdentity": "cbef183a3098574af82c3391f476fa348dc54f1f7d16df408f30765329cc7517:0",
+      "kill": {
+        "status": "killed",
+        "identity": "cbef183a3098574af82c3391f476fa348dc54f1f7d16df408f30765329cc7517:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-3-kill.json",
+        "reportSha256": "6d131cfd76742e83b7a35421fa49fcd20c06e64d11e846b7e0ed768f0e6c7cfe",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 1,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 0,
+          "no_coverage": 0,
+          "mutation_score_high": 100,
+          "mutation_score_low": 100
+        }
+      },
+      "execution": {
+        "mutantCallObserved": true,
+        "markerSha256": "1bda2e81e12efe1efdb1a5c4fdcf716b6dbdec9638ee95781e22ee824bdf6c79",
+        "weakSha256": "e180ecb1ca7e3c9e02bfdd0e4d45e5094672bbd0a92d691c831d7f652d46cb90"
+      },
+      "survive": {
+        "status": "survived",
+        "identity": "cbef183a3098574af82c3391f476fa348dc54f1f7d16df408f30765329cc7517:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-3-survive.json",
+        "reportSha256": "72f38ecbae0eb7a28e3466fd2a55c01bd29e8c380c74e21abc30a03de9d741bf",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 0,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 1,
+          "no_coverage": 0,
+          "mutation_score_high": 0,
+          "mutation_score_low": 0
+        }
+      }
+    },
+    {
+      "file": "lib/crosswake/bridge/contract.ex",
+      "function": "protocol",
+      "killIdentity": "9f4f6bc4ce1f30b57f77f605130fded5031d3d047a00779c673126611b273f7a:0",
+      "kill": {
+        "status": "killed",
+        "identity": "9f4f6bc4ce1f30b57f77f605130fded5031d3d047a00779c673126611b273f7a:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-4-kill.json",
+        "reportSha256": "c6875b5ae99621f34b772f68b084881e02a8c05702391ec0f3f71a85f2ee9e1b",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 1,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 0,
+          "no_coverage": 0,
+          "mutation_score_high": 100,
+          "mutation_score_low": 100
+        }
+      },
+      "execution": {
+        "mutantCallObserved": true,
+        "markerSha256": "1bda2e81e12efe1efdb1a5c4fdcf716b6dbdec9638ee95781e22ee824bdf6c79",
+        "weakSha256": "23f976912535c51fa8e3f4a2089835b89f45ef586786cc8b7dde3b4d0caa1a1b"
+      },
+      "survive": {
+        "status": "survived",
+        "identity": "9f4f6bc4ce1f30b57f77f605130fded5031d3d047a00779c673126611b273f7a:0",
+        "report": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-4-survive.json",
+        "reportSha256": "570a9ef442f24100655bfecd2d599121698e9caf0fc4395ddcad1441dddfe7a9",
+        "summary": {
+          "timeout": 0,
+          "invalid": 0,
+          "killed": 0,
+          "total": 1,
+          "equivalent": 0,
+          "survived": 1,
+          "no_coverage": 0,
+          "mutation_score_high": 0,
+          "mutation_score_low": 0
+        }
+      }
+    }
+  ],
+  "commands": [
+    {
+      "label": "attempt2-control-0-kill",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/offline/safe_observation.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-0-kill.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 2918.156084,
+      "outputSha256": "f58159f28c35add41f6aebaf05fd144996a7f41539d76a2562277390d8fbeca1"
+    },
+    {
+      "label": "attempt2-control-0-survive",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/offline/safe_observation.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-0-survive.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 3708.1151250000003,
+      "outputSha256": "588a46fa0fba724435594c12e1a34667aff2142b4f504d141a10ed9c86736b5c"
+    },
+    {
+      "label": "attempt2-control-1-kill",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/offline/journal.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-1-kill.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 3216.084167,
+      "outputSha256": "d3a977713eba0846c575c4ea91c6a65aa566839e5d9c82080e3a1678a7c94199"
+    },
+    {
+      "label": "attempt2-control-1-survive",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/offline/journal.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-1-survive.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 2848.776,
+      "outputSha256": "ea15af360e1b7883bc2974dcfba7ad86a87a6572822caafdd2fb4d6ed7463d11"
+    },
+    {
+      "label": "attempt2-control-2-kill",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/policy/compiler.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-2-kill.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 2993.7631250000013,
+      "outputSha256": "b1df56b07855140953ca7491d6e813e0f8f8001a50094bbcd221d3751c059c12"
+    },
+    {
+      "label": "attempt2-control-2-survive",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/policy/compiler.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-2-survive.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 3037.5105000000003,
+      "outputSha256": "6140e4349a8335045b515d9d38a3880c3162929df1284e4ff92290fa5ab4a007"
+    },
+    {
+      "label": "attempt2-control-3-kill",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/policy/route.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-3-kill.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 2877.675875000001,
+      "outputSha256": "bb9575f1dc00e9aaebca3d4da148bf985d69792047c5453905172b3532e23963"
+    },
+    {
+      "label": "attempt2-control-3-survive",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/policy/route.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-3-survive.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 2915.2481670000016,
+      "outputSha256": "469e3ccdfb285cebbf7e952de9cbe478134a082e73ab2244d1147523c52a0680"
+    },
+    {
+      "label": "attempt2-control-4-kill",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/bridge/contract.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-4-kill.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 4532.5559159999975,
+      "outputSha256": "e80f3beeeb1dd67fe7fc657325c50f312c0555b27e173dcd40fe9ff3e7c245f4"
+    },
+    {
+      "label": "attempt2-control-4-survive",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/bridge/contract.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/control-4-survive.json",
+        "--mutators",
+        "return_value",
+        "--max-mutations",
+        "1"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 3200.7712920000013,
+      "outputSha256": "5ad02c347eeb52e473adc31a817906347ddc697504f0eaec8b26e61b8f6bb4e4"
+    },
+    {
+      "label": "attempt2-controls-restore-compile",
+      "command": "mix",
+      "args": [
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 2583.772208000002,
+      "outputSha256": "f8569a16a15a1cd88e1173a4d72122d3b4de31131d765eee37fb497cd3224d33"
+    },
+    {
+      "label": "attempt2-controls-restore-tests",
+      "command": "mix",
+      "args": [
+        "test",
+        "test/crosswake/offline",
+        "test/crosswake/policy",
+        "test/crosswake/bridge"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 2274.2739159999983,
+      "outputSha256": "1fffc0c12f486fdf4b1a1d8079e6c26f0847d5541b236bfeffc09656e14ac289"
+    }
+  ],
+  "restored": true,
+  "cleanTests": {
+    "tests": 236,
+    "failures": 0
+  },
+  "aggregateElapsedMs": 767671.1565420628,
+  "remainingMs": 1032328.8434579372
+}

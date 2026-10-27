@@ -1,0 +1,33 @@
+{
+  "mutations": [
+    {
+      "error": null,
+      "status": "survived",
+      "description": "ReturnValue: replace return value of new with nil",
+      "location": {
+        "line": 72,
+        "file": "lib/crosswake/policy/route.ex"
+      },
+      "patch": {
+        "after": "def new(options) when is_list(options) do\n  nil\nend",
+        "before": "def new(options) when is_list(options) do\n  options\n  |> merged_options()\n  |> Schema.validate()\n  |> case do\n    {:ok, validated} ->\n      with {:ok, validated} <- validate_offline_contracts(validated),\n           {:ok, validated} <- validate_gating_posture(validated),\n           {:ok, validated} <- validate_entry_policy(validated),\n           {:ok, validated} <- validate_commerce_declaration(validated),\n           {:ok, validated} <- validate_auth_return_declaration(validated),\n           {:ok, validated} <- validate_auth_posture(validated),\n           {:ok, validated} <- validate_pack_requirements(validated),\n           {:ok, validated} <- validate_transfer_declarations(validated) do\n        {:ok, struct!(__MODULE__, validated)}\n      end\n\n    {:error, error} ->\n      {:error, error}\n  end\nend"
+      },
+      "duration_ms": 1945,
+      "test_files": [
+        "test/crosswake/policy/route_test.exs"
+      ],
+      "mutator": "Muex.Mutator.ReturnValue"
+    }
+  ],
+  "summary": {
+    "timeout": 0,
+    "invalid": 0,
+    "killed": 0,
+    "total": 1,
+    "equivalent": 0,
+    "survived": 1,
+    "no_coverage": 0,
+    "mutation_score_high": 0.0,
+    "mutation_score_low": 0.0
+  }
+}

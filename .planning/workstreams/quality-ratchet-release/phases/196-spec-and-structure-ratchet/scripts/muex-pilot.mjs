@@ -180,8 +180,25 @@ async function bootstrap() {
   }
 }
 
+const outcomes = ['killed', 'survived', 'invalid', 'timeout', 'equivalent', 'no_coverage'];
 const command = process.argv[2];
 if (command === 'bootstrap') await bootstrap();
+else if (command === 'controls') await controls();
+else if (command === 'quick' && process.argv[3] === 'controls') {
+  test('genuine report adapter and corruptions discriminate', () => reportControls());
+  test('actual child exit timeout interruption and finally cleanup discriminate', async () => {
+    const start = performance.now(); const dir = mkdtempSync(join(tmpdir(), 'muex-controls-quick-'));
+    try {
+      const path = join(dir, 'bytes'); fresh(path); writeFileSync(path, 'original'); assert.throws(() => fresh(path));
+      successful(await child(process.execPath, ['-e', 'process.exit(0)']));
+      const fail = await child(process.execPath, ['-e', 'process.exit(7)']); assert.equal(fail.exit, 7); assert.throws(() => successful(fail));
+      const timeout = await child(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { timeoutMs: 80 }); assert(timeout.timedOut); assert.throws(() => successful(timeout));
+      const controller = new AbortController(); const pending = child(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { abortSignal: controller.signal }); setTimeout(() => controller.abort(), 40); const interrupted = await pending; assert(interrupted.interrupted); assert.throws(() => successful(interrupted));
+      await assert.rejects(restored(path, async () => { writeFileSync(path, 'changed'); throw new Error('injected'); })); assert.equal(readFileSync(path, 'utf8'), 'original');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+    assert(performance.now() - start < 20000, 'quick-deadline');
+  });
+}
 else if (command === 'quick' && process.argv[3] === 'bootstrap') {
   const started = performance.now();
   test('frozen attempt2 flags and carried aggregate budget discriminate', () => {
@@ -206,3 +223,150 @@ else if (command === 'quick' && process.argv[3] === 'bootstrap') {
     assert(performance.now() - started < 20000, 'quick-deadline');
   });
 } else { console.log(JSON.stringify({ status: 'refused', reason: command === 'controls' ? 'useful-bootstrap-and-real-adapter-required' : 'unknown-stage' })); process.exitCode = 1; }
+
+export function normalizePatch(text) {
+  assert(typeof text === 'string' && text.trim().length > 0, 'unresolved-patch');
+  // Reporter.Patch already uses Macro.to_string: preserve its token and string bytes.
+  return text.trim();
+}
+export function adapt(report, allowed = [targets[0]]) {
+  assert(report && typeof report === 'object' && Array.isArray(report.mutations), 'malformed-report');
+  const summary = report.summary; assert(summary && summary.total > 0, 'empty-report');
+  let sum = 0;
+  for (const key of outcomes) { assert(Number.isInteger(summary[key]) && summary[key] >= 0, 'outcome-count'); sum += summary[key]; }
+  assert.equal(summary.total, report.mutations.length, 'total-records'); assert.equal(summary.total, sum, 'total-sum');
+  for (const key of ['mutation_score_low', 'mutation_score_high']) assert(Number.isFinite(summary[key]) && summary[key] >= 0 && summary[key] <= 100, 'score-bounds');
+  assert(summary.mutation_score_low <= summary.mutation_score_high, 'score-order');
+  const seen = new Map();
+  const records = report.mutations.map(m => {
+    assert(outcomes.includes(m.status), 'unknown-status'); assert(allowed.includes(m.location?.file), 'wrong-path');
+    assert(Number.isInteger(m.location.line) && m.location.line >= 0, 'location');
+    assert(typeof m.mutator === 'string' && m.mutator.startsWith('Muex.Mutator.'), 'mutator');
+    assert(Number.isFinite(m.duration_ms) && m.duration_ms >= 0, 'duration');
+    assert(Array.isArray(m.test_files), 'test-files');
+    if (['killed', 'survived'].includes(m.status)) {
+      assert(m.test_files.length > 0 && m.test_files.every(f => tests.some(t => f.startsWith(`${t}/`)) && f.endsWith('_test.exs')), 'no-tests');
+      if (m.status === 'killed') assert(typeof m.error === 'string' && /killed by:\n\s+\d+\) test /.test(m.error), 'no-kill-assertion');
+    }
+    if (m.status === 'survived') { normalizePatch(m.patch?.before); normalizePatch(m.patch?.after); }
+    const base = digest(JSON.stringify([m.location.file, m.mutator, m.patch ? [normalizePatch(m.patch.before), normalizePatch(m.patch.after)] : ['unavailable', m.description]]));
+    const collision = seen.get(base) ?? 0; seen.set(base, collision + 1);
+    return { ...m, identity: `${base}:${collision}` };
+  });
+  for (const key of outcomes) assert.equal(summary[key], records.filter(m => m.status === key).length, 'count-mismatch');
+  assert(summary.killed + summary.survived > 0, 'no-useful-outcome');
+  for (const file of allowed) assert(records.some(m => m.location.file === file && ['killed', 'survived'].includes(m.status)), 'no-useful-target');
+  assert.equal(new Set(records.map(m => m.identity)).size, records.length, 'identity-collision');
+  return { schemaOwner: 'Muex.Reporter.Json@0.12.0', summary, records };
+}
+function capturedFixture() {
+  const p = validateProtocol(JSON.parse(readFileSync(protocolPath)));
+  const receipt = JSON.parse(readFileSync(resultPath)); assert.equal(receipt.status, 'captured', 'useful-bootstrap-required');
+  assert.equal(receipt.attempt, p.attempt, 'wrong-attempt'); assert(receipt.restored && receipt.cleanTests.every(c => c.tests > 0 && c.failures === 0), 'unclean-bootstrap');
+  const bytes = readFileSync(`${phase}/fixtures/muex-real-report.json`);
+  assert.equal(digest(bytes), receipt.reportSha256, 'fixture-not-real-capture');
+  assert.equal(digest(readFileSync(`${attemptDir}/bootstrap-report.json`)), receipt.reportSha256, 'capture-changed');
+  return JSON.parse(bytes);
+}
+function acceptedProcess(r, reportPath, startedAtMs, allowed) {
+  successful(r); assert(existsSync(reportPath), 'missing-report'); assert(statSync(reportPath).mtimeMs >= startedAtMs, 'stale-report');
+  return adapt(JSON.parse(readFileSync(reportPath, 'utf8')), allowed);
+}
+function reportControls() {
+  const start = performance.now(); const report = capturedFixture(); adapt(report);
+  const corrupt = fn => { const c = structuredClone(report); fn(c); assert.throws(() => adapt(c)); };
+  assert.throws(() => adapt(null)); assert.throws(() => JSON.parse('{'));
+  corrupt(r => { r.summary.total = 0; r.mutations = []; });
+  corrupt(r => r.summary.total++); corrupt(r => r.summary.killed++);
+  corrupt(r => r.mutations[0].status = 'unknown'); corrupt(r => r.mutations[0].location.file = 'elsewhere.ex');
+  corrupt(r => r.summary.mutation_score_low = NaN); corrupt(r => r.summary.mutation_score_high = 101);
+  corrupt(r => r.summary.mutation_score_low = 100);
+  corrupt(r => r.mutations.find(m => m.status === 'survived').patch = null);
+  corrupt(r => r.mutations.find(m => m.status === 'survived').patch.before = '');
+  corrupt(r => r.mutations.filter(m => ['killed', 'survived'].includes(m.status)).forEach(m => m.test_files = []));
+  corrupt(r => { r.mutations.forEach(m => m.status = 'invalid'); outcomes.forEach(k => r.summary[k] = k === 'invalid' ? r.mutations.length : 0); });
+  assert.notEqual(normalizePatch('"a b"'), normalizePatch('"ab"')); assert.notEqual(normalizePatch('foo bar'), normalizePatch('foobar'));
+  assert.throws(() => adapt(report, targets), 'bootstrap-not-baseline');
+  const dir = mkdtempSync(join(tmpdir(), 'muex-report-quick-'));
+  try {
+    const path = join(dir, 'report');
+    assert.throws(() => acceptedProcess({ exit: 0, timedOut: false }, path, Date.now(), [targets[0]]));
+    writeFileSync(path, JSON.stringify(report));
+    assert.throws(() => acceptedProcess({ exit: 0, timedOut: false }, path, Date.now() + 10000, [targets[0]]));
+    assert.throws(() => acceptedProcess({ exit: 7, timedOut: false }, path, 0, [targets[0]]));
+    assert.throws(() => acceptedProcess({ exit: 0, timedOut: true }, path, 0, [targets[0]]));
+    acceptedProcess({ exit: 0, timedOut: false }, path, 0, [targets[0]]);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+  assert(performance.now() - start < 20000, 'quick-deadline');
+}
+
+async function controls() {
+  reportControls();
+  const p = validateProtocol(JSON.parse(readFileSync(protocolPath)));
+  const output = `${attemptDir}/controls-result.json`; fresh(output);
+  remaining(p, monotonic());
+  const files = protectedFiles(); const saved = new Map(files.map(f => [f, readFileSync(f)]));
+  for (const [f, hash] of Object.entries(p.sourceDigests)) assert.equal(digest(readFileSync(f)), hash, 'source-changed');
+  const calls = [
+    'Crosswake.Offline.SafeObservation.new(%{route_id: "route-0123456789abcdef", runtime: :offline_island, lifecycle: :started, outcome: :accepted, denial: :none, measurements: %{event_count: 1}, configuration: :configured, adapter_readiness: :ready})',
+    'Crosswake.Offline.Journal.new_entry(id: "synthetic", scope_ref: "v1.aaaaaaaaaaaaaaaa", route_id: "synthetic", sync_seam: "synthetic", operation: :synthetic, client_mutation_id: "synthetic", idempotency_key: "synthetic", base_checkpoint: "synthetic")',
+    'Crosswake.Policy.Compiler.compile([])',
+    'Crosswake.Policy.Route.new(id: "synthetic", runtime: :live_view)',
+    'Crosswake.Bridge.Contract.protocol()',
+  ];
+  const functions = ['new', 'new_entry', 'compile', 'new', 'protocol'];
+  const paths = ['test/crosswake/offline/safe_observation_test.exs', 'test/crosswake/offline/journal_test.exs', 'test/crosswake/policy/compiler_test.exs', 'test/crosswake/policy/route_test.exs', 'test/crosswake/bridge/contract_test.exs'];
+  const definitions = targets.map((file, i) => {
+    const marker = `${p.toolRoot}/attempt2-control-${i}-execution.txt`; fresh(marker);
+    const body = `defmodule Crosswake.PilotWeak${i}Test do\n  use ExUnit.Case\n  test "known function executes with weakened result assertion" do\n    result = ${calls[i]}\n    marker = if is_nil(result), do: "mutant-call-returned", else: "original-call-returned"\n    assert marker in ["original-call-returned", "mutant-call-returned"]\n    File.write!(${JSON.stringify(marker)}, marker <> "\\n", [:append])\n  end\nend\n`;
+    const args = argumentsFor([file], `<fresh-control-${i}-path>`).slice(1).concat(['--mutators', 'return_value', '--max-mutations', '1']);
+    return { file, function: functions[i], call: calls[i], testPath: paths[i], marker, weakBytes: body, weakSha256: digest(body), args };
+  });
+  const frozen = { schema: 'crosswake-muex-controls-protocol/1', attempt: p.attempt, frozenAt: new Date().toISOString(), bootstrapSha256: JSON.parse(readFileSync(resultPath)).reportSha256, sourceDigests: p.sourceDigests, selection: 'full original hardened tests for kill; same selected directories with competing tests suppressed and one actual function call under weakened assertion for survive', controlsOnlyCap: 1, baselineUncapped: true, definitions };
+  const controlProtocol = `${attemptDir}/controls-protocol.json`; fresh(controlProtocol); json(controlProtocol, frozen);
+  const receipt = { schema: 'crosswake-muex-controls/1', attempt: p.attempt, status: 'running', protocolSha256: digest(readFileSync(controlProtocol)), pairs: [], commands: [] };
+  json(output, receipt);
+  const bin = dirname(execFileSync('asdf', ['which', 'elixir'], { encoding: 'utf8' }).trim());
+  const env = { ...process.env, ...p.homes, PATH: `${bin}${delimiter}${process.env.PATH}`, MIX_ENV: 'test' };
+  async function run(label, command, args, cleanup = false) {
+    const left = cleanup ? Math.max(60000, p.budgetMs - p.carriedMs - (monotonic() - p.startedMonotonicMs)) : remaining(p, monotonic());
+    const r = await child(command, args, { env, timeoutMs: left }); writeFileSync(`${p.toolRoot}/${label}.log`, r.output);
+    receipt.commands.push({ label, command, args, exit: r.exit, timedOut: r.timedOut, interrupted: r.interrupted, durationMs: r.durationMs, outputSha256: digest(r.output) }); json(output, receipt);
+    console.log(JSON.stringify({ stage: label, exit: r.exit, remainingMs: Math.round(p.budgetMs - p.carriedMs - (monotonic() - p.startedMonotonicMs)) })); successful(r); return r;
+  }
+  const restore = () => { for (const [f, bytes] of saved) { if (!readFileSync(f).equals(bytes)) writeFileSync(f, bytes); assert.deepEqual(readFileSync(f), bytes); } };
+  try {
+    for (let i = 0; i < definitions.length; i++) {
+      const d = definitions[i]; const pair = { file: d.file, function: d.function };
+      for (const mode of ['kill', 'survive']) {
+        restore();
+        if (mode === 'survive') {
+          for (const file of tests.flatMap(allFiles).filter(f => f.endsWith('_test.exs'))) writeFileSync(file, '# Temporarily suppressed competing control assertion.\n');
+          writeFileSync(d.testPath, d.weakBytes); assert.equal(digest(readFileSync(d.testPath)), d.weakSha256); assert(!saved.get(d.testPath).equals(readFileSync(d.testPath)), 'weakening-unchanged');
+        }
+        const reportPath = `${attemptDir}/control-${i}-${mode}.json`; fresh(reportPath);
+        const args = d.args.map(a => a === `<fresh-control-${i}-path>` ? reportPath : a);
+        const started = Date.now();
+        const r = await run(`attempt2-control-${i}-${mode}`, `${p.toolRoot}/source/muex`, args);
+        const parsed = acceptedProcess(r, reportPath, started, [d.file]); assert.equal(parsed.records.length, 1, 'control-not-single');
+        const m = parsed.records[0]; assert.equal(m.mutator, 'Muex.Mutator.ReturnValue'); assert(m.patch.before.startsWith(`def ${d.function}(`) || m.patch.before.startsWith(`def ${d.function} do`), 'wrong-control-function');
+        assert.equal(m.status, mode === 'kill' ? 'killed' : 'survived', 'control-undiscriminating');
+        if (mode === 'kill') { assert(/assert|match|Expected|code:/i.test(m.error), 'relevant-assertion-absent'); pair.killIdentity = m.identity; }
+        else { assert.equal(m.identity, pair.killIdentity, 'different-control-mutation'); const lines = readFileSync(d.marker, 'utf8').trim().split('\n'); assert(lines.includes('mutant-call-returned'), 'relevant-function-not-executed'); pair.execution = { mutantCallObserved: true, markerSha256: digest(readFileSync(d.marker)), weakSha256: d.weakSha256 }; }
+        pair[mode] = { status: m.status, identity: m.identity, report: reportPath, reportSha256: digest(readFileSync(reportPath)), summary: parsed.summary };
+      }
+      receipt.pairs.push(pair); json(output, receipt);
+    }
+    receipt.status = 'accepted';
+  } catch (error) { receipt.status = 'terminal-incomplete'; receipt.reason = String(error.message).split('\n')[0]; process.exitCode = 1; }
+  finally {
+    restore(); receipt.restored = true;
+    try { await run('attempt2-controls-restore-compile', 'mix', ['compile', '--force', '--warnings-as-errors'], true); const clean = await run('attempt2-controls-restore-tests', 'mix', ['test', ...tests], true); assert(/236 tests, 0 failures/.test(clean.output), 'clean-tests-unproven'); receipt.cleanTests = { tests: 236, failures: 0 }; }
+    catch { receipt.status = 'terminal-incomplete'; receipt.reason ??= 'restoration-verification-failed'; process.exitCode = 1; }
+    receipt.aggregateElapsedMs = p.carriedMs + monotonic() - p.startedMonotonicMs; receipt.remainingMs = Math.max(0, p.budgetMs - receipt.aggregateElapsedMs);
+    if (receipt.remainingMs === 0) { receipt.status = 'terminal-incomplete'; receipt.reason = 'aggregate-budget-exhausted'; process.exitCode = 1; }
+    for (const [f, hash] of Object.entries(p.historyDigests)) assert.equal(digest(readFileSync(f)), hash, 'history-changed');
+    assert.equal(git('status', '--porcelain', '--', ...files), '', 'restoration-dirty');
+    json(output, receipt); console.log(JSON.stringify({ status: receipt.status, reason: receipt.reason, pairsCompleted: receipt.pairs.length, remainingMs: receipt.remainingMs, restored: true, cleanTests: receipt.cleanTests }));
+  }
+}
