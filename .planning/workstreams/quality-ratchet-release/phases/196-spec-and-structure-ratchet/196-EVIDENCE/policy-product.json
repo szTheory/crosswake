@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "plan": "196-08",
+  "base_commit": "1697d1df7c773faf99489a438a2395a90c545975",
+  "diagnostic_red": {
+    "command": "mix test test/crosswake/policy/compiler_test.exs",
+    "exit_code": 2,
+    "tests": 9,
+    "failures": 2,
+    "target_assertions_executed": true,
+    "semantic_assessment": "Grouped unknown keys collapsed to runtime; invalid sync had nil key; invalid-first input shifted duplicate and semantic source metadata. Both target assertions failed, with no load or fixture failures.",
+    "raw_output_retained": false
+  }
+}
