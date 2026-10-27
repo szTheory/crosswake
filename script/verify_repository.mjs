@@ -136,8 +136,18 @@ function readQuoteSpan(text, start, { multiline = false } = {}) {
   const triple = slashCount === 0 && text.startsWith(quote.repeat(3), quoteAt);
   const openEnd = quoteAt + (triple ? 3 : 1);
   if (triple) {
-    const closeAt = text.indexOf(quote.repeat(3), openEnd);
-    return { openEnd, closeAt: closeAt < 0 ? text.length : closeAt, end: closeAt < 0 ? text.length : closeAt + 3, closed: closeAt >= 0 };
+    const delimiter = quote.repeat(3);
+    for (let i = openEnd; i < text.length;) {
+      if (text[i] === "\\") {
+        const slashStart = i;
+        while (text[i] === "\\") i += 1;
+        if ((i - slashStart) % 2 === 1) i += 1;
+        continue;
+      }
+      if (text.startsWith(delimiter, i)) return { openEnd, closeAt: i, end: i + 3, closed: true };
+      i += 1;
+    }
+    return { openEnd, closeAt: text.length, end: text.length, closed: false };
   }
   let i = quoteAt + 1;
   while (i < text.length) {
