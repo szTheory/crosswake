@@ -20,5 +20,22 @@
     "structured_cases": 7,
     "provenance_inputs": 4,
     "provenance_diagnostics": 5
+  },
+  "finite_product": {
+    "command": "mix test test/crosswake/policy/finite_product_test.exs test/crosswake/policy/route_test.exs",
+    "exit_code": 0,
+    "tests": 19,
+    "failures": 0,
+    "dimensions": [3, 3, 2, 3, 2],
+    "runtime_offline_literal_cells": 9,
+    "semantic": {"input": 108, "unique": 108, "completed": 108},
+    "staged_compiler": {"input": 108, "unique": 108, "completed": 108},
+    "comparison": "exact sorted key and route_id pairs",
+    "expectation_source": "independent literal nine-cell table and handwritten entry/security/sync rules",
+    "route_malformed_error_cases": 8,
+    "non_list_boundary_cases": 5,
+    "nil_identifier_normalization_preserved": true,
+    "missing_identifier_remains_rejected": true,
+    "new_and_new_bang_checked_separately": true
   }
 }

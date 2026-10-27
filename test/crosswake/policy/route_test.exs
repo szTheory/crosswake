@@ -4,6 +4,48 @@ defmodule Crosswake.Policy.RouteTest do
   alias Crosswake.Policy.Route
   alias Crosswake.Offline.ContentPack
 
+  test "malformed option types and missing fields return real structured errors in new and new!" do
+    cases = [
+      {[], :id},
+      {[id: "synthetic"], :runtime},
+      {[id: "synthetic", runtime: nil], :runtime},
+      {[id: "synthetic", runtime: :live_view, offline: nil], :offline},
+      {[id: "synthetic", runtime: :live_view, entry: nil], :entry},
+      {[id: "synthetic", runtime: :live_view, sync: 42], :sync},
+      {[id: "synthetic", runtime: :live_view, capabilities: %{}], :capabilities},
+      {[id: "synthetic", runtime: :live_view, security: 42], :security}
+    ]
+
+    for {options, key} <- cases do
+      assert {:error, %NimbleOptions.ValidationError{key: ^key} = error} = Route.new(options)
+      raised = assert_raise NimbleOptions.ValidationError, fn -> Route.new!(options) end
+      assert raised.key == key
+      assert Exception.message(raised) == Exception.message(error)
+    end
+  end
+
+  test "explicit nil id follows atom identifier normalization while missing id is rejected" do
+    assert {:ok, %Route{id: "nil"}} = Route.new(id: nil, runtime: :live_view)
+    assert %Route{id: "nil"} = Route.new!(id: nil, runtime: :live_view)
+    assert {:error, %NimbleOptions.ValidationError{key: :id}} = Route.new(runtime: :live_view)
+    assert_raise NimbleOptions.ValidationError, fn -> Route.new!(runtime: :live_view) end
+  end
+
+  test "new and new! reject non-keyword inputs at the public function boundary" do
+    for input <- [nil, %{}, :invalid, "invalid", 42] do
+      assert_raise FunctionClauseError, fn -> Route.new(input) end
+      assert_raise FunctionClauseError, fn -> Route.new!(input) end
+    end
+  end
+
+  test "new and new! short-circuit external island entry before semantic aggregation" do
+    options = [id: "synthetic", runtime: :offline_island, entry: :external, sync: ["sync"]]
+    assert {:error, %NimbleOptions.ValidationError{key: :entry} = error} = Route.new(options)
+    raised = assert_raise NimbleOptions.ValidationError, fn -> Route.new!(options) end
+    assert raised.key == :entry
+    assert Exception.message(raised) == Exception.message(error)
+  end
+
   describe "new/1" do
     test "accepts pack bindings for local_first routes" do
       assert {:ok, route} =
