@@ -412,14 +412,30 @@ const kotlinSpecs = {
     loaded: 15, completed: 14, excluded: 'elixir_only', testCount: 3,
     symbol: 'all bridge contract vectors pass status and denial-reason assertions',
     controls: ['missing', 'removed', 'empty', 'all-excluded'] }],
+  'kotlin-other': [
+    { suite: 'BridgeReplyLegTest', kind: 'behavioral', collection: 'reply_leg_vectors', loaded: 2, completed: 2,
+      selectedIDs: ['vec-reply-001-ok-landing-pad', 'vec-reply-002-adversarial-denial-message'], testCount: 3,
+      symbol: 'the committed reply-leg vectors are present and name the shipped landing pad',
+      controls: ['missing', 'removed', 'empty', 'all-suppressed', 'duplicate-selected-id'] },
+    { suite: 'ActivationConformanceTest', kind: 'metadata-only', collection: 'vectors', loaded: 15, completed: null,
+      testCount: 3, symbol: 'activation resolves live_view route to LiveView presentation',
+      controls: ['missing', 'removed', 'empty'] },
+  ],
 };
+function kotlinSelection(vectors, spec) {
+  for (const id of spec.selectedIDs) assert.equal(vectors.filter(v => v.id === id).length, 1, 'selected-count');
+  return vectors.filter(v => spec.selectedIDs.includes(v.id));
+}
 function kotlinPopulation(bytes, spec) {
   assert.ok(bytes, 'missing-input');
   const vectors = JSON.parse(bytes)[spec.collection];
   assert.ok(Array.isArray(vectors), 'missing-collection');
   assert.equal(vectors.length, spec.loaded, 'loaded-count');
+  if (spec.selectedIDs) kotlinSelection(vectors, spec);
   assert.equal(new Set(vectors.map(v => v.id)).size, spec.loaded, 'duplicate-ids');
-  assert.equal(vectors.filter(v => v[spec.excluded] !== true).length, spec.completed, 'completed-count');
+  if (spec.kind !== 'metadata-only') {
+    assert.equal(vectors.filter(v => v[spec.excluded] !== true).length, spec.completed, 'completed-count');
+  }
   return vectors;
 }
 function kotlinPlan(spec) {
@@ -437,12 +453,25 @@ function kotlinQuick(mode) {
       for (const vectors of [corpus[spec.collection].slice(1), []]) {
         assert.throws(() => kotlinPopulation(JSON.stringify({ ...corpus, [spec.collection]: vectors }), spec), /loaded-count/);
       }
-      const excluded = corpus.vectors.map(v => ({ ...v, elixir_only: true }));
-      assert.throws(() => kotlinPopulation(JSON.stringify({ ...corpus, vectors: excluded }), spec), /completed-count/);
+      if (spec.excluded) {
+        const excluded = corpus.vectors.map(v => ({ ...v, elixir_only: true }));
+        assert.throws(() => kotlinPopulation(JSON.stringify({ ...corpus, vectors: excluded }), spec), /completed-count/);
+      } else if (spec.kind === 'metadata-only') {
+        assert.throws(() => kotlinPopulation(bytes, { ...spec, completed: 14 }), /metadata-execution-not-applicable/);
+      } else {
+        const selected = kotlinSelection(corpus[spec.collection], spec);
+        assert.equal(selected.length, 2, 'completed-count');
+        assert.throws(() => assert.equal(selected.filter(() => false).length, 2, 'completed-count'), /completed-count/);
+        const duplicate = corpus[spec.collection].map((v, i) => i === 1 ? { ...v, id: spec.selectedIDs[0] } : v);
+        assert.throws(() => kotlinSelection(duplicate, spec), /selected-count/);
+        assert.throws(() => kotlinPopulation(bytes, { ...spec, completed: 1 }), /completed-count/);
+      }
     }
   });
   test(`quick ${mode}: explicit JDK, exact clean Gradle plan and failed-child restoration`, () => {
-    assert.deepEqual(kotlinSpecs[mode].map(s => s.suite), ['BridgeConformanceTest'], 'owner-roster');
+    assert.deepEqual(kotlinSpecs[mode].map(s => s.suite), mode === 'kotlin-request' ? ['BridgeConformanceTest']
+      : ['BridgeReplyLegTest', 'ActivationConformanceTest'], 'owner-roster');
+    if (mode === 'kotlin-other') readerInventory();
     for (const spec of kotlinSpecs[mode]) {
       assert.deepEqual(kotlinPlan(spec), {
         command: './gradlew', args: ['clean', 'testDebugUnitTest', '--tests', `dev.crosswake.shell.core.${spec.suite}`],
