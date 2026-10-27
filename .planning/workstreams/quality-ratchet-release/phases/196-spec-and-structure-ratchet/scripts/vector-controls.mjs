@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdtempSync, rmSync, statSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,7 +39,7 @@ function child(step, timeout = 300000) {
   const started = performance.now();
   const result = spawnSync(step.command, step.args, {
     cwd: resolve(root, step.cwd), encoding: 'utf8', timeout,
-    maxBuffer: 16 * 1024 * 1024, env: { ...process.env, NO_COLOR: '1' },
+    maxBuffer: 16 * 1024 * 1024, env: { ...process.env, NO_COLOR: '1', ...step.env },
   });
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
   assert.ok(!result.error && result.signal === null, 'child-process-error');
@@ -410,6 +410,7 @@ const androidResource = `${androidPackage}/src/test/resources/bridge_contract_ve
 const kotlinSpecs = {
   'kotlin-request': [{ suite: 'BridgeConformanceTest', kind: 'behavioral', collection: 'vectors',
     loaded: 15, completed: 14, excluded: 'elixir_only', testCount: 3,
+    symbol: 'all bridge contract vectors pass status and denial-reason assertions',
     controls: ['missing', 'removed', 'empty', 'all-excluded'] }],
 };
 function kotlinPopulation(bytes, spec) {
@@ -418,6 +419,7 @@ function kotlinPopulation(bytes, spec) {
   assert.ok(Array.isArray(vectors), 'missing-collection');
   assert.equal(vectors.length, spec.loaded, 'loaded-count');
   assert.equal(new Set(vectors.map(v => v.id)).size, spec.loaded, 'duplicate-ids');
+  assert.equal(vectors.filter(v => v[spec.excluded] !== true).length, spec.completed, 'completed-count');
   return vectors;
 }
 function kotlinPlan(spec) {
@@ -463,8 +465,136 @@ function kotlinQuick(mode) {
   });
 }
 
+function discoverJDK17() {
+  const candidates = [{ home: process.env.JAVA_HOME, discovery: 'JAVA_HOME' }];
+  if (process.platform === 'darwin') {
+    const result = spawnSync('/usr/libexec/java_home', ['-v', '17'], { encoding: 'utf8', timeout: 2000 });
+    if (result.status === 0) candidates.push({ home: result.stdout.trim(), discovery: 'java_home-17' });
+  }
+  candidates.push(
+    { home: '/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home', discovery: 'homebrew-arm64-openjdk17' },
+    { home: '/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home', discovery: 'homebrew-openjdk17' },
+    { home: '/usr/lib/jvm/java-17-openjdk-amd64', discovery: 'system-openjdk17' },
+  );
+  for (const candidate of candidates) {
+    if (!candidate.home || !existsSync(join(candidate.home, 'bin/java'))) continue;
+    const executable = join(realpathSync(candidate.home), 'bin/java');
+    const result = spawnSync(executable, ['-version'], { encoding: 'utf8', timeout: 5000 });
+    const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+    const version = output.match(/(?:openjdk|java) version "(17\.[\d.]+)"/);
+    if (result.status !== 0 || !version || result.error || result.signal) continue;
+    return { home: realpathSync(candidate.home), identity: { major: 17, version: version[1],
+      discovery: candidate.discovery, executableSha256: hash(readFileSync(executable)), outputSha256: hash(output) } };
+  }
+  throw new Error('installed-jdk17-unavailable');
+}
+function kotlinConsumer(spec, expected, jdk) {
+  const plan = kotlinPlan(spec);
+  assert.equal(realpathSync(resolve(root, plan.cwd)), realpathSync(resolve(root, androidPackage)), 'android-cwd-mismatch');
+  assert.ok(existsSync(resolve(root, plan.cwd, 'gradlew')), 'android-wrapper-missing');
+  const reportPath = resolve(root, androidPackage, 'build/test-results/testDebugUnitTest', `TEST-dev.crosswake.shell.core.${spec.suite}.xml`);
+  const started = Date.now();
+  const result = child({ ...plan, env: { JAVA_HOME: jdk.home } });
+  if (expected === 'pass') requireSuccess(result);
+  else assert.notEqual(result.exit, 0, 'negative-control-passed');
+  for (const task of ['clean', 'compileDebugUnitTestKotlin', 'processDebugUnitTestJavaRes', 'testDebugUnitTest']) {
+    const pattern = new RegExp(`(?:^|\\n)> Task :${task}(?: NO-SOURCE| FAILED)?\\r?\\n`);
+    assert.match(result.output, pattern, 'fresh-gradle-task-missing');
+  }
+  assert.ok(existsSync(reportPath), 'junit-report-missing');
+  assert.ok(statSync(reportPath).mtimeMs >= started, 'stale-junit-report');
+  const xml = readFileSync(reportPath, 'utf8');
+  const attributes = xml.match(/<testsuite\s+([^>]+)>/);
+  assert.ok(attributes, 'junit-suite-missing');
+  const attr = key => {
+    const match = attributes[1].match(new RegExp(`(?:^|\\s)${key}="([^"]*)"`));
+    assert.ok(match, 'junit-attribute-missing');
+    return match[1];
+  };
+  assert.equal(attr('name'), `dev.crosswake.shell.core.${spec.suite}`, 'wrong-junit-suite');
+  const tests = { discovered: Number(attr('tests')), skipped: Number(attr('skipped')),
+    failures: Number(attr('failures')), errors: Number(attr('errors')) };
+  assert.equal(tests.discovered, spec.testCount, 'nonempty-reader-suite-count');
+  assert.equal(tests.skipped, 0, 'unexpected-test-skip');
+  assert.equal(tests.errors, 0, 'unrelated-test-error');
+  const cases = [...xml.matchAll(/<testcase\s+name="([^"]+)"[^>]*?(?:\/>|>([\s\S]*?)<\/testcase>)/g)];
+  assert.equal(cases.length, spec.testCount, 'junit-case-count');
+  assert.equal(cases.filter(c => c[1] === spec.symbol).length, 1, 'reader-test-not-discovered');
+  const failed = cases.filter(c => /<failure\s/.test(c[2] ?? ''));
+  assert.equal(failed.length, tests.failures, 'junit-failure-count');
+  if (expected === 'pass') assert.equal(tests.failures, 0, 'unexpected-test-failure');
+  else {
+    const diagnostic = expected === 'missing' ? 'CW-VECTOR-MISSING bridge_contract_vectors.json'
+      : expected === 'loaded' ? `CW-VECTOR-LOADED expected ${spec.loaded}`
+      : expected === 'selected' ? 'CW-VECTOR-SELECTED expected 1'
+      : `CW-VECTOR-COMPLETED expected ${spec.completed}`;
+    assert.ok(failed.length > 0 && failed.every(c => c[2].includes(diagnostic)), 'intended-failure-missing');
+    if (expected === 'completed') assert.ok(failed.every(c => c[1] === spec.symbol), 'unrelated-case-failure');
+  }
+  const copiedResource = resolve(root, androidPackage, 'build/intermediates/java_res/debugUnitTest/processDebugUnitTestJavaRes/out/bridge_contract_vectors.json');
+  if (expected === 'missing') assert.ok(!existsSync(copiedResource), 'stale-resource-remained');
+  else assert.equal(hash(readFileSync(copiedResource)), hash(readFileSync(resolve(root, androidResource))), 'rebuilt-resource-mismatch');
+  return [{ ...plan, exit: result.exit, durationMs: result.durationMs, outputSha256: hash(result.output),
+    reportSha256: hash(xml), tests }];
+}
+function kotlinFull(mode) {
+  const started = performance.now();
+  const jdk = discoverJDK17();
+  const readers = [];
+  for (const spec of kotlinSpecs[mode]) {
+    const path = resolve(root, androidResource);
+    const owner = `${androidTests}/${spec.suite}.kt`;
+    const ownerPath = resolve(root, owner);
+    const original = readFileSync(path);
+    const source = readFileSync(ownerPath);
+    const corpus = JSON.parse(original);
+    kotlinPopulation(original, spec);
+    const controls = [];
+    let before;
+    let after;
+    try {
+      withBytes(path, original, () => withBytes(ownerPath, source, () => {
+        before = kotlinConsumer(spec, 'pass', jdk);
+        for (const control of spec.controls) {
+          writeFileSync(path, original);
+          writeFileSync(ownerPath, source);
+          let expected = 'loaded';
+          if (control === 'missing') { unlinkSync(path); expected = 'missing'; }
+          else {
+            const vectors = control === 'removed' ? corpus[spec.collection].slice(1)
+              : control === 'empty' ? [] : corpus[spec.collection].map(v => ({ ...v, [spec.excluded]: true }));
+            if (control === 'all-excluded') expected = 'completed';
+            writeFileSync(path, JSON.stringify({ ...corpus, [spec.collection]: vectors }));
+          }
+          const resourceHash = existsSync(path) ? hash(readFileSync(path)) : null;
+          const ownerHash = hash(readFileSync(ownerPath));
+          assert.ok(resourceHash !== hash(original) || ownerHash !== hash(source), 'mutation-did-not-change-bytes');
+          const processes = kotlinConsumer(spec, expected, jdk);
+          controls.push({ control, expected, resourceSha256: resourceHash, ownerSha256: ownerHash, processes });
+          process.stdout.write(`vector-control ${mode} ${spec.suite} ${control}: discriminating failure\n`);
+        }
+      }));
+    } finally {
+      assert.equal(hash(readFileSync(path)), hash(original), 'resource-restoration-failed');
+      assert.equal(hash(readFileSync(ownerPath)), hash(source), 'owner-restoration-failed');
+      after = kotlinConsumer(spec, 'pass', jdk);
+    }
+    readers.push({ owner, testSymbol: spec.symbol, kind: spec.kind, resource: androidResource,
+      loaded: spec.loaded, completed: spec.completed,
+      selectionControl: spec.kind === 'metadata-only' ? 'not-applicable-no-filter' : 'applicable',
+      resourceSha256: hash(original), ownerSha256: hash(source), before, controls, restoration: { byteExact: true, after } });
+  }
+  const receiptPath = resolve(root, phase, '196-EVIDENCE/kotlin-vectors.json');
+  const receipt = existsSync(receiptPath) ? JSON.parse(readFileSync(receiptPath)) : { schema: 1, modes: {} };
+  receipt.modes[mode] = { jdk: jdk.identity, helperSha256: hash(readFileSync(fileURLToPath(import.meta.url))), readers,
+    durationMs: Math.round(performance.now() - started) };
+  writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+  process.stdout.write(`vector-controls ${mode}: ${readers.length} JVM owners restored; ${receipt.modes[mode].durationMs}ms\n`);
+}
+
 const [command, mode] = process.argv.slice(2);
 if (command === 'quick' && Object.hasOwn(kotlinSpecs, mode)) kotlinQuick(mode);
+else if (Object.hasOwn(kotlinSpecs, command)) kotlinFull(command);
 else if (Object.hasOwn(otherSpecs, command === 'quick' ? mode : command)) {
   if (command === 'quick') otherQuick(mode);
   else otherFull(command);

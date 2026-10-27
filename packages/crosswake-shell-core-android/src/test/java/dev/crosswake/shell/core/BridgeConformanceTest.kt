@@ -13,8 +13,9 @@ class BridgeConformanceTest {
 
     @Before
     fun loadVectors() {
-        val text = javaClass.getResourceAsStream("/bridge_contract_vectors.json")!!
-            .bufferedReader().readText()
+        val stream = javaClass.getResourceAsStream("/bridge_contract_vectors.json")
+            ?: throw AssertionError("CW-VECTOR-MISSING bridge_contract_vectors.json")
+        val text = stream.bufferedReader().use { it.readText() }
         vectorsJson = JSONObject(text)
         bridgeVersion = vectorsJson.getString("bridge_protocol_version")
     }
@@ -156,6 +157,8 @@ class BridgeConformanceTest {
     @Test
     fun `all bridge contract vectors pass status and denial-reason assertions`() {
         val vectors = vectorsJson.getJSONArray("vectors")
+        assertEquals("CW-VECTOR-LOADED expected 15", 15, vectors.length())
+        val completed = mutableListOf<String>()
 
         for (i in 0 until vectors.length()) {
             val vector = vectors.getJSONObject(i)
@@ -225,7 +228,10 @@ class BridgeConformanceTest {
                     .getString("reason")
                 assertEquals("Vector $id: expected_denial_reason", expectedReason, reason)
             }
+            completed.add(id)
         }
+        assertEquals("CW-VECTOR-COMPLETED expected 14", 14, completed.size)
+        assertEquals("CW-VECTOR-COMPLETED unique expected 14", 14, completed.toSet().size)
     }
 
     // ── Delegate escape-hatch: present → ok ──────────────────────────────

@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "modes": {
+    "kotlin-request": {
+      "jdk": {
+        "major": 17,
+        "version": "17.0.19",
+        "discovery": "homebrew-arm64-openjdk17",
+        "executableSha256": "7db0dd5c0c4dc931244875d0723783a32cc7912922e6aaac1dbb744bf8ae837f",
+        "outputSha256": "67732c1a52f008070b8222ad1b1694a9643188135d8fcb7878cb6c21cda20237"
+      },
+      "helperSha256": "12a6ca9318318cec2d9ac7daa9c7ee8d5bfe17b8ede5dc5683deeae6c44921bc",
+      "readers": [
+        {
+          "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeConformanceTest.kt",
+          "testSymbol": "all bridge contract vectors pass status and denial-reason assertions",
+          "kind": "behavioral",
+          "resource": "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json",
+          "loaded": 15,
+          "completed": 14,
+          "selectionControl": "applicable",
+          "resourceSha256": "3b64c8d81e1ca086494a1910aa5fb2d05d7a2d263b3d72f229f319d22e0064c0",
+          "ownerSha256": "e498b97d5d93fa89f123c33dd873935cea5fefc6d27ec5fa01b67d59eb5b711a",
+          "before": [
+            {
+              "command": "./gradlew",
+              "args": [
+                "clean",
+                "testDebugUnitTest",
+                "--tests",
+                "dev.crosswake.shell.core.BridgeConformanceTest"
+              ],
+              "cwd": "packages/crosswake-shell-core-android",
+              "environment": {
+                "JAVA_HOME": "discovered-installed-jdk17"
+              },
+              "exit": 0,
+              "durationMs": 3340,
+              "outputSha256": "e499abd760321899b07ff4c76802348c1e276c13df3194f43b4fd3350351c2c8",
+              "reportSha256": "5b5be2f2519d777350db955434499ed1805f5c7b64d0737fadf5111fa9f911e4",
+              "tests": {
+                "discovered": 3,
+                "skipped": 0,
+                "failures": 0,
+                "errors": 0
+              }
+            }
+          ],
+          "controls": [
+            {
+              "control": "missing",
+              "expected": "missing",
+              "resourceSha256": null,
+              "ownerSha256": "e498b97d5d93fa89f123c33dd873935cea5fefc6d27ec5fa01b67d59eb5b711a",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeConformanceTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 3015,
+                  "outputSha256": "9823dbe3d82491cfb523945472b1e5b5f3403d797178106b872383e49af331c3",
+                  "reportSha256": "f61ac52873e7aeebdfd41493a3806e68bffbcb9a285850d1d312fdd8c703ea60",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "removed",
+              "expected": "loaded",
+              "resourceSha256": "985257aa579cea3df06bd78288ba897a8bf8874f7387265e693ecfd1adec0267",
+              "ownerSha256": "e498b97d5d93fa89f123c33dd873935cea5fefc6d27ec5fa01b67d59eb5b711a",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeConformanceTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 2616,
+                  "outputSha256": "502543c4ca4a771ead318ac6307132277bcdab65ab3061a315dbefc5239e5e21",
+                  "reportSha256": "58c08c5a95a06fd5f4f2cfdd5b1ea3ed81baf4b4fdf7692ffcb4dcd545258529",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 1,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "empty",
+              "expected": "loaded",
+              "resourceSha256": "c57810a77d1d3d5c91e904f30f784c6e84481793dd551c4f177c36668cd67e78",
+              "ownerSha256": "e498b97d5d93fa89f123c33dd873935cea5fefc6d27ec5fa01b67d59eb5b711a",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeConformanceTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 2775,
+                  "outputSha256": "7fe2517e080f1aa985fe3ee418472505298317bf6c51101a93aaf686d18a6f8d",
+                  "reportSha256": "cd66f0e7a87bab9f21e5e3dff61d4679886adca1174ac6682128c02e01cb5e3d",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 1,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "all-excluded",
+              "expected": "completed",
+              "resourceSha256": "fe0ca99e30fdf85be2a9ed1c16c816e4344c93de963b6ab6d02671c5f26586a8",
+              "ownerSha256": "e498b97d5d93fa89f123c33dd873935cea5fefc6d27ec5fa01b67d59eb5b711a",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeConformanceTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 2309,
+                  "outputSha256": "2543f1c2457135afb6f6e6c351b8a165eb7e6249648695f9e666fc491fe0e302",
+                  "reportSha256": "820aa182845baa9d675aae39f0ebb707a04b2390522aa65a4721492f175fed0b",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 1,
+                    "errors": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "restoration": {
+            "byteExact": true,
+            "after": [
+              {
+                "command": "./gradlew",
+                "args": [
+                  "clean",
+                  "testDebugUnitTest",
+                  "--tests",
+                  "dev.crosswake.shell.core.BridgeConformanceTest"
+                ],
+                "cwd": "packages/crosswake-shell-core-android",
+                "environment": {
+                  "JAVA_HOME": "discovered-installed-jdk17"
+                },
+                "exit": 0,
+                "durationMs": 2163,
+                "outputSha256": "25752e4ef52775ae355b28579abada386c9c5e03560fb48111dd8b759635d00c",
+                "reportSha256": "00cd7b16f3fe3b1ffef20bac8ca08b192fceeedc01124242d88790f09e8f3aee",
+                "tests": {
+                  "discovered": 3,
+                  "skipped": 0,
+                  "failures": 0,
+                  "errors": 0
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "durationMs": 16278
+    }
+  }
+}
