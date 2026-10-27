@@ -131,13 +131,20 @@ child.on('close',(status,signal)=>{clearTimeout(timer);process.stdout.write(JSON
 function run(command, args, options = {}) {
   const timeout = options.timeout || 120000;
   const env = options.env || { PATH: process.env.PATH, HOME: process.env.HOME,
+    ...(process.env.TMPDIR ? { TMPDIR: process.env.TMPDIR } : {}),
     ...(command === 'gh' && process.env.GH_TOKEN ? { GH_TOKEN: process.env.GH_TOKEN } : {}),
     ...(command === 'gh' && process.env.GITHUB_TOKEN ? { GITHUB_TOKEN: process.env.GITHUB_TOKEN } : {}) };
   const wrapper = spawnSync(process.execPath, ['-e', WATCHDOG], { encoding: 'utf8', timeout: timeout + 5000, maxBuffer: 6 * MAX + 1024,
     env, input: JSON.stringify({ command, args, cwd: options.cwd || process.cwd(), input: options.input || '', timeout, max: MAX }) });
   requireThat(!wrapper.error && wrapper.status === 0, 'process_watchdog_failed');
   let result; try { result = JSON.parse(wrapper.stdout); } catch { throw new Error('process_watchdog_invalid'); }
-  return processResult(result, 'child_failed');
+  if (args.includes('--_proof') && result.status !== 0) {
+    let failure;
+    try { failure = JSON.parse(result.stderr.trim()); } catch { /* fixed fallback below */ }
+    if (failure && Object.keys(failure).sort().join('|') === 'label|verdict'
+      && failure.verdict === 'fail' && /^[a-z_]{1,60}$/.test(failure.label)) throw new Error(failure.label);
+  }
+  return processResult(result, options.failureLabel || 'child_failed');
 }
 function git(...args) { return run('git', args).trim(); }
 function json(command, args) { try { return JSON.parse(run(command, args)); } catch { throw new Error('readback_invalid'); } }
@@ -359,7 +366,7 @@ async function privateProof() {
   writeFileSync(path.join(scratch, 'harness.mjs'), harness, { mode: 0o400 });
   const registered = JSON.parse(run(process.execPath, ['--input-type=module', '-e', `import { registered } from ${JSON.stringify(pathToFileURL(path.join(scratch, 'harness.mjs')).href)}; process.stdout.write(JSON.stringify(registered));`]));
   requireThat(Array.isArray(registered) && registered.length >= 190 && new Set(registered).size === registered.length && state.required.every(name => registered.includes(name)), 'registered_case_floor');
-  const quickOutput = run(process.execPath, ['--test', '--test-reporter=tap', SOURCE[1]], { timeout: 180000 });
+  const quickOutput = run(process.execPath, ['--test', '--test-reporter=tap', SOURCE[1]], { timeout: 180000, failureLabel: 'quick_suite_failed' });
   const quick = tap(quickOutput, registered);
   const timing = metrics(quickOutput, metricLabels(file(SOURCE[1]).toString()));
   const census = /# live census references (\d+); aliases (\d+); derived (\d+); violations (\d+)/.exec(quickOutput);
@@ -367,13 +374,13 @@ async function privateProof() {
   const workflow = { references: +census[1], aliases: +census[2], derived: +census[3], violations: +census[4] };
   const fullFiles = readdirSync('test/js').filter(name => name.endsWith('.mjs')).sort().map(name => `test/js/${name}`);
   requireThat(fullFiles.length > 1, 'suite_floor');
-  const full = tap(run(process.execPath, ['--test', '--test-reporter=tap', ...fullFiles], { timeout: 240000 }), registered);
+  const full = tap(run(process.execPath, ['--test', '--test-reporter=tap', ...fullFiles], { timeout: 240000, failureLabel: 'full_suite_failed' }), registered);
   requireThat(full.tests > quick.tests, 'suite_floor');
   // Copies preserve actual-main imports and never modify tracked source.
   writeFileSync(path.join(scratch, 'pre-fix.mjs'), git('show', `${PRE_FIX}:${SOURCE[0]}`), { mode: 0o400 });
   const code = controlsSource(productionUrl);
   writeFileSync(path.join(scratch, 'controls.mjs'), code, { mode: 0o400 });
-  const verdicts = controls(JSON.parse(run(process.execPath, [path.join(scratch, 'controls.mjs')], { timeout: 90000 })));
+  const verdicts = controls(JSON.parse(run(process.execPath, [path.join(scratch, 'controls.mjs')], { timeout: 90000, failureLabel: 'copied_controls_failed' })));
   mainIdentity(state);
   process.stdout.write(JSON.stringify({ quick, full, timing, workflow, controls: verdicts }));
 }
@@ -419,7 +426,8 @@ function landed(r) {
     mainIdentity(state);
     result = JSON.parse(run(process.execPath, [copy, '--_proof', '--ws', WS], {
       input: JSON.stringify(state), timeout: 600000,
-      env: { PATH: process.env.PATH, HOME: process.env.HOME, CW_GAP3_PRIVATE: nonce }
+      env: { PATH: process.env.PATH, HOME: process.env.HOME,
+        ...(process.env.TMPDIR ? { TMPDIR: process.env.TMPDIR } : {}), CW_GAP3_PRIVATE: nonce }
     }));
     exact(result, ['quick', 'full', 'timing', 'workflow', 'controls']); controls(result.controls);
     mainIdentity(state); sameInventory(expectedInventory);
@@ -495,6 +503,7 @@ function selfTest() {
   reject(() => metrics('# perf-row private_label length 1 baseline 1 candidate 1 bound 250 ms', new Set()));
   reject(() => run(process.execPath, ['-e', 'process.exit(1)']));
   reject(() => run(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { timeout: 100 }));
+  requireThat(run(process.execPath, ['--input-type=module', '-e', 'import {tmpdir} from "node:os"; import {realpathSync} from "node:fs"; process.stdout.write(realpathSync(tmpdir()));']).trim() === realpathSync(tmpdir()), 'child_tmpdir_changed'); passed++;
   // Real scratch smoke test exercises the same exporter, actual candidate module, and
   // exported workflow emulator without detaching or producing a main-proof artifact.
   // Phase artifacts live on docs, whose production tree intentionally precedes the fix.
