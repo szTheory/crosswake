@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "plan": "196-07",
+  "base_commit": "4a2d1611c3072be941e33d2fdea139be6730fd0f",
+  "journal": {
+    "command": "mix test test/crosswake/offline/journal_test.exs",
+    "exit_code": 0,
+    "tests": 4,
+    "failures": 0,
+    "cases": 24,
+    "accepted": 3,
+    "rejected": 21,
+    "case_ids": ["suffix_15", "suffix_16", "suffix_128", "suffix_129", "ascii_alphabet", "lf", "crlf", "embedded_lf", "prefix", "suffix", "nul", "spaces", "nil", "integer", "float", "list", "map", "atom", "empty", "singleton", "multibyte", "lookalike", "version_lookalike", "invalid_encoding"],
+    "controls": [
+      {"case_id": "scope_line_anchor", "exit_code": 2, "target_assertion_failed": true},
+      {"case_id": "scope_lower_bound", "exit_code": 2, "target_assertion_failed": true},
+      {"case_id": "scope_upper_bound", "exit_code": 2, "target_assertion_failed": true}
+    ],
+    "restored_in_finally": true,
+    "source_sha256": "48b89872653886c64cf6ac882dc9804be32fdc2f50f363ba54c795ce6c841bff"
+  }
+}

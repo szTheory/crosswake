@@ -3,6 +3,72 @@ defmodule Crosswake.Offline.JournalTest do
 
   alias Crosswake.Offline.Journal
 
+  test "scope suffix boundaries and rejected diagnostics have a closed value-free contract" do
+    suffix = String.duplicate("a", 16)
+    canary = Enum.join(["REJECTED", "SCOPE", "PROBE"], "-")
+
+    cases = [
+      {:suffix_15, "v1." <> String.duplicate("a", 15), :reject},
+      {:suffix_16, "v1." <> suffix, :accept},
+      {:suffix_128, "v1." <> String.duplicate("a", 128), :accept},
+      {:suffix_129, "v1." <> String.duplicate("a", 129), :reject},
+      {:ascii_alphabet, "v1." <> "Az09_-" <> suffix, :accept},
+      {:lf, "v1." <> suffix <> "\n", :reject},
+      {:crlf, "v1." <> suffix <> "\r\n", :reject},
+      {:embedded_lf, "v1." <> suffix <> "\n" <> canary, :reject},
+      {:prefix, canary <> "v1." <> suffix, :reject},
+      {:suffix, "v1." <> suffix <> "." <> canary, :reject},
+      {:nul, "v1." <> suffix <> <<0>>, :reject},
+      {:spaces, "v1." <> suffix <> " " <> canary, :reject},
+      {nil, nil, :reject},
+      {:integer, 16, :reject},
+      {:float, 16.0, :reject},
+      {:list, ["v1.", suffix, canary], :reject},
+      {:map, %{probe: canary}, :reject},
+      {:atom, :invalid_scope, :reject},
+      {:empty, "", :reject},
+      {:singleton, "v1.x", :reject},
+      {:multibyte, "v1." <> String.duplicate("é", 16), :reject},
+      {:lookalike, "v1." <> String.duplicate("а", 16), :reject},
+      {:version_lookalike, "ｖ1." <> suffix, :reject},
+      {:invalid_encoding, "v1." <> suffix <> <<255>>, :reject}
+    ]
+
+    assert length(cases) == 24
+    assert MapSet.size(MapSet.new(cases, &elem(&1, 0))) == 24
+    assert Enum.count(cases, &(elem(&1, 2) == :accept)) == 3
+
+    for {id, input, verdict} <- cases do
+      if verdict == :accept do
+        assert Journal.scope_ref!(input) == input, "scope case #{id}"
+      else
+        output =
+          ExUnit.CaptureLog.capture_log(fn ->
+            error =
+              assert_raise ArgumentError, "CW-OFFLINE-SCOPE-REF", fn ->
+                Journal.scope_ref!(input)
+              end
+
+            assert Map.from_struct(error) == %{
+                     message: "CW-OFFLINE-SCOPE-REF",
+                     __exception__: true
+                   }
+
+            assert inspect(error) == "%ArgumentError{message: \"CW-OFFLINE-SCOPE-REF\"}"
+
+            assert Exception.format_banner(:error, error) ==
+                     "** (ArgumentError) CW-OFFLINE-SCOPE-REF"
+
+            proof = Jason.encode!(%{case_id: id, result: "rejected", rule: error.message})
+            refute proof =~ canary
+            refute inspect(error) =~ canary
+          end)
+
+        assert output == "", "scope case #{id} emitted a log"
+      end
+    end
+  end
+
   test "journal entries are immutable and carry replay metadata" do
     committed_at = DateTime.from_naive!(~N[2026-05-16 22:00:00], "Etc/UTC")
 
