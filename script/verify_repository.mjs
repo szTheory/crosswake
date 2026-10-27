@@ -57,7 +57,7 @@ const ROOT_PROOF_DETAIL_BYTES = 16 * 1024;
 // and stays readable; a longer value starting with one of those words is still masked. Groups are named so adding one cannot shift
 // another. Unrolled loops with disjoint alternatives keep matching linear (no nested quantifier overlap).
 const LITERAL_VALUE = `(?:${["nil", "true", "false", "null", "undefined"].map((w) => [...w].map((c) => `[${c}${c.toUpperCase()}]`).join("")).join("|")})`;
-const SECRET_VALUE_SOURCE = String.raw`(?:(?<escOpen>\\+")(?<escBody>[^\\\n]*(?:\\(?!")[^\\\n]*)*)(?<escClose>(?:\\+")?)|"(?<dqBody>[^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)(?<dqClose>"?)|'(?<sqBody>[^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)(?<sqClose>'?)|(?<bare>(?!${LITERAL_VALUE}(?=[\s,;)\]}]|$))[^\s"']{3,}))`;
+const SECRET_VALUE_SOURCE = String.raw`(?:(?<escOpen>\\+")(?<escBody>[^\\\n]*(?:\\(?!")[^\\\n]*)*)(?<escClose>(?:\\+")?)|"(?<dqBody>[^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)(?<dqClose>"?)|'(?<sqBody>[^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)(?<sqClose>'?)|(?<bare>(?!${LITERAL_VALUE}(?=[\s,;)\]}]|$))[^\s"',;)\]}]{3,}))`;
 
 // Replacer for a (prefix, value) match built from SECRET_VALUE_SOURCE: quotes survive around `***`.
 // The value groups are read by name from the trailing groups object; only the prefix is positional.
@@ -76,47 +76,524 @@ const KEY_QUOTE = String.raw`(?:\\*["'])?`;
 // left boundary so `preauthorization` is not a credential key (an underscore or hyphen before it still is).
 const CREDENTIAL_WORDS = String.raw`tokens?|secret[_-]key[_-]base|secret[_-]key|secrets?|passwords?|passwd|passphrase|api[_-]?key|private[_-]?key|credentials?|cookies?|(?<![A-Za-z0-9])authorization`;
 
-// PEM private-key block: the BEGIN marker survives, then body items (each starts with a line break, real or a
-// literal backslash-n) until a line that is not base64, a Proc-Type/DEK-Info header or blank, then an optional END
-// marker. The dashes are a quantifier so this source never holds a literal marker.
-const PEM_LB = String.raw`(?:\r?\n|\\n)`;
-const PEM_EOL = `(?=${PEM_LB}|$)`;
-const PEM_KEY = String.raw`(?:[A-Z]{2,12} ){0,3}PRIVATE[ ]KEY-{5}`;
-const PEM_ITEM = `${PEM_LB}[ \\t]*(?:[A-Za-z0-9+/=]+${PEM_EOL}|(?:Proc-Type|DEK-Info):(?:[^\\r\\n\\\\]|\\\\(?!n))*|${PEM_EOL})`;
-const PEM_RULE = new RegExp(`(-{5}BEGIN ${PEM_KEY})(?:${PEM_ITEM})*(?:${PEM_LB}-{5}END ${PEM_KEY})?`, "g");
+// These workflow names are credential-bearing even though their spelling does not contain a
+// credential family word. Keep only reviewed identifiers here; workflow YAML is inventory input
+// for tests and is never read by the diagnostic path.
+const REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES = new Set([
+  "CROSSWAKE_PLAY_BILLING_SANDBOX_READY",
+  "CROSSWAKE_STOREKIT_SANDBOX_READY",
+  "MAVEN_USERNAME",
+  "ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME"
+]);
+const CREDENTIAL_FAMILY_TOKENS = new Set(["token", "secret", "password", "passwd", "passphrase", "credential", "cookie", "authorization", "pwd", "pass", "pw", "auth"]);
+const KEY_QUALIFIER_TOKENS = new Set(["api", "auth", "access", "private", "deploy", "signing", "memory", "account"]);
+const CREDENTIAL_METADATA_SUFFIXES = new Set(["count", "length", "size"]);
+function credentialIdentifierTokens(identifier) {
+  return String(identifier)
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((token) => token.toLowerCase());
+}
+
+function isCredentialIdentifier(identifier) {
+  if (REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES.has(String(identifier).replace(/[^A-Za-z0-9]/g, "_").toUpperCase())) return true;
+  const tokens = credentialIdentifierTokens(identifier);
+  if (CREDENTIAL_METADATA_SUFFIXES.has(tokens.at(-1))) return false;
+  if (tokens.join("_") === "session_id") return true;
+  if (tokens.some((token) => CREDENTIAL_FAMILY_TOKENS.has(token) || CREDENTIAL_FAMILY_TOKENS.has(token.replace(/s$/, "")))) return true;
+  return tokens.includes("key") && tokens.some((token) => KEY_QUALIFIER_TOKENS.has(token));
+}
+
+// Broad identifier capture followed by a value is classified structurally. The lookahead after
+// the separator makes a failed short bare value disjoint from the whitespace scan.
+const STRUCTURAL_CREDENTIAL_RULE = new RegExp(
+  `((?<![A-Za-z0-9_-])(?<identifier>[A-Za-z_][A-Za-z0-9_-]*)[ \\t]*(?:=>|[:=]{1,3})[ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`,
+  "gi"
+);
+// One quoted/unquoted identifier grammar for assignment and continuation selection. The left
+// boundary excludes backslashes so failed escaped-quote matches cannot restart inside a slash run.
+const CREDENTIAL_KEY_SOURCE = String.raw`(?<![A-Za-z0-9_\\-])(?:(?<escape>\\*)(?<quote>["'])(?<quotedIdentifier>[A-Za-z_][A-Za-z0-9_-]*)\k<escape>\k<quote>|(?<identifier>[A-Za-z_][A-Za-z0-9_-]*))`;
+const CREDENTIAL_SEPARATOR_SOURCE = String.raw`[ \t]*(?:=>|[:=：]{1,3})[ \t\r\n]*`;
+const STRUCTURAL_KEY_LINE = new RegExp(`${CREDENTIAL_KEY_SOURCE}${CREDENTIAL_SEPARATOR_SOURCE}(?:(?:[|>][+-]?[0-9]?[+-]?)[ \\t]*)?\\r?$`, "i");
+
+function maskStructuralCredential(match, prefix, identifier, ...rest) {
+  if (!isCredentialIdentifier(identifier)) return match;
+  return maskValue(match, prefix, rest[rest.length - 1]);
+}
+
+const CREDENTIAL_ASSIGNMENT_PREFIX = new RegExp(`${CREDENTIAL_KEY_SOURCE}${CREDENTIAL_SEPARATOR_SOURCE}`, "g");
+const CREDENTIAL_TUPLE_PREFIX = /\{[ \t]*(?::(?<atom>[A-Za-z0-9_-]+)|(?<escape>\\*)(?<quote>["'])(?<quoted>[A-Za-z0-9_-]+)\k<escape>\k<quote>)[ \t]*,[ \t]*/g;
+const STRUCTURAL_TUPLE_KEY_LINE = /^\s*\{\s*(?::(?<atom>[A-Za-z0-9_-]+)|(?:"(?<double>[A-Za-z0-9_-]+)"|'(?<single>[A-Za-z0-9_-]+)'))\s*,\s*$/;
+
+function readQuoteSpan(text, start, { multiline = false } = {}) {
+  let quoteAt = start;
+  while (text[quoteAt] === "\\") quoteAt += 1;
+  const quote = text[quoteAt];
+  if (quote !== "'" && quote !== '"' && quote !== "`") return null;
+  const slashCount = quoteAt - start;
+  const triple = slashCount === 0 && text.startsWith(quote.repeat(3), quoteAt);
+  const openEnd = quoteAt + (triple ? 3 : 1);
+  if (triple) {
+    const delimiter = quote.repeat(3);
+    for (let i = openEnd; i < text.length;) {
+      if (text[i] === "\\") {
+        const slashStart = i;
+        while (text[i] === "\\") i += 1;
+        if ((i - slashStart) % 2 === 1) i += 1;
+        continue;
+      }
+      if (text.startsWith(delimiter, i)) return { openEnd, closeAt: i, end: i + 3, closed: true };
+      i += 1;
+    }
+    return { openEnd, closeAt: text.length, end: text.length, closed: false };
+  }
+  let i = quoteAt + 1;
+  while (i < text.length) {
+    if (!multiline && (text[i] === "\n" || text[i] === "\r")) return { openEnd, closeAt: i, end: i, closed: false };
+    if (text[i] === "\\") {
+      const slashStart = i;
+      while (text[i] === "\\") i += 1;
+      if (slashCount > 0 && i - slashStart === slashCount && text[i] === quote) return { openEnd, closeAt: slashStart, end: i + 1, closed: true };
+      if (slashCount === 0 && (i - slashStart) % 2 === 1) i += 1;
+      continue;
+    }
+    if (slashCount === 0 && text[i] === quote) return { openEnd, closeAt: i, end: i + 1, closed: true };
+    i += 1;
+  }
+  return { openEnd, closeAt: text.length, end: text.length, closed: false };
+}
+
+function readQuotedValueEnd(text, start) {
+  const span = readQuoteSpan(text, start);
+  if (!span) return null;
+  let end = span.end;
+  // Shell concatenation and adjacent diagnostic quote runs are one credential value. A closing
+  // quote is not a trusted boundary when an unseparated suffix still follows it.
+  if (span.closed && end < text.length && !/[\s,;)}\]]/.test(text[end])) {
+    const suffix = readBareCredentialValue(text, end, { tokenOnly: true });
+    if (suffix) end = suffix.end;
+  }
+  return { end, replacement: `${text.slice(start, span.openEnd)}***${span.closed ? text.slice(span.closeAt, span.end) : ""}` };
+}
+
+function skipQuotedSpan(text, start) {
+  const span = readQuoteSpan(text, start, { multiline: true });
+  return span?.closed ? span.end : -1;
+}
+
+function readContainerStart(text, start) {
+  if (text.startsWith("%{", start) || text.startsWith("#{", start)) return { prefix: text.slice(start, start + 2), opener: "{", openAt: start + 1 };
+  if (text.startsWith("<<", start)) return { prefix: "<<", opener: "<<", openAt: start };
+  const paired = { "{": "}", "[": "]", "(": ")" };
+  if (Object.hasOwn(paired, text[start])) return { prefix: text[start], opener: text[start], openAt: start };
+  if (text[start] === "~" && /[A-Za-z]/.test(text[start + 1] ?? "")) {
+    const delimiterAt = start + 2;
+    const delimiter = text[delimiterAt];
+    const sigilClosers = { "{": "}", "[": "]", "(": ")", "<": ">", "|": "|", "/": "/", "'": "'", '"': '"' };
+    if (Object.hasOwn(sigilClosers, delimiter)) return { prefix: text.slice(start, delimiterAt + 1), opener: delimiter, openAt: delimiterAt };
+  }
+  return null;
+}
+
+function readBalancedCredentialValue(text, start) {
+  const container = readContainerStart(text, start);
+  if (!container) return null;
+  const closerFor = { "{": "}", "[": "]", "(": ")", "<": ">", "<<": ">>" };
+  const initialCloser = closerFor[container.opener] ?? container.opener;
+  const stack = [initialCloser];
+  let i = container.openAt + container.opener.length;
+  while (i < text.length) {
+    const top = stack[stack.length - 1];
+    if (text[i] === "\\") {
+      let slashEnd = i;
+      while (text[slashEnd] === "\\") slashEnd += 1;
+      const escapedQuote = text[slashEnd] === '"' || text[slashEnd] === "'" ? readQuoteSpan(text, i, { multiline: true }) : null;
+      if (escapedQuote) {
+        if (!escapedQuote.closed) return { end: text.length, replacement: `${container.prefix}***` };
+        i = escapedQuote.end;
+      } else i = slashEnd + (slashEnd < text.length ? 1 : 0);
+      continue;
+    }
+    if (text.startsWith(top, i)) {
+      const end = i + top.length;
+      stack.pop();
+      if (stack.length === 0) return { end, replacement: `${container.prefix}***${top}` };
+      i = end;
+      continue;
+    }
+    if (!closerFor[container.opener] && stack.length === 1) { i += 1; continue; }
+    if (text[i] === "'" || text[i] === '"' || text[i] === "`") {
+      const end = skipQuotedSpan(text, i);
+      if (end < 0) return { end: text.length, replacement: `${container.prefix}***` };
+      i = end;
+      continue;
+    }
+    if (text.startsWith("<<", i)) { stack.push(">>"); i += 2; continue; }
+    if (text[i] === "{" || text[i] === "[" || text[i] === "(") {
+      stack.push(closerFor[text[i]]);
+      i += 1;
+      continue;
+    }
+    if (text.startsWith(">>", i) || text[i] === "}" || text[i] === "]" || text[i] === ")") {
+      const closer = text.startsWith(">>", i) ? ">>" : text[i];
+      if (closer !== top) return { end: text.length, replacement: `${container.prefix}***` };
+      const end = i + closer.length;
+      stack.pop();
+      if (stack.length === 0) return { end, replacement: `${container.prefix}***${closer}` };
+      i = end;
+      continue;
+    }
+    i += 1;
+  }
+  return { end: text.length, replacement: `${container.prefix}***` };
+}
+
+function looksLikeAssignmentAfterComma(text, commaAt) {
+  let i = commaAt + 1;
+  while (text[i] === " " || text[i] === "\t" || text[i] === "\r" || text[i] === "\n") i += 1;
+  if (text[i] === '"' || text[i] === "'") {
+    const quote = text[i++];
+    while (/[A-Za-z0-9_-]/.test(text[i] ?? "")) i += 1;
+    if (text[i] !== quote) return false;
+    i += 1;
+  } else {
+    if (!/[A-Za-z_]/.test(text[i] ?? "")) return false;
+    i += 1;
+    while (/[A-Za-z0-9_-]/.test(text[i] ?? "")) i += 1;
+  }
+  while (text[i] === " " || text[i] === "\t") i += 1;
+  return text.startsWith("=>", i) || text[i] === ":" || text[i] === "=";
+}
+
+function readBareCredentialValue(text, start, { tuple = false, multiword = false, tokenOnly = false } = {}) {
+  let i = start;
+  const closers = [];
+  while (i < text.length) {
+    const char = text[i];
+    if (char === "\r" || char === "\n" || char === ";") break;
+    if (tokenOnly && (char === " " || char === "\t")) break;
+    if (char === "(" || char === "[" || char === "{") closers.push({ "(": ")", "[": "]", "{": "}" }[char]);
+    if (char === "}" || char === "]" || char === ")") {
+      if (closers.at(-1) !== char) break;
+      closers.pop();
+    }
+    if (char === "," && (tuple || looksLikeAssignmentAfterComma(text, i))) break;
+    i += 1;
+  }
+  let end = i;
+  while (end > start && (text[end - 1] === " " || text[end - 1] === "\t")) end -= 1;
+  const value = text.slice(start, end);
+  if (value === "" || /^(?:nil|true|false|null|undefined)$/i.test(value)) return null;
+  if (value.length < 3 && !/[ \t]/.test(value)) return null;
+  if (!multiword && value.length < 3) return null;
+  return { end, replacement: "***" };
+}
+
+function readCompleteCredentialValue(text, start, options = {}) {
+  return readBalancedCredentialValue(text, start)
+    ?? readQuotedValueEnd(text, start)
+    ?? readBareCredentialValue(text, start, options);
+}
+
+function maskStructuredCredentialAssignments(text) {
+  const rule = new RegExp(CREDENTIAL_ASSIGNMENT_PREFIX.source, "g");
+  let result = "";
+  let cursor = 0;
+  let match;
+  while ((match = rule.exec(text)) !== null) {
+    const identifier = match.groups.quotedIdentifier ?? match.groups.identifier;
+    if (!isCredentialIdentifier(identifier)) continue;
+    const valueStart = rule.lastIndex;
+    // Parse typed continuation values before the line pass can erase their opener. Bare
+    // next-line/YAML-block handling stays with the diagnostic-aware continuation pass.
+    if (/[\r\n]/.test(match[0]) && !readContainerStart(text, valueStart) && !readQuoteSpan(text, valueStart)) continue;
+    const value = readCompleteCredentialValue(text, valueStart, { multiword: true });
+    if (!value) continue;
+    result += text.slice(cursor, valueStart) + value.replacement;
+    cursor = value.end;
+    rule.lastIndex = value.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+function maskCredentialNameValueRecords(text) {
+  // Collect direct fields with one lexical walk. Record-local ownership prevents name/value
+  // pairing across siblings; arrays and nested objects retain their own delimiter stack.
+  // Duplicate names are ambiguous: any credential name makes every value field in that record
+  // sensitive. Ranges are merged before value consumption so nested records never rescan suffixes.
+  const fieldPrefix = /[ \t\r\n]*(?:(?<escape>\\*)(?<quote>["'])(?<quoted>[A-Za-z_][A-Za-z0-9_-]*)\k<escape>\k<quote>|(?<bare>[A-Za-z_][A-Za-z0-9_-]*))[ \t\r\n]*:[ \t\r\n]*/y;
+  const stack = [];
+  const records = [];
+  const closeField = (node, end) => { if (node?.active) { node.active.end = end; node.active = null; } };
+  const openField = (node, start) => {
+    if (node?.closer !== "}") return;
+    fieldPrefix.lastIndex = start;
+    const match = fieldPrefix.exec(text);
+    if (!match) return;
+    const field = { key: (match.groups.quoted ?? match.groups.bare).toLowerCase(), start: fieldPrefix.lastIndex, end: text.length };
+    node.fields.push(field);
+    node.active = field;
+  };
+  for (let i = 0; i < text.length;) {
+    if (text[i] === '"' || text[i] === "'" || text[i] === "\\") {
+      let quoteAt = i;
+      while (text[quoteAt] === "\\") quoteAt += 1;
+      if (text[quoteAt] === '"' || text[quoteAt] === "'") {
+        const span = readQuoteSpan(text, i, { multiline: true });
+        i = span.end;
+        continue;
+      }
+      i = quoteAt + (quoteAt < text.length ? 1 : 0);
+      continue;
+    }
+    if (text[i] === "{" || text[i] === "[") {
+      const node = { closer: text[i] === "{" ? "}" : "]", fields: [], active: null };
+      stack.push(node);
+      if (node.closer === "}") { records.push(node); openField(node, i + 1); }
+    } else if (text[i] === ",") {
+      const node = stack.at(-1);
+      closeField(node, i);
+      openField(node, i + 1);
+    } else if (text[i] === "}" || text[i] === "]") {
+      const node = stack.at(-1);
+      if (node?.closer === text[i]) { closeField(node, i); stack.pop(); }
+      else break; // no trusted closing boundary after malformed nesting
+    }
+    i += 1;
+  }
+  const ranges = new Map();
+  for (const record of records) {
+    const credential = record.fields.some((field) => {
+      if (field.key !== "name") return false;
+      if (!/[A-Za-z_"']/.test(text[field.start] ?? "")) return false;
+      const name = text.slice(field.start, field.end).trim();
+      const match = /^(?:["']([A-Za-z0-9_-]+)["']|([A-Za-z0-9_-]+))$/.exec(name);
+      return match && isCredentialIdentifier(match[1] ?? match[2]);
+    });
+    if (credential) for (const field of record.fields) if (field.key === "value") ranges.set(field.start, field);
+  }
+  if (ranges.size === 0) return text;
+  let cursor = 0;
+  let result = "";
+  for (let start = 0; start < text.length;) {
+    const range = ranges.get(start);
+    if (!range) { start += 1; continue; }
+    const valueText = text.slice(range.start, range.end).trimEnd();
+    const value = readCompleteCredentialValue(valueText, 0, { multiword: true });
+    if (!value) { start += 1; continue; }
+    result += text.slice(cursor, range.start) + value.replacement;
+    cursor = range.start + value.end;
+    start = cursor;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+function maskCredentialTupleValues(text) {
+  const rule = new RegExp(CREDENTIAL_TUPLE_PREFIX.source, "g");
+  let result = "";
+  let cursor = 0;
+  let match;
+  while ((match = rule.exec(text)) !== null) {
+    const identifier = match.groups.atom ?? match.groups.quoted;
+    if (!isCredentialIdentifier(identifier)) continue;
+    const valueStart = rule.lastIndex;
+    const value = readCompleteCredentialValue(text, valueStart, { tuple: true, multiword: true });
+    if (!value) continue;
+    result += text.slice(cursor, valueStart) + value.replacement;
+    cursor = value.end;
+    rule.lastIndex = value.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+// Armor BEGIN markers retain their public label; every later byte through a matching END marker is consumed
+// without guessing the body's alphabet or line prefix. An absent/mismatched END deterministically consumes EOF.
+// Labels and dashes are pattern fragments, so no literal armor marker is stored in source.
+const PRIVATE_KEY_LABEL = String.raw`(?:[A-Z]{2,12} ){0,3}PRIVATE[ ]KEY(?:[ ]BLOCK)?`;
+const PRIVATE_KEY_BEGIN_RULE = new RegExp(`-{5}BEGIN (?<label>${PRIVATE_KEY_LABEL})-{5}`, "g");
+
+function armorLineBreakEnd(text, start) {
+  if (text.startsWith("\r\n", start)) return start + 2;
+  if (text[start] === "\n" || text[start] === "\r") return start + 1;
+  const slash = String.fromCharCode(92);
+  if (text.startsWith(`${slash}${slash}n`, start)) return start + 3;
+  if (text.startsWith(`${slash}n`, start)) return start + 2;
+  return -1;
+}
+
+function armorLineEnd(text, start) {
+  for (let i = start; i < text.length; i += 1) {
+    const afterBreak = armorLineBreakEnd(text, i);
+    if (afterBreak >= 0) return { breakAt: i, end: afterBreak };
+  }
+  return { breakAt: text.length, end: text.length };
+}
+
+function maskPrivateKeyBlocks(text) {
+  const beginRule = new RegExp(PRIVATE_KEY_BEGIN_RULE.source, "g");
+  let result = "";
+  let cursor = 0;
+  let match;
+  while ((match = beginRule.exec(text)) !== null) {
+    const endMarker = `${"-".repeat(5)}END ${match.groups.label}${"-".repeat(5)}`;
+    const endMarkerAt = text.indexOf(endMarker, beginRule.lastIndex);
+    result += text.slice(cursor, match.index) + match[0];
+    if (endMarkerAt < 0) return `${result}***`;
+    const lineEnd = armorLineEnd(text, endMarkerAt + endMarker.length);
+    result += `***${text.slice(lineEnd.breakAt, lineEnd.end)}`;
+    cursor = lineEnd.end;
+    beginRule.lastIndex = lineEnd.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
 
 // Query-string credentials: `?key=`, `&sig=`, `&signature=` and the X-Amz signing parameters, value to `&`, `#` or space.
-const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|X-Amz-Signature|X-Amz-Credential|X-Amz-Security-Token)=)[^&#\s"']{3,}/gi;
+const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|code|password|AWSAccessKeyId|X-Amz-Signature|X-Amz-Credential|X-Amz-Security-Token)(?:=|%3[dD]=?))[^&#\s"']{3,}/gi;
 
 const AUTHORIZATION_RULE = new RegExp(`((?<![A-Za-z0-9])authorization${KEY_QUOTE}[ \\t]*[:=][ \\t]*)[^\\n]+`, "gi");
 const COOKIE_RULE = new RegExp(`(\\bcookies?${KEY_QUOTE}[ \\t]*:[ \\t]*)[^\\n]+`, "gi");
-const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*)${SECRET_VALUE_SOURCE}`, "gi");
-// Bearer: a quoted value keeps its quotes around `***`; `realm="v"` style (non-space run then a quoted span)
-// and a 3+ character bare run become `***`. The separator is `[ \t]+`, so a line-final `Bearer` never reaches the next line.
-const BEARER_RULE = /\b(bearer[ \t]+)(?:"(?<dq>[^"\n]*)(?<dqc>"?)|'(?<sq>[^'\n]*)(?<sqc>'?)|[^\s"']*(?:"[^"\n]*"?|'[^'\n]*'?)|[^\s"']{3,})/gi;
+const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`, "gi");
+// Standalone Bearer/Basic and colon forms: quoted values retain their quotes; short values
+// remain protected. Only a whole-line scheme header may select the following line.
+const BEARER_RULE = /\b((?:bearer|basic)(?:[ \t]+|[ \t]*:[ \t]*))(?:"(?<dq>[^"\n]*)(?<dqc>"?)|'(?<sq>[^'\n]*)(?<sqc>'?)|[^\s"']*(?:"[^"\n]*"?|'[^'\n]*'?)|[^\s"']{3,})/gi;
 function maskBearer(match, prefix, ...rest) {
   const g = rest[rest.length - 1];
   if (g.dq !== undefined) return `${prefix}"***${g.dqc}`;
   if (g.sq !== undefined) return `${prefix}'***${g.sqc}`;
   return `${prefix}***`;
 }
-// Elixir tuple `{:token, "v"}` / `{"password", "v"}`: an atom or a closed-quote key, then a comma. A comma after a
-// bare word (`invalid token, retrying`) never qualifies.
-const TUPLE_RULE = new RegExp(
-  `((?::[A-Za-z0-9_-]{0,64}?(?:${CREDENTIAL_WORDS})(?:\\\\*["'])?|["'][A-Za-z0-9_-]{0,64}?(?:${CREDENTIAL_WORDS})\\\\*["'])[ \\t]*,[ \\t]*)${SECRET_VALUE_SOURCE}`,
-  "gi"
-);
 // CLI flag `--<name containing a credential word> <value>`; `--password-file` (name continues) does not match.
 const CLI_FLAG_RULE = new RegExp(`(--[A-Za-z0-9_-]{0,64}?(?:${CREDENTIAL_WORDS})[ \\t]+)${SECRET_VALUE_SOURCE}`, "gi");
 // curl basic auth `-u user:<v>` / `--user user:<v>`.
 const CURL_USER_RULE = new RegExp(`((?<![^ \\t\\n])(?:-u|--user)[ \\t]+[^\\s:]{1,256}:)${SECRET_VALUE_SOURCE}`, "g");
 const GENERIC_CREDENTIAL_RULE = new RegExp(
-  `((?:${CREDENTIAL_WORDS})${KEY_QUOTE}[ \\t]*(?:=>|[:=]{1,3})[ \\t]*)${SECRET_VALUE_SOURCE}`,
+  `((?:${CREDENTIAL_WORDS})${KEY_QUOTE}[ \\t]*(?:=>|[:=]{1,3})[ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`,
   "gi"
 );
 
-// A line that ends in a credential key, a separator and optionally a YAML block indicator (`|`, `>`, chomping).
-const KEY_LINE = new RegExp(`(?:${CREDENTIAL_WORDS})${KEY_QUOTE}[ \\t]*(?:=>|[:=])[ \\t]*(?:[|>][+-]?[0-9]?[+-]?)?[ \\t]*\\r?$`, "i");
+function maskUrlUserinfo(text) {
+  const markers = /:\/\//g;
+  let result = "";
+  let cursor = 0;
+  let marker;
+  while ((marker = markers.exec(text)) !== null) {
+    const start = markers.lastIndex;
+    let separator = -1;
+    let separatorLength = 0;
+    let i = start;
+    for (; i < text.length; i += 1) {
+      if (text[i] === "\n" || text[i] === "\r" || text[i] === '"' || text[i] === "'") break;
+      if (text.startsWith("://", i)) break;
+      const encodedAt = text.slice(i, i + 3).toLowerCase() === "%40";
+      if (text[i] === "@" || encodedAt) {
+        const atEnd = i + (encodedAt ? 3 : 1);
+        const valueStart = separator < 0 ? start : separator + separatorLength;
+        result += text.slice(cursor, valueStart) + "***" + text.slice(i, atEnd);
+        cursor = atEnd;
+        i = atEnd;
+        break;
+      }
+      if (separator < 0 && (text[i] === ":" || text.slice(i, i + 3).toLowerCase() === "%3a")) {
+        separator = i;
+        separatorLength = text[i] === ":" ? 1 : 3;
+      }
+    }
+    markers.lastIndex = i; // monotonic: repeated schemes never rescan the suffix
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+// Maximal token runs are visited once; segment scans never restart at each eyJ marker.
+// Hyphen/underscore context and uppercase headers are allowed without quadratic suffix rescans.
+function maskJwtTokens(text) {
+  return text.replace(/[A-Za-z0-9_.-]+/g, (run) => {
+    const segments = run.split(".");
+    if (segments.length < 2) return run;
+    const offsets = [];
+    let offset = 0;
+    for (const segment of segments) { offsets.push(offset); offset += segment.length + 1; }
+    let result = "";
+    let cursor = 0;
+    for (let i = 0; i + 1 < segments.length; i += 1) {
+      const match = /(?:^|[-_])(eyj)/i.exec(segments[i]);
+      if (!match || !segments[i + 1]) continue;
+      const header = match.index + match[0].length - 3;
+      if (segments[i].length <= header + 3) continue;
+      const last = i + 2 < segments.length && segments[i + 2] ? i + 2 : i + 1;
+      const start = offsets[i] + header;
+      const end = offsets[last] + segments[last].length;
+      result += run.slice(cursor, start) + run.slice(start, start + 3) + "***";
+      cursor = end;
+      i = last;
+    }
+    return cursor === 0 ? run : result + run.slice(cursor);
+  });
+}
+
+// Ambiguous short flags are scoped to the named command on that line. Existing separated
+// -u coverage remains conservative for commandless diagnostics (pinned in ACCEPTED_OVERMASK).
+function maskLongCredentialFlags(text) {
+  const flags = /(?:^|[ \t\n])--(?<identifier>[A-Za-z_][A-Za-z0-9_-]*)(?:[ \t]+|=)/g;
+  let cursor = 0;
+  let result = "";
+  let match;
+  while ((match = flags.exec(text)) !== null) {
+    const identifier = match.groups.identifier;
+    if (!isCredentialIdentifier(identifier) || credentialIdentifierTokens(identifier).at(-1) === "file") continue;
+    const start = flags.lastIndex;
+    const value = readCompleteCredentialValue(text, start, { tokenOnly: true });
+    if (!value) continue;
+    result += text.slice(cursor, start) + value.replacement;
+    cursor = value.end;
+    flags.lastIndex = value.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+function maskCurlUserCredentials(line) {
+  const flags = /(?:^|[ \t])(?:--user(?:=|[ \t]+)|-u[ \t]*)/g;
+  let cursor = 0;
+  let result = "";
+  let match;
+  while ((match = flags.exec(line)) !== null) {
+    const start = flags.lastIndex;
+    const quote = readQuoteSpan(line, start);
+    const bodyStart = quote ? quote.openEnd : start;
+    let bodyEnd = quote ? quote.closeAt : start;
+    if (!quote) while (bodyEnd < line.length && !/[ \t\r\n]/.test(line[bodyEnd])) bodyEnd += 1;
+    let colon = bodyStart;
+    while (colon < bodyEnd && line[colon] !== ":") colon += 1;
+    if (colon < bodyEnd) {
+      result += line.slice(cursor, colon + 1) + "***";
+      cursor = bodyEnd;
+    }
+    // Skip the whole value token even on failure: a repeated -u/--user= run without
+    // a colon must not restart an unbounded user scan at each embedded flag.
+    flags.lastIndex = quote ? quote.end : bodyEnd;
+  }
+  return cursor === 0 ? line : result + line.slice(cursor);
+}
+
+function maskCommandCredentials(text) {
+  return maskLongCredentialFlags(text).split("\n").map((line) => {
+    if (/\b(?:docker|sshpass|mysql)\b/.test(line)) line = line.replace(/(\s-p[ \t]*)([^\s"']+|"[^"\n]*"|'[^'\n]*')/g, "$1***");
+    if (/\bmix\s+hex\.publish\b/.test(line)) line = line.replace(/(--key[ \t]+)([^\s"']+|"[^"\n]*"|'[^'\n]*')/g, "$1***");
+    if (/\bcurl\b/.test(line)) line = maskCurlUserCredentials(line);
+    if (/\bopenssl\b/.test(line)) line = line.replace(/(-pass[ \t]+pass:)[^\s"']+/g, "$1***");
+    return line;
+  }).join("\n");
+}
+
+function maskStandaloneNextLineAuthorization(text) {
+  return text.replace(/(^|[\r\n])([ \t]*(?:bearer|basic)[ \t]*:?[ \t]*\r?\n)([^\r\n]+)/gi, (match, before, header, value) => STRUCTURAL_LINE.test(value) ? match : `${before}${header}***`);
+}
+
+const EXTRA_PROVIDER_PREFIX = ["gl" + "pat-", "sk_" + "live_", "rk_" + "live_", "wh" + "sec_", "AI" + "za"].join("|");
+const EXTRA_PROVIDER_RULE = new RegExp(`(?<![A-Za-z0-9])(${EXTRA_PROVIDER_PREFIX})[A-Za-z0-9_-]{6,}`, "g");
+
+const CSI_CONTROL = /\u001b\[[0-9;?]*[ -/]*[@-~]/g;
 const STRUCTURAL_LINE = /^\s*\d+\) (?:test|doctest|property) |^Finished in /;
 
 // First pass: when a line ends in a credential key plus separator, the value sits on a following line. Mask the
@@ -139,7 +616,11 @@ function maskNextLineValues(text) {
       continue;
     }
     active = false;
-    if (KEY_LINE.test(line)) { active = true; waiting = true; keyIndent = indent; }
+    const keyLine = STRUCTURAL_KEY_LINE.exec(line);
+    if (keyLine && isCredentialIdentifier(keyLine.groups.quotedIdentifier ?? keyLine.groups.identifier)) { active = true; waiting = true; keyIndent = indent; }
+    const tupleLine = STRUCTURAL_TUPLE_KEY_LINE.exec(line);
+    const tupleIdentifier = tupleLine?.groups.atom ?? tupleLine?.groups.double ?? tupleLine?.groups.single;
+    if (tupleIdentifier && isCredentialIdentifier(tupleIdentifier)) { active = true; waiting = true; keyIndent = indent; }
   }
   return lines.join("\n");
 }
@@ -148,19 +629,21 @@ function maskNextLineValues(text) {
 // Shapes, in rule order (every rule is linear-time; prose without a separator is untouched):
 //   0. next-line pass: a line ending in a credential key plus `:`, `=`, `=>` or a YAML block indicator masks the
 //      next non-blank line and following lines indented deeper (ExUnit `N) test` and `Finished in` lines never)
-//   p. PEM private-key block: text after the BEGIN marker through the END marker (body lines and headers; with no
-//      END marker only the body lines, so the next non-body line survives), real or literal-backslash-n line breaks
+//   p. armored private-key block: body and headers through a matching END marker, independent of body alphabet;
+//      missing/mismatched END consumes EOF; supports CR/LF and literal or double-escaped newline separators
 //   a. `Authorization:` / `Proxy-Authorization:` header (any scheme, Digest included), value to end of line
 //   b. `Cookie:` / `Cookies:` / `Set-Cookie:` header at any position, value to end of line
-//   c. `Bearer <v>`: bare run, quoted span (quotes kept) or `realm="v"` style, on one line
+//   c. `Bearer` / `Basic`: bare or quoted values, colon forms, or whole-line next-line headers
 //   d. `(aws_)secret[_-]access[_-]key` = quoted or unquoted value
 //   e. provider tokens, prefix kept: `gh[pousr]_` / `github_pat_` (6+ characters), `hex_` (8+), and, after a
 //      non-alphanumeric character, `sk-` (8+ of `A-Za-z0-9_-`, project and versioned forms), Slack `xox[abprs]-`
 //      (8+) and `npm_` plus exactly 36 letters or digits (`task-runner12345`, `npm_config_cache` stay readable)
-//   f. URL userinfo password (`scheme://user:<v>@host`; empty user and a `/` in the password allowed, parts bounded)
-//   g. JWTs (`eyJ` + two or three base64url segments; no base64url character before it, so a hyphenated run stays linear)
+//   f. URL userinfo password or user-only credential; monotonic scanning, no length cap;
+//      spaces, password slashes and single-level encoded colon/@ separators are supported
+//   g. JWTs (case-insensitive eyJ header plus two/three segments), including hyphen/underscore context;
+//      maximal token-run/segment scans do not restart at every marker
 //   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters, any non-uppercase/digit character before)
-//   q. query credentials (`?key=`, `&sig=`, `&signature=`, `X-Amz-Signature|Credential|Security-Token`)
+//   q. query credentials, including code, password, AWSAccessKeyId and one encoded equals separator
 //   i. Elixir tuples with an atom or closed-quote credential key and a comma (`{:token, "v"}`)
 //   j. CLI flags `--<name with a credential word> <v>` (not `--password-file`)
 //   k. curl basic auth `-u user:<v>` / `--user user:<v>`
@@ -168,14 +651,28 @@ function maskNextLineValues(text) {
 //      private key, credential[s], authorization) followed by `=>`, `:`/`=` (up to `==`) and a quoted
 //      (multi-word, escaped, unterminated, backslash-escaped JSON `\\"v\\"`) or 3+ character unquoted value; the
 //      key itself may be wrapped in plain or backslash-escaped quotes (rules a, b, d, i, l)
+//   r. reviewed GitLab/Stripe/Google/Twilio/Slack-webhook provider prefixes and command-scoped
+//      docker/sshpass/mysql/Hex/curl/openssl flags. Bare arbitrary strings are outside this finite inventory.
+// CSI controls are removed consistently before matching; full-width colon is a credential separator
+// only at recognized identifier boundaries, without rewriting ordinary prose.
 // Deliberately unmasked: unquoted nil/true/false/null/undefined after a credential key (whole value only), and
 // `preauthorization` (authorization needs a non-alphanumeric character before it).
 // Accepted over-masks (pinned in the tests as ACCEPTED_OVERMASK): `code: assert token == "x"`, a key line
 // followed by plain text, `--no-password prompt`, a port before a path containing `@`, `secrets: inherit`,
 // numeric values (`max_token: 1000`), `Authorization: required for route`, `stale cookie: expired at line`.
 export function maskSecretShapes(text) {
-  return maskNextLineValues(String(text ?? ""))
-    .replace(PEM_RULE, "$1***")
+  // Protect armor syntax before any other pass can consume its BEGIN marker. Subsequent
+  // structural passes may mask the retained public label, but the body is already absent.
+  let masked = maskPrivateKeyBlocks(String(text ?? "").replace(CSI_CONTROL, ""));
+  masked = maskCommandCredentials(masked);
+  masked = maskCredentialNameValueRecords(masked);
+  masked = maskCredentialTupleValues(masked);
+  masked = maskStructuredCredentialAssignments(masked);
+  masked = maskNextLineValues(masked);
+  masked = maskStandaloneNextLineAuthorization(masked);
+  masked = maskUrlUserinfo(masked);
+  masked = maskJwtTokens(masked);
+  return masked.replace(STRUCTURAL_CREDENTIAL_RULE, maskStructuralCredential)
     .replace(AUTHORIZATION_RULE, "$1***")
     .replace(COOKIE_RULE, "$1***")
     .replace(BEARER_RULE, maskBearer)
@@ -185,11 +682,11 @@ export function maskSecretShapes(text) {
     .replace(/(?<![A-Za-z0-9])(sk-)[A-Za-z0-9_-]{8,}/g, "$1***")
     .replace(/(?<![A-Za-z0-9])(xox[abprs]-)[A-Za-z0-9-]{8,}/g, "$1***")
     .replace(/(?<![A-Za-z0-9])(npm_)[A-Za-z0-9]{36}(?![A-Za-z0-9])/g, "$1***")
-    .replace(/(:\/\/[^/\s:@]{0,256}:)[^\s@]{1,256}@/g, "$1***@")
-    .replace(/(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)?/g, "eyJ***")
+    .replace(EXTRA_PROVIDER_RULE, "$1***")
+    .replace(/(?<![A-Za-z0-9])(SK)[a-fA-F0-9]{32}(?![a-fA-F0-9])/g, "$1***")
+    .replace(/(https:\/\/hooks\.slack\.com\/services\/)[^\s/"'?#]+\/[^\s/"'?#]+\/[^\s/"'?#]+/g, "$1***")
     .replace(/(?<![A-Z0-9])(A[KS]IA)[A-Z0-9]{16}/g, "$1***")
     .replace(QUERY_CREDENTIAL_RULE, "$1***")
-    .replace(TUPLE_RULE, maskValue)
     .replace(CLI_FLAG_RULE, maskValue)
     .replace(CURL_USER_RULE, maskValue)
     .replace(GENERIC_CREDENTIAL_RULE, maskValue);
@@ -200,7 +697,7 @@ export function maskSecretShapes(text) {
 // test output (the run root, and with it the full log, is removed afterwards).
 // Credential-shaped values are masked once via maskSecretShapes; nothing is printed on success.
 export function rootProofFailureTail(outcome, result) {
-  const text = maskSecretShapes(`${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`.replace(/\u001b\[[0-9;]*m/g, ""));
+  const text = maskSecretShapes(`${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`);
   const lines = text.split("\n");
   let details = "";
   const first = lines.findIndex((line) => /^\s*1\) (test|doctest|property) /.test(line));
