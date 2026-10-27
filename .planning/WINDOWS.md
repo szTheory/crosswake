@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 39
+open_count: 40
 waived_count: 0
 fixed_count: 1
-total_count: 40
-last_updated: 2026-10-27T16:26:07.373Z
+total_count: 41
+last_updated: 2026-10-27T16:38:32.665Z
 ---
 
 # Broken Windows Ledger
@@ -55,6 +55,7 @@ last_updated: 2026-10-27T16:26:07.373Z
 | 38 | 175 | unrun-verify | .planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-83-PLAN.md |  | Plan83 Task3 one-use tag/conditional-CI behavior verification is unrun; Task2 precondition is unmet after terminal UNKNOWN preflight. | open |  | 2026-10-06T01:17:05.574Z |  |
 | 39 | 175 | deviation | lib/crosswake/release_candidate/ios_mirror_tag_repair.ex | 922 | Corrected the observed child-timeout envelope classification; request count stays unknown. | open |  | 2026-10-06T22:31:27.544Z |  |
 | 40 | 196 | deviation | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-09-SUMMARY.md |  | Tasks2 and3 acceptance controls ran after implementation; no pre-implementation RED compliance is claimed. | open |  | 2026-10-27T16:26:07.373Z |  |
+| 41 | 196 | deviation | script/check_rescue_boundaries.exs |  | Plan196-10 task3 guard implementation preceded its fixture assertions; only finite-rescue correction has pre-change RED/GREEN. Tasks1/2 preservation behavior was already green; structural contract assertions supplied RED. | open |  | 2026-10-27T16:38:32.665Z |  |
 
 ````json
 [
@@ -540,6 +541,19 @@ last_updated: 2026-10-27T16:26:07.373Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-27T16:26:07.373Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 41,
+    "kind": "deviation",
+    "phase": "196",
+    "file": "script/check_rescue_boundaries.exs",
+    "line": null,
+    "description": "Plan196-10 task3 guard implementation preceded its fixture assertions; only finite-rescue correction has pre-change RED/GREEN. Tasks1/2 preservation behavior was already green; structural contract assertions supplied RED.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T16:38:32.665Z",
     "resolved_at": null,
     "milestone": null
   }
