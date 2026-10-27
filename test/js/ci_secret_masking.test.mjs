@@ -43,11 +43,10 @@ export function leakedSecrets(output, seeds) {
 }
 
 const CHILD = `
+const { writeSync } = require("node:fs");
 const lines = JSON.parse(process.env.CW_SEED_LINES);
-for (const l of lines) { console.log(l); console.error(l); }
-console.log("  1) test something (Mod)");
-console.log("     Assertion with == failed");
-console.log("Finished in 0.1 seconds");
+for (const l of lines) { writeSync(1, l + "\\n"); writeSync(2, l + "\\n"); }
+writeSync(1, "  1) test something (Mod)\\n     Assertion with == failed\\nFinished in 0.1 seconds\\n");
 process.exit(2);
 `;
 
@@ -55,6 +54,13 @@ function runChildLines(lines) {
   return spawnStage(process.execPath, ["-e", CHILD], {
     env: { PATH: process.env.PATH, CW_SEED_LINES: JSON.stringify(lines) }
   });
+}
+
+// Exactly the public tail's normalization/concatenation/line-then-code-unit window, without masking.
+// The exported historical BYTE constant bounds JS string units in the production API.
+function rawTailWindow(result) {
+  const text = `${result.stdout ?? ""}${result.stderr ?? ""}`.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
+  return text.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n").slice(-ROOT_PROOF_TAIL_BYTES);
 }
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -114,8 +120,8 @@ process.stdout.write(JSON.stringify({ label: row.label, length: row.input.length
 if (measuredMs > boundMs) process.exitCode = 2;
 `;
 
-function measureRound3Padding(row) {
-  const result = spawnSync(process.execPath, ["--input-type=module", "-e", MASK_PERF_CHILD], {
+function measureRound3Padding(row, source = MASK_PERF_CHILD) {
+  const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
     cwd: repoRoot,
     env: { PATH: process.env.PATH },
     encoding: "utf8",
@@ -129,6 +135,11 @@ function measureRound3Padding(row) {
   try { metric = JSON.parse(result.stdout); } catch { assert.fail(`padding child returned no metric: ${row.label}`); }
   assert.ok(metric.label === row.label && result.status === 0, `padding bound failed: ${row.label} (${Math.round(metric.measuredMs)} ms; bound ${Math.round(metric.boundMs)} ms)`);
   return metric;
+}
+
+function reportMetric(t, metric) {
+  t.diagnostic(`perf-row ${metric.label} length ${metric.length} baseline ${metric.baselineMs.toFixed(3)} candidate ${metric.measuredMs.toFixed(3)} bound ${metric.boundMs.toFixed(3)} ms`);
+  if (metric.measuredMs > 25) t.diagnostic(`perf-alert ${metric.label} candidate ${metric.measuredMs.toFixed(3)} ms`);
 }
 
 const ROUND3_PADDING_FAMILIES = [
@@ -154,7 +165,7 @@ test("round3 structural repository signing assignment", () => {
   ];
   const result = runChildLines([...rows.map((row) => `${row.identifier}=${row.seed}`), "  1) test something (RepositoryTest)", "Finished in 0.1 seconds"]);
   const raw = `${result.stdout}${result.stderr}`;
-  const rawTail = raw.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
+  const rawTail = rawTailWindow(result);
   const tail = rootProofFailureTail("failed", result);
   const rawHits = rows.filter((row) => rawTail.includes(row.seed)).length;
   const maskedHits = rows.filter((row) => tail.includes(row.seed)).length;
@@ -174,10 +185,9 @@ test("round3 inventory all workflow secret names", () => {
   assert.ok(inventory.secretNames.length > 0 && secretRowCount === inventory.secretNames.length, "workflow secret-name inventory is empty or incomplete");
   assert.ok(inventory.envAliases.length > 0 && aliasRowCount === inventory.envAliases.length, "secret-bound env-alias inventory is empty or incomplete");
   const lines = rows.map((row) => `${row.identifier}: ${row.seed}`);
-  const result = runChildLines([...lines, "  1) test something (RepositoryTest)", "Finished in 0.1 seconds"]);
-  const raw = `${result.stdout}${result.stderr}`;
-  const rawTail = raw.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
-  const tail = rootProofFailureTail("failed", result);
+  const outcome = runRound3TailRows(rows.map((row, index) => ({ ...row, name: `inventory ${index}`, seeds: [row.seed], line: () => lines[index] })));
+  assertRound3TailRows(outcome, "workflow inventory");
+  const { result, rawTail, tail } = outcome;
   const rawHits = rows.filter((row) => rawTail.includes(row.seed)).length;
   const maskedHits = rows.filter((row) => tail.includes(row.seed)).length;
   const readableNames = rows.filter((row) => tail.includes(row.identifier)).length;
@@ -188,7 +198,7 @@ test("round3 inventory all workflow secret names", () => {
   assert.ok(tail.includes("test something") && tail.includes("Finished in"), "failure diagnostics disappeared");
 });
 
-test("round3 padding credential whitespace matrix", (t) => {
+test("round3 padding credential whitespace matrix", { timeout: 55000 }, (t) => {
   let rowCount = 0;
   for (const family of ROUND3_PADDING_FAMILIES) {
     for (const whitespace of ROUND3_PADDING_WHITESPACE) {
@@ -196,7 +206,7 @@ test("round3 padding credential whitespace matrix", (t) => {
         const label = `${family.name}/${whitespace.name}/${size}`;
         const metric = measureRound3Padding({ label, input: `${family.prefix}${whitespace.make(size)}x` });
         rowCount += 1;
-        if (size === 200000) t.diagnostic(`padding ${label}: ${Math.round(metric.measuredMs)} ms, baseline ${Math.round(metric.baselineMs)} ms`);
+        reportMetric(t, metric);
       }
     }
   }
@@ -238,16 +248,17 @@ const ROUND3_TUPLE_ROWS = [
 ];
 
 function runRound3TailRows(rows, { diagnosticsBeforeLast = false } = {}) {
-  const lines = rows.slice(0, diagnosticsBeforeLast ? -1 : rows.length).map((row) => row.line());
-  if (diagnosticsBeforeLast) lines.push("  1) test something (RepositoryTest)", "Finished in 0.1 seconds");
-  if (diagnosticsBeforeLast) lines.push(rows.at(-1).line());
-  else lines.push("  1) test something (RepositoryTest)", "Finished in 0.1 seconds");
-  const result = runChildLines(lines);
+  const windows = rows.map((row) => {
+    const lines = [row.line()];
+    const diagnostics = ["  1) test something (RepositoryTest)", "Finished in 0.1 seconds"];
+    if (diagnosticsBeforeLast) lines.unshift(...diagnostics);
+    else lines.push(...diagnostics);
+    const result = runChildLines(lines);
+    return { row, result, rawTail: rawTailWindow(result), tail: rootProofFailureTail("failed", result) };
+  });
+  const result = { status: windows.every((w) => w.result.status === 2) ? 2 : -1 };
   const seeds = rows.flatMap((row) => row.seeds);
-  const raw = `${result.stdout}${result.stderr}`;
-  const rawTail = raw.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
-  const tail = rootProofFailureTail("failed", result);
-  return { result, rows, seeds, rawTail, tail };
+  return { result, rows, seeds, windows, rawTail: windows.map((w) => w.rawTail).join("\n"), tail: windows.map((w) => w.tail).join("\n") };
 }
 
 function assertRound3TailRows(outcome, family) {
@@ -257,6 +268,7 @@ function assertRound3TailRows(outcome, family) {
   assert.ok(outcome.rows.length > 0 && outcome.seeds.length > 0, `${family} family executed zero rows`);
   assert.ok(outcome.result.status === 2, `${family} child did not fail as required`);
   assert.ok(rawHits === outcome.seeds.length, `${family} raw tail window contains ${rawHits} of ${outcome.seeds.length} seeds`);
+  for (const window of outcome.windows ?? []) assert.ok(window.row.seeds.every((seed) => window.rawTail.includes(seed)), `${family} raw tail window missing a row seed`);
   assert.ok(maskedHits === 0, `${family} masked tail contains ${maskedHits} of ${outcome.seeds.length} seeds (${leakingRows.join(", ")})`);
 }
 
@@ -423,7 +435,7 @@ test("round3 armor bounded adversaries", (t) => {
   ];
   for (const row of rows) {
     const metric = measureRound3Padding(row);
-    t.diagnostic(`armor ${row.label}: ${Math.round(metric.measuredMs)} ms, baseline ${Math.round(metric.baselineMs)} ms`);
+    reportMetric(t, metric);
   }
   assert.ok(rows.length > 0, "armor bounded family executed zero rows");
 });
@@ -798,19 +810,12 @@ test("gap seeds are distinctive", () => {
 });
 
 test("gap shapes from a spawned child never reach the root-proof tail", () => {
-  const result = runChildLines(GAP_SHAPES.map((row) => row.line));
-  const allSeeds = GAP_SHAPES.flatMap((row) => row.seeds);
-  assert.ok(result.status === 2, `gap child exited ${result.status}, expected 2`);
-  const raw = `${result.stdout}${result.stderr}`;
-  assert.ok(leakedSecrets(raw, allSeeds).length === allSeeds.length, "detector must see every gap seed in raw child output");
-  const tail = rootProofFailureTail("failed", result);
-  const leakedNames = GAP_SHAPES.filter((row) => leakedSecrets(tail, row.seeds).length > 0).map((row) => row.name);
-  const k = allSeeds.filter((seed) => tail.includes(seed)).length;
-  assert.ok(k === 0, `leaked: ${k} of ${gapSeedCount()} gap seed(s) reached the tail: ${leakedNames.join(", ")}`);
+  assertRound3TailRows(runRound3TailRows(GAP_SHAPES.map((row) => ({ ...row, line: () => row.line }))), "gap shapes");
 });
 
 const PROSE_LINES = [
   { name: "boolean container", text: "{:ok, %{token: true, password: nil}}" },
+  { name: "short numeric container", text: "{:ok, %{token: 1}}" },
   { name: "token expired for user", text: "token expired for user" },
   { name: "password mismatch for account", text: "password mismatch for account" },
   { name: "secret not found in vault", text: "secret not found in vault" },
@@ -915,40 +920,78 @@ const LINEAR_INPUTS = [
   { name: "literal_exemption_repeat", input: () => `${TK}: nil `.repeat(20000) }
 ];
 
-// The CI bound is relative: the fastest of three runs must stay within 10 times a same-process plain-prose
-// baseline, with a 250 ms floor. A shared runner measured 51, 55 and 95 ms on linear inputs against a 5 ms baseline,
-// so a 40 ms floor failed linear code; a quadratic regression at 200k characters takes seconds (7266 ms for the
-// old JWT rule), so 250 ms still separates the two by more than an order of magnitude.
-const fastestMs = (input) => {
-  let best = Infinity;
-  for (let i = 0; i < 3; i += 1) {
-    const started = performance.now();
-    maskSecretShapes(input);
-    best = Math.min(best, performance.now() - started);
-  }
-  return best;
-};
+// Fresh minimum-of-three baseline and candidate per isolated row; 2-second deadline bounds even
+// catastrophic rules. The 250 ms floor discriminates these quadratics, not every linear constant regression.
 const BASELINE_INPUT = "the quick brown fox jumps over the lazy dog\n".repeat(5000);
-let baselineCache;
-const baselineMs = () => {
-  if (baselineCache === undefined) baselineCache = fastestMs(BASELINE_INPUT);
-  return baselineCache;
-};
 
 test("linear time baseline", (t) => {
   assert.ok(BASELINE_INPUT.length >= 200000, "baseline input is too short");
-  t.diagnostic(`perf-baseline ms ${Math.round(baselineMs())}`);
+  reportMetric(t, measureRound3Padding({ label: "plain_baseline", input: BASELINE_INPUT }));
 });
 
 for (const row of LINEAR_INPUTS) {
   test(`linear time: ${row.name}`, (t) => {
     const input = row.input();
     assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
-    const ms = fastestMs(input);
-    t.diagnostic(`perf ${row.name} ms ${Math.round(ms)}`);
-    assert.ok(ms <= Math.max(250, 10 * baselineMs()), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(250, 10 * baselineMs()))} ms`);
+    reportMetric(t, measureRound3Padding({ label: row.name, input }));
   });
 }
+
+// Every retained matching family has a positive, a nonmatch, and a pathological input.
+// Rule order may change; these exercise observable families rather than private regex sources.
+const RULE_ADVERSARIES = [
+  ["nextline", () => `password:\n${round3Fake("Rule", 1)}`, "key_before_finished_line", "nextline_keys"],
+  ["armor", () => `${PEM_B}\n${round3Fake("Rule", 2)}\n${PEM_E}`, "token expired for user", "pem_begin_repeat"],
+  ["name_value", () => `{"name":"token","value":"${round3Fake("Rule", 3)}"}`, "password mismatch for account", "escaped_key_repeat"],
+  ["tuple", () => `{:token, "${round3Fake("Rule", 4)}"}`, "invalid token, retrying now", "tuple_comma_repeat"],
+  ["structural", () => `signingInMemoryKey=${round3Fake("Rule", 5)}`, "token_count: 300", "double_equals_repeat"],
+  ["authorization", () => `Authorization: ${round3Fake("Rule", 6)}`, "authorization failed for request", "keyword_no_separator"],
+  ["cookie", () => `Cookie: ${round3Fake("Rule", 7)}`, "cookie jar is empty", "nextline_keys"],
+  ["bearer", () => `Bearer ${round3Fake("Rule", 8)}`, "token expired for user", "bearer_quote_unterminated"],
+  ["secret_access_key", () => `secret_access_key=${round3Fake("Rule", 9)}`, "secret not found in vault", "whitespace_lines"],
+  ["github", () => seedValues().gh, "task-runner12345 started", "akia_run"],
+  ["hex", () => seedValues().hex, "token_count: 300", "backslash_run"],
+  ["sk", () => `${SK}${round3Fake("Rule", 10)}`, "kiosk-mode-settings applied", "sk_dash_run"],
+  ["slack", () => `${XOXB}${round3Fake("Rule", 11)}`, "token_count: 300", "xox_repeat"],
+  ["npm", () => `${frag("np", "m_")}${"A".repeat(36)}`, "npm_config_cache is set", "cli_flag_repeat"],
+  ["userinfo", () => `https://user:${round3Fake("Rule", 12)}@example.invalid`, "token_count: 300", "userinfo_repeated_scheme"],
+  ["jwt", () => `${frag("ey", "J")}${round3Fake("Rule", 13)}.body.signature`, "token_count: 300", "jwt_hyphen_run"],
+  ["aws", () => `${frag("AK", "IA")}${"A".repeat(16)}`, "token_count: 300", "akia_run"],
+  ["query", () => `?key=${round3Fake("Rule", 14)}`, "token_count: 300", "query_key_repeat"],
+  ["cli", () => `--password ${round3Fake("Rule", 15)}`, "use --password-file ./pw.txt for input", "cli_flag_repeat"],
+  ["curl", () => `curl -u user:${round3Fake("Rule", 16)}`, "token_count: 300", "curl_user_repeat"],
+  ["generic", () => `token=${round3Fake("Rule", 17)}`, "token: ok", "literal_exemption_repeat"]
+];
+
+test("round3 rule family adversaries", { timeout: 55000 }, (t) => {
+  assert.ok(RULE_ADVERSARIES.length > 0, "rule inventory empty");
+  for (const [label, positive, proseName, pathological] of RULE_ADVERSARIES) {
+    const prose = PROSE_LINES.find((row) => row.name === proseName);
+    const input = LINEAR_INPUTS.find((row) => row.name === pathological);
+    assert.ok(prose && input, `rule ${label} has an empty case group`);
+    assert.ok(maskSecretShapes(positive()) !== positive(), `rule ${label} positive did not match`);
+    assert.ok(maskSecretShapes(prose.text) === prose.text, `rule ${label} nonmatch changed`);
+    reportMetric(t, measureRound3Padding({ label: `rule/${label}`, input: input.input() }));
+  }
+});
+
+test("round3 separator head adversaries", { timeout: 55000 }, (t) => {
+  const heads = ["token", "Authorization", "Cookie", "password", "SecretAccessKey"];
+  const separators = [":", "=", "=>", "==", "==="];
+  let count = 0;
+  for (const head of heads) for (const separator of separators) for (const whitespace of ROUND3_PADDING_WHITESPACE) {
+    const label = `separator/${head}/${separator.length}/${separator === "=>" ? "arrow" : separator[0] === ":" ? "colon" : "equals"}/${whitespace.name}`;
+    reportMetric(t, measureRound3Padding({ label, input: `${head}${separator}${whitespace.make(200000)}x` }));
+    count += 1;
+  }
+  assert.ok(count > 0, "separator family empty");
+});
+
+test("round3 timing quadratic copied control", () => {
+  const quadratic = MASK_PERF_CHILD.replace('import { maskSecretShapes } from "./script/verify_repository.mjs";', 'const maskSecretShapes = (text) => /token:[ \\t]*[ \\t]*$/.test(text);');
+  assert.ok(quadratic !== MASK_PERF_CHILD, "quadratic copy was not changed");
+  assert.throws(() => measureRound3Padding({ label: "quadratic_copy", input: `token:${" ".repeat(200000)}x` }, quadratic), /timed out|bound failed/, "quadratic copy passed timing gate");
+});
 
 test("ANSI-wrapped and CRLF secrets never reach the tail", () => {
   const v1 = frag("fake", "Ansi", "Crlf70");
@@ -973,6 +1016,7 @@ test("a value cut by the tail byte window never appears", () => {
   const unmaskedTail = text.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
   const cutInside = unmaskedTail.length - ROOT_PROOF_TAIL_BYTES === vLine.length - remaining;
   assert.ok(cutInside, "byte window cut does not land inside the value line (test setup)");
+  assert.ok(rawTailWindow({ stdout: text }).includes(V.slice(-8)), "byte-cut fragment is outside the unmasked window");
   const out = rootProofFailureTail("failed", { stdout: text, stderr: "" });
   const hits = [V, V.slice(-8)].filter((frag8) => out.includes(frag8)).length;
   assert.ok(hits === 0, `window case: ${hits} of 2 value fragments reached the tail`);

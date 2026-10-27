@@ -57,7 +57,7 @@ const ROOT_PROOF_DETAIL_BYTES = 16 * 1024;
 // and stays readable; a longer value starting with one of those words is still masked. Groups are named so adding one cannot shift
 // another. Unrolled loops with disjoint alternatives keep matching linear (no nested quantifier overlap).
 const LITERAL_VALUE = `(?:${["nil", "true", "false", "null", "undefined"].map((w) => [...w].map((c) => `[${c}${c.toUpperCase()}]`).join("")).join("|")})`;
-const SECRET_VALUE_SOURCE = String.raw`(?:(?<escOpen>\\+")(?<escBody>[^\\\n]*(?:\\(?!")[^\\\n]*)*)(?<escClose>(?:\\+")?)|"(?<dqBody>[^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)(?<dqClose>"?)|'(?<sqBody>[^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)(?<sqClose>'?)|(?<bare>(?!${LITERAL_VALUE}(?=[\s,;)\]}]|$))[^\s"']{3,}))`;
+const SECRET_VALUE_SOURCE = String.raw`(?:(?<escOpen>\\+")(?<escBody>[^\\\n]*(?:\\(?!")[^\\\n]*)*)(?<escClose>(?:\\+")?)|"(?<dqBody>[^"\\\n]*(?:\\[^\n]?[^"\\\n]*)*)(?<dqClose>"?)|'(?<sqBody>[^'\\\n]*(?:\\[^\n]?[^'\\\n]*)*)(?<sqClose>'?)|(?<bare>(?!${LITERAL_VALUE}(?=[\s,;)\]}]|$))[^\s"',;)\]}]{3,}))`;
 
 // Replacer for a (prefix, value) match built from SECRET_VALUE_SOURCE: quotes survive around `***`.
 // The value groups are read by name from the trailing groups object; only the prefix is positional.
@@ -132,6 +132,7 @@ function readQuotedValueEnd(text, start) {
   if (quote !== "'" && quote !== '"') return null;
   let i = quoteAt + 1;
   while (i < text.length) {
+    if (text[i] === "\n" || text[i] === "\r") return { end: i, replacement: `${text.slice(start, quoteAt + 1)}***` };
     if (text[i] === "\\") { i += 2; continue; }
     if (text[i] === quote) {
       let closeStart = i;
@@ -232,9 +233,15 @@ function looksLikeAssignmentAfterComma(text, commaAt) {
 
 function readBareCredentialValue(text, start, { tuple = false, multiword = false } = {}) {
   let i = start;
+  const closers = [];
   while (i < text.length) {
     const char = text[i];
-    if (char === "\r" || char === "\n" || char === "}" || char === "]" || char === ")" || char === ";") break;
+    if (char === "\r" || char === "\n" || char === ";") break;
+    if (char === "(" || char === "[" || char === "{") closers.push({ "(": ")", "[": "]", "{": "}" }[char]);
+    if (char === "}" || char === "]" || char === ")") {
+      if (closers.at(-1) !== char) break;
+      closers.pop();
+    }
     if (char === "," && (tuple || looksLikeAssignmentAfterComma(text, i))) break;
     i += 1;
   }
