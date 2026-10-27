@@ -234,6 +234,12 @@ defmodule Crosswake.RescueBoundaries do
   defp rescue_kind({:_, _, _}, _), do: :wildcard
   defp rescue_kind({:__aliases__, _, _}, _), do: :finite
 
+  defp rescue_kind(classes, _) when is_list(classes) and classes != [] do
+    if Enum.all?(classes, &match?({:__aliases__, _, _}, &1)), do: :finite, else: :broad
+  end
+
+  defp rescue_kind({:in, _, [_variable, {:__aliases__, _, _}]}, _), do: :finite
+
   defp rescue_kind({:in, _, [_variable, classes]}, _) when is_list(classes) and classes != [] do
     if Enum.all?(classes, &match?({:__aliases__, _, _}, &1)), do: :finite, else: :broad
   end
