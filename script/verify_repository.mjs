@@ -302,14 +302,46 @@ function maskCredentialTupleValues(text) {
   return cursor === 0 ? text : result + text.slice(cursor);
 }
 
-// PEM private-key block: the BEGIN marker survives, then body items (each starts with a line break, real or a
-// literal backslash-n) until a line that is not base64, a Proc-Type/DEK-Info header or blank, then an optional END
-// marker. The dashes are a quantifier so this source never holds a literal marker.
-const PEM_LB = String.raw`(?:\r?\n|\\n)`;
-const PEM_EOL = `(?=${PEM_LB}|$)`;
-const PEM_KEY = String.raw`(?:[A-Z]{2,12} ){0,3}PRIVATE[ ]KEY-{5}`;
-const PEM_ITEM = `${PEM_LB}[ \\t]*(?:[A-Za-z0-9+/=]+${PEM_EOL}|(?:Proc-Type|DEK-Info):(?:[^\\r\\n\\\\]|\\\\(?!n))*|${PEM_EOL})`;
-const PEM_RULE = new RegExp(`(-{5}BEGIN ${PEM_KEY})(?:${PEM_ITEM})*(?:${PEM_LB}-{5}END ${PEM_KEY})?`, "g");
+// Armor BEGIN markers retain their public label; every later byte through a matching END marker is consumed
+// without guessing the body's alphabet or line prefix. An absent/mismatched END deterministically consumes EOF.
+// Labels and dashes are pattern fragments, so no literal armor marker is stored in source.
+const PRIVATE_KEY_LABEL = String.raw`(?:[A-Z]{2,12} ){0,3}PRIVATE[ ]KEY(?:[ ]BLOCK)?`;
+const PRIVATE_KEY_BEGIN_RULE = new RegExp(`-{5}BEGIN (?<label>${PRIVATE_KEY_LABEL})-{5}`, "g");
+
+function armorLineBreakEnd(text, start) {
+  if (text.startsWith("\r\n", start)) return start + 2;
+  if (text[start] === "\n" || text[start] === "\r") return start + 1;
+  const slash = String.fromCharCode(92);
+  if (text.startsWith(`${slash}${slash}n`, start)) return start + 3;
+  if (text.startsWith(`${slash}n`, start)) return start + 2;
+  return -1;
+}
+
+function armorLineEnd(text, start) {
+  for (let i = start; i < text.length; i += 1) {
+    const afterBreak = armorLineBreakEnd(text, i);
+    if (afterBreak >= 0) return { breakAt: i, end: afterBreak };
+  }
+  return { breakAt: text.length, end: text.length };
+}
+
+function maskPrivateKeyBlocks(text) {
+  const beginRule = new RegExp(PRIVATE_KEY_BEGIN_RULE.source, "g");
+  let result = "";
+  let cursor = 0;
+  let match;
+  while ((match = beginRule.exec(text)) !== null) {
+    const endMarker = `${"-".repeat(5)}END ${match.groups.label}${"-".repeat(5)}`;
+    const endMarkerAt = text.indexOf(endMarker, beginRule.lastIndex);
+    result += text.slice(cursor, match.index) + match[0];
+    if (endMarkerAt < 0) return `${result}***`;
+    const lineEnd = armorLineEnd(text, endMarkerAt + endMarker.length);
+    result += `***${text.slice(lineEnd.breakAt, lineEnd.end)}`;
+    cursor = lineEnd.end;
+    beginRule.lastIndex = lineEnd.end;
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
 
 // Query-string credentials: `?key=`, `&sig=`, `&signature=` and the X-Amz signing parameters, value to `&`, `#` or space.
 const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|X-Amz-Signature|X-Amz-Credential|X-Amz-Security-Token)=)[^&#\s"']{3,}/gi;
@@ -375,8 +407,8 @@ function maskNextLineValues(text) {
 // Shapes, in rule order (every rule is linear-time; prose without a separator is untouched):
 //   0. next-line pass: a line ending in a credential key plus `:`, `=`, `=>` or a YAML block indicator masks the
 //      next non-blank line and following lines indented deeper (ExUnit `N) test` and `Finished in` lines never)
-//   p. PEM private-key block: text after the BEGIN marker through the END marker (body lines and headers; with no
-//      END marker only the body lines, so the next non-body line survives), real or literal-backslash-n line breaks
+//   p. armored private-key block: body and headers through a matching END marker, independent of body alphabet;
+//      missing/mismatched END consumes EOF; supports CR/LF and literal or double-escaped newline separators
 //   a. `Authorization:` / `Proxy-Authorization:` header (any scheme, Digest included), value to end of line
 //   b. `Cookie:` / `Cookies:` / `Set-Cookie:` header at any position, value to end of line
 //   c. `Bearer <v>`: bare run, quoted span (quotes kept) or `realm="v"` style, on one line
@@ -405,8 +437,8 @@ export function maskSecretShapes(text) {
   masked = maskCredentialNameValueRecords(masked);
   masked = maskCredentialTupleValues(masked);
   masked = maskStructuredCredentialAssignments(masked);
+  masked = maskPrivateKeyBlocks(masked);
   return masked.replace(STRUCTURAL_CREDENTIAL_RULE, maskStructuralCredential)
-    .replace(PEM_RULE, "$1***")
     .replace(AUTHORIZATION_RULE, "$1***")
     .replace(COOKIE_RULE, "$1***")
     .replace(BEARER_RULE, maskBearer)

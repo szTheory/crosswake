@@ -660,7 +660,7 @@ export const GAP_SHAPES = [
     name: "pem_no_end",
     seeds: [pemB3],
     line: `${PEM_BR}\n${pemB3}\nFinished in 0.1 seconds`,
-    expected: `${PEM_BR}***\nFinished in 0.1 seconds`
+    expected: `${PEM_BR}***`
   },
   {
     name: "pem_escaped_newlines",
@@ -847,11 +847,14 @@ const ACCEPTED_OVERMASK = [
   { name: "secrets_inherit", text: "secrets: inherit", expected: "secrets: ***" },
   { name: "numeric_value", text: "max_token: 1000", expected: "max_token: ***" },
   { name: "authorization_header_prose", text: "Authorization: required for route", expected: "Authorization: ***" },
-  { name: "cookie_colon_prose", text: "stale cookie: expired at line", expected: "stale cookie: ***" }
+  { name: "cookie_colon_prose", text: "stale cookie: expired at line", expected: "stale cookie: ***" },
+  { name: "private_key_missing_end_consumes_eof", text: `${PGP_BEGIN}\n${round3ArmorFake(41)}\nAFTER_ARMOR_MALFORMED_LOST`, expected: `${PGP_BEGIN}***`, reason: "without a matching END marker, later diagnostic content has no trusted boundary" },
+  { name: "private_key_mismatched_end_consumes_eof", text: `${PGP_BEGIN}\n${round3ArmorFake(42)}\n${OTHER_PRIVATE_KEY_END}\nAFTER_ARMOR_MISMATCH_LOST`, expected: `${PGP_BEGIN}***`, reason: "a different key label does not close the armor block, so later content is consumed" }
 ];
 
 for (const row of ACCEPTED_OVERMASK) {
   test(`accepted over-mask pinned: ${row.name}`, () => {
+    if (row.name.startsWith("private_key_")) assert.ok(row.reason, `accepted over-mask ${row.name} needs a rationale`);
     assert.ok(maskSecretShapes(row.text) === row.expected, `accepted over-mask ${row.name} drifted`);
   });
 }
