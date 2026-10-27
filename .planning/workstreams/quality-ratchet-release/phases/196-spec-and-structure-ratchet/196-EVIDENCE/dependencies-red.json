@@ -1,0 +1,12 @@
+{
+  "command": "node --test .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/dependencies-contract.test.mjs",
+  "exitCode": 1,
+  "targetTest": "six projects produce twelve isolated production declaration evaluations",
+  "expected": "one closed report containing twelve successful production evaluations",
+  "actual": "no closed report exists before the dependency guard is implemented",
+  "semanticAssessment": "The named target executes and fails its report-count assertion; no test import, parse, fixture or discovery failure.",
+  "verdict": "RED_EVIDENCE_OK",
+  "tests": 1,
+  "failures": 1,
+  "raw_record": "git-dir/gsd-dependencies-red-196-11.json"
+}
