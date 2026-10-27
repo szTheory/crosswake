@@ -43,11 +43,10 @@ export function leakedSecrets(output, seeds) {
 }
 
 const CHILD = `
+const { writeSync } = require("node:fs");
 const lines = JSON.parse(process.env.CW_SEED_LINES);
-for (const l of lines) { console.log(l); console.error(l); }
-console.log("  1) test something (Mod)");
-console.log("     Assertion with == failed");
-console.log("Finished in 0.1 seconds");
+for (const l of lines) { writeSync(1, l + "\\n"); writeSync(2, l + "\\n"); }
+writeSync(1, "  1) test something (Mod)\\n     Assertion with == failed\\nFinished in 0.1 seconds\\n");
 process.exit(2);
 `;
 
@@ -56,6 +55,244 @@ function runChildLines(lines) {
     env: { PATH: process.env.PATH, CW_SEED_LINES: JSON.stringify(lines) }
   });
 }
+
+// Exactly the public tail's normalization/concatenation/line-then-code-unit window, without masking.
+// The exported historical BYTE constant bounds JS string units in the production API.
+function rawTailWindow(result) {
+  const text = `${result.stdout ?? ""}${result.stderr ?? ""}`.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
+  return text.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n").slice(-ROOT_PROOF_TAIL_BYTES);
+}
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+function workflowCredentialInventory() {
+  const listed = spawnSync("git", ["ls-files", "--", ".github/workflows/*.yml", ".github/workflows/*.yaml"], {
+    cwd: repoRoot,
+    encoding: "utf8"
+  });
+  if (listed.status !== 0) return { secretNames: [], envAliases: [] };
+
+  const secretNames = new Set();
+  const envAliases = new Set();
+  const files = listed.stdout.split("\n").filter(Boolean);
+  for (const file of files) {
+    const source = readFileSync(path.join(repoRoot, file), "utf8");
+    for (const match of source.matchAll(/\$\{\{\s*secrets\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}/g)) secretNames.add(match[1]);
+    for (const match of source.matchAll(/\$\{\{\s*secrets\s*\[\s*(["'])([A-Za-z_][A-Za-z0-9_]*)\1\s*\]\s*\}\}/g)) secretNames.add(match[2]);
+    if (/\$\{\{\s*github\.token\s*\}\}/i.test(source)) secretNames.add("GITHUB_TOKEN");
+    for (const line of source.split("\n")) {
+      if (!/\$\{\{\s*(?:secrets(?:\.|\s*\[)|github\.token)/i.test(line)) continue;
+      const alias = line.match(/^\s*(?:-\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*:/);
+      if (alias) envAliases.add(alias[1]);
+    }
+  }
+  return { secretNames: [...secretNames].sort(), envAliases: [...envAliases].sort() };
+}
+
+function round3InventoryRows() {
+  const inventory = workflowCredentialInventory();
+  let index = 0;
+  return [
+    ...inventory.secretNames.map((identifier) => ({ kind: "workflow secret name", identifier, seed: frag("fake", "Workflow", "Secret", String(++index).padStart(3, "0"), "Val") })),
+    ...inventory.envAliases.map((identifier) => ({ kind: "secret-bound env alias", identifier, seed: frag("fake", "Workflow", "Alias", String(++index).padStart(3, "0"), "Val") }))
+  ];
+}
+
+const MASK_PERF_CHILD = `
+import { maskSecretShapes } from "./script/verify_repository.mjs";
+let input = "";
+for await (const chunk of process.stdin) input += chunk;
+const row = JSON.parse(input);
+const fastestMs = (text) => {
+  let best = Infinity;
+  for (let i = 0; i < 3; i += 1) {
+    const started = performance.now();
+    maskSecretShapes(text);
+    best = Math.min(best, performance.now() - started);
+  }
+  return best;
+};
+const proseUnit = "ordinary diagnostic prose ";
+const prose = proseUnit.repeat(Math.ceil(row.input.length / proseUnit.length)).slice(0, row.input.length);
+const baselineMs = fastestMs(prose);
+const measuredMs = fastestMs(row.input);
+const boundMs = Math.max(250, 10 * baselineMs);
+process.stdout.write(JSON.stringify({ label: row.label, length: row.input.length, measuredMs, baselineMs, boundMs }));
+if (measuredMs > boundMs) process.exitCode = 2;
+`;
+
+function measureRound3Padding(row, source = MASK_PERF_CHILD) {
+  const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
+    cwd: repoRoot,
+    env: { PATH: process.env.PATH },
+    encoding: "utf8",
+    input: JSON.stringify(row),
+    timeout: 2000,
+    maxBuffer: 64 * 1024
+  });
+  if (result.error?.code === "ETIMEDOUT") assert.fail(`padding child timed out: ${row.label}`);
+  assert.ok(!result.error, `padding child failed: ${row.label}`);
+  let metric;
+  try { metric = JSON.parse(result.stdout); } catch { assert.fail(`padding child returned no metric: ${row.label}`); }
+  assert.ok(metric.label === row.label && result.status === 0, `padding bound failed: ${row.label} (${Math.round(metric.measuredMs)} ms; bound ${Math.round(metric.boundMs)} ms)`);
+  return metric;
+}
+
+function reportMetric(t, metric) {
+  t.diagnostic(`perf-row ${metric.label} length ${metric.length} baseline ${metric.baselineMs.toFixed(3)} candidate ${metric.measuredMs.toFixed(3)} bound ${metric.boundMs.toFixed(3)} ms`);
+  if (metric.measuredMs > 25) t.diagnostic(`perf-alert ${metric.label} candidate ${metric.measuredMs.toFixed(3)} ms`);
+}
+
+const ROUND3_PADDING_FAMILIES = [
+  { name: "token", prefix: "token:" },
+  { name: "authorization", prefix: "Authorization:" },
+  { name: "cookie", prefix: "Cookie:" },
+  { name: "generic", prefix: "password=" },
+  { name: "secret_access_key", prefix: "SecretAccessKey:" }
+];
+const ROUND3_PADDING_WHITESPACE = [
+  { name: "space", make: (n) => " ".repeat(n) },
+  { name: "tab", make: (n) => "\t".repeat(n) },
+  { name: "mixed", make: (n) => " \t".repeat(Math.ceil(n / 2)).slice(0, n) }
+];
+const ROUND3_PADDING_SIZES = [10000, 20000, 40000, 200000];
+
+test("round3 structural repository signing assignment", () => {
+  const rows = [
+    { identifier: frag("ORG_GRADLE_PROJECT_", "signing", "InMemory", "Key"), seed: frag("fake", "Repository", "Signing", "Seed", "Val31") },
+    { identifier: frag("MIRROR_", "DEPLOY_", "KEY"), seed: frag("fake", "Repository", "Mirror", "Seed", "Val32") },
+    { identifier: frag("signing", "InMemory", "Key", "Password"), seed: frag("fake", "Repository", "Signing", "Password", "Val33") },
+    { identifier: frag("Secret", "Access", "Key"), seed: frag("fake", "Repository", "Access", "Seed", "Val34") }
+  ];
+  const result = runChildLines([...rows.map((row) => `${row.identifier}=${row.seed}`), "  1) test something (RepositoryTest)", "Finished in 0.1 seconds"]);
+  const raw = `${result.stdout}${result.stderr}`;
+  const rawTail = rawTailWindow(result);
+  const tail = rootProofFailureTail("failed", result);
+  const rawHits = rows.filter((row) => rawTail.includes(row.seed)).length;
+  const maskedHits = rows.filter((row) => tail.includes(row.seed)).length;
+  const readableNames = rows.filter((row) => tail.includes(row.identifier)).length;
+  assert.ok(result.status === 2, "signing child did not fail as required");
+  assert.ok(rawHits === rows.length, `raw tail window contains ${rawHits} of ${rows.length} repository signing seeds`);
+  assert.ok(maskedHits === 0, `masked tail contains ${maskedHits} of ${rows.length} repository signing seeds`);
+  assert.ok(readableNames === rows.length, `tail preserves ${readableNames} of ${rows.length} repository signing identifiers`);
+  assert.ok(tail.includes("test something") && tail.includes("Finished in"), "failure diagnostics disappeared");
+});
+
+test("round3 inventory all workflow secret names", () => {
+  const rows = round3InventoryRows();
+  const inventory = workflowCredentialInventory();
+  const secretRowCount = rows.filter((row) => row.kind === "workflow secret name").length;
+  const aliasRowCount = rows.filter((row) => row.kind === "secret-bound env alias").length;
+  assert.ok(inventory.secretNames.length > 0 && secretRowCount === inventory.secretNames.length, "workflow secret-name inventory is empty or incomplete");
+  assert.ok(inventory.envAliases.length > 0 && aliasRowCount === inventory.envAliases.length, "secret-bound env-alias inventory is empty or incomplete");
+  const lines = rows.map((row) => `${row.identifier}: ${row.seed}`);
+  const outcome = runRound3TailRows(rows.map((row, index) => ({ ...row, name: `inventory ${index}`, seeds: [row.seed], line: () => lines[index] })));
+  assertRound3TailRows(outcome, "workflow inventory");
+  const { result, rawTail, tail } = outcome;
+  const rawHits = rows.filter((row) => rawTail.includes(row.seed)).length;
+  const maskedHits = rows.filter((row) => tail.includes(row.seed)).length;
+  const readableNames = rows.filter((row) => tail.includes(row.identifier)).length;
+  assert.ok(result.status === 2, "workflow-inventory child did not fail as required");
+  assert.ok(rawHits === rows.length, `raw tail window contains ${rawHits} of ${rows.length} inventory seeds`);
+  assert.ok(maskedHits === 0, `masked tail contains ${maskedHits} of ${rows.length} inventory seeds`);
+  assert.ok(readableNames === rows.length, `tail preserves ${readableNames} of ${rows.length} inventory identifiers`);
+  assert.ok(tail.includes("test something") && tail.includes("Finished in"), "failure diagnostics disappeared");
+});
+
+test("round3 padding credential whitespace matrix", { timeout: 55000 }, (t) => {
+  let rowCount = 0;
+  for (const family of ROUND3_PADDING_FAMILIES) {
+    for (const whitespace of ROUND3_PADDING_WHITESPACE) {
+      for (const size of ROUND3_PADDING_SIZES) {
+        const label = `${family.name}/${whitespace.name}/${size}`;
+        const metric = measureRound3Padding({ label, input: `${family.prefix}${whitespace.make(size)}x` });
+        rowCount += 1;
+        reportMetric(t, metric);
+      }
+    }
+  }
+  assert.ok(rowCount > 0, "padding family executed zero rows");
+});
+
+const round3Fake = (family, index) => frag("fake", "Round3", family, "Seed", String(index).padStart(2, "0"), "Val");
+const ROUND3_CONTAINER_ROWS = [
+  { name: "cookie inspect arrow list", line: () => `result: %{"cookie" => ["sid=${round3Fake("CookieMap", 1)}"]}`, seeds: [round3Fake("CookieMap", 1)] },
+  { name: "set-cookie inspect arrow list", line: () => `result: %{"set-cookie" => ["sid=${round3Fake("SetCookie", 2)}; path=/"]}`, seeds: [round3Fake("SetCookie", 2)] },
+  { name: "request cookies inspect map", line: () => `req_cookies: %{"_app_key" => "${round3Fake("ReqCookies", 3)}"}`, seeds: [round3Fake("ReqCookies", 3)] },
+  { name: "response cookies inspect nested map", line: () => `resp_cookies: %{"sid" => %{value: "${round3Fake("RespCookies", 4)}"}}`, seeds: [round3Fake("RespCookies", 4)] },
+  { name: "password list with two values", line: () => `password: ["${round3Fake("PasswordList", 5)}", "${round3Fake("PasswordList", 6)}"]`, seeds: [round3Fake("PasswordList", 5), round3Fake("PasswordList", 6)] },
+  { name: "tokens list with two values", line: () => `tokens: ["${round3Fake("TokensList", 7)}", "${round3Fake("TokensList", 8)}"]`, seeds: [round3Fake("TokensList", 7), round3Fake("TokensList", 8)] },
+  { name: "uppercase sigil", line: () => `token: ~S"${round3Fake("Sigil", 9)}"`, seeds: [round3Fake("Sigil", 9)] },
+  { name: "bitstring value", line: () => `token: <<"${round3Fake("Bitstring", 10)}">>`, seeds: [round3Fake("Bitstring", 10)] },
+  { name: "nested inspect values", line: () => `password: %{value: "${round3Fake("Nested", 11)}", nested: %{token: "${round3Fake("Nested", 12)}"}}`, seeds: [round3Fake("Nested", 11), round3Fake("Nested", 12)] },
+  { name: "nested JSON object", line: () => `{"password": {"v": "${round3Fake("JsonNested", 13)}"}}`, seeds: [round3Fake("JsonNested", 13)] },
+  { name: "unquoted multi-word value", line: () => `password: ${round3Fake("Multiword", 14)} ${round3Fake("Multiword", 15)}`, seeds: [round3Fake("Multiword", 14), round3Fake("Multiword", 15)] },
+  { name: "CRLF continuation", line: () => `password:\r\n  %{value: "${round3Fake("Crlf", 16)}"}`, seeds: [round3Fake("Crlf", 16)] },
+  { name: "ANSI wrapped storage cookie", line: () => `\u001b[31mcookies: [{ name: 'sid', value: '${round3Fake("StorageCookie", 17)}' }]\u001b[0m`, seeds: [round3Fake("StorageCookie", 17)] },
+  { name: "malformed nested container", line: () => `password: %{value: "${round3Fake("Malformed", 18)}", nested: ["${round3Fake("Malformed", 19)}"`, seeds: [round3Fake("Malformed", 18), round3Fake("Malformed", 19)] }
+];
+
+const ROUND3_NAME_VALUE_ROWS = [
+  { name: "JSON token record", line: () => `{"name":"token","value":"${round3Fake("NameValue", 20)}"}`, seeds: [round3Fake("NameValue", 20)], valueKey: '"value"' },
+  { name: "JSON uppercase secret record", line: () => `{"name":"SECRET_ACCESS_KEY","value":"${round3Fake("NameValue", 21)}"}`, seeds: [round3Fake("NameValue", 21)], valueKey: '"value"' },
+  { name: "JavaScript password record", line: () => `{ name: 'password', value: '${round3Fake("NameValue", 22)}' }`, seeds: [round3Fake("NameValue", 22)], valueKey: "value" },
+  { name: "unrelated record control", line: () => `{ name: 'feature', value: 'readable' }`, seeds: [], valueKey: "value", control: true }
+];
+
+const LONG_TUPLE_KEY = frag("token_", "x".repeat(80));
+const ROUND3_TUPLE_ROWS = [
+  { name: "atom tuple wrapped LF", line: () => `{:token,\n  "${round3Fake("Tuple", 23)}"\n}`, seeds: [round3Fake("Tuple", 23)] },
+  { name: "quoted tuple wrapped CRLF", line: () => `{"password",\r\n  "${round3Fake("Tuple", 24)}"\r\n}`, seeds: [round3Fake("Tuple", 24)] },
+  { name: "long atom tuple", line: () => `{:${LONG_TUPLE_KEY}, "${round3Fake("Tuple", 25)}"}`, seeds: [round3Fake("Tuple", 25)] },
+  { name: "tuple container value", line: () => `{:cookie, %{"sid" => ["${round3Fake("Tuple", 26)}"]}}`, seeds: [round3Fake("Tuple", 26)] },
+  { name: "tuple sigil value", line: () => `{:token, ~s(${round3Fake("Tuple", 27)})}`, seeds: [round3Fake("Tuple", 27)] }
+];
+
+function runRound3TailRows(rows, { diagnosticsBeforeLast = false } = {}) {
+  const windows = rows.map((row) => {
+    const lines = [row.line()];
+    const diagnostics = ["  1) test something (RepositoryTest)", "Finished in 0.1 seconds"];
+    if (diagnosticsBeforeLast) lines.unshift(...diagnostics);
+    else lines.push(...diagnostics);
+    const result = runChildLines(lines);
+    return { row, result, rawTail: rawTailWindow(result), tail: rootProofFailureTail("failed", result) };
+  });
+  const result = { status: windows.every((w) => w.result.status === 2) ? 2 : -1 };
+  const seeds = rows.flatMap((row) => row.seeds);
+  return { result, rows, seeds, windows, rawTail: windows.map((w) => w.rawTail).join("\n"), tail: windows.map((w) => w.tail).join("\n") };
+}
+
+function assertRound3TailRows(outcome, family) {
+  const rawHits = outcome.seeds.filter((seed) => outcome.rawTail.includes(seed)).length;
+  const maskedHits = outcome.seeds.filter((seed) => outcome.tail.includes(seed)).length;
+  const leakingRows = outcome.rows.filter((row) => row.seeds.some((seed) => outcome.tail.includes(seed))).map((row) => row.name);
+  assert.ok(outcome.rows.length > 0 && outcome.seeds.length > 0, `${family} family executed zero rows`);
+  assert.ok(outcome.result.status === 2, `${family} child did not fail as required`);
+  assert.ok(rawHits === outcome.seeds.length, `${family} raw tail window contains ${rawHits} of ${outcome.seeds.length} seeds`);
+  for (const window of outcome.windows ?? []) assert.ok(window.row.seeds.every((seed) => window.rawTail.includes(seed)), `${family} raw tail window missing a row seed`);
+  assert.ok(maskedHits === 0, `${family} masked tail contains ${maskedHits} of ${outcome.seeds.length} seeds (${leakingRows.join(", ")})`);
+}
+
+test("round3 container inspect values", () => {
+  const outcome = runRound3TailRows(ROUND3_CONTAINER_ROWS, { diagnosticsBeforeLast: true });
+  assertRound3TailRows(outcome, "container inspect");
+  assert.ok(outcome.tail.includes("test something") && outcome.tail.includes("Finished in"), "complete-container diagnostics disappeared");
+});
+
+test("round3 name-value record isolation", () => {
+  const outcome = runRound3TailRows(ROUND3_NAME_VALUE_ROWS);
+  assertRound3TailRows(outcome, "name-value record");
+  const keyRows = outcome.rows.filter((row) => row.valueKey);
+  const preservedKeys = keyRows.filter((row) => outcome.tail.includes(row.valueKey)).length;
+  assert.ok(preservedKeys === keyRows.length, `tail preserves ${preservedKeys} of ${keyRows.length} value keys`);
+  assert.ok(outcome.tail.includes("readable"), "unrelated name-value record changed");
+});
+
+test("round3 tuple wrapped values", () => {
+  const outcome = runRound3TailRows(ROUND3_TUPLE_ROWS);
+  assertRound3TailRows(outcome, "tuple wrapped values");
+  assert.ok(outcome.tail.includes("test something") && outcome.tail.includes("Finished in"), "tuple diagnostics disappeared");
+});
 
 function runSeededChild(s) {
   return runChildLines(seedLines(s));
@@ -149,6 +386,61 @@ const pemB2 = frag("fake", "Pem", "Body52");
 const pemB3 = frag("fake", "Pem", "Body53");
 const pemB4 = frag("fake", "Pem", "Body54");
 const pemB5 = frag("fake", "Pem", "Body55");
+const PGP_BEGIN = frag(DASH5, "BEG", "IN ", "PGP ", "PRIV", "ATE ", "KEY ", "BLOCK", DASH5);
+const PGP_END = frag(DASH5, "END PGP ", "PRIV", "ATE ", "KEY ", "BLOCK", DASH5);
+const OTHER_PRIVATE_KEY_END = frag(DASH5, "END RSA ", "PRIV", "ATE ", "KEY", DASH5);
+const round3ArmorFake = (index) => frag("fake", "Round3", "Armor", "Seed", String(index).padStart(2, "0"), "Val");
+const ROUND3_ARMOR_COMPLETE_ROWS = [
+  { name: "PGP ordinary LF with blank body line", line: () => `${PGP_BEGIN}  \n\n  ${round3ArmorFake(31)}!?\n${PGP_END}\nAFTER_ARMOR_SAFE_LF`, seeds: [round3ArmorFake(31)], after: "AFTER_ARMOR_SAFE_LF" },
+  { name: "PGP same-line body and end", line: () => `${PGP_BEGIN}${round3ArmorFake(32)}${PGP_END}\nAFTER_ARMOR_SAFE_SAME_LINE`, seeds: [round3ArmorFake(32)], after: "AFTER_ARMOR_SAFE_SAME_LINE" },
+  { name: "PGP arbitrary timestamp prefix and body alphabet", line: () => `2026-10-26T12:00:00Z WARN ${PGP_BEGIN}\nbody-${round3ArmorFake(33)}_+/=?\n${PGP_END}\nAFTER_ARMOR_SAFE_PREFIX`, seeds: [round3ArmorFake(33)], after: "AFTER_ARMOR_SAFE_PREFIX" },
+  { name: "existing private key CRLF with whitespace body", line: () => `${PEM_B} \r\n \r\n${round3ArmorFake(34)} !?\r\n${PEM_E}\r\nAFTER_ARMOR_SAFE_CRLf`, seeds: [round3ArmorFake(34)], after: "AFTER_ARMOR_SAFE_CRLf" },
+  { name: "PGP bare CR layout", line: () => `${PGP_BEGIN}\r${round3ArmorFake(35)}\r${PGP_END}\rAFTER_ARMOR_SAFE_CR`, seeds: [round3ArmorFake(35)], after: "AFTER_ARMOR_SAFE_CR" },
+  { name: "PGP literal backslash newline layout", line: () => `${PGP_BEGIN}${String.fromCharCode(92)}n${round3ArmorFake(36)}${String.fromCharCode(92)}n${PGP_END}${String.fromCharCode(92)}nAFTER_ARMOR_SAFE_LITERAL`, seeds: [round3ArmorFake(36)], after: "AFTER_ARMOR_SAFE_LITERAL" },
+  { name: "PGP double-escaped newline layout", line: () => `${PGP_BEGIN}${String.fromCharCode(92).repeat(2)}n${round3ArmorFake(37)}${String.fromCharCode(92).repeat(2)}n${PGP_END}${String.fromCharCode(92).repeat(2)}nAFTER_ARMOR_SAFE_DOUBLE`, seeds: [round3ArmorFake(37)], after: "AFTER_ARMOR_SAFE_DOUBLE" },
+  { name: "PGP prefixed same-line body", line: () => `[ci] ${PGP_BEGIN} ${round3ArmorFake(38)} ${PGP_END}\nAFTER_ARMOR_SAFE_PREFIXED_SAME`, seeds: [round3ArmorFake(38)], after: "AFTER_ARMOR_SAFE_PREFIXED_SAME" }
+];
+const ROUND3_ARMOR_INCOMPLETE_ROWS = [
+  { name: "PGP missing end", line: () => `${PGP_BEGIN}\n${round3ArmorFake(39)}\nmissing end body remains hidden`, seeds: [round3ArmorFake(39)] },
+  { name: "PGP mismatched end label", line: () => `${PGP_BEGIN}\n${round3ArmorFake(40)}\n${OTHER_PRIVATE_KEY_END}\nwrong end must remain hidden`, seeds: [round3ArmorFake(40)] }
+];
+
+test("round3 private key armor complete layouts", (t) => {
+  let rowCount = 0;
+  for (const row of ROUND3_ARMOR_COMPLETE_ROWS) {
+    const outcome = runRound3TailRows([row]);
+    assertRound3TailRows(outcome, row.name);
+    assert.ok(outcome.tail.includes(row.after), `${row.name} lost safe post-END diagnostics`);
+    rowCount += 1;
+  }
+  assert.ok(rowCount > 0, "private-key armor family executed zero rows");
+});
+
+test("round3 private key armor malformed boundaries", () => {
+  let rowCount = 0;
+  for (const row of ROUND3_ARMOR_INCOMPLETE_ROWS) {
+    const outcome = runRound3TailRows([row], { diagnosticsBeforeLast: true });
+    assertRound3TailRows(outcome, row.name);
+    assert.ok(outcome.tail.includes("test something") && outcome.tail.includes("Finished in"), `${row.name} lost preceding failure diagnostics`);
+    rowCount += 1;
+  }
+  assert.ok(rowCount > 0, "malformed armor family executed zero rows");
+});
+
+test("round3 armor bounded adversaries", (t) => {
+  const bs = String.fromCharCode(92);
+  const rows = [
+    { label: "armor/repeated-begin", input: `${`${PGP_BEGIN}\n`.repeat(5000)}body` },
+    { label: "armor/missing-end", input: `${PGP_BEGIN}\n${"A".repeat(200000)}` },
+    { label: "armor/mixed-prefix-escape", input: `[ci] ${PGP_BEGIN}${bs.repeat(2)}n${"A".repeat(80)}${bs}n${PGP_END}${bs.repeat(2)}n`.repeat(1000) }
+  ];
+  for (const row of rows) {
+    const metric = measureRound3Padding(row);
+    reportMetric(t, metric);
+  }
+  assert.ok(rows.length > 0, "armor bounded family executed zero rows");
+});
+
 const ueV = frag("fake", "Userinfo", "Empty56");
 const usA = frag("fake", "Userinfo", "Slash57");
 const usB = frag("fake", "Userinfo", "Slash58");
@@ -381,7 +673,7 @@ export const GAP_SHAPES = [
     name: "pem_no_end",
     seeds: [pemB3],
     line: `${PEM_BR}\n${pemB3}\nFinished in 0.1 seconds`,
-    expected: `${PEM_BR}***\nFinished in 0.1 seconds`
+    expected: `${PEM_BR}***`
   },
   {
     name: "pem_escaped_newlines",
@@ -490,7 +782,13 @@ for (const row of GAP_SHAPES) {
     const maskedHits = leakedSecrets(masked, row.seeds).length;
     assert.ok(rawHasAll, `gap shape ${row.name}: detector missed a seed in the raw line`);
     assert.ok(maskedHits === 0, `gap shape ${row.name}: ${maskedHits} of ${row.seeds.length} seeds present after masking`);
-    assert.ok(masked === row.expected, `gap shape ${row.name}: output differs from expected, ${maskedHits} of ${row.seeds.length} seeds present`);
+    if (masked !== row.expected) {
+      let mismatchAt = 0;
+      while (mismatchAt < Math.min(masked.length, row.expected.length) && masked[mismatchAt] === row.expected[mismatchAt]) mismatchAt += 1;
+      const expectedCode = row.expected.codePointAt(mismatchAt) ?? -1;
+      const actualCode = masked.codePointAt(mismatchAt) ?? -1;
+      assert.ok(false, `gap shape ${row.name}: output differs at ${mismatchAt}, expected/actual lengths ${row.expected.length}/${masked.length}, code points ${expectedCode}/${actualCode}`);
+    }
   });
 }
 
@@ -513,18 +811,12 @@ test("gap seeds are distinctive", () => {
 });
 
 test("gap shapes from a spawned child never reach the root-proof tail", () => {
-  const result = runChildLines(GAP_SHAPES.map((row) => row.line));
-  const allSeeds = GAP_SHAPES.flatMap((row) => row.seeds);
-  assert.ok(result.status === 2, `gap child exited ${result.status}, expected 2`);
-  const raw = `${result.stdout}${result.stderr}`;
-  assert.ok(leakedSecrets(raw, allSeeds).length === allSeeds.length, "detector must see every gap seed in raw child output");
-  const tail = rootProofFailureTail("failed", result);
-  const leakedNames = GAP_SHAPES.filter((row) => leakedSecrets(tail, row.seeds).length > 0).map((row) => row.name);
-  const k = allSeeds.filter((seed) => tail.includes(seed)).length;
-  assert.ok(k === 0, `leaked: ${k} of ${gapSeedCount()} gap seed(s) reached the tail: ${leakedNames.join(", ")}`);
+  assertRound3TailRows(runRound3TailRows(GAP_SHAPES.map((row) => ({ ...row, line: () => row.line }))), "gap shapes");
 });
 
 const PROSE_LINES = [
+  { name: "boolean container", text: "{:ok, %{token: true, password: nil}}" },
+  { name: "short numeric container", text: "{:ok, %{token: 1}}" },
   { name: "token expired for user", text: "token expired for user" },
   { name: "password mismatch for account", text: "password mismatch for account" },
   { name: "secret not found in vault", text: "secret not found in vault" },
@@ -555,6 +847,26 @@ const PROSE_LINES = [
 
 // Over-masks accepted as the safe direction. Each is pinned exactly so it can never drift silently.
 const ACCEPTED_OVERMASK = [
+  { name: "docker_short_flag_port", text: "docker -p 8080:80", expected: "docker -p ***", reason: "docker short-flag output is ambiguous between ports and password diagnostics; the named CLI context remains conservative" },
+  { name: "basic_authentication_error", text: "Basic authentication failed", expected: "Basic *** failed", reason: "standalone Basic credentials remain protected even when prose is indistinguishable" },
+  { name: "bearer_required", text: "bearer token is required", expected: "bearer *** is required", reason: "a short bearer value cannot be distinguished from the word token" },
+  { name: "bearer_authentication_error", text: "Bearer authentication failed", expected: "Bearer *** failed", reason: "short bearer credentials retain protection" },
+  { name: "bearer_scheme_error", text: "the Bearer scheme is not supported", expected: "the Bearer *** is not supported", reason: "scheme is indistinguishable from a short bearer value" },
+  { name: "changeset_minimum", text: "password: should be at least 12 character(s)", expected: "password: ***", reason: "credential assignment context consumes the complete diagnostic value" },
+  { name: "changeset_blank", text: "* password: can't be blank", expected: "* password: ***", reason: "the full value is hidden without tearing at the apostrophe" },
+  { name: "invalid_token_error", text: "** (ArgumentError) invalid token: expected a binary", expected: "** (ArgumentError) invalid token: ***", reason: "credential assignment prose is indistinguishable from a multiword secret" },
+  { name: "refresh_token_prose", text: "refresh token: rotated", expected: "refresh token: ***", reason: "short assignment values remain protected" },
+  { name: "use_token_prose", text: "use token: foo", expected: "use token: ***", reason: "short assignment values remain protected" },
+  { name: "cookie_number", text: "cookie: 1", expected: "cookie: ***", reason: "cookie header content is opaque" },
+  { name: "credential_missing", text: "credential: missing", expected: "credential: ***", reason: "credential assignment content is opaque" },
+  { name: "numeric_token", text: "token: 123", expected: "token: ***", reason: "numeric secrets are possible" },
+  { name: "numeric_tuple", text: "{:token, 123}", expected: "{:token, ***}", reason: "numeric secrets remain hidden while the known tuple closer survives" },
+  { name: "atom_container", text: "[token: :bad]", expected: "[token: ***]", reason: "atom-valued secrets remain hidden while the known list closer survives" },
+  { name: "jwt_version_prose", text: "version eyJ1.2", expected: "version eyJ***", reason: "a short JWT-shaped version cannot safely be distinguished" },
+  { name: "jwt_word_prose", text: "eyJhello.world", expected: "eyJ***", reason: "JWT-shaped diagnostic words remain masked" },
+  { name: "lone_private_key_marker", text: PEM_B, expected: `${PEM_B}***`, reason: "unterminated armor deliberately consumes EOF" },
+  { name: "ps_user_flag", text: "ps -u root:wheel", expected: "ps -u root:***", reason: "the existing separated user flag contract conservatively covers commandless diagnostics" },
+  { name: "short_user_flag", text: "-u admin:admin", expected: "-u admin:***", reason: "commandless short user credentials remain protected" },
   { name: "code_assert_token_equals", text: 'code: assert token == "expected-value"', expected: 'code: assert token == "***"' },
   { name: "key_then_plain_line", text: "enter password:\nnext line text", expected: "enter password:\n***" },
   { name: "cli_negated_flag", text: "run --no-password prompt", expected: "run --no-password ***" },
@@ -562,11 +874,14 @@ const ACCEPTED_OVERMASK = [
   { name: "secrets_inherit", text: "secrets: inherit", expected: "secrets: ***" },
   { name: "numeric_value", text: "max_token: 1000", expected: "max_token: ***" },
   { name: "authorization_header_prose", text: "Authorization: required for route", expected: "Authorization: ***" },
-  { name: "cookie_colon_prose", text: "stale cookie: expired at line", expected: "stale cookie: ***" }
+  { name: "cookie_colon_prose", text: "stale cookie: expired at line", expected: "stale cookie: ***" },
+  { name: "private_key_missing_end_consumes_eof", text: `${PGP_BEGIN}\n${round3ArmorFake(41)}\nAFTER_ARMOR_MALFORMED_LOST`, expected: `${PGP_BEGIN}***`, reason: "without a matching END marker, later diagnostic content has no trusted boundary" },
+  { name: "private_key_mismatched_end_consumes_eof", text: `${PGP_BEGIN}\n${round3ArmorFake(42)}\n${OTHER_PRIVATE_KEY_END}\nAFTER_ARMOR_MISMATCH_LOST`, expected: `${PGP_BEGIN}***`, reason: "a different key label does not close the armor block, so later content is consumed" }
 ];
 
 for (const row of ACCEPTED_OVERMASK) {
   test(`accepted over-mask pinned: ${row.name}`, () => {
+    if (row.name.startsWith("private_key_")) assert.ok(row.reason, `accepted over-mask ${row.name} needs a rationale`);
     assert.ok(maskSecretShapes(row.text) === row.expected, `accepted over-mask ${row.name} drifted`);
   });
 }
@@ -608,40 +923,78 @@ const LINEAR_INPUTS = [
   { name: "literal_exemption_repeat", input: () => `${TK}: nil `.repeat(20000) }
 ];
 
-// The CI bound is relative: the fastest of three runs must stay within 10 times a same-process plain-prose
-// baseline, with a 250 ms floor. A shared runner measured 51, 55 and 95 ms on linear inputs against a 5 ms baseline,
-// so a 40 ms floor failed linear code; a quadratic regression at 200k characters takes seconds (7266 ms for the
-// old JWT rule), so 250 ms still separates the two by more than an order of magnitude.
-const fastestMs = (input) => {
-  let best = Infinity;
-  for (let i = 0; i < 3; i += 1) {
-    const started = performance.now();
-    maskSecretShapes(input);
-    best = Math.min(best, performance.now() - started);
-  }
-  return best;
-};
+// Fresh minimum-of-three baseline and candidate per isolated row; 2-second deadline bounds even
+// catastrophic rules. The 250 ms floor discriminates these quadratics, not every linear constant regression.
 const BASELINE_INPUT = "the quick brown fox jumps over the lazy dog\n".repeat(5000);
-let baselineCache;
-const baselineMs = () => {
-  if (baselineCache === undefined) baselineCache = fastestMs(BASELINE_INPUT);
-  return baselineCache;
-};
 
 test("linear time baseline", (t) => {
   assert.ok(BASELINE_INPUT.length >= 200000, "baseline input is too short");
-  t.diagnostic(`perf-baseline ms ${Math.round(baselineMs())}`);
+  reportMetric(t, measureRound3Padding({ label: "plain_baseline", input: BASELINE_INPUT }));
 });
 
 for (const row of LINEAR_INPUTS) {
   test(`linear time: ${row.name}`, (t) => {
     const input = row.input();
     assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
-    const ms = fastestMs(input);
-    t.diagnostic(`perf ${row.name} ms ${Math.round(ms)}`);
-    assert.ok(ms <= Math.max(250, 10 * baselineMs()), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(250, 10 * baselineMs()))} ms`);
+    reportMetric(t, measureRound3Padding({ label: row.name, input }));
   });
 }
+
+// Every retained matching family has a positive, a nonmatch, and a pathological input.
+// Rule order may change; these exercise observable families rather than private regex sources.
+const RULE_ADVERSARIES = [
+  ["nextline", () => `password:\n${round3Fake("Rule", 1)}`, "key_before_finished_line", "nextline_keys"],
+  ["armor", () => `${PEM_B}\n${round3Fake("Rule", 2)}\n${PEM_E}`, "token expired for user", "pem_begin_repeat"],
+  ["name_value", () => `{"name":"token","value":"${round3Fake("Rule", 3)}"}`, "password mismatch for account", "escaped_key_repeat"],
+  ["tuple", () => `{:token, "${round3Fake("Rule", 4)}"}`, "invalid token, retrying now", "tuple_comma_repeat"],
+  ["structural", () => `signingInMemoryKey=${round3Fake("Rule", 5)}`, "token_count: 300", "double_equals_repeat"],
+  ["authorization", () => `Authorization: ${round3Fake("Rule", 6)}`, "authorization failed for request", "keyword_no_separator"],
+  ["cookie", () => `Cookie: ${round3Fake("Rule", 7)}`, "cookie jar is empty", "nextline_keys"],
+  ["bearer", () => `Bearer ${round3Fake("Rule", 8)}`, "token expired for user", "bearer_quote_unterminated"],
+  ["secret_access_key", () => `secret_access_key=${round3Fake("Rule", 9)}`, "secret not found in vault", "whitespace_lines"],
+  ["github", () => seedValues().gh, "task-runner12345 started", "akia_run"],
+  ["hex", () => seedValues().hex, "token_count: 300", "backslash_run"],
+  ["sk", () => `${SK}${round3Fake("Rule", 10)}`, "kiosk-mode-settings applied", "sk_dash_run"],
+  ["slack", () => `${XOXB}${round3Fake("Rule", 11)}`, "token_count: 300", "xox_repeat"],
+  ["npm", () => `${frag("np", "m_")}${"A".repeat(36)}`, "npm_config_cache is set", "cli_flag_repeat"],
+  ["userinfo", () => `https://user:${round3Fake("Rule", 12)}@example.invalid`, "token_count: 300", "userinfo_repeated_scheme"],
+  ["jwt", () => `${frag("ey", "J")}${round3Fake("Rule", 13)}.body.signature`, "token_count: 300", "jwt_hyphen_run"],
+  ["aws", () => `${frag("AK", "IA")}${"A".repeat(16)}`, "token_count: 300", "akia_run"],
+  ["query", () => `?key=${round3Fake("Rule", 14)}`, "token_count: 300", "query_key_repeat"],
+  ["cli", () => `--password ${round3Fake("Rule", 15)}`, "use --password-file ./pw.txt for input", "cli_flag_repeat"],
+  ["curl", () => `curl -u user:${round3Fake("Rule", 16)}`, "token_count: 300", "curl_user_repeat"],
+  ["generic", () => `token=${round3Fake("Rule", 17)}`, "token: ok", "literal_exemption_repeat"]
+];
+
+test("round3 rule family adversaries", { timeout: 55000 }, (t) => {
+  assert.ok(RULE_ADVERSARIES.length > 0, "rule inventory empty");
+  for (const [label, positive, proseName, pathological] of RULE_ADVERSARIES) {
+    const prose = PROSE_LINES.find((row) => row.name === proseName);
+    const input = LINEAR_INPUTS.find((row) => row.name === pathological);
+    assert.ok(prose && input, `rule ${label} has an empty case group`);
+    assert.ok(maskSecretShapes(positive()) !== positive(), `rule ${label} positive did not match`);
+    assert.ok(maskSecretShapes(prose.text) === prose.text, `rule ${label} nonmatch changed`);
+    reportMetric(t, measureRound3Padding({ label: `rule/${label}`, input: input.input() }));
+  }
+});
+
+test("round3 separator head adversaries", { timeout: 55000 }, (t) => {
+  const heads = ["token", "Authorization", "Cookie", "password", "SecretAccessKey"];
+  const separators = [":", "=", "=>", "==", "==="];
+  let count = 0;
+  for (const head of heads) for (const separator of separators) for (const whitespace of ROUND3_PADDING_WHITESPACE) {
+    const label = `separator/${head}/${separator.length}/${separator === "=>" ? "arrow" : separator[0] === ":" ? "colon" : "equals"}/${whitespace.name}`;
+    reportMetric(t, measureRound3Padding({ label, input: `${head}${separator}${whitespace.make(200000)}x` }));
+    count += 1;
+  }
+  assert.ok(count > 0, "separator family empty");
+});
+
+test("round3 timing quadratic copied control", () => {
+  const quadratic = MASK_PERF_CHILD.replace('import { maskSecretShapes } from "./script/verify_repository.mjs";', 'const maskSecretShapes = (text) => /token:[ \\t]*[ \\t]*$/.test(text);');
+  assert.ok(quadratic !== MASK_PERF_CHILD, "quadratic copy was not changed");
+  assert.throws(() => measureRound3Padding({ label: "quadratic_copy", input: `token:${" ".repeat(200000)}x` }, quadratic), /timed out|bound failed/, "quadratic copy passed timing gate");
+});
 
 test("ANSI-wrapped and CRLF secrets never reach the tail", () => {
   const v1 = frag("fake", "Ansi", "Crlf70");
@@ -666,6 +1019,7 @@ test("a value cut by the tail byte window never appears", () => {
   const unmaskedTail = text.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
   const cutInside = unmaskedTail.length - ROOT_PROOF_TAIL_BYTES === vLine.length - remaining;
   assert.ok(cutInside, "byte window cut does not land inside the value line (test setup)");
+  assert.ok(rawTailWindow({ stdout: text }).includes(V.slice(-8)), "byte-cut fragment is outside the unmasked window");
   const out = rootProofFailureTail("failed", { stdout: text, stderr: "" });
   const hits = [V, V.slice(-8)].filter((frag8) => out.includes(frag8)).length;
   assert.ok(hits === 0, `window case: ${hits} of 2 value fragments reached the tail`);
@@ -710,27 +1064,27 @@ test("maskSecretShapes edge cases are byte-stable", () => {
 // by Actions, so it must be registered with ::add-mask:: before any other line uses it.
 // Line-based scan (no YAML dependency); one-assignment-per-line is the workflow convention.
 // ---------------------------------------------------------------------------------------------
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
 const refsVar = (text, name) => new RegExp(`\\$\\{?${name}\\b`).test(text);
-// Matches only an uncommented line: optional `echo`, then `::add-mask::` plus the variable (optionally braced)
-// either unquoted or inside double quotes whose closing quote follows the name directly. A single-quoted
-// form (the shell would not expand the variable) and an unterminated double quote never match, and
-// `$TOKEN_ID` never masks `$TOKEN`.
+// Supported convention: one unconditional stdout echo, at the assignment's block indentation.
+// This is deliberately not a Bash parser. Declarations, append/read/printf, GITHUB_ENV,
+// multiple assignments and inline derivations remain GR-06's Phase 196 receiver.
 const isMaskLine = (line, name) => {
   const ref = `(?:${name}|\\{${name}\\})`;
-  const bare = `::add-mask::\\$${ref}(?![A-Za-z0-9_])`;
+  const bare = `::add-mask::\\$${ref}`;
   const dq = `"::add-mask::\\$${ref}"`;
-  return new RegExp(`^\\s*(?:echo\\s+)?(?:${bare}|${dq})`).test(line);
+  return new RegExp(`^[ \\t]*echo[ \\t]+(?:${bare}|${dq})(?:;)?(?:[ \\t]+#.*)?[ \\t]*$`).test(line);
 };
+
+const CREDENTIAL_REFERENCE = /\$\{\{\s*(?:secrets(?:\.[A-Za-z_]\w*|\s*\[\s*(["'])[A-Za-z_]\w*\1\s*\])|github\.token)\s*\}\}/i;
 
 export function secretBoundKeys(workflowText) {
   const keys = new Set();
   for (const line of workflowText.split("\n")) {
-    const m = /^\s*([A-Za-z_][A-Za-z0-9_]*):\s*.*\$\{\{\s*secrets\./.exec(line);
-    if (m) keys.add(m[1]);
+    const m = /^\s*([A-Za-z_][A-Za-z0-9_]*):\s*/.exec(line);
+    if (m && CREDENTIAL_REFERENCE.test(line.slice(m[0].length))) keys.add(m[1]);
   }
   return keys;
 }
@@ -755,7 +1109,7 @@ export function derivedSecretAssignments(workflowText) {
   const derived = new Map();
   lines.forEach((line, index) => {
     const m = ASSIGN.exec(line);
-    if (!m || /:\s*\$\{\{/.test(line) || /^\s*[A-Za-z_]\w*:\s/.test(line)) return;
+    if (!m) return; // ASSIGN requires equals before any RHS colon; YAML declarations cannot match.
     const [, name, rhs] = m;
     const bounds = runBlockBounds(lines, index);
     if (!bounds) return;
@@ -764,7 +1118,7 @@ export function derivedSecretAssignments(workflowText) {
     let from = null;
     let depth = 0;
     for (const key of secrets) if (refsVar(rhs, key)) { from = key; depth = 1; break; }
-    if (from === null && /\$\{\{\s*secrets\./.test(rhs)) { from = "secrets"; depth = 1; }
+    if (from === null && CREDENTIAL_REFERENCE.test(rhs)) { from = "credential reference"; depth = 1; }
     if (from === null) {
       for (const [key, d] of derived) if (d === 1 && refsVar(rhs, key)) { from = key; depth = 2; break; }
     }
@@ -776,6 +1130,36 @@ export function derivedSecretAssignments(workflowText) {
   return found;
 }
 
+// Conservative lexical fences, not evaluation: no registration across control syntax, heredocs,
+// continuations or compound commands. Prior balanced standalone subshells may precede the slice;
+// any open/ambiguous enclosing region leaves registration unproved.
+function supportedRegistration(lines, assignment, maskIndex) {
+  const { index, bounds } = assignment;
+  const bodyIndent = Math.min(...lines.slice(bounds.start + 1, bounds.end).filter((l) => l.trim()).map(indentOf));
+  if (indentOf(lines[index]) !== bodyIndent || indentOf(lines[maskIndex]) !== bodyIndent) return false;
+  let depth = 0;
+  for (let k = bounds.start + 1; k < index; k += 1) {
+    const line = lines[k].trim();
+    if (line.startsWith("#")) continue;
+    if (/^exec(?:\s|$)/.test(line)) return false; // persistent stdout/fd authority is unproved
+    if (/<<|\\$/.test(line)) return false;
+    const singleSubshell = /^\(\s+[^()]*\)\s*$/.test(line);
+    const singleLoop = /^(?:for|while|until)\b.*\bdone\b/.test(line);
+    if (!singleSubshell && !singleLoop && /^(?:if|for|while|until|case|function)\b|^[A-Za-z_]\w*\s*\(\s*\)\s*\{|^[({]/.test(line)) depth += 1;
+    if (/^(?:fi|done|esac|[})])(?:\s|;|$)/.test(line) || /\bdone\s*\)\s*$/.test(line)) depth -= 1;
+    if (depth < 0) return false;
+  }
+  if (depth !== 0) return false;
+  for (let k = index + 1; k <= maskIndex; k += 1) {
+    const line = lines[k].trim();
+    if (line === "" || line.startsWith("#")) continue;
+    if (indentOf(lines[k]) !== bodyIndent) return false;
+    if (/^(?:if|then|else|elif|fi|for|while|until|do|done|case|esac|function)\b|^[A-Za-z_]\w*\s*\(\s*\)\s*\{|^[({}]|<<|&&|\|\||\\$/.test(line)) return false;
+    if (k !== maskIndex && /[;|&]/.test(line) && !ASSIGN.test(line)) return false;
+  }
+  return true;
+}
+
 export function derivedSecretViolations(workflowText) {
   const lines = workflowText.split("\n");
   const violations = [];
@@ -783,7 +1167,7 @@ export function derivedSecretViolations(workflowText) {
     let masked = false;
     let usedFirst = false;
     for (let k = a.index + 1; k < a.bounds.end; k += 1) {
-      if (isMaskLine(lines[k], a.name)) { masked = true; break; }
+      if (isMaskLine(lines[k], a.name) && supportedRegistration(lines, a, k)) { masked = true; break; }
       if (refsVar(lines[k], a.name)) { usedFirst = true; break; }
     }
     if (!masked || usedFirst) violations.push({ name: a.name, line: a.line, reason: usedFirst ? "used before add-mask" : "no add-mask" });
@@ -800,11 +1184,12 @@ export function derivationScript(workflowText, vars) {
     const idx = lines.findIndex((l) => new RegExp(`^\\s*${name}=`).test(l));
     assert.ok(idx >= 0, `assignment for ${name} not found`);
     picked.push(idx);
-    const mask = lines.findIndex((l, k) => k > idx && isMaskLine(l, name));
+    const bounds = runBlockBounds(lines, idx);
+    const mask = lines.findIndex((l, k) => k > idx && bounds && k < bounds.end && isMaskLine(l, name) && supportedRegistration(lines, { index: idx, bounds }, k));
     if (mask >= 0) picked.push(mask);
   }
   const script = [...new Set(picked)].sort((a, b) => a - b).map((k) => lines[k].trim());
-  for (const l of script) if (NO_NETWORK.test(l)) throw new Error(`refusing to run network line: ${l.slice(0, 40)}`);
+  for (const l of script) if (NO_NETWORK.test(l)) throw new Error("refusing to run network line");
   return script.join("\n");
 }
 
@@ -908,15 +1293,21 @@ test("derived chains are tracked and non-secret env keys are ignored", () => {
   assert.deepEqual(derivedSecretViolations(plain), []);
 });
 
-test("live workflow tree: non-empty floor and zero violations", () => {
+test("live workflow tree: non-empty floor and zero violations", (t) => {
   let total = 0;
+  let references = 0;
+  let aliases = 0;
   const bad = [];
   for (const f of workflowFiles()) {
     const text = readFileSync(path.join(workflowDir, f), "utf8");
     total += derivedSecretAssignments(text).length;
+    references += text.split("\n").filter((line) => CREDENTIAL_REFERENCE.test(line)).length;
+    aliases += secretBoundKeys(text).size;
     for (const v of derivedSecretViolations(text)) bad.push(`${f}:${v.line} ${v.name} (${v.reason})`);
   }
   assert.ok(total >= 1, "scan must find at least one derived assignment, else it is vacuous");
+  assert.ok(references > 0 && aliases > 0, "live credential census empty");
+  t.diagnostic(`live census references ${references}; aliases ${aliases}; derived ${total}; violations ${bad.length}`);
   assert.deepEqual(bad, [], `unmasked derived secrets: ${bad.join("; ")}`);
 });
 
@@ -955,4 +1346,263 @@ test("live fire-drill derivation never leaks seeded or derived values into the e
 test("derivationScript refuses to extract network lines", () => {
   const text = fixture(`TOKEN=$(curl -s "$MAVEN_PASSWORD")`);
   assert.throws(() => derivationScript(text, ["TOKEN"]), /refusing/);
+});
+
+test("round3 raw window and inventory controls", () => {
+  const seed = round3Fake("Window", 1);
+  const oversized = runRound3TailRows([{ name: "early byte seed", line: () => `password=${seed}\n${"z".repeat(ROOT_PROOF_TAIL_BYTES + 1)}`, seeds: [seed] }]);
+  assert.ok(oversized.rawTail.length <= ROOT_PROOF_TAIL_BYTES, "raw window must enforce the byte cap");
+  assert.throws(() => assertRound3TailRows(oversized, "early byte control"), /raw tail window/, "out-of-byte-window seed qualified");
+  const earlyLine = runRound3TailRows([{ name: "early line seed", line: () => `password=${seed}\n${"safe line\n".repeat(ROOT_PROOF_TAIL_LINES + 1)}`, seeds: [seed] }]);
+  assert.throws(() => assertRound3TailRows(earlyLine, "early line control"), /raw tail window/, "out-of-line-window seed qualified");
+  assert.throws(() => assertRound3TailRows({ rows: [], seeds: [], result: { status: 2 }, rawTail: "", tail: "" }, "empty inventory"), /zero rows/);
+  const valid = runRound3TailRows([{ name: "identity control", line: () => `password=${seed}`, seeds: [seed] }]);
+  assertRound3TailRows(valid, "valid window");
+  assert.throws(() => assertRound3TailRows({ ...valid, tail: valid.rawTail }, "removed mask"), /masked tail/);
+  const groups = new Map([["window", [1]], ["diagnostic", [1]], ["timing", [1]]]);
+  const requireGroups = (map) => { for (const group of ["window", "diagnostic", "timing"]) assert.ok(map.get(group)?.length > 0, "required case group missing"); };
+  requireGroups(groups);
+  for (const group of groups.keys()) { const omitted = new Map(groups); omitted.delete(group); assert.throws(() => requireGroups(omitted), /required case group missing/); }
+});
+
+test("round3 guard exact stdout registration", () => {
+  const forms = ['echo "::add-mask::$TOKEN"', 'echo ::add-mask::$TOKEN', 'echo "::add-mask::${TOKEN}"; # supported', 'echo ::add-mask::${TOKEN} # supported'];
+  assert.ok(forms.length > 0, "registration family empty");
+  for (const [index, form] of forms.entries()) {
+    const text = fixture('TOKEN=$(printf %s "$MAVEN_PASSWORD" | base64)', form, 'echo "$TOKEN"');
+    assert.ok(derivedSecretViolations(text).length === 0, `exact stdout form ${index} rejected`);
+    const script = derivationScript(text, ["TOKEN"]);
+    const seed = round3Fake("Registration", index);
+    const result = spawnSync("bash", ["-c", `${script}\necho "$TOKEN"`], { encoding: "utf8", env: { PATH: process.env.PATH, MAVEN_PASSWORD: seed } });
+    const derived = Buffer.from(seed).toString("base64");
+    assert.ok(result.status === 0 && !runnerMaskedLog(result.stdout, [seed]).includes(derived), `stdout emulator form ${index} failed`);
+  }
+});
+
+test("round3 guard rejected execution contexts", () => {
+  const masks = [
+    'echo "::add-mask::$TOKEN" >/dev/null', 'echo "::add-mask::$TOKEN" > /tmp/x',
+    'echo "::add-mask::$TOKEN" >&2', 'echo "::add-mask::$TOKEN" 2>&1',
+    'echo "::add-mask::$TOKEN" | cat >/dev/null', 'echo "::add-mask::$TOKEN"x',
+    'echo ::add-mask::$TOKEN.suffix', 'echo "::add-mask::$TOKEN" extra',
+    '# echo "::add-mask::$TOKEN"', '  echo "::add-mask::$TOKEN"',
+    'if true; then\n  echo "::add-mask::$TOKEN"\nfi',
+    'if true; then\necho "::add-mask::$TOKEN"\nfi',
+    'if false; then echo "::add-mask::$TOKEN"; fi',
+    'f() {\necho "::add-mask::$TOKEN"\n}',
+    'function f { echo "::add-mask::$TOKEN"; }',
+    "cat <<'EOF'\necho \"::add-mask::$TOKEN\"\nEOF",
+    '(\necho "::add-mask::$TOKEN"\n)',
+    'true && echo "::add-mask::$TOKEN"',
+    'echo "::add-mask::$TOKEN"; true', '::add-mask::$TOKEN'
+  ];
+  assert.ok(masks.length > 0, "rejection family empty");
+  for (const [index, mask] of masks.entries()) {
+    const text = fixture('TOKEN=$(printf %s "$MAVEN_PASSWORD" | base64)', ...mask.split("\n"), 'echo "$TOKEN"');
+    assert.ok(derivedSecretViolations(text).length === 1, `unproved context ${index} accepted`);
+    assert.ok(!derivationScript(text, ["TOKEN"]).includes("::add-mask::"), `unproved context ${index} extracted`);
+  }
+  const control = fixture('if false; then', 'TOKEN="$MAVEN_PASSWORD"', 'fi', 'echo "::add-mask::$TOKEN"');
+  assert.ok(derivedSecretViolations(control).length === 1, "ambiguous region accepted");
+});
+
+test("round3 references bracket and github token", () => {
+  const refs = ['${{ secrets.NAME }}', "${{ secrets['NAME'] }}", '${{ secrets["NAME"] }}', '${{ github.token }}'];
+  assert.ok(refs.length > 0, "reference family empty");
+  for (const [index, ref] of refs.entries()) {
+    const direct = fixture(`AUTH="Authorization: ${ref}"`, 'echo "::add-mask::$AUTH"');
+    assert.ok(derivedSecretAssignments(direct).length === 1 && derivedSecretViolations(direct).length === 0, `direct reference ${index} missed`);
+    assert.ok(derivedSecretViolations(direct.replace('echo "::add-mask::$AUTH"', "")).length === 1, `reference ${index} negative control missed`);
+    const alias = fixture('TOKEN="$BOUND"', 'echo "::add-mask::$TOKEN"').replace('FOO: plain', `BOUND: ${ref}`);
+    assert.ok(secretBoundKeys(alias).has("BOUND") && derivedSecretAssignments(alias).length === 1 && derivedSecretViolations(alias).length === 0, `env reference ${index} missed`);
+  }
+});
+
+// Complete finite inventory of the forms named in GAP2 IN-01/04. No claim about arbitrary
+// credentials: bare values require these provider, header, identifier, URL or CLI contexts.
+const RESIDUAL_FORMS = [
+  ...[
+    ["gitlab", frag("gl", "pat-")], ["stripe_secret", frag("sk_", "live_")],
+    ["stripe_restricted", frag("rk_", "live_")], ["stripe_webhook", frag("wh", "sec_")],
+    ["google_api", frag("AI", "za")], ["twilio", frag("S", "K")]
+  ].map(([name, prefix], index) => {
+    const seed = name === "twilio" ? frag("a1".repeat(16)) : round3Fake("Provider", index);
+    return { name, family: "provider", line: () => `provider output ${prefix}${seed}`, seeds: [seed] };
+  }),
+  { name: "slack_webhook", family: "provider", line: () => `https://hooks.slack.com/services/${round3Fake("Slack", 1)}/${round3Fake("Slack", 2)}/${round3Fake("Slack", 3)}`, seeds: [1, 2, 3].map((n) => round3Fake("Slack", n)) },
+  { name: "azure_account_key", family: "identifier", line: () => `DefaultEndpointsProtocol=https;AccountKey=${round3Fake("Azure", 1)}==;EndpointSuffix=example.invalid`, seeds: [round3Fake("Azure", 1)] },
+  ...["docker -p ", "sshpass -p ", "mysql -p", "mix hex.publish --key ", "curl --user=deploy:", "curl -udeploy:", "curl --user deploy:", "curl -u deploy:", "openssl -pass pass:"].map((prefix, index) => ({ name: `cli_${index}`, family: "cli", line: () => `${prefix}${round3Fake("Cli", index)}`, seeds: [round3Fake("Cli", index)] })),
+  ...["pwd", "pass", "pw", "DB_PASS", "DB_PWD", "_auth", "session_id"].map((key, index) => ({ name: `alias_${key}`, family: "identifier", line: () => `${key}=${round3Fake("Alias", index)}`, seeds: [round3Fake("Alias", index)] })),
+  ...["?code=", "?sig%3D=", "?AWSAccessKeyId=", "?password%3D", "?password%3D="].map((prefix, index) => ({ name: `query_${index}`, family: "query", line: () => `https://example.invalid/${prefix}${round3Fake("QueryEncoding", index)}`, seeds: [round3Fake("QueryEncoding", index)] })),
+  { name: "url_user_only", family: "url", line: () => `https://${round3Fake("UserOnly", 1)}@example.invalid`, seeds: [round3Fake("UserOnly", 1)] },
+  { name: "url_long_user_password", family: "url", line: () => `https://${"u".repeat(600)}:${round3Fake("LongPass", 1)}${"p".repeat(600)}@example.invalid`, seeds: [round3Fake("LongPass", 1)] },
+  { name: "url_password_spaces", family: "url", line: () => `https://user:${round3Fake("SpacePass", 1)} ${round3Fake("SpacePass", 2)}@example.invalid`, seeds: [round3Fake("SpacePass", 1), round3Fake("SpacePass", 2)] },
+  { name: "url_encoded_colon", family: "url", line: () => `https://user%3A${round3Fake("EncodedUser", 1)}@example.invalid`, seeds: [round3Fake("EncodedUser", 1)] },
+  { name: "url_encoded_at", family: "url", line: () => `https://${round3Fake("EncodedAt", 1)}%40example.invalid`, seeds: [round3Fake("EncodedAt", 1)] },
+  { name: "full_width_separator", family: "encoding", line: () => `password：${round3Fake("FullWidth", 1)}`, seeds: [round3Fake("FullWidth", 1)] },
+  { name: "csi_key_erase", family: "encoding", line: () => `password\u001b[0K=${round3Fake("CsiErase", 1)}`, seeds: [round3Fake("CsiErase", 1)] },
+  { name: "csi_inside_key", family: "encoding", line: () => `pass\u001b[?25lword\u001b[1;2H： ["${round3Fake("CsiInside", 1)}"]\r\n`, seeds: [round3Fake("CsiInside", 1)] },
+  { name: "bearer_next_line", family: "authorization", line: () => `Bearer\n${round3Fake("BearerNext", 1)}`, seeds: [round3Fake("BearerNext", 1)] },
+  { name: "bearer_colon", family: "authorization", line: () => `bearer: ${round3Fake("BearerColon", 1)}`, seeds: [round3Fake("BearerColon", 1)] },
+  { name: "basic_standalone", family: "authorization", line: () => `Basic ${round3Fake("Basic", 1)}`, seeds: [round3Fake("Basic", 1)] },
+  ...["a-", "x_", "access_token_", "jwt-"].map((prefix, index) => ({ name: `jwt_prefix_${index}`, family: "jwt", line: () => `${prefix}${frag("ey", "J")}${round3Fake("JwtBoundary", index)}.body.signature`, seeds: [round3Fake("JwtBoundary", index)] })),
+  { name: "jwt_upper_header", family: "jwt", line: () => `${frag("EY", "J")}${round3Fake("JwtUpper", 1)}.body.signature`, seeds: [round3Fake("JwtUpper", 1)] }
+];
+
+test("round3 residual named credential forms", () => {
+  for (const family of ["provider", "identifier", "cli", "query", "url", "encoding", "authorization", "jwt"]) {
+    const rows = RESIDUAL_FORMS.filter((row) => row.family === family);
+    assert.ok(rows.length > 0, `residual ${family} family empty`);
+    assertRound3TailRows(runRound3TailRows(rows), `residual ${family}`);
+  }
+});
+
+test("round3 residual exact diagnostic pins", () => {
+  const rows = [
+    { text: `Bearer\n${round3Fake("ExactBearer", 1)}`, expected: "Bearer\n***" },
+    { text: `Basic ${round3Fake("ExactBasic", 1)}`, expected: "Basic ***" },
+    { text: `token\u001b[0K=${round3Fake("ExactCsi", 1)}`, expected: "token=***" },
+    { text: "ordinary：prose stays readable", expected: "ordinary：prose stays readable" },
+    { text: "Basic authentication failed", expected: "Basic *** failed" }
+  ];
+  for (const [index, row] of rows.entries()) assert.ok(maskSecretShapes(row.text) === row.expected, `residual exact diagnostic ${index} changed`);
+  for (const name of ["cli_6", "cli_7", "query_2"]) {
+    const row = RESIDUAL_FORMS.find((candidate) => candidate.name === name);
+    assert.ok(row, "already-protected regression row absent");
+    const expected = row.line().replace(row.seeds[0], "***");
+    assert.ok(maskSecretShapes(row.line()) === expected, `already-protected exact pin ${name} changed`);
+    assert.ok(row.seeds.every((seed) => row.line().includes(seed)), `identity control ${name} failed`);
+  }
+});
+
+const RESIDUAL_RULE_ADVERSARIES = [
+  ["provider_extra", "gitlab", () => frag("gl", "pat-").repeat(40000)],
+  ["twilio", "twilio", () => frag("S", "K").repeat(100000)],
+  ["slack_webhook", "slack_webhook", () => "https://hooks.slack.com/services/".repeat(10000)],
+  ["command_password", "cli_0", () => "docker -p ".repeat(25000)],
+  ["command_curl", "cli_4", () => "curl --user=deploy:".repeat(15000)],
+  ["command_hex", "cli_3", () => "mix hex.publish --key ".repeat(12000)],
+  ["command_openssl", "cli_8", () => "openssl -pass pass:".repeat(15000)],
+  ["query_encoded", "query_3", () => "?password%3D".repeat(20000)],
+  ["userinfo_encoded", "url_encoded_colon", () => "://user%3A".repeat(25000)],
+  ["jwt_prefix_upper", "jwt_upper_header", () => frag("a-", "EY", "J-").repeat(40000)],
+  ["authorization_nextline", "bearer_next_line", () => "Bearer\n".repeat(30000)],
+  ["csi_normalization", "csi_inside_key", () => "pass\u001b[0Kword:".repeat(20000)],
+  ["full_width_separator", "full_width_separator", () => `password：${" \t".repeat(100000)}x`],
+  ["identifier_alias", "alias_DB_PASS", () => "DB_PASS=".repeat(30000)]
+];
+
+test("round3 residual rule adversaries", { timeout: 55000 }, (t) => {
+  assert.ok(RESIDUAL_RULE_ADVERSARIES.length > 0, "residual rule inventory empty");
+  for (const [label, name, pathological] of RESIDUAL_RULE_ADVERSARIES) {
+    const row = RESIDUAL_FORMS.find((candidate) => candidate.name === name);
+    assert.ok(row && row.seeds.length > 0, `residual rule ${label} positive family missing`);
+    assert.ok(row.seeds.every((seed) => !maskSecretShapes(row.line()).includes(seed)), `residual rule ${label} positive failed`);
+    const nonmatch = "  1) test ordinary output (RuleTest)\nFinished in 0.1 seconds\n";
+    assert.ok(maskSecretShapes(nonmatch) === nonmatch, `residual rule ${label} diagnostic nonmatch changed`);
+    const input = pathological();
+    assert.ok(input.length >= 200000, `residual rule ${label} adversary too short`);
+    reportMetric(t, measureRound3Padding({ label: `residual/${label}`, input }));
+  }
+});
+
+const REVIEW_ARMOR_ROWS = [
+  { name: "armor key same line", line: () => `private_key: ${PGP_BEGIN}\n${round3Fake("ReviewArmor", 1)}\n${PGP_END}`, seeds: [round3Fake("ReviewArmor", 1)] },
+  { name: "armor key next line", line: () => `private_key:\n${PGP_BEGIN}\n${round3Fake("ReviewArmor", 2)}\n${PGP_END}`, seeds: [round3Fake("ReviewArmor", 2)] },
+  { name: "armor JSON quoted value", line: () => `{"private_key":"${PGP_BEGIN}\n${round3Fake("ReviewArmor", 3)}\n${PGP_END}"}`, seeds: [round3Fake("ReviewArmor", 3)] },
+  { name: "armor escaped newlines", line: () => `private_key: ${PGP_BEGIN}${BS}n${round3Fake("ReviewArmor", 4)}${BS}n${PGP_END}`, seeds: [round3Fake("ReviewArmor", 4)] },
+  { name: "armor CRLF nested", line: () => `{"name":"private_key","value":"${PGP_BEGIN}\r\n${round3Fake("ReviewArmor", 5)}\r\n${PGP_END}"}`, seeds: [round3Fake("ReviewArmor", 5)] }
+];
+const REVIEW_RECORD_ROWS = [
+  { name: "record value first", line: () => `{"value":"${round3Fake("ReviewRecord", 1)}","name":"TOKEN"}`, seeds: [round3Fake("ReviewRecord", 1)] },
+  { name: "record intervening field", line: () => `{"name":"TOKEN","type":"secret","value":"${round3Fake("ReviewRecord", 2)}"}`, seeds: [round3Fake("ReviewRecord", 2)] },
+  { name: "record nested value", line: () => `{"name":"TOKEN","value":{"raw":"${round3Fake("ReviewRecord", 3)}"}}`, seeds: [round3Fake("ReviewRecord", 3)] },
+  { name: "record nested value first", line: () => `{"value":{"raw":["${round3Fake("ReviewRecord", 4)}"]},"name":"TOKEN"}`, seeds: [round3Fake("ReviewRecord", 4)] },
+  { name: "record duplicate names values", line: () => `{"name":"PASSWORD","value":"${round3Fake("ReviewRecord", 5)}","name":"TOKEN","value":"${round3Fake("ReviewRecord", 6)}"}`, seeds: [round3Fake("ReviewRecord", 5), round3Fake("ReviewRecord", 6)] },
+  { name: "record multiple nested objects", line: () => `[{"value":"${round3Fake("ReviewRecord", 7)}","name":"token"},{"name":"password","value":["${round3Fake("ReviewRecord", 8)}"]}]`, seeds: [round3Fake("ReviewRecord", 7), round3Fake("ReviewRecord", 8)] },
+  { name: "record malformed nested value", line: () => `{"name":"TOKEN","value":{"raw":"${round3Fake("ReviewRecord", 9)}"`, seeds: [round3Fake("ReviewRecord", 9)] }
+];
+const REVIEW_ESCAPED_ROWS = [
+  { name: "escaped JSON list", line: () => `{${BS}"password${BS}": [${BS}"${round3Fake("ReviewEscaped", 1)}${BS}"]}`, seeds: [round3Fake("ReviewEscaped", 1)] },
+  { name: "escaped JSON nested container", line: () => `{${BS}"password${BS}": {${BS}"value${BS}": [${BS}"${round3Fake("ReviewEscaped", 2)}${BS}"]}}`, seeds: [round3Fake("ReviewEscaped", 2)] },
+  { name: "escaped JSON malformed list", line: () => `{${BS}"password${BS}": [${BS}"${round3Fake("ReviewEscaped", 3)}${BS}"`, seeds: [round3Fake("ReviewEscaped", 3)] }
+];
+const REVIEW_IDENTIFIER_ROWS = [
+  { name: "camel quoted next line", line: () => `"signingInMemoryKey":\n  ${round3Fake("ReviewIdentifier", 1)}`, seeds: [round3Fake("ReviewIdentifier", 1)] },
+  { name: "fullwidth quoted next line", line: () => `"token"：\n  ${round3Fake("ReviewIdentifier", 2)}`, seeds: [round3Fake("ReviewIdentifier", 2)] },
+  { name: "camel CLI", line: () => `tool --signingInMemoryKey ${round3Fake("ReviewIdentifier", 3)}`, seeds: [round3Fake("ReviewIdentifier", 3)] },
+  { name: "CLI container", line: () => `tool --password ["${round3Fake("ReviewIdentifier", 4)}"]`, seeds: [round3Fake("ReviewIdentifier", 4)] },
+  { name: "CLI nested container", line: () => `tool --signingInMemoryKey {"value":["${round3Fake("ReviewIdentifier", 5)}"]}`, seeds: [round3Fake("ReviewIdentifier", 5)] },
+  { name: "CLI long identifier", line: () => `tool --${"x".repeat(80)}-password ${round3Fake("ReviewIdentifier", 6)}`, seeds: [round3Fake("ReviewIdentifier", 6)] },
+  { name: "escaped quoted camel CRLF", line: () => `${BS}"signingInMemoryKey${BS}":\r\n  ["${round3Fake("ReviewIdentifier", 7)}"]`, seeds: [round3Fake("ReviewIdentifier", 7)] },
+  { name: "unindented quoted continuation container", line: () => `"signingInMemoryKey":\n[\n"${round3Fake("ReviewIdentifier", 8)}"\n]`, seeds: [round3Fake("ReviewIdentifier", 8)] }
+];
+const REVIEW_QUOTED_ROWS = [
+  { name: "triple quoted inline", line: () => `token: """${round3Fake("ReviewQuoted", 1)}"""`, seeds: [round3Fake("ReviewQuoted", 1)] },
+  { name: "triple quoted heredoc", line: () => `token: """\n${round3Fake("ReviewQuoted", 2)}\n"""`, seeds: [round3Fake("ReviewQuoted", 2)] },
+  { name: "escaped triple delimiter inside heredoc", line: () => `token: """\n${BS}"""\n${round3Fake("ReviewQuoted", 6)}\n"""`, seeds: [round3Fake("ReviewQuoted", 6)] },
+  { name: "triple single quoted", line: () => `token: '''\n${round3Fake("ReviewQuoted", 3)}\n'''`, seeds: [round3Fake("ReviewQuoted", 3)] },
+  { name: "single quoted concatenation", line: () => `token: 'prefix'${round3Fake("ReviewQuoted", 4)}`, seeds: [round3Fake("ReviewQuoted", 4)] },
+  { name: "double quoted concatenation", line: () => `token: "prefix"${round3Fake("ReviewQuoted", 5)}"suffix"`, seeds: [round3Fake("ReviewQuoted", 5)] }
+];
+
+for (const [name, rows] of [
+  ["round3 review keyed armor priority", REVIEW_ARMOR_ROWS],
+  ["round3 review name value record boundaries", REVIEW_RECORD_ROWS],
+  ["round3 review escaped json containers", REVIEW_ESCAPED_ROWS],
+  ["round3 review identifier and cli parity", REVIEW_IDENTIFIER_ROWS],
+  ["round3 review quoted value continuations", REVIEW_QUOTED_ROWS]
+]) {
+  test(name, () => {
+    const outcome = runRound3TailRows(rows);
+    assertRound3TailRows(outcome, name);
+    if (name !== "round3 review escaped json containers" && name !== "round3 review name value record boundaries") {
+      assert.ok(outcome.windows.every((window) => window.tail.includes("Finished in")), `${name} lost complete-value diagnostics`);
+    }
+  });
+}
+
+test("round3 review name value unrelated records", () => {
+  for (const text of ['{"hostname":"TOKEN","value":"readable"}', '[{"name":"token","value":"masked"},{"name":"label","value":"readable"}]']) {
+    const result = maskSecretShapes(text);
+    assert.ok(result.includes('"value":"readable"'), "unrelated record or suffix field was masked");
+  }
+});
+
+test("round3 review sigil diagnostic boundaries", () => {
+  const rows = ["/", "|", "<", "(", "[", "{"].map((delimiter, index) => {
+    const closer = { "<": ">", "(": ")", "[": "]", "{": "}" }[delimiter] ?? delimiter;
+    return { name: `sigil ${index}`, seeds: [round3Fake("ReviewSigil", index)], line: () => `token: ~s${delimiter}${round3Fake("ReviewSigil", index)}${closer}\nFinished in 0.1 seconds` };
+  });
+  const outcome = runRound3TailRows(rows);
+  assertRound3TailRows(outcome, "review sigil");
+  assert.ok(outcome.windows.every((window) => window.tail.includes("Finished in")), "closed sigil consumed later diagnostics");
+});
+
+test("round3 review persistent stdout context", () => {
+  const contexts = ['exec >/dev/null', 'exec 1>/dev/null', 'exec 3>&1\nexec >/dev/null', 'exec > >(cat >/dev/null)'];
+  assert.ok(contexts.length > 0, "stdout context inventory empty");
+  for (const [index, context] of contexts.entries()) {
+    const text = fixture(...context.split("\n"), 'TOKEN=$(printf %s "$MAVEN_PASSWORD" | base64)', 'echo "::add-mask::$TOKEN"', 'exec >&3', 'echo "$TOKEN"');
+    assert.ok(derivedSecretViolations(text).length === 1, `persistent stdout context ${index} accepted`);
+    assert.ok(!derivationScript(text, ["TOKEN"]).includes("::add-mask::"), `persistent stdout context ${index} extracted`);
+  }
+});
+
+test("round3 review curl missing separators bounded", { timeout: 55000 }, (t) => {
+  const rows = [
+    { label: "review/curl_short_missing_colon", input: `curl ${"-u".repeat(100000)}` },
+    { label: "review/curl_long_missing_colon", input: `curl ${"--user=".repeat(30000)}` },
+    { label: "review/keyed_armor_unterminated", input: `private_key: ${PGP_BEGIN}${"A".repeat(200000)}` },
+    { label: "review/record_nested_values", input: '{"name":"TOKEN","value":{"raw":"x"}}'.repeat(6000) },
+    { label: "review/record_nested_non_names", input: '{"name":'.repeat(25000) + "0" + "}".repeat(25000) },
+    { label: "review/escaped_container_slash_run", input: `password: [${BS.repeat(200000)}]` },
+    { label: "review/escaped_record_value", input: `{"name":"TOKEN","value":[${BS}"${"A".repeat(200000)}${BS}"]}` },
+    { label: "review/cli_long_name", input: `tool --${"x".repeat(200000)}-password value` },
+    { label: "review/triple_quote_repeat", input: `token: ${'"""'.repeat(70000)}` },
+    { label: "review/sigil_escaped_delimiters", input: `token: ~s/${`${BS}/`.repeat(100000)}` },
+    { label: "review/container_deep_nesting", input: `password: ${"[".repeat(100000)}${"]".repeat(100000)}` }
+  ];
+  assert.ok(rows.length > 0, "curl missing-separator inventory empty");
+  for (const row of rows) reportMetric(t, measureRound3Padding(row));
 });
