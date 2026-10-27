@@ -134,6 +134,8 @@ None. Adapter development followed the real Gradle output as required; no extra 
 
 The macOS default Java launcher had no configured runtime; installed Homebrew OpenJDK17.0.19 worked explicitly. The restricted environment blocked Gradle native services and git-index writes; reconciled unchanged state before permitted local retries. These failures received no proof credit. One real request-control attempt exposed a parser error on mixed self-closing and failing JUnit testcases; the adapter refused it, restored bytes and clean-built the positive suite, then was corrected and every control rerun. No acceptance receipt was written for the refused attempt.
 
+Scoped SDK lifecycle handlers advanced to plan6 and recorded metrics/decisions/session. The progress handler produced67% despite35/47 completed plans and reduced the six-phase roster to three existing directories; the roadmap handler could not match the existing decorated phase row. Reconciled the observed mismatches directly: STATE remains39lines with six phases,35/47 (74%), and ROADMAP records5/17 with plan06 next. Requirements were not advanced.
+
 Stub/threat-surface review found no new unresolved stub, skipped test, unrun plan verification, endpoint, auth path or schema change. Existing empty maps/lists are test-state initialization, not fabricated proof. No authentication or human-action gate occurred. No full Swift suite rerun is claimed by this Kotlin plan; preserved quick modes verify helper contracts only.
 
 ## Next action and limits
