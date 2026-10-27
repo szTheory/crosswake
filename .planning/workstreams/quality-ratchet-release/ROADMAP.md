@@ -207,7 +207,7 @@ Plans:
 - [x] 196-12-PLAN.md — Wave 12: Close GR-06 with conserved workflow statement classification
 
 **Wave 13** *(ready; Wave 12 complete)*
-- [ ] 196-13-PLAN.md — HALTED: genuine331records=281equivalent+50compile-invalid,zero useful outcomes;upstream nested-module TCE;0/2 tasks,0/5 pairs;SPEC-04 pending;14-17 blocked pending orchestrator resolution
+- [x] 196-13-PLAN.md — Completed: separately frozen official no-tce attempt; real useful report, actual-schema adapter and5/5 known-kill/survive pairs; restored236 clean tests; attempt1 retained; aggregate timer continues
 
 **Wave 14** *(blocked on Wave 13 completion)*
 - [ ] 196-14-PLAN.md — Wave 14: Complete five-file baseline and honest adopt/drop decision
@@ -273,7 +273,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 12/17 | In progress; plan13 next | - |
+| 196. Spec and structure ratchet | 13/17 | In progress; plan14 next under live aggregate budget | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:halted,12/17 plans complete. Plan13 retained a genuine331-record report with281equivalent+50compile-invalid and zero useful outcomes;upstream TCE fingerprints the nested module. Exact restoration and236 clean selected tests passed;Task1 acceptance failed,Task2/14-17 blocked,0/5 pairs and no accepted fixture. No executor command is eligible for this terminal attempt. Receiver:execution orchestrator;resolve an authorized newly frozen attempt with official --no-tce,full unchanged success criteria and explicit budget,or the explicit scoped roadmap overrun route. After resolution only,`$gsd-execute-phase 196 --ws quality-ratchet-release` resumes13 under that resolved contract;this handoff creates no new human-approval gate. Do not repeat01-12. All eight Phase196 requirements and GR-06 remain pending;WINDOWS43/44 retain this failure/unrun controls;earlier40/41/42 and SPEC-05/ARCH-02 review flags remain. Collection default stays report-only until15;full pilot,promotion,required CI pending. Original cleanroom debt stays with197;adopter lane parked. No external delivery or approval transfer.
+Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:13/17 plans complete. Plan13 completed its useful official no-tce bootstrap, real report adapter and5/5 actual kill/survive controls;236 original selected tests passed after exact restoration. Attempt1 remains terminal and byte-preserved in explicit history. Exact next command:`$gsd-execute-phase 196 --ws quality-ratchet-release`,resuming196-14 only. Read196-EVIDENCE/muex-attempt2/protocol.json and controls-result.json;the monotonic timer continues with340269.58370900154ms carried from attempt1 into the unchanged1800000ms aggregate ceiling. Controls receipt left1032328.8434579372ms;compute fresh remaining before any tool command and never reset it. Do not repeat01-13. All eight Phase196 requirements and GR-06 remain pending;full uncapped five-file baseline,survivor classification and adopt/drop belong14. Collection default stays report-only until15;required CI/promotion pending. EarlierWINDOWS40/41/42 and SPEC-05/ARCH-02 review flags remain;43/44 resolved by new useful capture and executed controls while retaining historical failure. Original cleanroom debt stays with197;adopter lane parked. No external delivery or approval transfer.

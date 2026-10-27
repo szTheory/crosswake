@@ -2,134 +2,108 @@
 phase: 196-spec-and-structure-ratchet
 plan: "13"
 subsystem: testing
-tags: [muex, mutation, pinned-tool, terminal-attempt, privacy]
+tags: [muex, mutation, pinned-tool, no-tce, privacy]
 requires:
   - phase: 196-12
-    provides: Committed hardened source and tests in the one checkout
+    provides: Hardened committed sources and selected tests
 provides:
-  - Frozen five-file protocol and bounded phase-local process wrapper
-  - Genuine unusable Muex report and terminal failure reconciliation
-affects: [196-14, 196-15, SPEC-04]
+  - Separately frozen useful no-tce attempt with conserved aggregate budget
+  - Actual-schema adapter, genuine fixture and five executed kill/survive pairs
+affects: [196-14, SPEC-04]
 tech-stack:
   added: []
-  patterns: [isolated-tool-homes, monotonic-budget, terminal-incomplete]
+  patterns: [immutable-attempt-history, carried-monotonic-budget, real-tool-controls]
 key-files:
   created:
-    - .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/muex-pilot.mjs
-    - .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-protocol.json
-    - .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/report.json
-    - .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/result.json
-  modified: []
+    - 196-EVIDENCE/muex-attempt1-history/
+    - 196-EVIDENCE/muex-attempt2/protocol.json
+    - 196-EVIDENCE/muex-attempt2/bootstrap-report.json
+    - 196-EVIDENCE/muex-attempt2/bootstrap-result.json
+    - 196-EVIDENCE/muex-attempt2/controls-protocol.json
+    - 196-EVIDENCE/muex-attempt2/controls-result.json
+    - 196-EVIDENCE/muex-controls.json
+    - fixtures/muex-real-report.json
+  modified:
+    - scripts/muex-pilot.mjs
+    - 196-13-PLAN.md
+    - 196-14-PLAN.md
 key-decisions:
-  - Preserve the terminal attempt after zero useful outcomes; SPEC-04 remains pending and dependent plans remain blocked.
-  - Retain the original genuine report without promoting it to an accepted fixture or behavioral evidence.
-  - Recommend official --no-tce only for a separately approved new frozen attempt; do not modify the failed protocol or patch Muex.
+  - Official --no-tce resolves the inferred upstream nested-module fingerprint defect through a separately frozen authorized local attempt; preserve attempt 1 unchanged.
+  - Carry the first attempt's 340269.58370900154 ms into the same aggregate 1800000 ms limit; no baseline or appetite reduction.
+  - Focus controls with official return_value and max-mutations 1; baseline remains all five files and uncapped.
 requirements-completed: []
 requirements-addressed: [SPEC-04]
 actuals:
-  tokens: 104402
-  tasks: 0
-  commits: 2
-commits: 2
+  tokens: 531753
+  tasks: 2
+  commits: 6
+commits: 6
 plan_head_before: a03fce402d4b2de364acd1315ace6256ca8d2267
-plan_head_after: 8b7bd6f9f918506433b4c713e0b88fa005f26709
-duration: 340.270s measured attempt wall
+plan_head_after: c5de913f53f766fb1a8182fab2d8f085aabd1424
+duration: 767.671s aggregate through controls; continuous clock remains active
 completed: 2026-10-27
-status: halted
-halted_reason: Pinned Muex emitted only equivalent and compile-invalid records; useful-bootstrap gate failed
-tasks_completed: 0
+status: complete
+tasks_completed: 2
 tasks_total: 2
 ---
 
-# Phase 196 Plan 13: Pinned Muex bootstrap halt Summary
+# Phase 196 Plan 13: Useful pinned Muex bootstrap and controls Summary
 
-**Muex 0.12.0 emitted 331 real records but zero behavioral outcomes: its nested-module TCE behavior classified 281 records equivalent, while 50 failed compilation. The required bootstrap failed and SPEC-04 remains pending.**
+**Official Muex 0.12.0 with `--no-tce` produced 271 killed and four surviving SafeObservation mutants; all five real known-kill/known-survive pairs discriminated and the 236 original selected tests passed after restoration.**
 
 ## Task results
 
-| Task | Status | Evidence |
-| --- | --- | --- |
-| 196-13-01 | Failed useful-outcome acceptance; partial implementation retained | Frozen protocol, genuine report, process receipt, source restoration and 236 clean tests |
-| 196-13-02 | Not executed; blocked by Task 1 | Zero of five kill/survive pairs; no accepted report fixture or adapter |
+1. **196-13-01 complete:** `dad4d998` freezes the supported configuration repair and immutable attempt history; `4a816d74` captures useful real output with source/provenance/restoration evidence.
+2. **196-13-02 complete:** `c5de913f` adds the real-schema adapter, unchanged genuine fixture, corrupted-copy controls and ten actual focused Muex runs proving five kill/survive pairs.
 
-No full five-file baseline, survivor classification, adopt/drop decision, recurring lane, new project dependency, or Plan 14 execution occurred. The real report is retained for failure analysis. It is not the accepted fixture requested by Task 2.
+Previous commits `0bba3d72`, `8b7bd6f9` and `52bebc6c` retain the initial RED/wrapper/halt evidence. Six commits are measured from the persisted plan base through `c5de913f`; the final lifecycle commit is separate. Token actuals are realized diff characters divided by four, including genuine reports and the required immutable historical copies, rather than runtime model tokens.
 
-## Protocol and provenance
+## Attempt resolution and provenance
 
-Before mutation results, the protocol froze all five source files: SafeObservation, Journal, Policy.Compiler, Policy.Route and Bridge.Contract. It froze the offline, policy and bridge test directories; every selected test/source digest; source commit `0bba3d72`; source tree; clean tracked inputs; machine/toolchain; attempt identity; isolated MIX_HOME/MIX_ARCHIVES/HEX_HOME; and a single 1800000 ms monotonic wall deadline with a 20% noise limit. The full source identities and exact commands are in `196-EVIDENCE/muex-protocol.json` and `muex-bootstrap/result.json`.
+Attempt 1 remains terminal. Its protocol, wrapper, 331-record unusable report, process receipt and original halted SUMMARY are byte-preserved under `196-EVIDENCE/muex-attempt1-history/`. Original canonical attempt-1 bootstrap outputs also remain unchanged. The orchestrator authorized this ordinary reversible local configuration repair under CONTEXT Agent discretion; no new approval gate or external action occurred.
 
-The full-baseline argument construction is `--files` with the five comma-separated files, `--test-paths test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge --no-filter --no-optimize --concurrency 1 --timeout 10000 --fail-at 0 --format json --output <fresh-path>`. Bootstrap used only the real SafeObservation source with those test directories and flags. No sampling, mutation cap, changed-line or coverage-guided option was used. This was explicitly a bootstrap, not the five-file baseline.
+`MUEX-ATTEMPT-RESOLUTION.md` and both plan interfaces were committed before attempt-2 results. The pinned Config documents `--no-tce` separately from `--no-optimize`; this supported option addresses the inferred nested-module TCE defect without patching Muex or restructuring product modules. The actual prior archive `Jason.encode!/2` failure establishes the planned escript fallback; no known-failed archive command or package install was repeated.
 
-Official [Hex 0.12.0 metadata](https://hex.pm/api/packages/muex/releases/0.12.0) and the downloaded official package agreed on SHA256 `a4b395b87d23b8d34f4508d0c13494b734f1fff8156eca2360fd279a0799d52e`. Config, JSON reporter, port runner, Mix task and mix.exs were fetched from the official pinned source and checksummed. Escript source extracted from that same verified package matched those files. Built escript SHA256: `f99c30672230236f1a6e2cf09d9bfce5a9a353737e7e1c210569bd2e6fb25756`. Tool-only installation lived in the protocol's temporary scratch; project mix.exs and mix.lock never changed.
+Attempt `27daad6d-8e3c-49c6-8f4f-9e89a9694692` freezes source commit `dad4d998`, source tree, protected source/test hashes, toolchain, exact selections, flags and historical hashes in `muex-attempt2/protocol.json`. Local package SHA256, all five official source-file checksums, escript SHA256 and Mix toolchain were independently checked against the prior verified pin. Package SHA256 remains `a4b395b87d23b8d34f4508d0c13494b734f1fff8156eca2360fd279a0799d52e`; escript SHA256 remains `f99c30672230236f1a6e2cf09d9bfce5a9a353737e7e1c210569bd2e6fb25756`. Existing task-specific MIX_HOME/MIX_ARCHIVES/HEX_HOME and real installed Elixir bin were reused. Project mix files did not change.
 
-Machine: Darwin arm64, 18 logical CPUs; Node 22.14.0; Mix/Elixir 1.19.5 on OTP 27. Detailed OS and runtime versions are retained in the protocol. No host/user identifiers or environment values were recorded.
+The full-baseline interface still selects SafeObservation, Journal, Policy.Compiler, Policy.Route and Bridge.Contract; tests remain `test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge`. Flags are `--no-filter --no-tce --no-optimize --concurrency 1 --timeout 10000 --fail-at 0 --format json --output <fresh-path>`. Baseline has no cap, sampling, changed-line selection or coverage optimization.
 
-## Actual process results
+## Real bootstrap and controls
 
-The archive installed and `mix archive` confirmed muex-0.12.0. Actual `mix muex` accepted the frozen options and reached mutation report generation, then exited 1 after 68012 ms because `Jason.encode!/2` was unavailable. It produced no report. This actual archive integration failure qualified for the plan's escript fallback; neither cache trouble nor a `mix run` probe was treated as the trigger.
+The genuine fresh bootstrap subprocess exited 0 after 222238 ms. It reported total331 = killed271 + survived4 + invalid50 + equivalent6, timeout0 and no_coverage0; score bounds98.55..98.55. The unchanged privacy-reviewed report was copied to the fixture only after useful capture. This single-file bootstrap is never credited as the full five-file baseline.
 
-The first fallback dependency command exited 126 before Mix ran because the version-manager shim had no scratch-local version selection. Inspection proved no dependency, build, lockfile or executable had been created. Selecting the repository's existing Elixir/OTP versions resolved that environment issue. The official escript then built successfully. Its initial launch exited 1 before loading the project because upstream MixBootstrap resolves the Elixir library relative to the PATH executable and encountered the version-manager shim. The actual existing Elixir bin directory resolved that second environment issue. Both failures were reconciled before proceeding, retained in the command ledger, and did not start a second mutation experiment or reset the budget.
+`controls-protocol.json` froze all exact public calls, weakened test bytes/digests, selected paths, known functions and official focused arguments before control results. Each control uses `--mutators return_value --max-mutations 1` in addition to the frozen base flags, solely for controls. Targets respectively exercise `SafeObservation.new`, `Journal.new_entry`, `Compiler.compile`, `Route.new` and `Contract.protocol`.
 
-The actual escript mutation launch exited 0 after 82388 ms and emitted the fresh 366505-byte genuine JSON report. SHA256: `9f8aa1262c5c3e809bf98ecc11fbb4912fb23aaf3c39dc4c0113a6a590ba7e29`.
+Each unchanged original-test run killed the actual first ReturnValue mutant, with the real ExUnit failure/assertion retained by Muex. Each corresponding weakened run survived the exact same file/mutator/before/after identity. Competing selected test modules were temporarily suppressed; one original selected test path called the actual public function and applied a weakened result assertion. A fresh tool-scratch marker written after that call records `mutant-call-returned`, independently proving execution of the changed function rather than trusting `test_files`. Ten subprocesses exited 0; every pair is retained with real reports, identities, hashes and fixed execution evidence in `controls-result.json` and the canonical `muex-controls.json` copy.
 
-| Outcome | Count |
-| --- | ---: |
-| killed | 0 |
-| survived | 0 |
-| invalid | 50 |
-| timeout | 0 |
-| equivalent | 281 |
-| no_coverage | 0 |
-| total / records / sum | 331 / 331 / 331 |
+All source and test bytes were saved and restored in finally. Clean forced compilation and all **236 tests, zero failures** passed after both bootstrap and controls. Restoration receives time even if the mutation budget expires; any aggregate overrun still makes acceptance terminal-incomplete. No weakened tests, altered product source, runtime dependency or installation remains.
 
-Reported score bounds are 0..0. All 331 test_files arrays are empty: no record establishes selected-test behavioral execution. All 50 invalid errors are compilation failures caused by mutants, including removed structs/functions and invalid captures. These are not kills. The count reconciliation is failure inspection, not the unimplemented Task 2 schema/identity adapter. The invalid fraction among non-equivalent records is 50/50; incomplete useful coverage precludes a complete drop/adopt decision regardless of that fraction.
+## Adapter and verification
 
-At the terminal run receipt, continuous attempt wall was 340269.584 ms, leaving 1459730.416 ms of the same frozen deadline. Recorded subprocess wall sums to 174712.769 ms, including installation, preflights, both archive/escript paths and restoration. The larger continuous value also includes intervening reconciliation and wrapper work. No later mutation command occurred and the remaining allowance is not authorization to reuse a terminal attempt.
+Commands from repository root, with `P=.planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet`:
 
-## Concrete failure cause
+- `node "$P/scripts/muex-pilot.mjs" quick bootstrap`: **2/2 passed**, about169ms. Missing targets, changed pin/tests/flags/homes/carried budget, monotonic regression/exhaustion, reused paths, actual child failure/timeout/interruption and finally restoration discriminate without Muex or pilot receipts.
+- `node "$P/scripts/muex-pilot.mjs" bootstrap`: **exit0**, useful genuine capture and restoration above. This command refuses reuse; do not repeat it.
+- `node "$P/scripts/muex-pilot.mjs" quick controls`: **2/2 passed**, about184ms. Real fixture provenance, actual JSON summary/mutations schema and corrupted copies discriminate; actual tiny child and cleanup checks also run.
+- `node "$P/scripts/muex-pilot.mjs" controls`: **exit0, 5/5 pairs accepted**, followed by forced clean compile and236 tests. This command refuses reused outputs; do not repeat it.
+- `node --check` and `git diff --check`: passed. All18 production evidence/script/fixture files passed the absolute per-file privacy conditional and immediate post-commit rescan.
 
-Pinned [Muex TCE source](https://github.com/Oeditus/muex/blob/v0.12.0/lib/muex/tce.ex) takes the first `{module, binary}` returned by compilation in `compile_renamed/1`. SafeObservation contains a nested Error module. A read-only benign `Code.compile_string` inspection on the same Elixir returned `[PilotReadOnlyOuter.Inner, PilotReadOnlyOuter]`, confirming that the inner module is first. The report labels all five Comparison mutations equivalent, including `value <= 1_000_000` becoming `value >= 1_000_000` and exact-key equality becoming inequality.
+The adapter ties the schema owner to pinned `Muex.Reporter.Json@0.12.0`, conserves all six outcome counts and total=records=sum, requires finite ordered0..100 score bounds, allowed source/test paths, known statuses, valid duration/location and useful outcomes per requested file. It rejects absent/stale/malformed/empty/inconsistent/unknown-status/wrong-path/invalid-only/no-tests output and failed/timed-out children. Surviving patches require both before and after; there is no line-number fallback. Reporter.Patch already normalizes AST through Macro.to_string; the adapter trims only outer whitespace and preserves all internal token/string bytes. Stable identity uses file+mutator+before/after digest plus a collision discriminator. Quick controls preserve distinctions between string whitespace and token boundaries, reject missing identity and refuse the bootstrap as five-file coverage.
 
-Together the pinned source, compiler order and real report identify an upstream TCE integration defect: comparing the unchanged nested module can hide changes in the outer module. This is a source-and-artifact inference, not a patched-tool reproduction. No product refactor, tool patch, alternate reporter, new mutation run or invented report was used to establish it. The compiled-invalid remainder does not indicate a wrapper test-selection error; the relevant outer behavioral mutations were classified equivalent before tests could judge them.
+The prior accepted RED evidence is preserved in attempt-1 history and git metadata. Continuation adapter/refusal checks were implemented together, then run against the real captured fixture; no new test-first RED sequence is claimed for that continuation.
 
-The official Config separately defaults TCE to true; `--no-optimize` does not disable it. Its documented `--no-tce` option sets TCE false in `resolve_tce/1`. That supported option is an unexecuted recommendation for a separately approved newly frozen attempt. This protocol, its selection and its appetite remain unchanged.
+## Budget and exact next interface
 
-## Verification and TDD evidence
+Attempt1 contributes **340269.58370900154ms**. The aggregate controls receipt is **767671.1565420628ms**, leaving **1032328.8434579372ms** at that receipt. The same persistent monotonic clock continues through local closeout and plan14; these snapshots must not reset it. Compute fresh remaining as `p.budgetMs - p.carriedMs - (Number(process.hrtime.bigint())/1e6 - p.startedMonotonicMs)` from attempt2 `protocol.json`. Noise appetite remains20%; no adopt/drop or SPEC-04 completion is claimed.
 
-Let `P=.planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet`; all commands ran from repository root, sequentially.
+Plan14 must extend the existing phase-only wrapper with `quick baseline`, `baseline`, `quick decision` and `decision` as its plan specifies. Read **attempt2/protocol.json**, **attempt2/controls-result.json** and the genuine fixture, rather than the preserved attempt1 canonical protocol. Useful current exports are `targets`, `tests`, `argumentsFor`, `validateProtocol`, `remaining`, `child`, `successful`, `restored`, `normalizePatch` and `adapt`; the same file also contains `acceptedProcess`, `capturedFixture`, `reportControls`, protected-file and path helpers. Use fresh attempt2 baseline paths and refuse terminal/reused outputs. Do not repeat bootstrap or controls.
 
-- `node "$P/scripts/muex-pilot.mjs" quick bootstrap`: intended RED failed the changed-protocol rejection assertion; GSD `check tdd-red-evidence .git/muex-red.json --raw` returned RED_EVIDENCE_OK. The assertion ran against the permissive validator; real tiny-child checks were already green. The raw RED record stays in local git metadata because TAP includes local absolute paths.
-- Final quick bootstrap: 2 tests, 2 pass, 0 fail, about 167 ms. Node-only controls reject changed targets/tests/flags/pin/homes/budget, reused paths, regressing/exhausted injected time, actual child exit 7, timeout and interruption; finally restores synthetic bytes. No Muex call or acceptance receipt occurs in quick mode.
-- `node "$P/scripts/muex-pilot.mjs" bootstrap`: exit 1, actual archive integration failure; finally restored source and reran clean compile/tests.
-- `fallback`, `resume-build`, then `resume-launch`: the same protocol, checksum, source and timer; exact failed preflight state inspected before each environment repair. The final launch's useful-outcome gate exited 1 after the real report. No further run is eligible.
-- `node "$P/scripts/muex-pilot.mjs" reconcile`: exit 0 for conserved actual counts, original report digest, restored source/test digests and clean tracked target state; explicitly retains terminal-incomplete.
-- `node "$P/scripts/muex-pilot.mjs" quick controls`: exit 1 with useful-bootstrap-precondition-unmet and 0/5 pairs. This is an explicit refusal, not a passing report-control suite.
-- Actual `controls` acceptance and all five known-kill/known-survive pairs were not run because the prerequisite failed. No fixture was copied; Task 2 adapter/refusal checks are unimplemented.
-- Final restoration: `MIX_ENV=test mix compile --force --warnings-as-errors` exit 0; `MIX_ENV=test mix test test/crosswake/offline test/crosswake/policy test/crosswake/bridge` exit 0, **236 tests, 0 failures**. Every protected source/test digest matched its saved bytes; project mix files unchanged.
-- Script manually formatted; `node --check` and `git diff --check` passed. No formatter/dependency was installed.
-- All four production artifacts passed the absolute per-file privacy scan before the commit and immediately afterward. The genuine report passed unchanged; no accepted fixture or redaction-shaped substitute was created.
+Last completed phase:195. Active phase196:13/17 plans complete. Exact next command: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming **196-14 only**, subject to the live remaining aggregate budget. This executor did not run14. All eight phase requirements and GR-06 remain pending independent completion/verification.
 
-## Commits
+## Deviations and limits
 
-| Commit | Scope |
-| --- | --- |
-| `0bba3d72` | Intended failing protocol tests, classifier-accepted RED |
-| `8b7bd6f9` | Partial wrapper, frozen protocol, genuine unusable report and terminal reconciliation |
-
-Measured implementation count is 2 commits from the persisted ledger; token actuals are chars/4 over the realized diff, including the large genuine report. Neither commit means a task or requirement completed. This SUMMARY and lifecycle documentation are committed separately.
-
-## Deviations and deferred issues
-
-Two Rule 3 environment repairs selected the already-installed frozen toolchain for tool-only scratch and the official escript's PATH discovery. Both were reconciled before proceeding; no package substitution, source patch or extra mutation attempt occurred. The archive-to-escript fallback was explicitly planned. No task criteria were reduced. WINDOWS entries 43 and 44 retain the unmet truth and unrun control acceptance.
-
-No payload-bearing diagnostic, credential, test weakening, changed product source or tool dependency remains in the project. All eight Phase 196 requirements and GR-06 remain pending independent verification. No external delivery occurred.
-
-## Next eligible action
-
-**None.** Plan 196-13 is halted with 0/2 tasks complete; plans 196-14 through 196-17 depend on it and remain blocked. Last completed phase is 195; Phase 196 has 12/17 completed plans. Do not repeat plans 01-12 or automatically rerun the terminal attempt.
-
-Receiver: the execution orchestrator resolves the terminal attempt into an authorized newly frozen attempt using official `--no-tce`, unchanged full-scope success criteria and a stated budget, or routes the explicit scoped roadmap overrun decision for SPEC-04. This handoff creates no new human-approval requirement; authorization follows the governing plan and session. After resolution, the command is `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming plan 13 under that resolved contract. A new attempt must retain this failure record and must still prove all five pairs, full coverage and the stated appetite; it cannot relabel this report a bootstrap fixture or complete drop.
+The authorized supported configuration repair and tool reuse are documented before results; acceptance criteria, source scope and appetite did not shrink. Focused caps apply only to the explicit controls. No full baseline, survivor classification, adoption decision, recurring mutation lane, CI claim or external delivery occurred. There are no goal-blocking implementation stubs in this plan; plan14 owns the baseline/decision dispatcher extensions. Attempt1's historical failure remains retained even though its blocking useful-bootstrap condition has now been resolved.
 
 ## Self-Check: PASSED
 
-All four committed artifact paths exist; both implementation commits are ancestors of HEAD; source/test byte digests and clean tracked state reconciled; report total equals record count and outcome sum. This self-check validates the retained halt evidence, not the failed pilot acceptance.
+All declared attempt2 reports, controls, fixture and preserved history exist; all six recorded commits are ancestors of HEAD. Protected source/test hashes match the frozen protocol; both clean positive runs passed236 tests. Fixture SHA256 matches the unchanged actual bootstrap report, every control pair has the same killed/survived identity and observed changed-function execution, and history hashes remain unchanged.
