@@ -1,41 +1,26 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-27T12:24:03Z",
+  "timestamp": "2026-10-27T12:28:45Z",
   "workstream": "quality-ratchet-release",
-  "phase": "195",
-  "phase_name": "pipeline-repair-and-hygiene",
-  "phase_dir": ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene",
-  "plan": "195-21",
-  "task": 3,
-  "total_tasks": 3,
-  "status": "verifying",
+  "phase": "196",
+  "phase_name": "spec-and-structure-ratchet",
+  "phase_dir": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "ready_to_discuss",
   "completed_tasks": [
     {
-      "id": "195-01..21",
-      "name": "All phase plans executed and summarized",
-      "status": "done"
-    },
-    {
-      "id": "195-21-delivery",
-      "name": "Separately approved merge and automatic deletion completed once",
-      "status": "done"
-    },
-    {
-      "id": "195-21-main-proof",
-      "name": "Actual-main quick190/full327 and five process-derived controls",
-      "status": "done"
-    },
-    {
-      "id": "195-final-audits",
-      "name": "Independent Nyquist/security/UI scope audits complete",
+      "id": "195",
+      "name": "Pipeline repair and hygiene:21/21,passed8/8",
       "status": "done"
     }
   ],
   "remaining_tasks": [
     {
-      "id": "195-parent-completion",
-      "name": "Consume canonical passed8/8 verdict and complete Phase195 lifecycle transaction",
-      "status": "pending"
+      "id": "196-discuss",
+      "name": "Discuss Spec and structure ratchet",
+      "status": "not_started"
     }
   ],
   "blockers": [],
@@ -77,6 +62,6 @@
     "195 final verification audit/report updates and current lifecycle handoff refresh; inspect git status before any commit",
     "two retained untracked privacy-push evidence files"
   ],
-  "next_action": "Canonical verification.status returns passed8/8. Parent completes Phase195 lifecycle transaction; no repeat delivery, proof, CI or approval. Phase196 command becomes eligible only after completion.",
-  "context_notes": "Last completed194 until parent phase.complete; Phase195 all21 plans summarized and independently verified8/8. Current releasePR236 headf30bd49 run40499982698 has49successful jobs/0skip and all49contexts SUCCESS. No human action pending."
+  "next_action": "$gsd-discuss-phase 196 --ws quality-ratchet-release",
+  "context_notes": "Lastcompleted195. Active196notstarted. PR259 mergedb8398c38; current merge/deletion permissionsconsumed; mainproofpassed; releasePR236greenf30bd49. No new irreversible operation is authorized."
 }

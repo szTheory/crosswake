@@ -15,7 +15,7 @@
 ### 🚧 v28.0 Truth and Release Train (Phases 194–199) — IN PROGRESS
 
 - [x] **Phase 194: Bearings reset and ADR amendments** - Rolling roadmap, bearings, personas, a short STATE and a bearings report land, and the ADR amendments (Android unfrozen for parity; synthetic-profile reversal gate) change every rule text together (completed 2026-10-25)
-- [ ] **Phase 195: Pipeline repair and hygiene** - The release PR goes green with no hand edits, the PR queue and CI schedules are clean, secrets are masked, the repository root and branches are tidy, and one clean-room command runs against real published artifacts
+- [x] **Phase 195: Pipeline repair and hygiene** - The release PR goes green with no hand edits, the PR queue and CI schedules are clean, secrets are masked, the repository root and branches are tidy, and one clean-room command runs against real published artifacts (completed 2026-10-27)
 - [ ] **Phase 196: Spec and structure ratchet** - Sensitive offline, policy and bridge specs can no longer pass empty, boundary and exhaustive policy specs exist, a Muex pilot decides adopt or drop, and compile-cycle, bare-rescue and dependency ratchets hold
 - [ ] **Phase 197: Public docs truth** - The documented install path runs on a normal host, version and telemetry claims are true, "Android frozen" text is gone, and docs checks report counts
 - [ ] **Phase 198: Android foreign-host proof** - A generated parity ledger, a Kotlin test floor, and a fresh foreign Gradle project that resolves the published Maven coordinate and passes JVM tests on Linux CI
@@ -89,7 +89,7 @@ Plans:
   4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
   5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
 
-**Plans**: 21 plans; 01–20 executed with retained summaries; round-3 REL-03 delivery plan 21 active in sequential waves 4–6 after completed round-2 wave 3. One main checkout.
+**Plans**: 21 plans; 01–21 executed with retained summaries; round-3 REL-03 closure verified on actual main in sequential waves 4–6 after completed round-2 wave 3. One main checkout.
 
 Plans:
 
@@ -141,7 +141,7 @@ Plans:
 - [x] 195-17-PLAN.md — Seeds-first warnings: provider tokens, PEM bodies, userinfo/key-ID/JWT variants, query and plural keys; literal-value exemptions; 200 ms budget; GR-06 census; final controls (GR-03 to GR-05, GR-07 to GR-09)
 - [x] 195-18-PLAN.md — Land PR5 (own allow); GR-01 and GR-02 closed on main; GR dispositions recorded, GR-06 route asked separately (recommended: carry to Phase 196)
 
-**Gap closure round 3 — REL-03 (19–20 implemented; 21 active)**
+**Gap closure round 3 — REL-03 (complete; actual-main proof passed)**
 
 **Wave 4** *(depends on completed 195-18)*
 - [x] 195-19-PLAN.md — Structural credential identifiers, workflow-name inventory, container/armor masking and bounded whitespace performance; mandatory executed-family checks
@@ -150,9 +150,9 @@ Plans:
 - [x] 195-20-PLAN.md — Exact add-mask registration, non-vacuous tail windows, diagnostic tradeoffs and remaining GAP2 regressions
 
 **Wave 6** *(blocked on 195-20)*
-- [ ] 195-21-PLAN.md — Independent GAP3 review, exact-head green CI, fresh per-operation approval and process-derived proof on actual main
+- [x] 195-21-PLAN.md — Independent GAP3 review, exact-head green CI, fresh per-operation approval and process-derived proof on actual main
 
-Cross-cutting constraints: REL-03 stays pending until fresh main proof; all twelve GAP2 findings have planned checks; prior GR-06/Phase197 deferrals remain; every commit/push uses conditional privacy scans; fresh one-use approval for each main merge or remote deletion; no release or tag in this round. Tests prove supported rules and the workflow-name inventory, with no universal arbitrary-secret claim.
+Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all twelve GAP2 findings and eight GAP3 findings have passing checks; prior GR-06/Phase197 deferrals remain; every commit/push uses conditional privacy scans; fresh one-use approval for each main merge or remote deletion; no release or tag in this round. Tests prove supported rules and the workflow-name inventory, with no universal arbitrary-secret claim.
 
 **Research**: Skipped for round-3 gap closure; existing inspected code and reproduced failures. Independent plan checker passed on its second review; see 195-PLAN-CHECK.md.
 
@@ -219,7 +219,7 @@ Cross-cutting constraints: REL-03 stays pending until fresh main proof; all twel
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
-| 195. Pipeline repair and hygiene | 18/21 | REL-03 gap closure ready; verification gaps_found | - |
+| 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 0/TBD | Not started | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
@@ -260,4 +260,4 @@ Cross-cutting constraints: REL-03 stays pending until fresh main proof; all twel
 
 ## Exact Next Action
 
-Last completed phase: 194. Phase 195 has 18 executed plans and three verified gap plans (19–21); REL-03 remains pending. Next: `$gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release`. Start with 195-19 and preserve completed summaries; do not repeat prior gap rounds. Phase 196 waits for fresh passing Phase 195 verification. The adopter lane stays parked on its external gate.
+Last completed phase: 195 (21/21 plans; passed8/8, actual-main proof on b8398c38). Active phase: 196, Spec and structure ratchet, not started and ready for discussion. Next: `$gsd-discuss-phase 196 --ws quality-ratchet-release`. Do not repeat completed Phase195 execution, verification, merge or deletion. GR-06 is received by Phase196; the original cleanroom debt remains Phase197. The adopter lane stays parked on its external gate.

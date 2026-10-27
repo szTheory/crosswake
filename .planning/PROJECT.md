@@ -76,7 +76,7 @@ v28.0 Truth and Release Train (phases 194–199, started 2026-10-24): land the b
 
 Workstream: Quality Ratchet & Release. Phases 194–199; 30 requirements. [Roadmap](workstreams/quality-ratchet-release/ROADMAP.md), [requirements](workstreams/quality-ratchet-release/REQUIREMENTS.md), [scope](workstreams/quality-ratchet-release/v28.0-SCOPE.md).
 
-Phase 194 (Bearings reset and ADR amendments) completed 2026-10-25. It added BEARINGS, ROADMAP-ROLLING and PERSONAS, a short STATE, and `script/bearings-report`. ADR amendments A1 (Android unfrozen for proof and parity) and A2 (the synthetic-profile reversal gate) changed every rule text together. Phase 195 (Pipeline repair and hygiene) is next.
+Phase 194 (Bearings reset and ADR amendments) completed 2026-10-25. It added BEARINGS, ROADMAP-ROLLING and PERSONAS, a short STATE, and `script/bearings-report`. ADR amendments A1 (Android unfrozen for proof and parity) and A2 (the synthetic-profile reversal gate) changed every rule text together. Phase 195 (Pipeline repair and hygiene) completed 2026-10-27:21/21 plans, passed8/8; the release pipeline and current bot PR are green, supported secret-shape diagnostics are proven on actual main, and hygiene/published cleanroom evidence is retained. Phase196 (Spec and structure ratchet) is next; GR-06 is its accepted receiver and the original cleanroom debt remains with Phase197.
 
 ### v27.0 Land and Clean Up (Phases 189–193) — shipped 2026-10-24
 
@@ -314,6 +314,8 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 ## Requirements
 
 ### Validated
+
+- ✓ **REL-01..06, HYG-01..02** Pipeline repair, supported secret-shape masking, recurring CI, grouped updates, published cleanroom and repository hygiene. Current main proof and release-head CI passed; historical HYG override retained. — v28.0 Phase195.
 
 - ✓ **INV-01..03** Every copy of the work outside GitHub `main` is inventoried by content, backed up outside the temp folder with passing restore tests, and every open PR has a recorded disposition. — v27.0 Phase189.
 - ✓ **FIX-01..07** The seven carried v26 warnings are fixed: empty privacy scopes fail, every gate label has a failing self-test, the gate git helper is pinned, registry timeouts are reported, nested-host provenance is honest, the guard pin equals the real count, and the physical-iPhone preflight refuses unreadable or malformed input. FIX-01..03 successors live in the Phase 190 folder. — v27.0 Phase190.
@@ -648,4 +650,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-25 after Phase 194 (v28.0); v24/v23 debt and parked adopter gates remain unchanged.*
+*Last updated: 2026-10-27 after Phase195 (v28.0); v24/v23 debt and parked adopter gates remain unchanged.*

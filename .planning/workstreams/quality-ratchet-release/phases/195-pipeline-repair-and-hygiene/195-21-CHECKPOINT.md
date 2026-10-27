@@ -1,9 +1,9 @@
 ---
 phase: 195-pipeline-repair-and-hygiene
 plan: 21
-status: awaiting_decision
-completed_tasks: [1]
-current_task: 2
+status: complete
+completed_tasks: [1, 2, 3]
+current_task: null
 ---
 
 # Plan 195-21 approval checkpoint
@@ -36,3 +36,7 @@ A fresh attempt now awaits both separate decisions; the earlier merge allow is h
 Delivery readback: PR259 merged2026-10-27T11:52:58Z as b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97 with exactly approved base/head parents. Approved automatic remote deletion occurred; both permissions consumed once. Tag inventory unchanged (114 refs; digest 4fd4838bdbdbff4d88b43553084ca882eafa207a5007f3d5a3a674a3321a72cd). Actual-main proof remains pending.
 
 First landed invocation failed with child_failed and safely restored docs without a proof. A new real-process selftest reproduced child_tmpdir_changed: sanitized children lost TMPDIR and therefore disagreed about the private scratch root. The helper now preserves TMPDIR and propagates only closed private failure labels; selftests98/98 pass. Authorization safeguards and actual-main SHA/blob checks remain unchanged. A fresh landed invocation is still required; no prior success is inferred.
+
+## Terminal outcome
+
+Completed2026-10-27: both current approvals consumed once, PR259 merged b8398c38, named remote branch deleted, actual-main process proof passed and final phase verification passed8/8. Phase195 is complete21/21. Earlier pending/expired text above is history, not an active gate. Current handoff is Phase196 in the workstream STATE and ROADMAP.
