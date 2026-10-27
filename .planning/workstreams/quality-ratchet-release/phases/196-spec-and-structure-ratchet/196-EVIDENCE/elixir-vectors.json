@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "reader": "elixir",
+  "loaded": 15,
+  "completed": 9,
+  "resource": "test/fixtures/bridge_contract_vectors.json",
+  "resourceSha256": "3b64c8d81e1ca086494a1910aa5fb2d05d7a2d263b3d72f229f319d22e0064c0",
+  "owner": "test/crosswake/bridge/bridge_behavioral_vector_test.exs",
+  "ownerSha256": "4f84721eeeccebb50abc3f3e87e3b92161f048fb9b2089252cc0c5ba605c314e",
+  "helperSha256": "9b65638800df0eeb28c26152c5b332a54fe577f4f1fa228140983f9936944757",
+  "before": [
+    {
+      "command": "mix",
+      "args": [
+        "test",
+        "test/crosswake/bridge/bridge_behavioral_vector_test.exs"
+      ],
+      "cwd": ".",
+      "exit": 0,
+      "durationMs": 559,
+      "outputSha256": "6fa0b7578f4af2bd89d48abcae1bcaceff050539aa966bc7101377ce13a545fe"
+    }
+  ],
+  "controls": [
+    {
+      "control": "missing",
+      "expected": "missing",
+      "mutatedSha256": null,
+      "processes": [
+        {
+          "command": "mix",
+          "args": [
+            "test",
+            "test/crosswake/bridge/bridge_behavioral_vector_test.exs"
+          ],
+          "cwd": ".",
+          "exit": 1,
+          "durationMs": 467,
+          "outputSha256": "9fb7eb53b42550fa89aa4da481a89a3bbebb63329084bc3054974c90fd1e3aaf"
+        }
+      ]
+    },
+    {
+      "control": "removed",
+      "expected": "loaded",
+      "mutatedSha256": "985257aa579cea3df06bd78288ba897a8bf8874f7387265e693ecfd1adec0267",
+      "processes": [
+        {
+          "command": "mix",
+          "args": [
+            "test",
+            "test/crosswake/bridge/bridge_behavioral_vector_test.exs"
+          ],
+          "cwd": ".",
+          "exit": 2,
+          "durationMs": 550,
+          "outputSha256": "56b779bb2decf7edab9b22eff1461de5ffb47231bb8e1031797355a55c0eb6ad"
+        }
+      ]
+    },
+    {
+      "control": "empty",
+      "expected": "loaded",
+      "mutatedSha256": "c57810a77d1d3d5c91e904f30f784c6e84481793dd551c4f177c36668cd67e78",
+      "processes": [
+        {
+          "command": "mix",
+          "args": [
+            "test",
+            "test/crosswake/bridge/bridge_behavioral_vector_test.exs"
+          ],
+          "cwd": ".",
+          "exit": 2,
+          "durationMs": 502,
+          "outputSha256": "24d8e40d5db56cff03aa75c842478ad5d43e252b524e2f8c947ac31d8085ff41"
+        }
+      ]
+    },
+    {
+      "control": "all-excluded",
+      "expected": "completed",
+      "mutatedSha256": "1e3360c00cf326723f60074821547144b689d56ceec9aa2ea9712cb30713cf0a",
+      "processes": [
+        {
+          "command": "mix",
+          "args": [
+            "test",
+            "test/crosswake/bridge/bridge_behavioral_vector_test.exs"
+          ],
+          "cwd": ".",
+          "exit": 2,
+          "durationMs": 526,
+          "outputSha256": "d4837709604dca41e6890e7ef5f6ee5cf1798e4f414c47f21c0c91b2efbb7fe5"
+        }
+      ]
+    }
+  ],
+  "restoration": {
+    "byteExact": true,
+    "after": [
+      {
+        "command": "mix",
+        "args": [
+          "test",
+          "test/crosswake/bridge/bridge_behavioral_vector_test.exs"
+        ],
+        "cwd": ".",
+        "exit": 0,
+        "durationMs": 572,
+        "outputSha256": "bd710671689616fe6542b2e16df0a0af9ec584b4c292eaa104dfa163915f80dc"
+      }
+    ]
+  },
+  "durationMs": 3179
+}

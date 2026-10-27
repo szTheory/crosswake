@@ -22,7 +22,10 @@ function specFor(mode) { assert.ok(Object.hasOwn(specs, mode), 'unknown-reader')
 function population(bytes, spec) {
   assert.ok(bytes, 'missing-input');
   const corpus = JSON.parse(bytes);
-  // RED scaffold: count and eligibility rejection is added after the control fails.
+  assert.ok(Array.isArray(corpus.vectors), 'missing-vectors');
+  assert.equal(corpus.vectors.length, spec.loaded, 'loaded-count');
+  assert.equal(new Set(corpus.vectors.map(v => v.id)).size, spec.loaded, 'duplicate-ids');
+  assert.equal(corpus.vectors.filter(v => v[spec.excluded] !== true).length, spec.completed, 'completed-count');
   return corpus.vectors;
 }
 function child(step, timeout = 300000) {
@@ -77,6 +80,66 @@ function quick(mode) {
   });
 }
 
+function runConsumer(spec, expected) {
+  const records = [];
+  for (const [index, step] of spec.plan.entries()) {
+    const result = child(step);
+    const isTest = index === spec.plan.length - 1;
+    if (!isTest || expected === 'pass') requireSuccess(result);
+    else assert.notEqual(result.exit, 0, 'negative-control-passed');
+    if (isTest) {
+      if (expected === 'missing') {
+        assert.match(result.output, /could not read file .*bridge_contract_vectors\.json.*no such file or directory/s, 'missing-diagnostic');
+      } else {
+        assert.match(result.output, /1 test, [01] failures?/, 'nonempty-test-discovery');
+        if (expected === 'loaded') assert.match(result.output, /CW-VECTOR-LOADED expected 15/, 'loaded-diagnostic');
+        if (expected === 'completed') assert.match(result.output, /CW-VECTOR-COMPLETED expected 9/, 'completed-diagnostic');
+      }
+    }
+    records.push({ ...step, exit: result.exit, durationMs: result.durationMs, outputSha256: hash(result.output) });
+  }
+  return records;
+}
+function full(mode) {
+  const started = performance.now();
+  const spec = specFor(mode);
+  const path = resolve(root, spec.resource);
+  const original = readFileSync(path);
+  const corpus = JSON.parse(original);
+  population(original, spec);
+  const records = [];
+  const before = runConsumer(spec, 'pass');
+  withBytes(path, original, () => {
+    for (const control of ['missing', 'removed', 'empty', 'all-excluded']) {
+      writeFileSync(path, original);
+      if (control === 'missing') unlinkSync(path);
+      else {
+        const vectors = control === 'removed' ? corpus.vectors.slice(1)
+          : control === 'empty' ? [] : corpus.vectors.map(v => ({ ...v, [spec.excluded]: true }));
+        writeFileSync(path, JSON.stringify({ ...corpus, vectors }));
+      }
+      const mutatedHash = existsSync(path) ? hash(readFileSync(path)) : null;
+      assert.notEqual(mutatedHash, hash(original), 'mutation-did-not-change-bytes');
+      const expected = control === 'missing' ? 'missing' : control === 'all-excluded' ? 'completed' : 'loaded';
+      const processes = runConsumer(spec, expected);
+      records.push({ control, expected, mutatedSha256: mutatedHash, processes });
+      process.stdout.write(`vector-control ${mode} ${control}: discriminating failure\n`);
+    }
+  });
+  const after = runConsumer(spec, 'pass');
+  assert.equal(hash(readFileSync(path)), hash(original), 'final-restoration-failed');
+  const receipt = {
+    schema: 1, reader: mode, loaded: spec.loaded, completed: spec.completed,
+    resource: spec.resource, resourceSha256: hash(original), owner: spec.owner,
+    ownerSha256: hash(readFileSync(resolve(root, spec.owner))),
+    helperSha256: hash(readFileSync(fileURLToPath(import.meta.url))),
+    before, controls: records, restoration: { byteExact: true, after },
+    durationMs: Math.round(performance.now() - started),
+  };
+  writeFileSync(resolve(root, phase, '196-EVIDENCE', mode === 'elixir' ? 'elixir-vectors.json' : 'swift-request-vectors.json'), `${JSON.stringify(receipt, null, 2)}\n`);
+  process.stdout.write(`vector-controls ${mode}: 4 controls; loaded ${spec.loaded}; completed ${spec.completed}; restored; ${receipt.durationMs}ms\n`);
+}
+
 const [command, mode] = process.argv.slice(2);
 if (command === 'quick') quick(mode);
-else throw new Error('unknown-command');
+else full(command);
