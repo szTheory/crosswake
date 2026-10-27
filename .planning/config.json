@@ -13,7 +13,7 @@
     "ai_integration_phase": true,
     "use_worktrees": true
   },
-  "runtime": "claude",
+  "runtime": "codex",
   "model_profile": "adaptive",
   "model_profile_overrides": {
     "codex": {
@@ -28,8 +28,10 @@
     }
   },
   "effort": {
-    "agent_overrides": {
-      "gsd-plan-checker": "high"
+    "routing_tier_defaults": {
+      "light": "xhigh",
+      "standard": "xhigh",
+      "heavy": "high"
     }
   }
 }
