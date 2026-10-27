@@ -42,11 +42,14 @@ final class BridgeReplyLegTests: XCTestCase {
 
     private var vectors: [ReplyLegVector] = []
 
-    override func setUp() {
-        super.setUp()
-        let url = Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json")!
-        let data = try! Data(contentsOf: url)
-        vectors = try! JSONDecoder().decode(ReplyLegVectorsFile.self, from: data).replyLegVectors
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
+                                "CW-VECTOR-MISSING bridge_contract_vectors.json")
+        let data = try Data(contentsOf: url)
+        vectors = try JSONDecoder().decode(ReplyLegVectorsFile.self, from: data).replyLegVectors
+        // Independently reviewed reply collection; stop before single-ID helpers on loss.
+        _ = try XCTUnwrap(vectors.count == 2 ? true : nil, "CW-VECTOR-LOADED expected 2")
     }
 
     // MARK: - Helpers
@@ -80,7 +83,7 @@ final class BridgeReplyLegTests: XCTestCase {
     // MARK: - The leg exists and lands where the hook is listening
 
     func test_committed_vectors_agree_with_the_shipped_landing_pad_name() {
-        XCTAssertFalse(vectors.isEmpty, "the committed vectors must carry a reply-leg case")
+        var completedIDs: [String] = []
 
         for vector in vectors {
             XCTAssertEqual(
@@ -88,7 +91,19 @@ final class BridgeReplyLegTests: XCTestCase {
                 BridgeReplyDelivery.landingPad,
                 "[\(vector.id)] the landing pad name is part of the shipped client/native contract (D-02)"
             )
+            guard let script = BridgeReplyDelivery.script(for: vector.reply),
+                  let json = embeddedJSON(from: script),
+                  let data = json.data(using: .utf8),
+                  let delivered = try? JSONDecoder().decode(BridgeReplyEnvelope.self, from: data) else {
+                XCTFail("CW-VECTOR-REPLY roundtrip failed")
+                continue
+            }
+            XCTAssertTrue(script.contains("window.crosswakeBridge.__reply(JSON.parse("))
+            XCTAssertEqual(delivered, vector.reply)
+            completedIDs.append(vector.id)
         }
+        XCTAssertEqual(completedIDs.count, 2, "CW-VECTOR-COMPLETED expected 2")
+        XCTAssertEqual(Set(completedIDs).count, 2, "CW-VECTOR-COMPLETED-IDS expected unique IDs")
     }
 
     func test_replyScript_invokes_the_hook_landing_pad_with_parsed_data() {

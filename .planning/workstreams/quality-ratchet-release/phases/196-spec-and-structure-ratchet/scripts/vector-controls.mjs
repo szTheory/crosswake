@@ -190,7 +190,7 @@ const swiftPlan = suite => [
 ];
 const otherSpecs = {
   'swift-reply': [{ suite: 'BridgeReplyLegTests', symbol: 'test_committed_vectors_agree_with_the_shipped_landing_pad_name',
-    kind: 'behavioral', resource: sharedResource, collection: 'reply_leg_vectors', loaded: 2, completed: 1,
+    kind: 'behavioral', resource: sharedResource, collection: 'reply_leg_vectors', loaded: 2, completed: 2,
     controls: ['missing', 'removed', 'empty', 'all-suppressed'] }],
 };
 function otherPopulation(bytes, spec) {
@@ -216,7 +216,12 @@ function otherQuick(mode) {
       }
       if (spec.kind === 'metadata-only') {
         assert.throws(() => otherPopulation(bytes, { ...spec, completed: 14 }), /metadata-execution-not-applicable/);
-      } else assert.throws(() => otherPopulation(bytes, { ...spec, completed: 0 }), /completed-count/);
+      } else {
+        assert.throws(() => otherPopulation(bytes, { ...spec, completed: 0 }), /completed-count/);
+        const requireCompleted = selected => assert.equal(selected.length, spec.completed, 'completed-count');
+        requireCompleted(corpus[spec.collection]);
+        assert.throws(() => requireCompleted(corpus[spec.collection].filter(() => false)), /completed-count/);
+      }
     }
   });
   test(`quick ${mode}: exact owners, rebuilt command plans and failure restoration`, () => {
@@ -262,8 +267,13 @@ function otherConsumer(spec, expected) {
       const summary = result.output.match(/Executed ([1-9]\d*) tests?, with (?:(\d+) tests? skipped and )?(\d+) failures?/);
       assert.ok(summary, 'nonempty-test-discovery');
       tests = { discovered: Number(summary[1]), skipped: Number(summary[2] ?? 0), failures: Number(summary[3]) };
+      assert.equal(tests.discovered, { BridgeReplyLegTests: 8, ActivationConformanceTests: 4,
+        OfflineIslandAdmissionTests: 15, Phase180TwinFeasibilityTests: 6, NavigationCoordinatorTests: 7 }[spec.suite], 'reader-suite-count');
       assert.doesNotMatch(result.output, /error: (?:emit-module|fatalError|compile command)/, 'unrelated-build-failure');
-      if (expected === 'pass') assert.equal(tests.failures, 0);
+      if (expected === 'pass') {
+        assert.equal(tests.failures, 0);
+        assert.equal(tests.skipped, spec.suite === 'Phase180TwinFeasibilityTests' ? 2 : 0, 'unexpected-test-skip');
+      }
       else {
         const diagnostic = expected === 'missing' ? 'CW-VECTOR-MISSING' : expected === 'loaded'
           ? `CW-VECTOR-LOADED expected ${spec.loaded}` : expected === 'selected'
