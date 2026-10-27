@@ -378,7 +378,25 @@
     "sha256": "2def2909da15ef90e88c319a199c3ea07a707063eac2afd059284949029b600e",
     "path": ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-gap3.txt"
   },
-  "approvals": null,
+  "approvals": {
+    "attempt": "03b7adfaed1c9423d2a345168b34a211",
+    "displayedAt": "2026-10-27T04:47:20.087Z",
+    "prNumber": 259,
+    "branch": "fix/secret-mask-structural",
+    "deleteBranchOnMerge": true,
+    "head": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "base": "7621c0ce0c38edec76cc54209eccf5acf40feddf",
+    "synthetic": "86bc26ca1fc60a9bd9204f655cefc2b442100555",
+    "runId": 40449366324,
+    "merge": {
+      "answer": "pending",
+      "consumed": false
+    },
+    "deletion": {
+      "answer": "pending",
+      "consumed": false
+    }
+  },
   "delivery": {
     "status": "not-attempted",
     "merge": null,

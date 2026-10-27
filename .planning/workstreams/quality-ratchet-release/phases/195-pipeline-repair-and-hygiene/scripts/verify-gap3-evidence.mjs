@@ -178,7 +178,9 @@ function live(r, landed = false) {
   requireThat(jobs.total_count === jobs.jobs?.length, 'ci_jobs_incomplete');
   const classify = jobs.jobs.find(job => job.name === 'classify-change');
   requireThat(classify?.conclusion === 'success' && Number.isSafeInteger(classify.id), 'ci_checkout_missing');
-  checkoutIdentity(run('gh', ['run', 'view', String(r.pr.runId), '--job', String(classify.id), '--log']), r.refs.synthetic);
+  // Read the actual job log privately without gh's user-cache write. Logs may contain ANSI;
+  // only checkoutIdentity's fixed verdict survives, never the downloaded log text.
+  checkoutIdentity(run('gh', ['api', '--allow-escape-sequences', `repos/${repo.full_name}/actions/jobs/${classify.id}/logs`]), r.refs.synthetic);
   const threads = json('gh', ['api', 'graphql', '-f', `query=query { repository(owner: "${repo.full_name.split('/')[0]}", name: "${repo.full_name.split('/')[1]}") { pullRequest(number: ${r.pr.number}) { reviewThreads(first: 100) { pageInfo { hasNextPage } nodes { isResolved } } } } }`]);
   const reviewThreads = threads.data?.repository?.pullRequest?.reviewThreads;
   requireThat(reviewThreads && !reviewThreads.pageInfo.hasNextPage && reviewThreads.nodes.every(row => row.isResolved), 'review_unresolved');
@@ -495,10 +497,12 @@ function selfTest() {
   reject(() => run(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { timeout: 100 }));
   // Real scratch smoke test exercises the same exporter, actual candidate module, and
   // exported workflow emulator without detaching or producing a main-proof artifact.
+  // Phase artifacts live on docs, whose production tree intentionally precedes the fix.
+  const candidateRef = git('rev-parse', 'refs/heads/fix/secret-mask-structural');
   const scratch = mkdtempSync(path.join(tmpdir(), 'gap3-selftest-'));
   try {
-    const source = git('show', `HEAD:${SOURCE[1]}`);
-    writeFileSync(path.join(scratch, 'candidate.mjs'), git('show', `HEAD:${SOURCE[0]}`));
+    const source = git('show', `${candidateRef}:${SOURCE[1]}`);
+    writeFileSync(path.join(scratch, 'candidate.mjs'), git('show', `${candidateRef}:${SOURCE[0]}`));
     writeFileSync(path.join(scratch, 'harness.mjs'), harnessSource(source, process.cwd(), pathToFileURL(path.join(scratch, 'candidate.mjs')).href));
     const smoke = `import assert from 'node:assert/strict'; import * as h from ${JSON.stringify(pathToFileURL(path.join(scratch, 'harness.mjs')).href)};
       assert.ok(h.registered.length >= 181 && h.RESIDUAL_FORMS.length >= 45 && h.round3InventoryRows().length > 0);

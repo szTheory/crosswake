@@ -4,10 +4,10 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
-status: executing
-stopped_at: 195-21 Task 1 reviewed PR259; waiting for exact-head CI
-last_updated: "2026-10-27T04:39:55Z"
-state_head: c427365b9fbe16b78dfd7df3b717a78542cd6f94
+status: awaiting_decision
+stopped_at: 195-21 Task 2 awaiting separate PR259 merge and automatic deletion decisions
+last_updated: "2026-10-27T04:47:20.087Z"
+state_head: b8f1353facec1f2e8740b007624b9ea6d600f66a
 progress:
   total_phases: 6
   completed_phases: 1
@@ -15,7 +15,7 @@ progress:
   completed_plans: 29
   percent: 17
 last_activity: 2026-10-27
-last_activity_desc: PR259 open; GAP3 fixes reviewed on 24baafa3; CI running
+last_activity_desc: PR259 CI49/49 and candidate gate passed; approval checkpoint ready
 ---
 
 # Project State
@@ -24,13 +24,13 @@ See `.planning/BEARINGS.md`, `.planning/ROADMAP-ROLLING.md` and [ROADMAP.md](ROA
 
 ## Current Position
 
-Last completed phase: 194. Phase 195: 20/21 plans executed. Plan 21 Task 1 is waiting for PR #259 CI; all eight GAP3 findings are repaired and independently reviewed. Verification stays gaps_found (7/8); REL-03 needs approved delivery and fresh actual-main proof.
+Last completed phase: 194. Phase 195:20/21 plans executed. Plan21 Task1 is complete; Task2 awaits separate PR259 merge and automatic branch-deletion decisions. REL-03 and verification7/8 remain pending until approved delivery and actual-main proof.
 
 ## Exact Next Action
 
-What was checked: final fix head 24baafa3 passed masking 190/190 and full Node 327/327; independent re-review passed the nine new families and full suite with zero open findings. Helper self-tests passed 97/97. The privacy-scanned two-file branch is pushed and PR #259 is open. Crosswake CI run 40449366324 targets that head; its distinct synthetic merge is 86bc26ca. CI is still pending: 47 of 48 jobs complete with no failure; the example-host isolation matrix remains. No approval, main merge, deletion, publish or tag occurred.
+What was checked: reviewed head24baafa3 passed masking190/190, fullNode327/327 and independent review with zero open findings. Crosswake CI run40449366324 passed49/49 on that head; actual synthetic checkout86bc26ca is separately verified. Helper97/97 selftests and candidate gate passed. Exactly two code/test files change. No approval, main merge, deletion, publish, tag or actual-main proof occurred.
 
-Next: continue the active execution by monitoring run 40449366324, then run the candidate evidence gate. Do not repeat plans 01–20. Only after exact-head CI and candidate readiness pass may Task 2 display separate merge and automatic branch-deletion decisions. No command starts Phase 196 before fresh passing Phase 195 verification.
+Next: no phase command is eligible before separate merge allow/hold and automatic deletion allow/hold for PR259/fix/secret-mask-structural. Resume plan21 at Task2 using195-21-CHECKPOINT.md and gap3-delivery.json; do not repeat01–20 or Task1. On current allows rerun live gate, merge once with match-head-commit, reconcile docs and run landed proof. Phase196 remains ineligible until fresh passing Phase195 verification.
 
 ## Carried debt
 
