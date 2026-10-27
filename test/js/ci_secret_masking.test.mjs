@@ -1002,22 +1002,23 @@ const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
 const refsVar = (text, name) => new RegExp(`\\$\\{?${name}\\b`).test(text);
-// Matches only an uncommented line: optional `echo`, then `::add-mask::` plus the variable (optionally braced)
-// either unquoted or inside double quotes whose closing quote follows the name directly. A single-quoted
-// form (the shell would not expand the variable) and an unterminated double quote never match, and
-// `$TOKEN_ID` never masks `$TOKEN`.
+// Supported convention: one unconditional stdout echo, at the assignment's block indentation.
+// This is deliberately not a Bash parser. Declarations, append/read/printf, GITHUB_ENV,
+// multiple assignments and inline derivations remain GR-06's Phase 196 receiver.
 const isMaskLine = (line, name) => {
   const ref = `(?:${name}|\\{${name}\\})`;
-  const bare = `::add-mask::\\$${ref}(?![A-Za-z0-9_])`;
+  const bare = `::add-mask::\\$${ref}`;
   const dq = `"::add-mask::\\$${ref}"`;
-  return new RegExp(`^\\s*(?:echo\\s+)?(?:${bare}|${dq})`).test(line);
+  return new RegExp(`^[ \\t]*echo[ \\t]+(?:${bare}|${dq})(?:;)?(?:[ \\t]+#.*)?[ \\t]*$`).test(line);
 };
+
+const CREDENTIAL_REFERENCE = /\$\{\{\s*(?:secrets(?:\.[A-Za-z_]\w*|\s*\[\s*(["'])[A-Za-z_]\w*\1\s*\])|github\.token)\s*\}\}/i;
 
 export function secretBoundKeys(workflowText) {
   const keys = new Set();
   for (const line of workflowText.split("\n")) {
-    const m = /^\s*([A-Za-z_][A-Za-z0-9_]*):\s*.*\$\{\{\s*secrets\./.exec(line);
-    if (m) keys.add(m[1]);
+    const m = /^\s*([A-Za-z_][A-Za-z0-9_]*):\s*/.exec(line);
+    if (m && CREDENTIAL_REFERENCE.test(line.slice(m[0].length))) keys.add(m[1]);
   }
   return keys;
 }
@@ -1042,7 +1043,7 @@ export function derivedSecretAssignments(workflowText) {
   const derived = new Map();
   lines.forEach((line, index) => {
     const m = ASSIGN.exec(line);
-    if (!m || /:\s*\$\{\{/.test(line) || /^\s*[A-Za-z_]\w*:\s/.test(line)) return;
+    if (!m) return; // ASSIGN requires equals before any RHS colon; YAML declarations cannot match.
     const [, name, rhs] = m;
     const bounds = runBlockBounds(lines, index);
     if (!bounds) return;
@@ -1051,7 +1052,7 @@ export function derivedSecretAssignments(workflowText) {
     let from = null;
     let depth = 0;
     for (const key of secrets) if (refsVar(rhs, key)) { from = key; depth = 1; break; }
-    if (from === null && /\$\{\{\s*secrets\./.test(rhs)) { from = "secrets"; depth = 1; }
+    if (from === null && CREDENTIAL_REFERENCE.test(rhs)) { from = "credential reference"; depth = 1; }
     if (from === null) {
       for (const [key, d] of derived) if (d === 1 && refsVar(rhs, key)) { from = key; depth = 2; break; }
     }
@@ -1063,6 +1064,35 @@ export function derivedSecretAssignments(workflowText) {
   return found;
 }
 
+// Conservative lexical fences, not evaluation: no registration across control syntax, heredocs,
+// continuations or compound commands. Prior balanced standalone subshells may precede the slice;
+// any open/ambiguous enclosing region leaves registration unproved.
+function supportedRegistration(lines, assignment, maskIndex) {
+  const { index, bounds } = assignment;
+  const bodyIndent = Math.min(...lines.slice(bounds.start + 1, bounds.end).filter((l) => l.trim()).map(indentOf));
+  if (indentOf(lines[index]) !== bodyIndent || indentOf(lines[maskIndex]) !== bodyIndent) return false;
+  let depth = 0;
+  for (let k = bounds.start + 1; k < index; k += 1) {
+    const line = lines[k].trim();
+    if (line.startsWith("#")) continue;
+    if (/<<|\\$/.test(line)) return false;
+    const singleSubshell = /^\(\s+[^()]*\)\s*$/.test(line);
+    const singleLoop = /^(?:for|while|until)\b.*\bdone\b/.test(line);
+    if (!singleSubshell && !singleLoop && /^(?:if|for|while|until|case|function)\b|^[A-Za-z_]\w*\s*\(\s*\)\s*\{|^[({]/.test(line)) depth += 1;
+    if (/^(?:fi|done|esac|[})])(?:\s|;|$)/.test(line) || /\bdone\s*\)\s*$/.test(line)) depth -= 1;
+    if (depth < 0) return false;
+  }
+  if (depth !== 0) return false;
+  for (let k = index + 1; k <= maskIndex; k += 1) {
+    const line = lines[k].trim();
+    if (line === "" || line.startsWith("#")) continue;
+    if (indentOf(lines[k]) !== bodyIndent) return false;
+    if (/^(?:if|then|else|elif|fi|for|while|until|do|done|case|esac|function)\b|^[A-Za-z_]\w*\s*\(\s*\)\s*\{|^[({}]|<<|&&|\|\||\\$/.test(line)) return false;
+    if (k !== maskIndex && /[;|&]/.test(line) && !ASSIGN.test(line)) return false;
+  }
+  return true;
+}
+
 export function derivedSecretViolations(workflowText) {
   const lines = workflowText.split("\n");
   const violations = [];
@@ -1070,7 +1100,7 @@ export function derivedSecretViolations(workflowText) {
     let masked = false;
     let usedFirst = false;
     for (let k = a.index + 1; k < a.bounds.end; k += 1) {
-      if (isMaskLine(lines[k], a.name)) { masked = true; break; }
+      if (isMaskLine(lines[k], a.name) && supportedRegistration(lines, a, k)) { masked = true; break; }
       if (refsVar(lines[k], a.name)) { usedFirst = true; break; }
     }
     if (!masked || usedFirst) violations.push({ name: a.name, line: a.line, reason: usedFirst ? "used before add-mask" : "no add-mask" });
@@ -1087,11 +1117,12 @@ export function derivationScript(workflowText, vars) {
     const idx = lines.findIndex((l) => new RegExp(`^\\s*${name}=`).test(l));
     assert.ok(idx >= 0, `assignment for ${name} not found`);
     picked.push(idx);
-    const mask = lines.findIndex((l, k) => k > idx && isMaskLine(l, name));
+    const bounds = runBlockBounds(lines, idx);
+    const mask = lines.findIndex((l, k) => k > idx && bounds && k < bounds.end && isMaskLine(l, name) && supportedRegistration(lines, { index: idx, bounds }, k));
     if (mask >= 0) picked.push(mask);
   }
   const script = [...new Set(picked)].sort((a, b) => a - b).map((k) => lines[k].trim());
-  for (const l of script) if (NO_NETWORK.test(l)) throw new Error(`refusing to run network line: ${l.slice(0, 40)}`);
+  for (const l of script) if (NO_NETWORK.test(l)) throw new Error("refusing to run network line");
   return script.join("\n");
 }
 
@@ -1195,15 +1226,21 @@ test("derived chains are tracked and non-secret env keys are ignored", () => {
   assert.deepEqual(derivedSecretViolations(plain), []);
 });
 
-test("live workflow tree: non-empty floor and zero violations", () => {
+test("live workflow tree: non-empty floor and zero violations", (t) => {
   let total = 0;
+  let references = 0;
+  let aliases = 0;
   const bad = [];
   for (const f of workflowFiles()) {
     const text = readFileSync(path.join(workflowDir, f), "utf8");
     total += derivedSecretAssignments(text).length;
+    references += text.split("\n").filter((line) => CREDENTIAL_REFERENCE.test(line)).length;
+    aliases += secretBoundKeys(text).size;
     for (const v of derivedSecretViolations(text)) bad.push(`${f}:${v.line} ${v.name} (${v.reason})`);
   }
   assert.ok(total >= 1, "scan must find at least one derived assignment, else it is vacuous");
+  assert.ok(references > 0 && aliases > 0, "live credential census empty");
+  t.diagnostic(`live census references ${references}; aliases ${aliases}; derived ${total}; violations ${bad.length}`);
   assert.deepEqual(bad, [], `unmasked derived secrets: ${bad.join("; ")}`);
 });
 
@@ -1290,9 +1327,9 @@ test("round3 references bracket and github token", () => {
   assert.ok(refs.length > 0, "reference family empty");
   for (const [index, ref] of refs.entries()) {
     const direct = fixture(`AUTH="Authorization: ${ref}"`, 'echo "::add-mask::$AUTH"');
-    assert.ok(derivedSecretAssignments(direct).length === 1, `direct reference ${index} missed`);
+    assert.ok(derivedSecretAssignments(direct).length === 1 && derivedSecretViolations(direct).length === 0, `direct reference ${index} missed`);
     assert.ok(derivedSecretViolations(direct.replace('echo "::add-mask::$AUTH"', "")).length === 1, `reference ${index} negative control missed`);
     const alias = fixture('TOKEN="$BOUND"', 'echo "::add-mask::$TOKEN"').replace('FOO: plain', `BOUND: ${ref}`);
-    assert.ok(secretBoundKeys(alias).has("BOUND") && derivedSecretAssignments(alias).length === 1, `env reference ${index} missed`);
+    assert.ok(secretBoundKeys(alias).has("BOUND") && derivedSecretAssignments(alias).length === 1 && derivedSecretViolations(alias).length === 0, `env reference ${index} missed`);
   }
 });
