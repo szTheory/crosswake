@@ -17,6 +17,234 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
   @script Path.join(@repo_root, "script/check_absence_is_not_success.exs")
   @one ["--min-test-files", "1"]
 
+  describe "lexical collection evidence through the actual checker" do
+    @tag :tmp_dir
+    test "repository enforcement matches the measured reviewed multiset" do
+      receipt =
+        Jason.decode!(
+          File.read!(
+            Path.join(
+              @repo_root,
+              ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/main-absence.json"
+            )
+          )
+        )
+
+      assert receipt["subject_count"] > 0
+      assert receipt["counts"]["projects"] == 6
+      assert receipt["privacy_before"]["exit"] == 0
+      assert receipt["privacy_after"]["exit"] == 0
+      assert receipt["restoration"]["branch"] == "fix/spec-structure-ratchet"
+
+      for tool <- receipt["tools"] do
+        assert :crypto.hash(:sha256, File.read!(Path.join(@repo_root, tool["path"])))
+               |> Base.encode16(case: :lower) == tool["sha256"]
+      end
+
+      {output, code} = run(@repo_root, ["--collections-mode", "enforce"])
+      assert code == 0, output
+      assert output =~ "delta=0"
+    end
+
+    for {label, prefix, body, category} <- [
+          {"wrong collection", "",
+           "items = load(); other = load(); assert other != []; assert Enum.all?(items, &valid?/1)",
+           "unsafe_collection"},
+          {"sibling branch", "",
+           "items = load(); if flag(), do: (assert items != []), else: (assert Enum.all?(items, &valid?/1))",
+           "unsafe_collection"},
+          {"branch does not dominate following code", "",
+           "items = load(); if flag(), do: (assert items != []); assert Enum.all?(items, &valid?/1)",
+           "unsafe_collection"},
+          {"guard after assertion", "",
+           "items = load(); assert Enum.all?(items, &valid?/1); assert items != []",
+           "unsafe_collection"},
+          {"rebinding", "",
+           "items = load(); assert items != []; items = load(); assert Enum.all?(items, &valid?/1)",
+           "unsafe_collection"},
+          {"filtered derivation", "",
+           "items = load(); assert items != []; items = Enum.filter(items, &valid?/1); assert Enum.all?(items, &valid?/1)",
+           "unsafe_collection"},
+          {"different filtered collection", "",
+           "items = load(); assert items != []; selected = Enum.filter(items, &valid?/1); assert Enum.all?(selected, &valid?/1)",
+           "unsafe_collection"},
+          {"empty attribute", "@items []", "assert Enum.all?(@items, &valid?/1)",
+           "unsafe_collection"},
+          {"unknown attribute", "@items load()", "assert Enum.all?(@items, &valid?/1)",
+           "unsafe_collection"},
+          {"literal true", "", "assert true", "literal_true"},
+          {"glob comprehension", "",
+           "for path <- Path.wildcard(\"test/*.exs\"), do: assert valid?(path)",
+           "glob_without_count"},
+          {"rebound glob", "",
+           "files = Path.wildcard(\"test/*.exs\"); assert files != []; files = Path.wildcard(\"none/*\"); for path <- files, do: assert valid?(path)",
+           "glob_without_count"},
+          {"piped universal", "", "items = load(); assert items |> Enum.all?(&valid?/1)",
+           "unsafe_collection"}
+        ] do
+      @tag :tmp_dir
+      test "rejects #{label} with the intended finding", %{tmp_dir: tmp} do
+        source = collection_source(unquote(prefix), unquote(body))
+        collection_fixture!(tmp, source)
+        {output, code} = collection_run(tmp)
+        assert code == 1, output
+        assert output =~ "collection new_or_increased #{unquote(category)}"
+        refute output =~ "parse_error"
+        refute output =~ "invalid_baseline"
+      end
+    end
+
+    for {label, prefix, body} <- [
+          {"same branch", "",
+           "items = load(); if flag() do assert items != []; assert Enum.all?(items, &valid?/1) end"},
+          {"literal nonempty", "", "assert Enum.all?([1, 2], &valid?/1)"},
+          {"concrete attribute", "@items [1, 2]", "assert Enum.all?(@items, &valid?/1)"},
+          {"attribute alias", "@items [1]; @copy @items", "assert Enum.all?(@copy, &valid?/1)"},
+          {"positive length", "",
+           "items = load(); assert length(items) == 2; assert Enum.all?(items, &valid?/1)"},
+          {"positive count", "",
+           "items = load(); assert Enum.count(items) >= 1; assert Enum.all?(items, &valid?/1)"},
+          {"independent glob cardinality", "",
+           "files = Path.wildcard(\"test/*.exs\"); assert length(files) > 0; for path <- files, do: assert valid?(path)"},
+          {"explicit empty", "", "assert load() == []; refute load() != []"},
+          {"positive existential", "", "assert Enum.any?(load(), &valid?/1)"},
+          {"quoted fixtures", "",
+           "fixture = quote do assert true; assert Enum.all?(load(), &valid?/1) end; assert is_tuple(fixture)"},
+          {"string and sigil data", "",
+           "fixture = \"assert true\"; sigil = ~S|assert Enum.all?(load(), &valid?/1)|; assert is_binary(fixture <> sigil)"}
+        ] do
+      @tag :tmp_dir
+      test "accepts #{label}", %{tmp_dir: tmp} do
+        collection_fixture!(tmp, collection_source(unquote(prefix), unquote(body)))
+        {output, code} = collection_run(tmp)
+        assert code == 0, output
+        assert output =~ "findings=0 delta=0"
+      end
+    end
+
+    @tag :tmp_dir
+    test "deleting only the guard changes source and adds one unsafe occurrence", %{tmp_dir: tmp} do
+      source =
+        collection_source(
+          "",
+          "items = load(); assert items != []; assert Enum.all?(items, &valid?/1)"
+        )
+
+      collection_fixture!(tmp, source)
+      assert {_, 0} = collection_run(tmp)
+      changed = String.replace(source, "assert items != []; ", "")
+      assert changed != source
+      write_test!(tmp, changed)
+      {output, code} = collection_run(tmp)
+      assert code == 1, output
+      assert output =~ "unsafe_collection"
+      assert output =~ "count=1 baseline=0"
+    end
+
+    @tag :tmp_dir
+    test "duplicate exempt occurrence, context changes and stale removal are separate deltas", %{
+      tmp_dir: tmp
+    } do
+      source = collection_source("", "assert Enum.all?(load(), &valid?/1)")
+      collection_fixture!(tmp, source)
+      {output, 1} = collection_run(tmp)
+
+      [_, context, expression] =
+        Regex.run(~r/file=test\/sample_test.exs context=(.*?) expression=([0-9a-f]{64})/, output)
+
+      entry = %{
+        file: "test/sample_test.exs",
+        context: context,
+        expression: expression,
+        category: "unsafe_collection",
+        count: 1,
+        reason: "Synthetic exact occurrence"
+      }
+
+      File.write!(Path.join(tmp, "baseline.exs"), inspect([entry], limit: :infinity))
+      assert {_, 0} = collection_run(tmp)
+
+      doubled =
+        String.replace(
+          source,
+          "assert Enum.all?(load(), &valid?/1)",
+          "assert Enum.all?(load(), &valid?/1); assert Enum.all?(load(), &valid?/1)"
+        )
+
+      assert doubled != source
+      write_test!(tmp, doubled)
+      {output, 1} = collection_run(tmp)
+      assert output =~ "count=2 baseline=1"
+      moved = String.replace(source, "synthetic collection", "different context")
+      assert moved != source
+      write_test!(tmp, moved)
+      {output, 1} = collection_run(tmp)
+      assert output =~ "new_or_increased"
+      assert output =~ "stale_baseline"
+      write_test!(tmp, collection_source("", "assert load() == []"))
+      {output, 1} = collection_run(tmp)
+      assert output =~ "stale_baseline"
+      assert File.read!(Path.join(tmp, "baseline.exs")) == inspect([entry], limit: :infinity)
+    end
+
+    @tag :tmp_dir
+    test "same expression in distinct contexts and discovery order preserve identity", %{
+      tmp_dir: tmp
+    } do
+      source = collection_source("", "assert true")
+      collection_fixture!(tmp, source)
+      second = String.replace(source, "synthetic collection", "another context")
+      assert second != source
+      File.write!(Path.join(tmp, "test/z_test.exs"), second)
+      {first, 1} = collection_run(tmp)
+      File.rm!(Path.join(tmp, "test/z_test.exs"))
+      write_test!(tmp, source)
+      File.write!(Path.join(tmp, "test/z_test.exs"), second)
+      {again, 1} = collection_run(tmp)
+      assert first == again
+
+      findings =
+        first
+        |> String.split("\n")
+        |> Enum.filter(&String.contains?(&1, "collection literal_true count="))
+
+      assert length(findings) == 2
+      assert findings == Enum.sort(findings)
+    end
+
+    for {label, category} <- [
+          {"malformed", "parse_error"},
+          {"unreadable", "read_error"},
+          {"empty companion", "scope_empty"},
+          {"subset", "scope_mismatch"}
+        ] do
+      @tag :tmp_dir
+      test "fails closed on #{label} source/scope", %{tmp_dir: tmp} do
+        collection_fixture!(tmp, collection_source("", "assert load() == []"))
+
+        case unquote(label) do
+          "malformed" ->
+            write_test!(tmp, "defmodule Broken do\n")
+
+          "unreadable" ->
+            File.chmod!(Path.join(tmp, "test/sample_test.exs"), 0o000)
+
+          "empty companion" ->
+            File.rm!(Path.join(tmp, "packages/crosswake_sigra/test/baseline_test.exs"))
+
+          "subset" ->
+            hidden = Path.join(tmp, "packages/crosswake_sigra/test/.hidden_test.exs")
+            File.write!(hidden, "defmodule Hidden do end")
+        end
+
+        on_exit(fn -> File.chmod(Path.join(tmp, "test/sample_test.exs"), 0o644) end)
+        {output, code} = collection_run(tmp)
+        assert code == 1, output
+        assert output =~ unquote(category)
+      end
+    end
+  end
+
   describe "the repository itself" do
     @tag :tmp_dir
     test "is clean: no mutation control and no open finding asserts nothing" do
@@ -325,6 +553,28 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
 
   defp run(root), do: run(root, [])
 
+  defp collection_source(prefix, body),
+    do: "defmodule Synthetic do\n#{prefix}\ntest \"synthetic collection\" do\n#{body}\nend\nend\n"
+
+  defp collection_fixture!(tmp, source) do
+    baseline!(tmp)
+    write_test!(tmp, source)
+    File.write!(Path.join(tmp, "baseline.exs"), "[]\n")
+  end
+
+  defp collection_run(tmp),
+    do:
+      run(
+        tmp,
+        @one ++
+          [
+            "--collections-mode",
+            "enforce",
+            "--collections-baseline",
+            Path.join(tmp, "baseline.exs")
+          ]
+      )
+
   defp run(root, extra_argv), do: run_argv(["--root", Path.expand(root) | extra_argv])
 
   defp run_argv(argv) do
@@ -333,6 +583,12 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
 
   # Exactly one of each scope: the smallest tree on which every scope is non-empty.
   defp baseline!(tmp) do
+    for project <- ~w(chimeway rindle rulestead sigra threadline) do
+      path = Path.join(tmp, "packages/crosswake_#{project}/test/baseline_test.exs")
+      File.mkdir_p!(Path.dirname(path))
+      File.write!(path, "defmodule Baseline do\nend\n")
+    end
+
     for {rel, body} <- [
           {"test/baseline_test.exs", "defmodule BaselineTest do\nend\n"},
           {".planning/todos/TODO-000-baseline.md", "---\nid: TODO-000\n---\n"},
