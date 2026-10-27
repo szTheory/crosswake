@@ -167,11 +167,11 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. All execution remains pending.
+**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. Plan01 complete; plans02–17 remain pending.
 
 Plans:
 **Wave 1**
-- [ ] 196-01-PLAN.md — Wave 1: Preserve planning and establish actual-main measurement
+- [x] 196-01-PLAN.md — Wave 1: Preserve planning and establish actual-main measurement
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 196-02-PLAN.md — Wave 2: Strict optional proof lanes
@@ -273,7 +273,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 0/17 | Planned; execution pending | - |
+| 196. Spec and structure ratchet | 1/17 | In progress; plan02 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase: 195 (21/21 plans; passed 8/8, actual-main proof on b8398c38). Active phase: 196, planned and ready to execute; 17 sequential plans and 40 tasks, independent recheck passed after one revision. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`. Implementation, full Muex pilot and repaired baselines remain pending. Do not repeat completed Phase195 work or Phase196 discussion/planning. GR-06 stays with Phase196; original cleanroom debt stays with Phase197. Preserve docs/195-closeout and both privacy receipts before execution source preparation. The adopter lane stays parked.
+Last completed phase: 195 (21/21 plans; passed 8/8, actual-main proof on b8398c38). Active phase: 196, executing, 1/17 plans complete. Plan01 preserved docs/195-closeout and both privacy receipts, branched fix/spec-structure-ratchet from fetched main, and passed source1359 plus31 source/capture controls; SUMMARY committed ff7482bb. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-02-PLAN.md. Do not repeat plan01, completed Phase195 work or Phase196 planning. All eight Phase196 requirements, GR-06, actual guard measurements, full Muex pilot, repaired baselines and new CI results remain pending. Original cleanroom debt stays with Phase197; the adopter lane stays parked. No irreversible-operation approval transfers.
