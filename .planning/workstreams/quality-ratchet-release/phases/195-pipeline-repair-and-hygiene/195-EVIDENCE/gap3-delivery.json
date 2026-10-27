@@ -1,0 +1,410 @@
+{
+  "version": 1,
+  "ws": "quality-ratchet-release",
+  "requirement": "REL-03",
+  "status": "candidate",
+  "refs": {
+    "base": "7621c0ce0c38edec76cc54209eccf5acf40feddf",
+    "fix": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "reviewed": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "pr": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "synthetic": "86bc26ca1fc60a9bd9204f655cefc2b442100555",
+    "merge": null,
+    "main": null,
+    "docs": "c427365b9fbe16b78dfd7df3b717a78542cd6f94"
+  },
+  "pr": {
+    "number": 259,
+    "branch": "fix/secret-mask-structural",
+    "base": "main",
+    "runId": 40449366324,
+    "runHead": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "deleteBranchOnMerge": true
+  },
+  "review": {
+    "sha256": "5f352796d6e1c2660bc74a7f67aeb5db13fe054dfa2aac23541abba8bc153e2a",
+    "head": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "openHigh": 0,
+    "openCritical": 0,
+    "rows": [
+      {
+        "id": "ORIG-CR-01",
+        "status": "fixed",
+        "cases": [
+          "gap shape aws_key_double_quoted is masked",
+          "gap shape aws_key_single_quoted is masked"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "ORIG-CR-02",
+        "status": "fixed",
+        "cases": [
+          "gap shape password_multiword_quoted is masked",
+          "gap shape digest_authorization is masked",
+          "gap shape cookie_midline_curl is masked",
+          "gap shape url_userinfo is masked"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "ORIG-WR-01",
+        "status": "fixed",
+        "cases": [
+          "prose round-trips unchanged: token expired for user",
+          "prose round-trips unchanged: password mismatch for account",
+          "prose round-trips unchanged: secret not found in vault"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "ORIG-WR-02",
+        "status": "fixed",
+        "cases": [
+          "linear time: blank_lines",
+          "linear time: whitespace_lines"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "ORIG-WR-03",
+        "status": "fixed",
+        "cases": [
+          "derivedSecretViolations rejects a prefix-collision mask",
+          "derivedSecretViolations ignores a commented-out mask"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-01",
+        "status": "fixed",
+        "cases": [
+          "gap shape escaped_json_multiword is masked",
+          "gap shape elixir_tuple_atom is masked",
+          "gap shape next_line_value is masked",
+          "gap shape cli_flag_space is masked"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-02",
+        "status": "fixed",
+        "cases": [
+          "derivedSecretViolations rejects a single-quoted add-mask",
+          "derivationScript skips a single-quoted add-mask line"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-03",
+        "status": "fixed",
+        "cases": [
+          "gap shape sk_project_key is masked",
+          "gap shape sk_versioned_key is masked",
+          "gap shape slack_bot_token is masked",
+          "gap shape npm_token is masked"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-04",
+        "status": "fixed",
+        "cases": [
+          "gap shape pem_multiline is masked",
+          "gap shape pem_no_end is masked",
+          "gap shape pem_encrypted_headers is masked",
+          "round3 review keyed armor priority"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-05",
+        "status": "fixed",
+        "cases": [
+          "gap shape url_empty_user is masked",
+          "gap shape url_slash_password is masked",
+          "gap shape aws_key_id_prefixed is masked",
+          "gap shape jwt_two_segment is masked"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-06",
+        "status": "accepted",
+        "cases": [
+          "live workflow tree: non-empty floor and zero violations",
+          "round3 references bracket and github token"
+        ],
+        "receiver": "phase196"
+      },
+      {
+        "id": "GAP1-GR-07",
+        "status": "fixed",
+        "cases": [
+          "prose round-trips unchanged: token: nil",
+          "prose round-trips unchanged: password: false",
+          "prose round-trips unchanged: preauthorization: pending review"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-08",
+        "status": "fixed",
+        "cases": [
+          "linear time: backslash_run",
+          "linear time: doubled_quotes",
+          "ANSI-wrapped and CRLF secrets never reach the tail",
+          "a value cut by the tail byte window never appears"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-09",
+        "status": "fixed",
+        "cases": [
+          "gap shape query_key is masked",
+          "gap shape query_sig is masked",
+          "gap shape privatekey_assign is masked",
+          "gap shape passwords_assign is masked"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP1-GR-10",
+        "status": "fixed",
+        "cases": [
+          "gap shape escaped_quote_value is masked",
+          "gap shape escaped_json_multiword is masked"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-CR-01",
+        "status": "fixed",
+        "cases": [
+          "round3 padding credential whitespace matrix",
+          "round3 separator head adversaries",
+          "round3 timing quadratic copied control"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-CR-02",
+        "status": "fixed",
+        "cases": [
+          "round3 structural repository signing assignment",
+          "round3 inventory all workflow secret names",
+          "round3 private key armor complete layouts",
+          "round3 review keyed armor priority"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-WR-01",
+        "status": "fixed",
+        "cases": [
+          "round3 container inspect values",
+          "round3 tuple wrapped values",
+          "round3 review escaped json containers",
+          "round3 review identifier and cli parity"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-WR-02",
+        "status": "fixed",
+        "cases": [
+          "round3 name-value record isolation",
+          "round3 review name value record boundaries",
+          "round3 review name value unrelated records"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-WR-03",
+        "status": "fixed",
+        "cases": [
+          "round3 private key armor complete layouts",
+          "round3 private key armor malformed boundaries",
+          "round3 armor bounded adversaries",
+          "round3 review keyed armor priority"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-WR-04",
+        "status": "fixed",
+        "cases": [
+          "round3 residual exact diagnostic pins",
+          "accepted over-mask pinned: changeset_blank",
+          "prose round-trips unchanged: short numeric container",
+          "round3 review sigil diagnostic boundaries"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-WR-05",
+        "status": "fixed",
+        "cases": [
+          "round3 guard exact stdout registration",
+          "round3 guard rejected execution contexts",
+          "round3 review persistent stdout context"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-WR-06",
+        "status": "fixed",
+        "cases": [
+          "round3 raw window and inventory controls",
+          "round3 rule family adversaries",
+          "round3 separator head adversaries",
+          "round3 review curl missing separators bounded"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-IN-01",
+        "status": "fixed",
+        "cases": [
+          "round3 residual named credential forms",
+          "round3 residual exact diagnostic pins",
+          "round3 residual rule adversaries",
+          "round3 review identifier and cli parity"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-IN-02",
+        "status": "fixed",
+        "cases": [
+          "round3 references bracket and github token",
+          "round3 review persistent stdout context"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-IN-03",
+        "status": "fixed",
+        "cases": [
+          "linear time baseline",
+          "round3 padding credential whitespace matrix",
+          "round3 residual rule adversaries",
+          "round3 review curl missing separators bounded"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP2-IN-04",
+        "status": "fixed",
+        "cases": [
+          "round3 residual named credential forms",
+          "linear time: jwt_hyphen_run",
+          "linear time: jwt_segments"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-CR-01",
+        "status": "fixed",
+        "cases": [
+          "round3 review curl missing separators bounded"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-CR-02",
+        "status": "fixed",
+        "cases": [
+          "round3 review keyed armor priority"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-CR-03",
+        "status": "fixed",
+        "cases": [
+          "round3 review name value record boundaries",
+          "round3 review name value unrelated records"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-CR-04",
+        "status": "fixed",
+        "cases": [
+          "round3 review escaped json containers"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-CR-05",
+        "status": "fixed",
+        "cases": [
+          "round3 review identifier and cli parity"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-CR-06",
+        "status": "fixed",
+        "cases": [
+          "round3 review quoted value continuations"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-CR-07",
+        "status": "fixed",
+        "cases": [
+          "round3 review persistent stdout context"
+        ],
+        "receiver": null
+      },
+      {
+        "id": "GAP3-WR-01",
+        "status": "fixed",
+        "cases": [
+          "round3 review sigil diagnostic boundaries"
+        ],
+        "receiver": null
+      }
+    ],
+    "decisions": []
+  },
+  "privacy": {
+    "head": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "status": "pass",
+    "sha256": "2def2909da15ef90e88c319a199c3ea07a707063eac2afd059284949029b600e",
+    "path": ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-gap3.txt"
+  },
+  "approvals": null,
+  "delivery": {
+    "status": "not-attempted",
+    "merge": null,
+    "head": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
+    "autoDeleted": false
+  },
+  "safeUntracked": [
+    ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt",
+    ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push2-195.txt",
+    ".claude/",
+    ".env.local",
+    ".gsd/",
+    ".planning/workstreams/quality-ratchet-release/config.json",
+    ".planning/workstreams/quality-ratchet-release/milestone.lock",
+    ".planning/workstreams/quality-ratchet-release/state.json",
+    "_build/",
+    "deps/",
+    "erl_crash.dump",
+    "examples/android_shell_host/local.properties",
+    "examples/phoenix_host/_build/",
+    "examples/phoenix_host/deps/",
+    "examples/phoenix_host/node_modules/",
+    "packages/crosswake-shell-core-android/local.properties",
+    "packages/crosswake-shell-core-ios/.build/",
+    "script/__pycache__/",
+    "script/release_candidate/__pycache__/",
+    "tmp/"
+  ]
+}

@@ -1,40 +1,35 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-27T02:46:20Z",
+  "timestamp": "2026-10-27T04:24:40Z",
   "workstream": "quality-ratchet-release",
   "phase": "195",
   "phase_name": "pipeline-repair-and-hygiene",
   "phase_dir": ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene",
-  "plan": null,
-  "task": null,
-  "total_tasks": null,
-  "status": "ready_to_execute",
+  "plan": "195-21",
+  "task": 1,
+  "total_tasks": 3,
+  "status": "waiting_ci",
   "completed_tasks": [
     {
-      "id": "195-01..18",
-      "name": "Existing executed phase plans",
-      "status": "done"
-    },
-    {
-      "id": "plan-gap-r3",
-      "name": "Plans 19\u201321 checked after two corrections",
+      "id": "195-01..20",
+      "name": "Executed phase plans",
       "status": "done"
     }
   ],
   "remaining_tasks": [
     {
-      "id": "195-19",
-      "name": "Structural masking and bounded performance",
+      "id": "195-21-1",
+      "name": "Exact-head CI and candidate evidence gate for PR259",
+      "status": "in_progress"
+    },
+    {
+      "id": "195-21-2",
+      "name": "Separate fresh merge and automatic deletion decisions",
       "status": "not_started"
     },
     {
-      "id": "195-20",
-      "name": "Guard and regression-proof robustness",
-      "status": "not_started"
-    },
-    {
-      "id": "195-21",
-      "name": "Independent review, gated delivery and actual-main proof",
+      "id": "195-21-3",
+      "name": "Approved delivery and process-derived actual-main proof",
       "status": "not_started"
     }
   ],
@@ -77,6 +72,6 @@
     "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt",
     "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push2-195.txt"
   ],
-  "next_action": "$gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release",
-  "context_notes": "Last completed phase194. Phase195 gaps_found7/8, REL-03 pending; plans19\u201321 ready, validation draft. Current branch chore/codex-model-profile has locally reconciled docs history and new planning; no push. Follow19 branch-preservation preflight."
+  "next_action": "Monitor Crosswake CI run 40449366324, then run the candidate helper for PR259.",
+  "context_notes": "Last completed phase194. Phase19520/21 plans; REL-03 pending7/8. Finalfix24baafa3 reviewed; PR259 CI pending. No approval or irreversible operation. Continue task21; do not repeat01\u201320."
 }
