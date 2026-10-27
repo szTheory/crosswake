@@ -238,6 +238,16 @@ defmodule Crosswake.Proof.RescueBoundaryRatchetTest do
   end
 
   @tag :tmp_dir
+  test "regular unreadable source is a closed read failure", %{tmp_dir: root} do
+    fixture(root)
+    file = Path.join(root, "lib/crosswake/bridge/unreadable.ex")
+    File.write!(file, "defmodule Unreadable do\nend")
+    File.chmod!(file, 0o000)
+    on_exit(fn -> File.chmod(file, 0o600) end)
+    assert_red(root, "read_error")
+  end
+
+  @tag :tmp_dir
   test "unreadable symlink source and independent scope mismatch fail", %{tmp_dir: root} do
     fixture(root)
     File.ln_s!(Path.join(root, "absent"), Path.join(root, "lib/crosswake/bridge/broken.ex"))

@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "guard": "rescue",
-  "candidate_sha": "c85e75ba4ed6424de5c4641f80aaeb594a68ea5a",
+  "candidate_sha": "4437ac1c11b4125021a21468a6592ddb9678d6a9",
   "main_ref": "origin/main",
   "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
-  "guard_blob": "b74d885735664f8706d624a17f7e24461e04ee10",
-  "guard_sha256": "63f1d9982f70eaac375103f8e121e197930ae9a8278b195e0d06476fafcb03c1",
+  "guard_blob": "d12f05a9e406bc66a9b2b5f92294f8ccd8640a7f",
+  "guard_sha256": "02761ec435e06008f73d0e9b4736377f654eb95f3285b9e48cbbeb5e96370a62",
   "tools": [
     {
       "path": "script/check_rescue_boundaries.exs",
       "origin": "candidate",
-      "blob": "b74d885735664f8706d624a17f7e24461e04ee10",
-      "sha256": "63f1d9982f70eaac375103f8e121e197930ae9a8278b195e0d06476fafcb03c1"
+      "blob": "d12f05a9e406bc66a9b2b5f92294f8ccd8640a7f",
+      "sha256": "02761ec435e06008f73d0e9b4736377f654eb95f3285b9e48cbbeb5e96370a62"
     },
     {
       "path": "script/fixtures/rescue_boundary_exceptions.exs",
@@ -243,20 +243,20 @@
   ],
   "restoration": {
     "branch": "fix/spec-structure-ratchet",
-    "head": "c85e75ba4ed6424de5c4641f80aaeb594a68ea5a",
-    "index_sha256": "cf96d7c442b558c03060fd2f9d7fd2a027b153a11b9a6640a5e2204f2175edf7",
-    "tracked_count": 6156,
-    "tracked_sha256": "c902ef3be1fc33f4bbe15ff88bfc0e8372f48447d8c230c685c2043e5df13b1e",
+    "head": "4437ac1c11b4125021a21468a6592ddb9678d6a9",
+    "index_sha256": "0865f179fb8773f6637108d907d495aaab7e786bf68b4f362618d316c974b75d",
+    "tracked_count": 6158,
+    "tracked_sha256": "17cb3d16330646f5ee4a87b86bc7f22f7057a2f604e4a3e6fd0682aeea80975f",
     "untracked_count": 0,
     "untracked_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
   },
   "privacy_before": {
     "exit": 0,
-    "files": 158
+    "files": 160
   },
   "privacy_after": {
     "exit": 0,
-    "files": 158
+    "files": 160
   },
-  "duration_ms": 4544
+  "duration_ms": 5163
 }
