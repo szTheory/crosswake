@@ -403,8 +403,69 @@ function otherFull(mode) {
   process.stdout.write(`vector-controls ${mode}: ${readers.length} owners restored; ${receipt.modes[mode].durationMs}ms\n`);
 }
 
+// Kotlin controls use the actual Android package and fresh JUnit XML, never console totals.
+const androidPackage = 'packages/crosswake-shell-core-android';
+const androidTests = `${androidPackage}/src/test/java/dev/crosswake/shell/core`;
+const androidResource = `${androidPackage}/src/test/resources/bridge_contract_vectors.json`;
+const kotlinSpecs = {
+  'kotlin-request': [{ suite: 'BridgeConformanceTest', kind: 'behavioral', collection: 'vectors',
+    loaded: 15, completed: 14, excluded: 'elixir_only', testCount: 3,
+    controls: ['missing', 'removed', 'empty', 'all-excluded'] }],
+};
+function kotlinPopulation(bytes, spec) {
+  assert.ok(bytes, 'missing-input');
+  const vectors = JSON.parse(bytes)[spec.collection];
+  assert.ok(Array.isArray(vectors), 'missing-collection');
+  assert.equal(vectors.length, spec.loaded, 'loaded-count');
+  assert.equal(new Set(vectors.map(v => v.id)).size, spec.loaded, 'duplicate-ids');
+  return vectors;
+}
+function kotlinPlan(spec) {
+  return { command: './gradlew', args: ['clean', 'testDebugUnitTest', '--tests', `dev.crosswake.shell.core.${spec.suite}`],
+    cwd: androidPackage, environment: { JAVA_HOME: 'discovered-installed-jdk17' } };
+}
+function kotlinQuick(mode) {
+  const started = performance.now();
+  test(`quick ${mode}: independently pinned Kotlin populations reject lost execution`, () => {
+    for (const spec of kotlinSpecs[mode]) {
+      const bytes = readFileSync(resolve(root, androidResource));
+      const corpus = JSON.parse(bytes);
+      kotlinPopulation(bytes, spec);
+      assert.throws(() => kotlinPopulation(null, spec), /missing-input/);
+      for (const vectors of [corpus[spec.collection].slice(1), []]) {
+        assert.throws(() => kotlinPopulation(JSON.stringify({ ...corpus, [spec.collection]: vectors }), spec), /loaded-count/);
+      }
+      const excluded = corpus.vectors.map(v => ({ ...v, elixir_only: true }));
+      assert.throws(() => kotlinPopulation(JSON.stringify({ ...corpus, vectors: excluded }), spec), /completed-count/);
+    }
+  });
+  test(`quick ${mode}: explicit JDK, exact clean Gradle plan and failed-child restoration`, () => {
+    assert.deepEqual(kotlinSpecs[mode].map(s => s.suite), ['BridgeConformanceTest'], 'owner-roster');
+    for (const spec of kotlinSpecs[mode]) {
+      assert.deepEqual(kotlinPlan(spec), {
+        command: './gradlew', args: ['clean', 'testDebugUnitTest', '--tests', `dev.crosswake.shell.core.${spec.suite}`],
+        cwd: 'packages/crosswake-shell-core-android', environment: { JAVA_HOME: 'discovered-installed-jdk17' },
+      });
+      assert.ok(readFileSync(resolve(root, androidTests, `${spec.suite}.kt`), 'utf8').includes('getResourceAsStream("/bridge_contract_vectors.json")'), 'reader-resource');
+    }
+    const dir = mkdtempSync(join(tmpdir(), 'crosswake-vector-quick-'));
+    const path = join(dir, 'synthetic');
+    const bytes = Buffer.from('synthetic-original');
+    writeFileSync(path, bytes);
+    try {
+      assert.throws(() => withBytes(path, bytes, () => {
+        writeFileSync(path, 'synthetic-mutated');
+        requireSuccess(child({ command: process.execPath, args: ['-e', 'process.exit(7)'], cwd: '.' }, 2000));
+      }), /child-failed/);
+      assert.equal(hash(readFileSync(path)), hash(bytes));
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+    assert.ok(performance.now() - started < 20000, 'quick-deadline');
+  });
+}
+
 const [command, mode] = process.argv.slice(2);
-if (Object.hasOwn(otherSpecs, command === 'quick' ? mode : command)) {
+if (command === 'quick' && Object.hasOwn(kotlinSpecs, mode)) kotlinQuick(mode);
+else if (Object.hasOwn(otherSpecs, command === 'quick' ? mode : command)) {
   if (command === 'quick') otherQuick(mode);
   else otherFull(command);
 } else if (command === 'quick') quick(mode);
