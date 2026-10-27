@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "helper_sha256": "c179470074b0447fa1b2e006ac98e66122f661161f48f6d6a42c4f3e4bbd5a76",
+  "duration_ms": 13451,
+  "tests": 31,
+  "suites": [
+    {
+      "mode": "source-controls",
+      "command": [
+        "node",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/measure-main.mjs",
+        "source-controls"
+      ],
+      "process_exit": 0,
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "controls": [
+        "source verifier accepts independently established clean source",
+        "source verifier rejects wrong main SHA",
+        "source verifier rejects empty source roster",
+        "source verifier rejects source roster hash mismatch",
+        "source verifier rejects lost receipt",
+        "source verifier rejects altered receipt",
+        "source verifier rejects wrong preservation hash",
+        "source verifier rejects wrong branch",
+        "source verifier rejects unexpected supported change",
+        "source verifier rejects unrecognized state"
+      ],
+      "stdout_sha256": "3412db0ab52a0dde6ef25d386544f0d995cce095039e40281c2c74e1e1a0890f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "mode": "capture-controls",
+      "command": [
+        "node",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/measure-main.mjs",
+        "capture-controls"
+      ],
+      "process_exit": 0,
+      "tests": 21,
+      "passed": 21,
+      "failed": 0,
+      "controls": [
+        "capture refuses wrong fetched source before executing guard",
+        "capture reads actual main and restores candidate branch plus protected and untracked bytes",
+        "capture preserves a report-mode finding exit without treating it as process success",
+        "capture refuses empty inventory",
+        "capture refuses failed child",
+        "capture refuses interrupted child",
+        "capture refuses child timeout",
+        "capture refuses restoration failure",
+        "capture refuses uncommitted candidate",
+        "capture refuses candidate revision mismatch",
+        "capture refuses coverage omission",
+        "capture refuses zero file count",
+        "capture refuses caller success field",
+        "capture refuses unrecognized finding",
+        "capture refuses nonzero without findings",
+        "capture refuses changed capsule",
+        "capture refuses active mutable suite",
+        "capture does not retain arbitrary child output",
+        "capture restores the saved branch after its own process receives termination",
+        "capture preserves a prior receipt when publication privacy is refused",
+        "capture refuses a concurrent capture lock without altering the checkout"
+      ],
+      "stdout_sha256": "391bd0eb0dddb25c686ff1e79acd354a2488a208421af9d1f4b2a97b56e56763",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "fixture_contract": "disposable_git_repositories_and_real_child_processes",
+  "production_guard_measurements": 0
+}
