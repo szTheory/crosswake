@@ -80,6 +80,12 @@ Existing `native_only` and `elixirOnly` filters and every wire/denial assertion 
 
 The phase-only helper runs modes sequentially. It rejects wrong modes, populations and command plans; quick tests invoke no Mix/SPM and mutate only disposable synthetic bytes. Full controls mutate each actual reader's canonical resource, demand the intended diagnostic, and retain only relative command plans, exits, counts, timings and hashes. Native children run `swift package clean`, then `swift test --filter BridgeConformanceTests` from the package directory every time, including before and after the mutations. The cleanup path restores bytes, compares hashes and reruns the clean reader even if a control is rejected. No receipt is written from an unsuccessful attempt.
 
+### Helper contract for subsequent plans
+
+Only `quick elixir`, `elixir`, `quick swift-request` and `swift-request` are implemented; unknown modes fail. `specs` declares relative `resource`, `owner`, literal `loaded`/`completed`, exclusion key and ordered `{command,args,cwd}` plan. `population` checks array shape, loaded count, unique IDs and eligibility. `child` enforces process exit/timeout handling; `withBytes` restores exact bytes in finally. `runConsumer` verifies real output and returns safe process records; `full` produces the corresponding reader receipt only after restored clean success. Quick runs emit TAP, have a20-second deadline and write no acceptance receipt. Full children have a300-second per-process timeout.
+
+Plans04–05 must explicitly extend the quick expected owner/resource/command plans, corpus mutation selection, receipt naming and real reader-output adapter for their new modes. The current Swift adapter is specifically the three-test `BridgeConformanceTests` XCTest owner, selected by `elixir_only`; it is not a generic reply/metadata/topology adapter. Missing Swift setup is recorded as skipped plus failed, never completed. Resource-copy refresh must remain a real clean/build. Receipts identify the exact helper hash tested here; any subsequent common implementation change requires fresh affected controls before claiming those receipts certify the new helper. Never relabel a setup/build error as an intended red control.
+
 ## Task commits
 
 | Task | Commit | Result |
@@ -150,6 +156,8 @@ None. The common helper's Elixir receipt was refreshed after its Swift extension
 ## Issues Encountered
 
 The restricted environment rejected SPM manifest sandbox setup before any proof; that attempt was rejected and produced no receipt. The authorized local Swift run then used the permitted execution environment. The first real deletion control exposed XCTest's actual summary grammar (`skipped and failures`); the adapter initially rejected it, was corrected from genuine output, and all controls were rerun. No unrelated build failure was counted as a successful red control. Both resolved issues left canonical bytes restored.
+
+Scoped lifecycle SDK handlers were run. The roadmap updater did not recognize the existing decorated phase row and left it unchanged; the row/checklist/handoff were reconciled directly. The SDK also retained stale progress text and counted only phase directories already present; the final scoped STATE preserves all six milestone phases and the actual33/47 completed-plan ratio (70%), within40 lines. Requirements were not advanced.
 
 No authentication gate occurred. Stub and threat-surface scans found no new stub, skipped plan test, unrun plan verification, endpoint, auth path, schema or undeclared runtime surface. The existing empty permissive test fixtures are intentional setup, not proof fallbacks.
 
