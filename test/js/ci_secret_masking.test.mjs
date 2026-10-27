@@ -1589,6 +1589,11 @@ test("round3 review persistent stdout context", () => {
   }
 });
 
+test("phase196 GR-06 declaration cannot disappear before assignment filtering", () => {
+  const text = fixture('local TOKEN=$(printf %s "$MAVEN_PASSWORD" | base64)', 'echo "$TOKEN"');
+  assert.ok(derivedSecretViolations(text).length === 1, "credential declaration disappeared from the guard");
+});
+
 test("round3 review curl missing separators bounded", { timeout: 55000 }, (t) => {
   const rows = [
     { label: "review/curl_short_missing_colon", input: `curl ${"-u".repeat(100000)}` },
