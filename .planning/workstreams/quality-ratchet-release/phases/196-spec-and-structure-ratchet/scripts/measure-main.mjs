@@ -12,6 +12,16 @@ import { test } from "node:test";
 const PHASE = ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet";
 const SOURCE = `${PHASE}/196-EVIDENCE/execution-source.json`;
 const CONTROLS = `${PHASE}/196-EVIDENCE/measurement-controls.json`;
+const AMENDMENT = `${PHASE}/196-EVIDENCE/source-amendment-13-14.json`;
+const AMENDED_PLANS = [13, 14].map((n) => `${PHASE}/196-${n}-PLAN.md`);
+const RESOLUTION = `${PHASE}/196-EVIDENCE/MUEX-ATTEMPT-RESOLUTION.md`;
+// One reviewed historical amendment, not a caller-authored exception registry.
+const REVIEWED_AMENDMENT = {
+  commit: "dad4d998c63da02ef6c80d4745cd3c4659e20cb9",
+  parent: "52bebc6cfd774f2dbf35e80074135ffa7303cb95",
+  sourceCommit: "8b613331f6b81419e1e4eb928355d5a20692e1ff",
+  sourceSha256: "4395af905530c1d1bd5680276faf2e6586f21352bfaf65c4bf7a807bf6c16aec",
+};
 const PRIVACY = ".planning/workstreams/quality-ratchet-release/phases/193-cleanup-and-new-working-rules/scripts/privacy-193.sh";
 const SELF = `${PHASE}/scripts/measure-main.mjs`;
 const OWNER_ROOT = realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../../.."));
@@ -96,7 +106,45 @@ function sourceRecord(root, { main, preserved, transfer, original }) {
     tool_versions: { node: process.version, git: git(root, ["--version"]) },
   };
 }
-function verifySourceAt(root, record) {
+function reviewedAmendment(root, record, reviewed) {
+  if (!existsSync(path.join(root, AMENDMENT))) {
+    need(child(root, "git", ["merge-base", "--is-ancestor", reviewed.commit, "HEAD"]).status !== 0, "amendment_evidence_missing");
+    return new Map();
+  }
+  need(sha(fileAt(root, SOURCE)) === reviewed.sourceSha256 &&
+    sha(object(root, reviewed.sourceCommit, SOURCE)) === reviewed.sourceSha256 &&
+    sha(object(root, "HEAD", SOURCE)) === reviewed.sourceSha256, "amendment_source_mismatch");
+  ancestry(root, reviewed.sourceCommit, reviewed.parent);
+  ancestry(root, record.transfer_sha, reviewed.parent);
+  ancestry(root, reviewed.commit, "HEAD");
+  need(git(root, ["rev-list", "--parents", "-n", "1", reviewed.commit]) === `${reviewed.commit} ${reviewed.parent}`, "amendment_parent_mismatch");
+  const changedProtected = git(root, ["diff", "--name-only", reviewed.parent, reviewed.commit, "--", ...record.protected_files.map((f) => f.path)]).split("\n").filter(Boolean);
+  need(same(changedProtected, AMENDED_PLANS), "amendment_scope_mismatch");
+  const entries = AMENDED_PLANS.map((name) => {
+    const original = record.protected_files.find((f) => f.path === name);
+    need(original && sha(object(root, reviewed.parent, name)) === original.sha256, "amendment_baseline_mismatch");
+    const after = sha(object(root, reviewed.commit, name));
+    need(after !== original.sha256, "amendment_empty");
+    need(sha(fileAt(root, name)) === after && sha(object(root, "HEAD", name)) === after, "amendment_stale");
+    return { path: name, before_sha256: original.sha256, after_sha256: after };
+  });
+  const resolutionHash = sha(object(root, reviewed.commit, RESOLUTION));
+  need(sha(fileAt(root, RESOLUTION)) === resolutionHash && sha(object(root, "HEAD", RESOLUTION)) === resolutionHash, "amendment_resolution_mismatch");
+  const expected = {
+    schema_version: 1, purpose: "reviewed_plan13_14_local_attempt_configuration",
+    source_receipt_sha256: reviewed.sourceSha256, source_receipt_commit: reviewed.sourceCommit,
+    preserved_sha: record.preserved_sha, transfer_sha: record.transfer_sha,
+    amendment_commit: reviewed.commit, amendment_parent: reviewed.parent,
+    resolution: { path: RESOLUTION, sha256: resolutionHash }, paths: entries,
+  };
+  let evidence;
+  try { evidence = JSON.parse(fileAt(root, AMENDMENT)); } catch { throw new Refusal("amendment_evidence_invalid"); }
+  need(same(evidence, expected), "amendment_evidence_mismatch");
+  need(sha(fileAt(root, AMENDMENT)) === sha(object(root, "HEAD", AMENDMENT)), "amendment_evidence_uncommitted");
+  return new Map(entries.map((entry) => [entry.path, entry.after_sha256]));
+}
+function verifySourceAt(root, record, reviewed = REVIEWED_AMENDMENT) {
+  need(reviewed === REVIEWED_AMENDMENT || realpathSync(root) !== OWNER_ROOT, "test_adapter_on_repository");
   need(record?.schema_version === 1 && record.branch === BRANCH && record.main_ref === "origin/main" && record.preserved_ref === PRESERVED, "unrecognized_source_state");
   need(fullRef(root, "origin/main") === record.main_sha, "main_ref_mismatch");
   need(git(root, ["branch", "--show-current"]) === BRANCH, "wrong_branch");
@@ -122,7 +170,8 @@ function verifySourceAt(root, record) {
   const protectedFiles = record.preserved_files.filter(({ path: p }) => RECEIPTS.includes(p) ||
     (p.startsWith(`${PHASE}/`) && p.endsWith(".md")));
   need(same(protectedFiles, record.protected_files) && RECEIPTS.every((p) => protectedFiles.some((f) => f.path === p)), "protected_scope_mismatch");
-  for (const item of protectedFiles) need(sha(fileAt(root, item.path)) === item.sha256, "protected_hash_mismatch");
+  const amendments = reviewedAmendment(root, record, reviewed);
+  for (const item of protectedFiles) need(sha(fileAt(root, item.path)) === (amendments.get(item.path) ?? item.sha256), "protected_hash_mismatch");
   // Independently hash the worktree as well: a clean index alone is not evidence.
   for (const item of sourceRoster(root, "HEAD")) {
     const bytes = fileAt(root, item.path);
@@ -155,6 +204,7 @@ function fixture() {
   for (const name of RECEIPTS) put(name, "privacy: clean files 1\n");
   put(`${PHASE}/196-01-PLAN.md`, "fixture source plan\n");
   put(`${PHASE}/196-CONTEXT.md`, "fixture source context\n");
+  for (const name of AMENDED_PLANS) put(name, "fixture original criteria\n\n## Ordering and interfaces\n");
   g("add", ".planning"); g("commit", "-m", "fixture preserved planning");
   const preserved = fullRef(root, "HEAD");
   g("switch", "-c", BRANCH, main); g("cherry-pick", preserved);
@@ -594,6 +644,69 @@ function sourceTests() {
   ];
   for (const [name, code, change] of controls) test(`source verifier rejects ${name}`, () => {
     const f = fixture(); try { change(f); assert.throws(() => verifySourceAt(f.root, f.record), { code }); } finally { f.cleanup(); }
+  });
+  function amendedFixture() {
+    const f = fixture();
+    const sourceBytes = `${JSON.stringify(f.record, null, 2)}\n`;
+    f.put(SOURCE, sourceBytes); f.g("add", SOURCE); f.g("commit", "-m", "fixture immutable receipt");
+    const parent = fullRef(f.root, "HEAD");
+    const entries = AMENDED_PLANS.map((name) => {
+      const before = fileAt(f.root, name);
+      const after = before.toString().replace("## Ordering and interfaces", "## Resolved attempt contract\n\nSame criteria, carried aggregate budget, no new authority.\n\n## Ordering and interfaces");
+      assert.notEqual(after, before.toString()); f.put(name, after);
+      return { path: name, before_sha256: sha(before), after_sha256: sha(after) };
+    });
+    f.put(RESOLUTION, "Synthetic reviewed local configuration; criteria and aggregate clock unchanged.\n");
+    f.g("add", ...AMENDED_PLANS, RESOLUTION); f.g("commit", "-m", "fixture reviewed amendment");
+    const commit = fullRef(f.root, "HEAD");
+    f.reviewed = { commit, parent, sourceCommit: parent, sourceSha256: sha(sourceBytes) };
+    f.evidence = {
+      schema_version: 1, purpose: "reviewed_plan13_14_local_attempt_configuration",
+      source_receipt_sha256: sha(sourceBytes), source_receipt_commit: parent,
+      preserved_sha: f.record.preserved_sha, transfer_sha: f.record.transfer_sha,
+      amendment_commit: commit, amendment_parent: parent,
+      resolution: { path: RESOLUTION, sha256: sha(fileAt(f.root, RESOLUTION)) }, paths: entries,
+    };
+    f.saveEvidence = () => f.put(AMENDMENT, `${JSON.stringify(f.evidence, null, 2)}\n`);
+    f.saveEvidence(); f.g("add", AMENDMENT); f.g("commit", "-m", "fixture amendment evidence");
+    return f;
+  }
+  test("source verifier accepts only the reviewed committed two-plan amendment and preserves original receipt", () => {
+    const f = amendedFixture(); try {
+      const original = fileAt(f.root, SOURCE);
+      assert.equal(verifySourceAt(f.root, f.record, f.reviewed), true);
+      assert.deepEqual(fileAt(f.root, SOURCE), original);
+      for (const item of f.record.protected_files) assert.equal(sha(object(f.root, f.record.preserved_sha, item.path)), item.sha256);
+    } finally { f.cleanup(); }
+  });
+  const amendments = [
+    ["extra protected path", "protected_hash_mismatch", (f) => { f.put(`${PHASE}/196-CONTEXT.md`, "unreviewed change\n"); }],
+    ["altered protected receipt", "protected_hash_mismatch", (f) => { f.put(RECEIPTS[0], "unreviewed receipt\n"); }],
+    ["later committed plan edit", "amendment_stale", (f) => { f.put(AMENDED_PLANS[0], "later unreviewed edit\n"); f.g("add", AMENDED_PLANS[0]); f.g("commit", "-m", "fixture stale amendment"); }],
+    ["dirty amended plan", "amendment_stale", (f) => { f.put(AMENDED_PLANS[1], "dirty plan\n"); }],
+    ["restored original instead of amended plan", "amendment_stale", (f) => { f.put(AMENDED_PLANS[0], object(f.root, f.record.preserved_sha, AMENDED_PLANS[0])); }],
+    ["changed resolution", "amendment_resolution_mismatch", (f) => { f.put(RESOLUTION, "different budget\n"); }],
+    ["rewritten original receipt", "amendment_source_mismatch", (f) => { f.put(SOURCE, "{}\n"); }],
+    ["wrong evidence hash", "amendment_evidence_mismatch", (f) => { f.evidence.paths[0].after_sha256 = "0".repeat(64); f.saveEvidence(); }],
+    ["extra evidence path", "amendment_evidence_mismatch", (f) => { f.evidence.paths.push({ ...f.evidence.paths[0], path: `${PHASE}/196-CONTEXT.md` }); f.saveEvidence(); }],
+    ["different amendment evidence", "amendment_evidence_mismatch", (f) => { f.evidence.amendment_commit = f.record.transfer_sha; f.saveEvidence(); }],
+    ["malformed amendment evidence", "amendment_evidence_invalid", (f) => { f.put(AMENDMENT, "{broken\n"); }],
+    ["missing amendment evidence", "amendment_evidence_missing", (f) => { rmSync(path.join(f.root, AMENDMENT)); }],
+    ["uncommitted evidence bytes", "amendment_evidence_uncommitted", (f) => { f.put(AMENDMENT, `${JSON.stringify(f.evidence, null, 4)}\n`); }],
+    ["wrong amendment parent", "amendment_parent_mismatch", (f) => { f.reviewed.parent = fullRef(f.root, "HEAD"); }],
+    ["additional protected amendment at reviewed commit", "amendment_scope_mismatch", (f) => {
+      f.reviewed.parent = fullRef(f.root, "HEAD");
+      f.put(`${PHASE}/196-CONTEXT.md`, "extra review scope\n"); f.g("add", `${PHASE}/196-CONTEXT.md`); f.g("commit", "-m", "fixture extra amendment");
+      f.reviewed.commit = fullRef(f.root, "HEAD");
+    }],
+    ["unreachable reviewed amendment", "main_not_ancestor", (f) => {
+      f.g("switch", "-c", "fixture-unrelated", f.record.main_sha);
+      f.put("isolated.txt", "unrelated\n"); f.g("add", "isolated.txt"); f.g("commit", "-m", "fixture unrelated commit");
+      f.reviewed.commit = fullRef(f.root, "HEAD"); f.g("switch", BRANCH);
+    }],
+  ];
+  for (const [name, code, change] of amendments) test(`source verifier refuses ${name}`, () => {
+    const f = amendedFixture(); try { change(f); assert.throws(() => verifySourceAt(f.root, f.record, f.reviewed), { code }); } finally { f.cleanup(); }
   });
 }
 function selfTest(root) {

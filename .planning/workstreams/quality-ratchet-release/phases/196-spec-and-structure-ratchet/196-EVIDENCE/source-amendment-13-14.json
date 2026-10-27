@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "purpose": "reviewed_plan13_14_local_attempt_configuration",
+  "source_receipt_sha256": "4395af905530c1d1bd5680276faf2e6586f21352bfaf65c4bf7a807bf6c16aec",
+  "source_receipt_commit": "8b613331f6b81419e1e4eb928355d5a20692e1ff",
+  "preserved_sha": "101e853a0fafdcec4675afceb8fcf6c48db98762",
+  "transfer_sha": "784fe638afbe93bb1bd5ba80110fd03fa31fc589",
+  "amendment_commit": "dad4d998c63da02ef6c80d4745cd3c4659e20cb9",
+  "amendment_parent": "52bebc6cfd774f2dbf35e80074135ffa7303cb95",
+  "resolution": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/MUEX-ATTEMPT-RESOLUTION.md",
+    "sha256": "a0e34b4b545719c48a63be1f5a78e87c13a56af37e45b197037d8b678b78391b"
+  },
+  "paths": [
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-13-PLAN.md",
+      "before_sha256": "12f910338f4a8b8ff68406b1197948aa4aaa6080557ec1c8502e6f3480ea8b08",
+      "after_sha256": "da5bf4aff7dbd56ac37cf36334ce543f093ba4d1f6267b3146be86fc9cc45d73"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-14-PLAN.md",
+      "before_sha256": "44cc6aca0122ce173605a1997e1c55fee877a39e825f69a064b72df2938af345",
+      "after_sha256": "704561f5c4f519ff3dcf86f71bf5e38c184ce88e047eca6a28dd04c5d530196b"
+    }
+  ]
+}

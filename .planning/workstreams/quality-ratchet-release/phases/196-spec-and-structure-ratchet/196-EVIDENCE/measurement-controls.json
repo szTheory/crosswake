@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "helper_sha256": "2ead890092a635eb81e1ffadf44b2f9f471102f03ae92cc608713f63f025c417",
-  "duration_ms": 15313,
-  "tests": 33,
+  "helper_sha256": "f005d41b965912fcd7285fe72cb4d8c904356b0a937ab1c1c86f68ad0fe3d3b1",
+  "duration_ms": 22929,
+  "tests": 50,
   "suites": [
     {
       "mode": "source-controls",
@@ -12,8 +12,8 @@
         "source-controls"
       ],
       "process_exit": 0,
-      "tests": 10,
-      "passed": 10,
+      "tests": 27,
+      "passed": 27,
       "failed": 0,
       "controls": [
         "source verifier accepts independently established clean source",
@@ -25,9 +25,26 @@
         "source verifier rejects wrong preservation hash",
         "source verifier rejects wrong branch",
         "source verifier rejects unexpected supported change",
-        "source verifier rejects unrecognized state"
+        "source verifier rejects unrecognized state",
+        "source verifier accepts only the reviewed committed two-plan amendment and preserves original receipt",
+        "source verifier refuses extra protected path",
+        "source verifier refuses altered protected receipt",
+        "source verifier refuses later committed plan edit",
+        "source verifier refuses dirty amended plan",
+        "source verifier refuses restored original instead of amended plan",
+        "source verifier refuses changed resolution",
+        "source verifier refuses rewritten original receipt",
+        "source verifier refuses wrong evidence hash",
+        "source verifier refuses extra evidence path",
+        "source verifier refuses different amendment evidence",
+        "source verifier refuses malformed amendment evidence",
+        "source verifier refuses missing amendment evidence",
+        "source verifier refuses uncommitted evidence bytes",
+        "source verifier refuses wrong amendment parent",
+        "source verifier refuses additional protected amendment at reviewed commit",
+        "source verifier refuses unreachable reviewed amendment"
       ],
-      "stdout_sha256": "21bd0f743a1cca8889ba831fc2b9328a464f10fd4833856322bc30b3c919bd02",
+      "stdout_sha256": "14e4e74b13f8551a2d05cdf9d90f55b98db1ce08a0729f900de611f8180e5602",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
@@ -66,7 +83,7 @@
         "capture preserves a prior receipt when publication privacy is refused",
         "capture refuses a concurrent capture lock without altering the checkout"
       ],
-      "stdout_sha256": "15f3c82cef87527a306054e4fa687178c89be49f0cf18c9e551892a6dcd4f5fd",
+      "stdout_sha256": "4cd528cf6b572b1e4c416ca381195336f490990787dd9df9bf408ad653aeca20",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
