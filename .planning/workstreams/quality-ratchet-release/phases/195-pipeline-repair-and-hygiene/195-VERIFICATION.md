@@ -1,6 +1,6 @@
 ---
 phase: 195-pipeline-repair-and-hygiene
-verified: 2026-10-26T20:00:00Z
+verified: 2026-10-26T23:00:00Z
 status: gaps_found
 score: 7/8 must-haves verified
 covered_files:
@@ -35,10 +35,16 @@ covered_files:
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-14-SUMMARY.md
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-15-PLAN.md
   - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-15-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-16-PLAN.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-16-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-17-PLAN.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-17-SUMMARY.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-18-PLAN.md
+  - .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-18-SUMMARY.md
   - script/verify_published_cleanroom.sh
   - script/verify_repository.mjs
   - test/js/ci_secret_masking.test.mjs
-covered_digest: "v3:sha256:f8abe105a7f504854ac52ba70435f1d99394b60c3ef47c16b28b59cd703b04e8"
+covered_digest: "v3:sha256:788a73a48eee3ef3ab8e2a49cda35e4f35e701d17fc1188e522f20eee9bb36e0"
 behavior_unverified: 0
 overrides_applied: 1
 overrides:
@@ -50,19 +56,29 @@ re_verification:
   previous_status: gaps_found
   previous_score: 7/8
   gaps_closed:
-    - "REL-03: root-proof failure tail masks bearer, secret-access-key, cookie and short-value shapes (quoted, multi-word, mid-line)"
+    - "REL-03 round 2: GR-01 (tuple, escaped-JSON, CLI-flag, quoted-Bearer, next-line forms) and GR-02 (single-quoted add-mask accepted by the guard) are closed on main for the shapes they named"
   gaps_remaining:
-    - "REL-03: credential keys in Elixir tuple, escaped-JSON and CLI-flag forms still leak; single-quoted add-mask passes the guard (195-REVIEW-GAP.md GR-01, GR-02)"
+    - "REL-03: KEY_LINE is quadratic (CR-01)"
+    - "REL-03: PGP key block, key-name assignments and camel-case SecretAccessKey print unmasked (CR-02)"
   regressions: []
 gaps:
   - requirement: REL-03
     truth: "CI never echoes secrets: the root-proof failure tail masks credential values"
     status: failed
-    reason: "Post-verification gap review (195-REVIEW-GAP.md) reproduced leaks the verifier did not probe: Elixir tuple keys, escaped-JSON keys, CLI --password flags, quoted Bearer, next-line values (GR-01); isMaskLine accepts a single-quoted add-mask that masks only the literal name (GR-02). Re-confirmed by the orchestrator on main 5862a3d."
+    reason: "Re-probed on main 7621c0ce. CR-01: the KEY_LINE regex is quadratic (token: plus 40k spaces and x takes 0.9 s; space-tab pairs 3.6 s at 40k; time quadruples when input doubles), so a padded line hangs the failure path where the tail is the only diagnostic. CR-02: an ASCII-armored PGP private-key block, signingInMemoryKey=, deploy_key:, MIRROR_DEPLOY_KEY= and camel-case SecretAccessKey all print unmasked. signingInMemoryKey and MIRROR_DEPLOY_KEY are secrets this repository's workflows actually hold. Related review warnings WR-01 (Elixir inspect forms, e.g. a cookie map) also reproduce."
+    artifacts:
+      - path: "script/verify_repository.mjs"
+        issue: "KEY_LINE (line 119) has two adjacent optional-whitespace quantifiers; PEM_KEY does not accept PRIVATE KEY BLOCK; CREDENTIAL_WORDS lacks bare key-name forms; secret-access-key rule needs a separator"
+      - path: "test/js/ci_secret_masking.test.mjs"
+        issue: "linear-time suite has no key, separator, long-whitespace-run, non-space input, so it cannot fail for CR-01; no seed per repository secret name"
     missing:
-      - "Mask tuple, escaped-JSON, CLI-flag, quoted-Bearer and next-line credential forms (GR-01), seeds first"
-      - "Reject single-quoted ::add-mask:: in isMaskLine (GR-02)"
-deferred: []
+      - "Move trailing [ \\t]* inside the optional block-indicator group of KEY_LINE; add whitespace-run LINEAR_INPUTS rows (space, tab, space-tab) for KEY_LINE and the other separator rules"
+      - "Accept an optional BLOCK in the PEM marker; make secret-access-key separators optional; add signing/deploy/auth key names and secretstring to the credential words"
+      - "Add a seed row per secret name the workflows hold (signingInMemoryKey, signingInMemoryKeyPassword, MIRROR_DEPLOY_KEY) so the inventory and masker cannot drift"
+deferred:
+  - truth: "Derived-secret guard grammar (GR-06: local/declare/readonly, +=, read, printf -v, GITHUB_ENV writes)"
+    addressed_in: "Phase 196"
+    evidence: "Phase 196 ROADMAP carried line: 'GR-06 (derived-secret guard grammar ...) in test/js/ci_secret_masking.test.mjs; see 195-REVIEW-DISPOSITION.md'; zero census on the live tree"
 human_verification: []
 ---
 
@@ -70,68 +86,51 @@ human_verification: []
 
 **Phase Goal:** `main`, the release PR and the PR queue are green and trustworthy, CI runs only recurring lanes and never echoes secrets, the repository holds no scratch state, and one fail-closed clean-room command is proven against real published artifacts.
 **Verified:** 2026-10-26
-**Status:** passed
-**Re-verification:** Yes, after gap closure (plans 195-14 and 195-15)
-
-**Previous verification:** gaps_found, 7/8. REL-03 failed because `maskSecretShapes` leaked quoted secret values, mid-line Cookie headers and multi-word quoted passwords (review findings CR-01, CR-02).
+**Status:** gaps_found
+**Re-verification:** Yes, after round-2 gap closure (plans 195-16 to 195-18, PR #257, merge commit 7621c0ce)
 
 ## What was checked and what I found
 
-I re-ran the masker myself against `origin/main` (merge commit 5862a3dc, PR #256; `script/verify_repository.mjs` and `test/js` are byte-identical on the checkout), with synthetic values built from fragments in a scratch folder. The four original leak cases now mask, 13 further shapes mask, and three prose lines stay untouched. `node --test test/js/*.mjs` exits 0 (186 pass, 0 fail). The seven other requirements show no regression against live GitHub state. Nothing was changed except this report. Next action: none for this phase; Phase 196 may start.
+I imported the exported `maskSecretShapes` from `script/verify_repository.mjs` on the checkout (which matches main 7621c0ce for `script` and `test/js`) and fed it synthetic fake values built from fragments. The round-2 shapes (GR-01, GR-02) are closed and `node --test test/js/ci_secret_masking.test.mjs` passes (138 pass, 0 fail). But both critical findings in 195-REVIEW-GAP2.md reproduce on the merged code, so REL-03 ("CI never echoes secrets") is not met. Nothing was changed except this report. Next action: a third gap plan for REL-03 (CR-01, CR-02, then WR-01 to WR-03), then re-verify. Phase 196 should not start on the strength of REL-03 until that lands.
 
-## REL-03 re-verified independently
+## REL-03 independent probe results
 
-Probe: `maskSecretShapes` imported from the repo, each input contains a synthetic value (built from two fragments), the check is whether that value survives in the output.
-
-| Shape | Result |
+| Probe (fake values, built from fragments) | Result |
 |-------|--------|
-| aws_quoted (`AWS_SECRET_ACCESS_KEY="..."`) | masked |
-| curl_cookie (mid-line `Cookie:` inside a quoted curl header) | masked |
-| password_multiword (`password = "my ... pass"`) | masked in full |
-| prose_token_expired (`token expired for user`) | unchanged |
-| single-quoted `api_key='...'` | masked |
-| JSON `"client_secret": "..."` | masked |
-| mid-line `Authorization: Bearer ...` | masked |
-| `Set-Cookie: session=...; Path=/` | masked |
-| URL userinfo `https://user:...@host` | masked |
-| JWT (three dotted segments) | masked |
-| `export SECRET_KEY=...` | masked |
-| escaped quote inside a quoted password | masked |
-| YAML `token: ...` | masked |
-| `Authorization: Basic ...` | masked |
-| `X-Api-Key: ...` | masked |
-| prose "password reset requested; the token is invalid" | unchanged |
-| prose "secret santa list ready" | unchanged |
-| pathological input (100k-token Cookie value, 300k backslashes) | 1 ms total (linear) |
+| ASCII-armored PGP private-key block (marker, blank line, body, END marker) | LEAK, body prints |
+| `signingInMemoryKey=<fake>` | LEAK |
+| `deploy_key: <fake>` | LEAK |
+| `MIRROR_DEPLOY_KEY=<fake>` | LEAK |
+| `{"SecretAccessKey":"<fake>"}` | LEAK |
+| `%{"cookie" => ["sid=<fake>"]}` (Elixir inspect, WR-01) | LEAK |
+| `password=<fake>` (control) | masked |
+| `token:` + 20,000 spaces + `x` | 218 ms |
+| `token:` + 40,000 spaces + `x` | 884 ms (4x for 2x input: quadratic) |
+| `token:` + 40,000 tabs + `x` | 955 ms |
+| `token:` + 40,000 space-tab pairs + `x` | 3,606 ms |
 
-Both halves of REL-03 hold: derived secrets are passed to `::add-mask::` (audit file, `maven-publish-fire-drill.yml`), and the failure-tail masker covers the quoted, multi-word and mid-line forms. The prior test-suite weakness (seeds only the shapes the regexes were written for) is addressed: 24 gap seeds, prose lines, linear-time inputs and a stricter `isMaskLine`. PR #256 head 7db34f2 had 49 contexts with none failed or cancelled.
+CR-01 and CR-02 are therefore real, not review speculation. Weighing them honestly: GitHub's own runner masking still covers values it knows as `secrets.*` when they appear verbatim, so the practical exposure is narrower than the masker's gaps suggest. But the requirement text and the plan's own claim are that the failure-tail masker covers credential shapes, and the shapes that fail are the forms of the secrets this repository's workflows hold (`ORG_GRADLE_PROJECT_signingInMemoryKey`, `MIRROR_DEPLOY_KEY`). CR-01 also turns the failure path into a hang on a padded line. I do not accept a pass here; two rounds of closing named shapes have each left more unprobed shapes, and the masker remains shape-based.
 
 ## Observable Truths
 
 | # | Requirement | Truth | Status | Evidence |
 |---|-------------|-------|--------|----------|
-| 1 | REL-01 | Version-line-insensitive goldens; release PR passes with no hand edits | VERIFIED (regression check) | #236 OPEN, head b1e8d95 unchanged, zero failing contexts; state is BEHIND main, which is expected (merge is Phase 199) |
-| 2 | REL-02 | Parity test uses SHA plus version comment; #210/#211 green or closed | VERIFIED (prior live read) | unchanged, not re-opened |
-| 3 | REL-03 | CI masks derived secrets; failure tail masks bearer, secret-access-key, cookie, short-value shapes | VERIFIED | Independent reproduction above; JS suite rc 0, 186 pass, 0 fail |
-| 4 | REL-04 | Only recurring lanes; one weekly canary | VERIFIED (regression check) | Weekly Canary green on 0b28e6d; no new schedules in PR #256 |
-| 5 | REL-05 | Grouped monthly actions PR; no open PR older than 14 days without a reason | VERIFIED (regression check) | Open PRs: #236 (release PR, reason recorded), #252 and #253 (created today) |
-| 6 | REL-06 | SEED-003 closed; fail-closed clean-room run against real 0.2.11 artifacts | VERIFIED (regression check) | Evidence files present; `script/verify_published_cleanroom.sh` unchanged by 14/15 |
-| 7 | HYG-01 | Root holds only allowlisted files; no bundle | VERIFIED (regression check) | `git ls-tree origin/main` root shows the 15-entry allowlisted set, no scratch files or bundle |
-| 8 | HYG-02 | Merged/superseded branches deleted, unmerged tagged; worktrees only main | VERIFIED (override) | Override carried forward; the fix branch was auto-deleted on merge and removed locally, under the approved allow |
+| 1 | REL-01 | Version-line-insensitive goldens; release PR passes with no hand edits | VERIFIED (regression check) | PR #236 open, reason recorded (release merge is Phase 199) |
+| 2 | REL-02 | Parity test uses SHA plus version comment | VERIFIED (regression check) | unchanged by plans 16 to 18 |
+| 3 | REL-03 | CI masks derived secrets; failure tail masks bearer, secret-access-key, cookie, short-value shapes | FAILED | probes above; CR-01 and CR-02 reproduce on 7621c0ce |
+| 4 | REL-04 | Only recurring lanes; one weekly canary | VERIFIED (regression check) | Weekly Canary success on 0b28e6d; Release Please runs success on 7621c0ce, 5862a3d, ff63e5d |
+| 5 | REL-05 | Grouped monthly actions PR; no open PR older than 14 days without a reason | VERIFIED (regression check) | Open PRs: #236 (reason recorded, created 2026-10-11), #252 and #253 (created today) |
+| 6 | REL-06 | SEED-003 closed; fail-closed clean-room run against real 0.2.11 artifacts | VERIFIED (regression check) | evidence retained; `script/verify_published_cleanroom.sh` untouched by 16 to 18 |
+| 7 | HYG-01 | Root holds only allowlisted files; no bundle | VERIFIED (regression check) | `git ls-tree origin/main` root shows allowlisted entries only |
+| 8 | HYG-02 | Branches deleted or tagged; worktrees only main | VERIFIED (override) | override carried forward; `git worktree list` shows only the main checkout |
 
-**Score:** 8/8 truths verified (0 present-but-behavior-unverified).
+**Score:** 7/8 truths verified (0 present-but-behavior-unverified).
 
-## Key Evidence Run by the Verifier
+## Deviations in 195-18, weighed
 
-| Check | Result |
-|-------|--------|
-| `maskSecretShapes` probe, 17 shapes plus linear-time input | all secrets masked, prose unchanged, 1 ms |
-| `node --test test/js/*.mjs` | rc 0, 186 pass, 0 fail |
-| `git diff origin/main HEAD -- script test/js` | empty (checkout runs the merged code) |
-| PR #256 | MERGED, merge commit 5862a3dc, 49 checks, none failed |
-| Main runs on 5862a3dc | only Release Please (push trigger), still in progress at check time; the prior main commit ff63e5d and 0b28e6d runs are success. Main's PR-lane CI ran on the PR head |
-| Open PRs | #236, #252, #253 |
-| Debt markers in the two masker files | none |
+- JWT left-boundary fix and the 250 ms floor: the floor still separates quadratic from linear at 200k characters (IN-03), but it did not catch CR-01 because no input exercises that rule. Not a gap by itself.
+- Re-run of a red example-host job with no change: noted as a flake reconciliation, not evidence of a defect; main Release Please runs are green. Keep watching.
+- Merge performed by the user: consistent with the AGENTS.md gate (merge to main needs the user's allow).
 
 ## Requirements Coverage
 
@@ -139,29 +138,29 @@ Both halves of REL-03 hold: derived secrets are passed to `::add-mask::` (audit 
 |-------------|--------|
 | REL-01 | SATISFIED |
 | REL-02 | SATISFIED |
-| REL-03 | SATISFIED (gap closed) |
+| REL-03 | BLOCKED (CR-01, CR-02) |
 | REL-04 | SATISFIED |
 | REL-05 | SATISFIED |
 | REL-06 | SATISFIED |
 | HYG-01 | SATISFIED |
 | HYG-02 | SATISFIED (override) |
 
-All eight IDs are claimed by plans and mapped to Phase 195. No orphaned IDs.
+All eight IDs are claimed by plans and mapped to Phase 195 in REQUIREMENTS.md. No orphans. REL-03 is currently ticked complete in REQUIREMENTS.md and the traceability table; it should be reopened until the gap closes.
 
 ## Anti-Patterns and Open Items
 
 | Item | Severity | Note |
 |------|----------|------|
-| WR-04, WR-05, WR-06, IN-03 | Warning | Deferred to Phase 197 and recorded in the disposition and roadmap; clean-room fail-closed still holds on traced paths |
-| IN-01, IN-02 | Info | Marked wontfix in the disposition |
-| #236 is BEHIND main | Info | Expected; release merge is Phase 199 |
-| #253 open, protection refused merge in the prior pass | Warning | Not a REL requirement; re-offer at the next queue pass |
-| `crosswake_inspect_test.exs:136` one-off CI failure | Warning | Not reproduced; keep watching |
-| `privacy-push-195.txt` untracked | Info | Intentional (names the pushed head) |
+| CR-01 quadratic KEY_LINE | Blocker | see gap |
+| CR-02 unmasked repo-held secret forms | Blocker | see gap |
+| WR-01 to WR-03 (Elixir inspect forms, name/value JSON, PEM body layouts) | Warning | reproduce in part (cookie map); fold into the next gap plan |
+| WR-04 to WR-06, IN-01 to IN-04 | Warning/Info | triage in the next gap plan; GR-06 stays deferred to Phase 196 |
+| Debt markers in the two masker files | None found | |
+| `privacy-push-195.txt`, `privacy-push2-195.txt` untracked | Info | intentional evidence |
 
 ## Gaps Summary
 
-**Orchestrator addendum (2026-10-26).** The verifier's report above found the original four REL-03 cases closed and returned `passed`. A focused code review of the two changed files, run in parallel (195-REVIEW-GAP.md), then reproduced shapes the verifier did not probe. The orchestrator re-confirmed three on main 5862a3d with synthetic fragment-built seeds: an Elixir tuple key, an escaped-JSON key and a CLI `--password` flag each leak. GR-02 (a single-quoted `::add-mask::$VAR` passes the guard) is also a REL-03 hole. Status is therefore `gaps_found` (7/8): CR-01 to WR-03 are fixed as recorded, and GR-01 and GR-02 remain. GR-03 to GR-10 are warnings and info for the next gap plan to triage.
+One gap, REL-03, blocks the phase goal ("never echoes secrets"). The fix is small and well specified in 195-REVIEW-GAP2.md CR-01 and CR-02. Recommended: seed-first plan with a probe per repo secret name and a whitespace-run linear-time row, then re-verify.
 
 ---
 
