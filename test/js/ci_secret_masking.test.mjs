@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { maskSecretShapes, rootProofFailureTail, spawnStage } from "../../script/verify_repository.mjs";
+import { maskSecretShapes, ROOT_PROOF_TAIL_BYTES, ROOT_PROOF_TAIL_LINES, rootProofFailureTail, spawnStage } from "../../script/verify_repository.mjs";
 
 const frag = (...parts) => parts.join("");
 
@@ -109,6 +109,62 @@ const jwA = frag("fake", "Jwt", "Head19");
 const jwB = frag("fake", "Jwt", "Body20");
 const jwC = frag("fake", "Jwt", "Sig21");
 const kidV = frag("FAKE", "KEYID", "1234567");
+const ejA = frag("fake", "Escjson", "Alpha22");
+const ejB = frag("fake", "Escjson", "Bravo23");
+const eaV = frag("fake", "Escauth", "Val24");
+const tpV = frag("fake", "Tup", "Atom25");
+const tqA = frag("fake", "Tup", "Quoted26");
+const tqB = frag("fake", "Tup", "Quoted27");
+const taV = frag("fake", "Tup", "Auth28");
+const bqV = frag("fake", "Bear", "Quote29");
+const brV = frag("fake", "Bear", "Realm30");
+const nlV = frag("fake", "Next", "Line31");
+const ncV = frag("fake", "Next", "Crlf32");
+const ybA = frag("fake", "Yaml", "Block33");
+const ybB = frag("fake", "Yaml", "Block34");
+const cfV = frag("fake", "Cli", "Flag35");
+const cqA = frag("fake", "Cli", "Quoted36");
+const cqB = frag("fake", "Cli", "Quoted37");
+const cuV = frag("fake", "Curl", "Short38");
+const clV = frag("fake", "Curl", "Long39");
+const tdV = frag("fake", "Double", "Eq40");
+const SK = frag("s", "k-");
+const XOXB = frag("xo", "xb-");
+const NPM = frag("np", "m_");
+const GHP = frag("gh", "p_");
+const skpV = frag("fake", "Skp", "Proj41");
+const skvV = frag("fake", "Skv", "Ant42");
+const xbV = frag("fake", "Xox", "Bot43");
+const npmV = frag("fake", "Npm", "Tok44", "x".repeat(24));
+// PEM markers are assembled so no source line holds a contiguous five-dash marker or key-block literal.
+const DASH5 = "-".repeat(5);
+const PEM_B = frag(DASH5, "BEG", "IN ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_E = frag(DASH5, "EN", "D ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_BR = frag(DASH5, "BEG", "IN ", "RSA ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_BE = frag(DASH5, "BEG", "IN ", "ENCRYPTED ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_EE = frag(DASH5, "EN", "D ", "ENCRYPTED ", "PRIV", "ATE", " KEY", DASH5);
+const PEM_IV = frag("A1B2", "C3D4", "E5F6", "0718", "9A0B", "1C2D", "3E4F", "5061");
+const pemB1 = frag("fake", "Pem", "Body51");
+const pemB2 = frag("fake", "Pem", "Body52");
+const pemB3 = frag("fake", "Pem", "Body53");
+const pemB4 = frag("fake", "Pem", "Body54");
+const pemB5 = frag("fake", "Pem", "Body55");
+const ueV = frag("fake", "Userinfo", "Empty56");
+const usA = frag("fake", "Userinfo", "Slash57");
+const usB = frag("fake", "Userinfo", "Slash58");
+const kidPre = frag("FAKE", "PREFIX", "123456");
+const kidTrail = frag("FAKE", "TRAIL", "1234567");
+const j2A = frag("fake", "Jwt", "Two59");
+const j2B = frag("fake", "Jwt", "Two60");
+const qkV = frag("fake", "Query", "Key61");
+const qsV = frag("fake", "Query", "Sig62");
+const qaV = frag("fake", "Query", "Amz63");
+const ckaV = frag("fake", "Cookie", "Assign64");
+const ckhV = frag("fake", "Cookies", "Head65");
+const scrV = frag("fake", "Secrets", "Assign66");
+const pkV = frag("fake", "Privkey", "Assign67");
+const pwsV = frag("fake", "Passwords", "Assign68");
+const litV = frag("fake", "Literal", "Prefixed69");
 
 export const GAP_SHAPES = [
   {
@@ -200,6 +256,228 @@ export const GAP_SHAPES = [
     seeds: [kidV],
     line: `key id AKIA${kidV}`,
     expected: `key id AKIA***`
+  },
+  {
+    name: "escaped_json_multiword",
+    seeds: [ejA, ejB],
+    line: `{${BS}"${PW}${BS}":${BS}"${ejA} ${ejB}${BS}"}`,
+    expected: `{${BS}"${PW}${BS}":${BS}"***${BS}"}`
+  },
+  {
+    name: "escaped_json_authorization",
+    seeds: [eaV],
+    line: `{${BS}"authorization${BS}":${BS}"Bearer ${eaV}${BS}"}`,
+    expected: `{${BS}"authorization${BS}":***`
+  },
+  {
+    name: "elixir_tuple_atom",
+    seeds: [tpV],
+    line: `{:${TK}, "${tpV}"}`,
+    expected: `{:${TK}, "***"}`
+  },
+  {
+    name: "elixir_tuple_quoted_key",
+    seeds: [tqA, tqB],
+    line: `{"${PW}", "${tqA} ${tqB}"}`,
+    expected: `{"${PW}", "***"}`
+  },
+  {
+    name: "elixir_tuple_authorization",
+    seeds: [taV],
+    line: `{"authorization", "Basic ${taV}"}`,
+    expected: `{"authorization", "***"}`
+  },
+  {
+    name: "bearer_quoted",
+    seeds: [bqV],
+    line: `sent Bearer "${bqV}" upstream`,
+    expected: `sent Bearer "***" upstream`
+  },
+  {
+    name: "bearer_realm",
+    seeds: [brV],
+    line: `WWW-Authenticate: Bearer realm="${brV}"`,
+    expected: `WWW-Authenticate: Bearer ***`
+  },
+  {
+    name: "next_line_value",
+    seeds: [nlV],
+    line: `${PW}:\n  ${nlV}`,
+    expected: `${PW}:\n  ***`
+  },
+  {
+    name: "next_line_value_crlf",
+    seeds: [ncV],
+    line: `${PW}:\r\n  ${ncV}`,
+    expected: `${PW}:\r\n  ***`
+  },
+  {
+    name: "yaml_block_scalar",
+    seeds: [ybA, ybB],
+    line: `${PW}: |\n  ${ybA}\n  ${ybB}\nnext: ok`,
+    expected: `${PW}: |\n  ***\n  ***\nnext: ok`
+  },
+  {
+    name: "cli_flag_space",
+    seeds: [cfV],
+    line: `run --${PW} ${cfV} --verbose`,
+    expected: `run --${PW} *** --verbose`
+  },
+  {
+    name: "cli_flag_quoted",
+    seeds: [cqA, cqB],
+    line: `run --api-key "${cqA} ${cqB}" --verbose`,
+    expected: `run --api-key "***" --verbose`
+  },
+  {
+    name: "curl_user_short",
+    seeds: [cuV],
+    line: `curl -u deploy:${cuV} https://host.example/x`,
+    expected: `curl -u deploy:*** https://host.example/x`
+  },
+  {
+    name: "curl_user_long",
+    seeds: [clV],
+    line: `curl --user deploy:${clV} https://host.example/x`,
+    expected: `curl --user deploy:*** https://host.example/x`
+  },
+  {
+    name: "token_double_equals",
+    seeds: [tdV],
+    line: `assert ${TK} == "${tdV}"`,
+    expected: `assert ${TK} == "***"`
+  },
+  {
+    name: "sk_project_key",
+    seeds: [skpV],
+    line: `use ${SK}proj-${skpV} now`,
+    expected: `use ${SK}*** now`
+  },
+  {
+    name: "sk_versioned_key",
+    seeds: [skvV],
+    line: `use ${SK}ant-api03-${skvV} now`,
+    expected: `use ${SK}*** now`
+  },
+  {
+    name: "slack_bot_token",
+    seeds: [xbV],
+    line: `slack ${XOXB}${xbV} sent`,
+    expected: `slack ${XOXB}*** sent`
+  },
+  {
+    name: "npm_token",
+    seeds: [npmV],
+    line: `npm ${NPM}${npmV} ok`,
+    expected: `npm ${NPM}*** ok`
+  },
+  {
+    name: "pem_multiline",
+    seeds: [pemB1, pemB2],
+    line: `${PEM_B}\n${pemB1}\n${pemB2}\n${PEM_E}\nafter pem line`,
+    expected: `${PEM_B}***\nafter pem line`
+  },
+  {
+    name: "pem_no_end",
+    seeds: [pemB3],
+    line: `${PEM_BR}\n${pemB3}\nFinished in 0.1 seconds`,
+    expected: `${PEM_BR}***\nFinished in 0.1 seconds`
+  },
+  {
+    name: "pem_escaped_newlines",
+    seeds: [pemB4],
+    line: `"${PEM_B}${BS}n${pemB4}${BS}n${PEM_E}${BS}n"`,
+    expected: `"${PEM_B}***${BS}n"`
+  },
+  {
+    name: "pem_encrypted_headers",
+    seeds: [pemB5],
+    line: `${PEM_BE}\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,${PEM_IV}\n\n${pemB5}\n${PEM_EE}`,
+    expected: `${PEM_BE}***`
+  },
+  {
+    name: "url_empty_user",
+    seeds: [ueV],
+    line: `fetch https://:${ueV}@host.example/x`,
+    expected: `fetch https://:***@host.example/x`
+  },
+  {
+    name: "url_slash_password",
+    seeds: [usA, usB],
+    line: `fetch https://user:${usA}/${usB}@host.example/x`,
+    expected: `fetch https://user:***@host.example/x`
+  },
+  {
+    name: "aws_key_id_prefixed",
+    seeds: [kidPre],
+    line: `key_AKIA${kidPre}`,
+    expected: `key_AKIA***`
+  },
+  {
+    name: "aws_key_id_trailing",
+    seeds: [kidTrail],
+    line: `id AKIA${kidTrail}QQ`,
+    expected: `id AKIA***QQ`
+  },
+  {
+    name: "jwt_two_segment",
+    seeds: [j2A, j2B],
+    line: `got eyJ${j2A}.${j2B} end`,
+    expected: `got eyJ*** end`
+  },
+  {
+    name: "query_key",
+    seeds: [qkV],
+    line: `GET /x?key=${qkV}&page=2`,
+    expected: `GET /x?key=***&page=2`
+  },
+  {
+    name: "query_sig",
+    seeds: [qsV],
+    line: `GET /x?a=1&sig=${qsV}`,
+    expected: `GET /x?a=1&sig=***`
+  },
+  {
+    name: "amz_signature",
+    seeds: [qaV],
+    line: `GET /x?X-Amz-Signature=${qaV}`,
+    expected: `GET /x?X-Amz-Signature=***`
+  },
+  {
+    name: "cookie_assign",
+    seeds: [ckaV],
+    line: `cookie=${ckaV}`,
+    expected: `cookie=***`
+  },
+  {
+    name: "cookies_header",
+    seeds: [ckhV],
+    line: `cookies: ${ckhV}`,
+    expected: `cookies: ***`
+  },
+  {
+    name: "secrets_assign",
+    seeds: [scrV],
+    line: `secrets=${scrV}`,
+    expected: `secrets=***`
+  },
+  {
+    name: "privatekey_assign",
+    seeds: [pkV],
+    line: `privatekey=${pkV}`,
+    expected: `privatekey=***`
+  },
+  {
+    name: "passwords_assign",
+    seeds: [pwsV],
+    line: `passwords=${pwsV}`,
+    expected: `passwords=***`
+  },
+  {
+    name: "literal_prefixed_value",
+    seeds: [litV],
+    line: `${TK}: nil${litV}`,
+    expected: `${TK}: ***`
   }
 ];
 
@@ -254,11 +532,44 @@ const PROSE_LINES = [
   { name: "cookie jar is empty", text: "cookie jar is empty" },
   { name: "  1) test token refresh rejects expired password (Crosswake.AuthTest)", text: "  1) test token refresh rejects expired password (Crosswake.AuthTest)" },
   { name: "token_count: 300", text: "token_count: 300" },
-  { name: 'code: assert token == "expected-value"', text: 'code: assert token == "expected-value"' },
   { name: "the api key rotation runs nightly", text: "the api key rotation runs nightly" },
   { name: "token: ok", text: "token: ok" },
-  { name: "bearer_line_end", text: "auth scheme is Bearer\nnextline stays visible" }
+  { name: "bearer_line_end", text: "auth scheme is Bearer\nnextline stays visible" },
+  { name: "invalid token, retrying now", text: "invalid token, retrying now" },
+  { name: "password, then username", text: "password, then username" },
+  { name: "use --password-file ./pw.txt for input", text: "use --password-file ./pw.txt for input" },
+  { name: "key_before_test_line", text: "last field password:\n  1) test login works (AuthTest)" },
+  { name: "key_before_finished_line", text: "token=\nFinished in 0.2 seconds" },
+  { name: "task-runner12345 started", text: "task-runner12345 started" },
+  { name: "kiosk-mode-settings applied", text: "kiosk-mode-settings applied" },
+  { name: "npm_config_cache is set", text: "npm_config_cache is set" },
+  { name: "token: nil", text: "token: nil" },
+  { name: "password: nil", text: "password: nil" },
+  { name: "token: true", text: "token: true" },
+  { name: "password: false", text: "password: false" },
+  { name: '"token":null', text: '"token":null' },
+  { name: "token: undefined", text: "token: undefined" },
+  { name: "%{token: nil, password: nil}", text: "%{token: nil, password: nil}" },
+  { name: "preauthorization: pending review", text: "preauthorization: pending review" }
 ];
+
+// Over-masks accepted as the safe direction. Each is pinned exactly so it can never drift silently.
+const ACCEPTED_OVERMASK = [
+  { name: "code_assert_token_equals", text: 'code: assert token == "expected-value"', expected: 'code: assert token == "***"' },
+  { name: "key_then_plain_line", text: "enter password:\nnext line text", expected: "enter password:\n***" },
+  { name: "cli_negated_flag", text: "run --no-password prompt", expected: "run --no-password ***" },
+  { name: "url_port_scoped_path", text: "https://registry.example:443/@scope/pkg", expected: "https://registry.example:***@scope/pkg" },
+  { name: "secrets_inherit", text: "secrets: inherit", expected: "secrets: ***" },
+  { name: "numeric_value", text: "max_token: 1000", expected: "max_token: ***" },
+  { name: "authorization_header_prose", text: "Authorization: required for route", expected: "Authorization: ***" },
+  { name: "cookie_colon_prose", text: "stale cookie: expired at line", expected: "stale cookie: ***" }
+];
+
+for (const row of ACCEPTED_OVERMASK) {
+  test(`accepted over-mask pinned: ${row.name}`, () => {
+    assert.ok(maskSecretShapes(row.text) === row.expected, `accepted over-mask ${row.name} drifted`);
+  });
+}
 
 for (const row of PROSE_LINES) {
   test(`prose round-trips unchanged: ${row.name}`, () => {
@@ -272,32 +583,88 @@ const LINEAR_INPUTS = [
   { name: "keyword_no_separator", input: () => "token ".repeat(100000) },
   { name: "unterminated_quote", input: () => `${PW} = "` + "a b ".repeat(100000) },
   { name: "userinfo_no_at", input: () => "https://" + "u:".repeat(100000) },
-  { name: "jwt_segments", input: () => "eyJaaaaa.".repeat(100000) }
+  { name: "jwt_segments", input: () => "eyJaaaaa.".repeat(100000) },
+  { name: "jwt_hyphen_run", input: () => "eyJ-".repeat(50000) },
+  { name: "escaped_key_repeat", input: () => `${BS}"${PW}${BS}":`.repeat(30000) },
+  { name: "escaped_value_backslashes", input: () => `{${BS}"${PW}${BS}":${BS}"` + BS.repeat(200000) },
+  { name: "tuple_comma_repeat", input: () => `{:${TK}, `.repeat(30000) },
+  { name: "cli_flag_repeat", input: () => `--${PW} `.repeat(30000) },
+  { name: "curl_user_repeat", input: () => "-u a:".repeat(50000) },
+  { name: "nextline_keys", input: () => `${PW}:\n`.repeat(30000) },
+  { name: "bearer_quote_unterminated", input: () => 'Bearer "' + "a b ".repeat(100000) },
+  { name: "double_equals_repeat", input: () => `${TK} ==`.repeat(40000) },
+  { name: "sk_dash_run", input: () => `${SK}` + "-a".repeat(100000) },
+  { name: "xox_repeat", input: () => XOXB.repeat(40000) },
+  { name: "pem_body_no_end", input: () => PEM_B + "\nAAAA".repeat(40000) },
+  { name: "pem_begin_repeat", input: () => PEM_B.repeat(8000) },
+  { name: "pem_escaped_run", input: () => PEM_B + `${BS}nA`.repeat(70000) },
+  { name: "userinfo_repeated_scheme", input: () => "://a:".repeat(50000) },
+  { name: "query_key_repeat", input: () => "?key=".repeat(50000) },
+  { name: "akia_run", input: () => "AKIA".repeat(50000) },
+  { name: "backslash_run", input: () => `${PW} = "` + BS.repeat(200000) },
+  { name: "doubled_quotes", input: () => `${PW} = ` + '""'.repeat(100000) },
+  { name: "escaped_quote_run", input: () => `${PW} = "` + `${BS}"`.repeat(100000) },
+  { name: "mixed_quotes", input: () => `${PW} = '` + `"'${BS}`.repeat(70000) },
+  { name: "literal_exemption_repeat", input: () => `${TK}: nil `.repeat(20000) }
 ];
+
+// The CI bound is relative: the fastest of three runs must stay within 10 times a same-process plain-prose
+// baseline, with a 250 ms floor. A shared runner measured 51, 55 and 95 ms on linear inputs against a 5 ms baseline,
+// so a 40 ms floor failed linear code; a quadratic regression at 200k characters takes seconds (7266 ms for the
+// old JWT rule), so 250 ms still separates the two by more than an order of magnitude.
+const fastestMs = (input) => {
+  let best = Infinity;
+  for (let i = 0; i < 3; i += 1) {
+    const started = performance.now();
+    maskSecretShapes(input);
+    best = Math.min(best, performance.now() - started);
+  }
+  return best;
+};
+const BASELINE_INPUT = "the quick brown fox jumps over the lazy dog\n".repeat(5000);
+let baselineCache;
+const baselineMs = () => {
+  if (baselineCache === undefined) baselineCache = fastestMs(BASELINE_INPUT);
+  return baselineCache;
+};
+
+test("linear time baseline", (t) => {
+  assert.ok(BASELINE_INPUT.length >= 200000, "baseline input is too short");
+  t.diagnostic(`perf-baseline ms ${Math.round(baselineMs())}`);
+});
 
 for (const row of LINEAR_INPUTS) {
   test(`linear time: ${row.name}`, (t) => {
     const input = row.input();
     assert.ok(input.length >= 200000, `linear input ${row.name} is too short`);
-    const started = performance.now();
-    maskSecretShapes(input);
-    const ms = Math.round(performance.now() - started);
-    t.diagnostic(`perf ${row.name} ms ${ms}`);
-    assert.ok(ms < 1500, `linear time ${row.name}: ${ms} ms, budget 1500 ms`);
+    const ms = fastestMs(input);
+    t.diagnostic(`perf ${row.name} ms ${Math.round(ms)}`);
+    assert.ok(ms <= Math.max(250, 10 * baselineMs()), `linear time ${row.name}: ${Math.round(ms)} ms, bound ${Math.round(Math.max(250, 10 * baselineMs()))} ms`);
   });
 }
+
+test("ANSI-wrapped and CRLF secrets never reach the tail", () => {
+  const v1 = frag("fake", "Ansi", "Crlf70");
+  const v2 = frag("fake", "Ansi", "Crlf71");
+  const v3 = frag("fake", "Ansi", "Crlf72");
+  const stdout = `\u001b[31m${PW}=${v1}\u001b[0m\r\n\u001b[33m${TK}: "${v2} ${v3}"\u001b[0m\r\n`;
+  const tail = rootProofFailureTail("failed", { stdout, stderr: "" });
+  const hits = leakedSecrets(tail, [v1, v2, v3]).length;
+  assert.ok(hits === 0, `ANSI/CRLF case: ${hits} of 3 values reached the tail`);
+  assert.ok(tail.includes("***"), "ANSI/CRLF case: masked marker missing");
+});
 
 test("a value cut by the tail byte window never appears", () => {
   const V = frag("fake", "CutWindow", "Q".repeat(56), "fakeEnd1");
   const vLine = `${PW}="${V}"`;
   const remaining = 40;
-  const joinedTarget = 24 * 1024 - remaining - 1;
-  const fillers = Array.from({ length: 149 }, (_, i) => `filler ${String(i).padStart(3, "0")} `.padEnd(100, "-"));
-  const fixedLen = fillers.slice(0, 148).join("\n").length + 1;
-  fillers[148] = "z".repeat(joinedTarget - fixedLen);
+  const joinedTarget = ROOT_PROOF_TAIL_BYTES - remaining - 1;
+  const fillers = Array.from({ length: ROOT_PROOF_TAIL_LINES - 1 }, (_, i) => `filler ${String(i).padStart(3, "0")} `.padEnd(100, "-"));
+  const fixedLen = fillers.slice(0, ROOT_PROOF_TAIL_LINES - 2).join("\n").length + 1;
+  fillers[ROOT_PROOF_TAIL_LINES - 2] = "z".repeat(joinedTarget - fixedLen);
   const text = [vLine, ...fillers].join("\n");
-  const unmaskedTail = text.split("\n").slice(-150).join("\n");
-  const cutInside = unmaskedTail.length - 24 * 1024 === vLine.length - remaining;
+  const unmaskedTail = text.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
+  const cutInside = unmaskedTail.length - ROOT_PROOF_TAIL_BYTES === vLine.length - remaining;
   assert.ok(cutInside, "byte window cut does not land inside the value line (test setup)");
   const out = rootProofFailureTail("failed", { stdout: text, stderr: "" });
   const hits = [V, V.slice(-8)].filter((frag8) => out.includes(frag8)).length;
@@ -326,6 +693,12 @@ test("short values are masked but 2-character words are left alone", () => {
   assert.equal(maskSecretShapes(plain), plain);
 });
 
+test("a short GitHub token is masked", () => {
+  const short = frag("q9", "Zx", "7k");
+  const masked = maskSecretShapes(`leaked ${GHP}${short}`);
+  assert.ok(masked === `leaked ${GHP}***`, "short GitHub token mask output changed");
+});
+
 test("maskSecretShapes edge cases are byte-stable", () => {
   assert.equal(maskSecretShapes(""), "");
   const clean = "ordinary line\n  1) test a (B)\nFinished in 0.3 seconds\n";
@@ -342,10 +715,16 @@ const workflowDir = path.join(repoRoot, ".github/workflows");
 const indentOf = (line) => line.length - line.trimStart().length;
 const ASSIGN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/;
 const refsVar = (text, name) => new RegExp(`\\$\\{?${name}\\b`).test(text);
-// Matches only an uncommented line: optional `echo`, optional opening quote, `::add-mask::`, then the
-// variable (optionally braced) with no further identifier character, so `$TOKEN_ID` never masks `$TOKEN`.
-const isMaskLine = (line, name) =>
-  new RegExp(`^\\s*(?:echo\\s+)?["']?::add-mask::\\$(?:${name}(?![A-Za-z0-9_])|\\{${name}\\})`).test(line);
+// Matches only an uncommented line: optional `echo`, then `::add-mask::` plus the variable (optionally braced)
+// either unquoted or inside double quotes whose closing quote follows the name directly. A single-quoted
+// form (the shell would not expand the variable) and an unterminated double quote never match, and
+// `$TOKEN_ID` never masks `$TOKEN`.
+const isMaskLine = (line, name) => {
+  const ref = `(?:${name}|\\{${name}\\})`;
+  const bare = `::add-mask::\\$${ref}(?![A-Za-z0-9_])`;
+  const dq = `"::add-mask::\\$${ref}"`;
+  return new RegExp(`^\\s*(?:echo\\s+)?(?:${bare}|${dq})`).test(line);
+};
 
 export function secretBoundKeys(workflowText) {
   const keys = new Set();
@@ -463,6 +842,30 @@ test("derivedSecretViolations accepts a masked derivation", () => {
   const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::$TOKEN"`, `echo "use $TOKEN"`);
   assert.equal(derivedSecretAssignments(text).length, 1);
   assert.deepEqual(derivedSecretViolations(text), []);
+});
+
+test("derivedSecretViolations rejects a single-quoted add-mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo '::add-mask::$TOKEN'`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations rejects an unterminated add-mask quote", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo "::add-mask::$TOKEN`, `echo "use $TOKEN"`);
+  const v = derivedSecretViolations(text);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].name, "TOKEN");
+});
+
+test("derivedSecretViolations accepts an unquoted add-mask", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo ::add-mask::$TOKEN`, `echo "use $TOKEN"`);
+  assert.deepEqual(derivedSecretViolations(text), []);
+});
+
+test("derivationScript skips a single-quoted add-mask line", () => {
+  const text = fixture(`TOKEN=$(printf '%s' "$MAVEN_PASSWORD" | base64)`, `echo '::add-mask::$TOKEN'`, `echo "use $TOKEN"`);
+  assert.ok(!derivationScript(text, ["TOKEN"]).includes("::add-mask::"), "a single-quoted mask line was extracted");
 });
 
 test("derivedSecretViolations rejects a prefix-collision mask", () => {
