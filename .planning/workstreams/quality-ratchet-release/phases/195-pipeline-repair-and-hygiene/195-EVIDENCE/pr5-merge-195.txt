@@ -1,0 +1,9 @@
+pr5: state MERGED
+pr5: merge_commit 7621c0ce0c38edec76cc54209eccf5acf40feddf
+pr5: merged_at 2026-10-27T01:03:11Z
+pr5: on_origin_main yes
+pr5: approval allow bound head 12281b8
+pr5: merge executed by the user under the bound allow, not by the agent (the agent's merge call was refused by the auto-mode classifier); command gh pr merge 257 --merge --match-head-commit 12281b87fc5059e6606a7cc202559a3aa2aeb4bf
+pr5: remote branch auto-deleted at merge (delete_branch_on_merge true)
+pr5: remote_tags_after 114
+pr5: local branch delete refused by git branch -d (not merged into the checked-out branch at the time); not forced, left in place

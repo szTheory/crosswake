@@ -155,6 +155,7 @@ Plans:
 
 **Plans**: TBD
 **Research**: Needs `--research-phase` (Muex runtime and noise on the four real modules; confirm whether `format --check` and xref already run in `crosswake-ci.yml`)
+**Carried from Phase 195 gap review**: GR-06 (derived-secret guard grammar: local/declare/readonly, +=, read and printf -v, GITHUB_ENV and GITHUB_OUTPUT writes, several assignments or a use on the assignment line) in test/js/ci_secret_masking.test.mjs; see 195-REVIEW-DISPOSITION.md.
 
 ### Phase 197: Public docs truth
 
