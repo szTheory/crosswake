@@ -1,0 +1,77 @@
+green: task1 rc 0 pass 93 fail 0
+control: task1 mask removed rc 1
+control: task1 leaked 47 of 47
+control: task1 restored clean yes
+log-scan: control1 seed hits 0
+green: task2 rc 0 pass 118 fail 0
+green: repository_verification rc 0
+perf: blank_lines ms 10
+perf: whitespace_lines ms 6
+perf: keyword_no_separator ms 4
+perf: unterminated_quote ms 2
+perf: userinfo_no_at ms 1
+perf: jwt_segments ms 7
+perf: escaped_key_repeat ms 16
+perf: escaped_value_backslashes ms 1
+perf: tuple_comma_repeat ms 10
+perf: cli_flag_repeat ms 14
+perf: curl_user_repeat ms 1
+perf: nextline_keys ms 3
+perf: bearer_quote_unterminated ms 1
+perf: double_equals_repeat ms 12
+perf: sk_dash_run ms 2
+perf: xox_repeat ms 1
+perf: pem_body_no_end ms 3
+perf: pem_begin_repeat ms 2
+perf: pem_escaped_run ms 1
+perf: userinfo_repeated_scheme ms 27
+perf: query_key_repeat ms 1
+perf: akia_run ms 2
+green: task3 rc 0 pass 137 fail 0
+green: repository_verification rc 0
+perf: blank_lines ms 6
+perf: whitespace_lines ms 4
+perf: keyword_no_separator ms 3
+perf: unterminated_quote ms 1
+perf: userinfo_no_at ms 1
+perf: jwt_segments ms 4
+perf: escaped_key_repeat ms 11
+perf: escaped_value_backslashes ms 1
+perf: tuple_comma_repeat ms 7
+perf: cli_flag_repeat ms 8
+perf: curl_user_repeat ms 1
+perf: nextline_keys ms 2
+perf: bearer_quote_unterminated ms 0
+perf: double_equals_repeat ms 10
+perf: sk_dash_run ms 1
+perf: xox_repeat ms 1
+perf: pem_body_no_end ms 2
+perf: pem_begin_repeat ms 2
+perf: pem_escaped_run ms 1
+perf: userinfo_repeated_scheme ms 27
+perf: query_key_repeat ms 1
+perf: akia_run ms 1
+perf: backslash_run ms 1
+perf: doubled_quotes ms 1
+perf: escaped_quote_run ms 1
+perf: mixed_quotes ms 1
+perf: literal_exemption_repeat ms 1
+perf-baseline: ms 1
+census: decl_keyword 0
+census: append_assign 0
+census: read_into 0
+census: printf_v 0
+census: github_env_output 0
+census: multi_assign 0
+census: assign_and_use 0
+control: final mask removed rc 1
+control: final gap leaked 68 of 68
+control: final restored clean yes
+log-scan: control3 seed hits 0
+control: pre-fix masker rc 1 fail 52
+control: pre-fix spawned-child failing yes
+control: pre-fix restored clean yes
+log-scan: prefix seed hits 0
+green: final js suite rc 0 pass 274 fail 0
+privacy: sources rc 0 files 2 head 40c018a
+branch: fix/secret-mask-key-forms head 40c018a51d1b2cddd5862f01e65882738d50a173 commits 12

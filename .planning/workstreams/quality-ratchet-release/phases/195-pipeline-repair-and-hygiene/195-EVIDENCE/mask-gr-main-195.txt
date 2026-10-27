@@ -1,0 +1,14 @@
+repro: base 2c48773 contains_pr5_merge yes
+repro: escaped_json masked
+repro: tuple_atom masked
+repro: tuple_authorization masked
+repro: bearer_quoted masked
+repro: next_line masked
+repro: yaml_block masked
+repro: cli_flag masked
+repro: curl_user masked
+repro: double_equals masked
+repro: prose_token_expired unchanged
+repro: gr02 single_quoted rc 0 pass 2 fail 0
+main: js suite rc 0 pass 275 fail 0
+repro: control pre-fix masker (5862a3d) leaked 8 of 9 forms with this fixture (bearer_quoted masked there by this fixture's shape)

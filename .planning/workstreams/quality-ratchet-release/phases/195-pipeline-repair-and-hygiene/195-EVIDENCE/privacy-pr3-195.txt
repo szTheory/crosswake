@@ -1,0 +1,7 @@
+privacy: scanner invoked with bash, every file absolute and separate
+privacy: run 1 head 3b17022 files 23
+privacy: clean files 23
+privacy: rc 0 (23 files; branch diff vs origin/main, phase175 waiver file not in diff)
+privacy: run 2 head 88727ae files 25
+privacy: clean files 25
+privacy: rc 0 (25 files; branch diff vs origin/main after fix-forward commit 88727ae; run 1 was head 3b17022, 23 files, clean, rc 0)

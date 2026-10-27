@@ -1,0 +1,20 @@
+pr: #236 created 2026-10-11 age_days 15 reason release PR; merge is Phase 199 REL-07 behind its own allow; never closed
+pr: #252 created 2026-10-26 age_days 0 reason none
+pr: #253 created 2026-10-26 age_days 0 reason See It Run auto-refresh; merge held at the Phase 195 gate; re-offered at the next queue pass
+ops: pending_decision none
+note: #252 (grouped actions bump) was red earlier from bandit advisories now fixed on main by #255; not updated or merged here (out of plan scope)
+ops: order merge #253; then branch operations in branches-195.txt ledger order
+rel236: final head b1e8d95 state OPEN
+rel236: final job hex-page-proof success
+rel236: final job phase130-core-hermetic-proof success
+rel236: final job phase132-core-hermetic-proof success
+rel236: final job phase34-commerce-proof success
+rel236: final job phase41-gating-proof success
+rel236: final job phase43-rulestead-proof success
+rel236: final job phase45-rindle-proof success
+rel236: final job proof-requires-example-host success
+rel236: final umbrella Crosswake CI success
+rel236: head_note head moved 719c601 -> 64bd89e since release-pr-195.txt (release-please rewrite); all 45 contexts SUCCESS re-read live on the new head
+rel236: refresh_note release-please rewrites #236 only on a releasable commit (receiver: Phase 199 REL-07)
+note: #253 head c8d774f has no Crosswake CI result (only run 40328488899, pull_request, conclusion action_required, never executed); mergeStateStatus BEHIND (12 commits behind main) at 2026-10-26
+rel236: reread 2026-10-26 release-please rewrote #236 again after the lines above: head 64bd89e -> b1e8d95 (chore: release main). First run 40373281687 on b1e8d95 failed 4 contexts (android-package-unit, phase18-elixir-android-proof, phase79-ios-proof, Crosswake CI) from HTTP 504 from builds.hex.pm / Gradle download (infra, not code). Failed jobs re-run once (gh run rerun --failed); re-run concluded success. Live re-read on b1e8d95: eight jobs + Crosswake CI success.

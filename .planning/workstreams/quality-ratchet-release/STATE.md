@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 195
-current_phase_name: Pipeline repair and hygiene
-status: executing
-stopped_at: Completed 195-11-PLAN.md
-last_updated: "2026-10-26T16:38:15.510Z"
-state_head: cb1b3871caba3df9cd57332616d16054a8302e9a
+current_phase_name: pipeline-repair-and-hygiene
+status: verifying
+stopped_at: Completed 195-18-PLAN.md
+last_updated: "2026-10-27T01:06:24.186Z"
+state_head: 078ff5da825d4be5c852fea765ceb0d1b9bc0824
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 22
-  completed_plans: 20
+  total_plans: 27
+  completed_plans: 27
   percent: 50
 last_activity: 2026-10-25
 last_activity_desc: Phase 195 planned
@@ -24,15 +24,15 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 
 ## Current Position
 
-Phase: 195 (Pipeline repair and hygiene) — EXECUTING
-Plan: 12 of 13
-Status: Ready to execute
+Phase: 195 (pipeline-repair-and-hygiene) — EXECUTING
+Plan: 18 of 18
+Status: Phase complete — ready for verification
 
 ## Exact Next Action
 
-What was checked: Phase 195 has 13 plans (195-01 to 195-13, waves 1 to 13 in order). They cover REL-01 to REL-06, HYG-01 and HYG-02. The plan checker ran three times, then a targeted fix closed the last 5 warnings. The probes found no verify-path or failing-direction problems in 53 commands. What happened: Phase 194's closeout PR #249 is merged. The plans are committed on local branch `fix/release-fixture-version-stamp` and are not pushed; plan 195-01 expects to start on that branch, and the plans reach `main` inside PR1. What is unknown: CI on PR1, because it is not opened yet. Nothing was released, tagged or pushed.
+What was checked: gap plans 195-14 and 195-15 executed. PR #256 (masker fix) merged to main as 5862a3d behind its own `allow`; GitHub deleted its branch as approved; Release Please is green on 5862a3d; `node --test` passes 186 of 186; the verifier's four original REL-03 cases are closed on main. Review dispositions: CR-01 to WR-03 fixed; WR-04, WR-05, WR-06 and IN-03 deferred to Phase 197 (carried line in ROADMAP); IN-01 and IN-02 wontfix (route `accept`). What happened: the verifier returned `passed`, but a focused review of the two changed files (195-REVIEW-GAP.md) reproduced further leaks, re-confirmed on main: credential keys in Elixir tuple, escaped-JSON and CLI-flag forms (GR-01), and a single-quoted `::add-mask::` that passes the guard (GR-02). Verification is recorded as `gaps_found` (7 of 8). What is unknown: nothing blocks planning. Nothing was released, published or tagged (114 tags). `docs/195-closeout` is pushed; its closeout PR is not opened yet.
 
-Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` (plan 195-10, branch `chore/root-hygiene-and-cleanroom` from origin/main).
+Next action: `/gsd-plan-phase 195 --gaps --ws quality-ratchet-release` (GR-01 and GR-02 seeds first, then the fix; triage GR-03 to GR-10), then `/gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release`.
 
 ## Carried debt
 
@@ -50,13 +50,30 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 | Phase 195 P09 | 1 session | 3 tasks | 4 files |
 | Phase 195 P10 | 40m | 2 tasks | 22 files |
 | Phase 195 P11 | 30m | 3 tasks | 8 files |
+| Phase 195 P12 | continuation | 3 tasks | 3 files |
+| Phase 195 P13 | continuation | 3 tasks | 3 files |
+| Phase 195 P14 | 40min | 3 tasks | 2 files |
+| Phase 195 P15 | 20min | 3 tasks | 8 files |
+| Phase 195 P16 | 45 min | 3 tasks | 2 files |
+| Phase 195 P17 | 1h | 3 tasks | 2 files |
+| Phase 195 P18 | n/a | 3 tasks | 8 files |
 
 ## Decisions
 
 - [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
+- [Phase 195]: Plan 13: one-time user-approved batch for 17 branch ops (not a standing rule); #253 merge held, refused by protection
+- [Phase 195]: 195-14: maskSecretShapes rules are same-line only with a required separator for generic keys; quoted values masked through closing quote (unterminated to EOL); seeds >=8 chars fake-prefixed; seed-bearing assertions are assert.ok with value-free messages
+- [Phase 195]: PR #256 merged (5862a3d) on one-use allow; review route accepted: WR-04/05/06 and IN-03 deferred to Phase 197, IN-01/02 wontfix
+- [Phase 195]: 195-16: value capture groups named; next-line pass runs first; accepted over-masks pinned in ACCEPTED_OVERMASK
+- [Phase 195]: 195-17: GR-06 deferred on evidence; live workflow tree census 0 for all seven unparsed bash forms
+- [Phase 195]: 195-17: GR-07 numeric/header-prose values stay masked (ACCEPTED_OVERMASK); literal nil/true/false/null/undefined whole values unmasked
 
 ## Session
 
-**Last session:** 2026-10-26T16:38:15.485Z
-**Stopped at:** Completed 195-11-PLAN.md
+**Last session:** 2026-10-27T01:06:24.136Z
+**Stopped at:** Completed 195-18-PLAN.md
 **Resume file:** None
+
+### Blockers
+
+- Follow-up: test/mix/tasks/crosswake_inspect_test.exs:136 failed once in CI run 40361272003 (head 3b170221), did not recur; cause unknown

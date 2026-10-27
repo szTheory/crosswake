@@ -1,0 +1,15 @@
+pr5: number 257
+pr5: head 283111eed701acd3e68944d5fe86aa40dcd164c1
+pr5: crosswake_ci failure on head 283111e
+pr5: run 40419338740 event pull_request; failing: guard-01-e2e-honesty (three linear-time cases over a 48 ms bound: escaped_key_repeat 51, double_equals_repeat 55, userinfo_repeated_scheme 95 ms)
+pr5: fix forward 12281b87 raise the linear-time floor to 250 ms (old JWT rule still fails at 7909 ms)
+pr5: head 12281b87fc5059e6606a7cc202559a3aa2aeb4bf
+pr5: crosswake_ci failure on head 12281b8
+pr5: run 40422309412 event pull_request; failing: proof-requires-example-host (Elixir example-host matrix, exit 2 after 27 min, no cause in the log; same job passed on 283111e and on the other recent runs)
+repo: delete_branch_on_merge true
+pr5: note pull_request runs also test a synthetic merge commit; the result above is for the head
+pr5: remote_tags_before      114
+pr5: correction proof-requires-example-host is not clean in history: it failed in 13 of the last 25 failed Crosswake CI runs (several alongside broad breakage), so "passed on every other recent run" overstated it
+pr5: user decision re-run once without a change (no-change retry, not a fix; cause of the attempt-1 exit 2 not observed)
+pr5: run 40422309412 attempt 1 failure (proof-requires-example-host), attempt 2 success on head 12281b87fc5059e6606a7cc202559a3aa2aeb4bf
+pr5: crosswake_ci success on head 12281b8 (run 40422309412 attempt 2); merge state CLEAN; origin/main has 0 commits not in head

@@ -1,0 +1,6 @@
+pr4: state MERGED
+pr4: merge_commit 5862a3dc234f81dfc0ca580bfd6cce8c60608eae
+pr4: merged_at 2026-10-26T22:14:01Z
+pr4: on_origin_main yes
+pr4: approval allow bound head 7db34f2
+pr4: remote branch auto-deleted at merge (delete_branch_on_merge true)

@@ -1,0 +1,33 @@
+red: base origin/main 5862a3d
+red: task1 rc 1 fail 2
+red: task1 failing gap shape escaped_json_multiword is masked
+red: task1 failing gap shapes from a spawned child never reach the root-proof tail
+log-scan: red1 seed hits 0
+red: task1 commit 7741f0b
+red: task2 rc 1 fail 17
+red: task2 failing gap shape elixir_tuple_atom is masked
+red: task2 failing gap shape elixir_tuple_quoted_key is masked
+red: task2 failing gap shape elixir_tuple_authorization is masked
+red: task2 failing gap shape bearer_quoted is masked
+red: task2 failing gap shape bearer_realm is masked
+red: task2 failing gap shape next_line_value is masked
+red: task2 failing gap shape next_line_value_crlf is masked
+red: task2 failing gap shape yaml_block_scalar is masked
+red: task2 failing gap shape cli_flag_space is masked
+red: task2 failing gap shape cli_flag_quoted is masked
+red: task2 failing gap shape curl_user_short is masked
+red: task2 failing gap shape curl_user_long is masked
+red: task2 failing gap shape token_double_equals is masked
+red: task2 failing gap shapes from a spawned child never reach the root-proof tail
+red: task2 failing accepted over-mask pinned: code_assert_token_equals
+red: task2 failing accepted over-mask pinned: key_then_plain_line
+red: task2 failing accepted over-mask pinned: cli_negated_flag
+red: task2 already_masked escaped_json_authorization
+log-scan: red2 seed hits 0
+red: task2 commit 093a9dd
+red: task3 rc 1 fail 3
+red: task3 failing derivedSecretViolations rejects a single-quoted add-mask
+red: task3 failing derivedSecretViolations rejects an unterminated add-mask quote
+red: task3 failing derivationScript skips a single-quoted add-mask line
+log-scan: red3 seed hits 0
+red: task3 commit 23a5dd8

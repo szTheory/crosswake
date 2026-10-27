@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-10-27T01:27:38.005Z",
+  "workstream": "quality-ratchet-release",
+  "phase": "195",
+  "phase_name": "pipeline-repair-and-hygiene",
+  "phase_dir": ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": "195-16", "name": "round-2 critical key forms (GR-01, GR-02, GR-10)", "status": "done", "commit": "f30b0a9e"},
+    {"id": "195-17", "name": "round-2 warning/info forms (GR-03..05, GR-07..09)", "status": "done", "commit": "68d10db3"},
+    {"id": "195-18", "name": "ship PR #257, on-main proof, dispositions", "status": "done", "commit": "c2afadd7"},
+    {"id": "review", "name": "round-2 deep code review 195-REVIEW-GAP2.md", "status": "done", "commit": "1a8b7b74"},
+    {"id": "verify", "name": "re-verification: gaps_found 7/8 (REL-03)", "status": "done", "commit": "a8c9dd84"}
+  ],
+  "remaining_tasks": [
+    {"id": "gap-r3", "name": "plan round-3 REL-03 gap closure (CR-01, CR-02, WR-01..03)", "status": "not_started"},
+    {"id": "secure", "name": "/gsd-secure-phase 195 (advisory hook)", "status": "not_started"},
+    {"id": "validate", "name": "/gsd-validate-phase 195 (advisory hook)", "status": "not_started"}
+  ],
+  "blockers": [],
+  "async_jobs": [],
+  "human_actions_pending": [
+    {"action": "Approve (allow/hold) the round-3 PR merge when its gate is shown, then run the merge command yourself if the classifier refuses the agent", "context": "auto-mode classifier refused the agent's gh pr merge for PR #257", "blocking": false}
+  ],
+  "decisions": [
+    {"decision": "Re-run red example-host job once without a change", "rationale": "user choice; cause of exit 2 unobservable; attempt 2 green", "phase": "195"},
+    {"decision": "PR #257 merge allow bound to head 12281b8; merged by user as 7621c0ce", "rationale": "agent merge refused by classifier", "phase": "195"},
+    {"decision": "GR-06 deferred to Phase 196", "rationale": "census 0 secret-referencing lines in all seven unparsed forms; user accept", "phase": "195"},
+    {"decision": "Linear-time floor 40 -> 250 ms", "rationale": "shared runner measured 51-95 ms on linear inputs; quadratic still takes seconds", "phase": "195"},
+    {"decision": "Reopen only REL-03 in REQUIREMENTS.md", "rationale": "other seven phase requirements verified unchanged", "phase": "195"}
+  ],
+  "uncommitted_files": [
+    "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt",
+    "?? .planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push2-195.txt"
+  ],
+  "next_action": "/gsd-plan-phase 195 --gaps --ws quality-ratchet-release",
+  "context_notes": "Masker is an enumerated denylist; recommended making round 3 structural: keyword-driven key names, inventory-seeded rows per repo secret name, fuzzed linear-time across all rules. Gate every commit/push on the privacy scan's exit code."
+}
