@@ -42,7 +42,7 @@ defmodule Crosswake.Policy.FiniteProductTest do
         }
 
         errors = Validator.validate([route], [%{}], host_commands: [])
-        assert pairs(errors) == expected_pairs(semantic_keys(policy), id), inspect(policy)
+        assert pairs(errors) == expected_pairs(semantic_keys(policy), id)
         completed + 1
       end)
 
@@ -60,7 +60,8 @@ defmodule Crosswake.Policy.FiniteProductTest do
       |> Enum.reduce(0, fn {policy, index}, completed ->
         id = "compiled-#{index}"
         {runtime, offline, entry, security, sync} = policy
-        options = [id: id, runtime: runtime, offline: offline, entry: entry, sync: sync]
+        options = [id: id, runtime: runtime, offline: offline, entry: entry]
+        options = if sync == [], do: options, else: options ++ [sync: sync]
         options = if is_nil(security), do: options, else: options ++ [security: security]
 
         # Route.new rejects external islands before semantic aggregation can run.
@@ -75,7 +76,7 @@ defmodule Crosswake.Policy.FiniteProductTest do
             {:error, %{errors: errors, warnings: []}} -> pairs(errors)
           end
 
-        assert actual == expected_pairs(keys, id), inspect(policy)
+        assert actual == expected_pairs(keys, id)
         completed + 1
       end)
 

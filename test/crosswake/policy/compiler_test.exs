@@ -27,6 +27,7 @@ defmodule Crosswake.Policy.CompilerTest do
       assert {:error, %{errors: errors}} =
                Compiler.compile([route("/synthetic", crosswake: options)])
 
+      assert errors != []
       assert Enum.sort(Enum.map(errors, &{&1.key, &1.route_id})) == Enum.sort(expected)
       assert Enum.all?(errors, &(is_atom(&1.key) and not is_nil(&1.key)))
     end
@@ -60,7 +61,11 @@ defmodule Crosswake.Policy.CompilerTest do
   end
 
   defp provenance_route(index, options) do
-    route("/synthetic/#{index}", helper: "synthetic_#{index}", verb: :post, crosswake: options)
+    route("/synthetic/#{index}",
+      helper: "synthetic_#{index}",
+      verb: Enum.at([:get, :post, :put, :delete], index - 1),
+      crosswake: options
+    )
     |> Map.put(:source, %{file: "synthetic_#{index}.ex", line: 10 + index})
   end
 
