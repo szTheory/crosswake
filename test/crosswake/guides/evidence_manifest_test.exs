@@ -92,6 +92,7 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
     end)
   end
 
+  @tag :generated_manifest
   test "generated route-tour manifest is valid when a manifest path is provided" do
     case System.get_env("CROSSWAKE_EVIDENCE_MANIFEST_PATH") do
       nil ->
@@ -102,6 +103,76 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
 
         assert validate_manifest(manifest, Path.dirname(manifest_path)) == :ok
     end
+  end
+
+  @tag :optional_manifest_control
+  test "unrequested generated proof is excluded while committed proof executes" do
+    {output, exit} = manifest_consumer(nil)
+    assert exit == 0, "optional manifest: disabled consumer failed"
+    assert output =~ "3 excluded", "optional manifest: disabled proof was not excluded"
+    assert output =~ "0 failures", "optional manifest: committed proof failed"
+  end
+
+  @tag :optional_manifest_control
+  test "requested invalid manifests fail in the actual subprocess consumer" do
+    root = Path.join(System.tmp_dir!(), "manifest-controls-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(root)
+    on_exit(fn -> File.rm_rf!(root) end)
+    manifest = read_manifest!(@example_manifest)
+    captured = Enum.find(manifest["routes"], &(&1["status"] == "captured"))
+
+    controls = [
+      {"empty-path", "", "path_required"},
+      {"missing-path", nil, "file_required"},
+      {"empty-file", "", "json_required"},
+      {"malformed", "sensitive-probe-value", "json_required"},
+      {"wrong-root", "[]", "root_required"},
+      {"wrong-manifest", Jason.encode!(%{"sensitive-probe-value" => true}), "invalid_manifest"},
+      {"wrong-version",
+       Jason.encode!(%{manifest | "crosswake_version" => "sensitive-probe-value"}),
+       "invalid_manifest"},
+      {"zero-routes", Jason.encode!(%{manifest | "routes" => []}), "routes_required"},
+      {"wrong-route", Jason.encode!(%{manifest | "routes" => [false]}), "invalid_manifest"},
+      {"zero-captures",
+       Jason.encode!(%{
+         manifest
+         | "routes" => Enum.reject(manifest["routes"], &(&1["status"] == "captured"))
+       }), "captures_required"},
+      {"zero-artifacts",
+       Jason.encode!(%{manifest | "routes" => [%{captured | "artifacts" => []}]}),
+       "artifacts_required"},
+      {"missing-artifact", Jason.encode!(%{manifest | "routes" => [captured]}),
+       "artifact_required"}
+    ]
+
+    for {label, contents, diagnostic} <- controls do
+      path = if label == "empty-path", do: "", else: Path.join(root, label <> ".json")
+      if contents && path != "", do: File.write!(path, contents)
+      {output, exit} = manifest_consumer(path)
+      assert exit == 2, "optional manifest: #{label} did not fail its assertion"
+
+      assert output =~ "generated_manifest: #{diagnostic}",
+             "optional manifest: #{label} diagnostic missing"
+
+      refute output =~ "sensitive-probe-value", "optional manifest: input leaked"
+      refute output =~ root, "optional manifest: artifact path leaked"
+    end
+  end
+
+  defp manifest_consumer(path) do
+    paths = Enum.flat_map(:code.get_path(), fn path -> ["-pa", to_string(path)] end)
+
+    script = """
+    Application.load(:crosswake)
+    Code.require_file("test/test_helper.exs")
+    ExUnit.configure(exclude: ExUnit.configuration()[:exclude] ++ [optional_manifest_control: true])
+    Code.require_file("test/crosswake/guides/evidence_manifest_test.exs")
+    """
+
+    System.cmd(System.find_executable("elixir"), ["--erl", "+S 2:2"] ++ paths ++ ["-e", script],
+      env: [{"CROSSWAKE_EVIDENCE_MANIFEST_PATH", path}],
+      stderr_to_stdout: true
+    )
   end
 
   test "allowed labels are literal capability-map and proof-posture vocabulary" do
