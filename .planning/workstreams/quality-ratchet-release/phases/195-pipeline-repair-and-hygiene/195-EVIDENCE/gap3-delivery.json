@@ -389,11 +389,11 @@
     "synthetic": "86bc26ca1fc60a9bd9204f655cefc2b442100555",
     "runId": 40449366324,
     "merge": {
-      "answer": "pending",
+      "answer": "allow",
       "consumed": false
     },
     "deletion": {
-      "answer": "pending",
+      "answer": "allow",
       "consumed": false
     }
   },
