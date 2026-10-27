@@ -1,7 +1,7 @@
 defmodule Crosswake.RescueBoundaries do
   @moduledoc false
   @families ~w(bridge policy router offline manifest compatibility)
-  @record_file "script/fixtures/rescue_boundary_exceptions.exs"
+  @boundary_file "lib/crosswake/compatibility/route_gate.ex"
 
   def main(args) do
     {opts, rest, invalid} =
@@ -91,7 +91,7 @@ defmodule Crosswake.RescueBoundaries do
         record_errors ++
         parse_errors ++
         Enum.map(unmatched, &finding(&1.file, "broad_rescue")) ++
-        Enum.map(stale, fn _ -> finding(@record_file, "rescue_exception_mismatch") end)
+        Enum.map(stale, fn _ -> finding(@boundary_file, "rescue_exception_mismatch") end)
 
     %{
       schema_version: 1,
@@ -157,7 +157,7 @@ defmodule Crosswake.RescueBoundaries do
       {Enum.map(records, &Map.update!(&1, :clause, fn clause -> normalize_clause(clause) end)),
        []}
     else
-      _ -> {[], [finding(@record_file, "rescue_exception_mismatch")]}
+      _ -> {[], [finding(@boundary_file, "rescue_exception_mismatch")]}
     end
   end
 
