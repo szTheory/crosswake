@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 14
-status: in_progress
-stopped_at: Completed196-13;196-14 next under live aggregate budget
+status: blocked
+stopped_at: 196-14 terminal full-baseline timeout; SPEC-04 pending
 last_updated: "2026-10-27"
-state_head: c5de913f53f766fb1a8182fab2d8f085aabd1424
+state_head: a4aab342ebebc785e1705e6b3501d496bdfb5664
 progress:
   total_phases: 6
   completed_phases: 2
@@ -15,24 +15,24 @@ progress:
   percent: 91
 current_phase: 196
 current_phase_name: Spec and structure ratchet
-last_activity_desc: Plan13 complete;useful real report and5/5 controls;236 clean tests
+last_activity_desc: Full baseline timed out without report; restored compile and236 tests passed
 ---
 
 ## Current Position
 
 Current Plan:14. Total Plans in Phase:17. Progress:[█████████░]91%(43/47 plans).
-Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active phase196:13/17 complete. Plan13 official no-tce attempt captured271killed+4survived+50invalid+6equivalent=331,zero timeout/uncovered;five actual kill/survive pairs accepted. Exact restoration and236 clean selected tests passed. Attempt1 terminal evidence remains byte-preserved. All eight phase requirements and GR-06 remain pending.
+Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active phase196:13/17 complete;14 halted. Full uncapped five-file baseline reached the conserved deadline: SIGKILL,timeout,no report or output. Finally restored all source/test bytes;forced compile and236 tests,0 failures passed. Aggregate1805831.652125001ms includes5831.652125001ms cleanup overrun. Both earlier attempts and5/5 accepted controls remain preserved. All eight phase requirements and GR-06 remain pending.
 
 ## Exact Next Action
 
-`$gsd-execute-phase 196 --ws quality-ratchet-release` resumes196-14 only. Read196-EVIDENCE/muex-attempt2/protocol.json and controls-result.json,not the retained attempt1 canonical protocol. Same monotonic timer carries340269.58370900154ms into1800000ms total;controls receipt left1032328.8434579372ms. Compute live remaining from protocol before any tool command;never reset. Do not repeat01-13. Full uncapped five-file baseline/classification/adopt-drop remain14;timeout/exhaustion is terminal incomplete,pending SPEC-04.
+No execution command is eligible. Plans196-15 through196-17 are blocked;do not rerun the terminal baseline or reset its clock. Reopening condition:explicit recorded roadmap disposition for pending SPEC-04 under D-03/D-24. Proposed but unapplied:move SPEC-04 to v29 preserving full criteria and both attempts. No automatic deferral,adopt/drop or new attempt is authorized by this failure. Read196-14-SUMMARY.md and196-EVIDENCE/muex-baseline/result.json before resolving.
 
 ## Carried debt
 
-WINDOWS43/44 resolved by useful capture and executed controls;40/41/42 and SPEC-05/ARCH-02 review flags remain. Collection default stays report-only until15;promotion and required CI pending. Cleanroom WR-04/05/06 and IN-03 stay with197;adopter lane parked. Metrics,decisions,commands and hashes live in13-SUMMARY. Branch fix/spec-structure-ratchet;no external delivery.
+WINDOWS46/47 record missing full coverage and blocked classification/decision;43/44 remain resolved by useful bootstrap/controls. WINDOWS40/41/42/45 and SPEC-05/ARCH-02 review flags remain. Collection default stays report-only;promotion and required CI pending. Cleanroom WR-04/05/06 and IN-03 stay with197;adopter lane parked. Commands,hashes and measured actuals live in14-SUMMARY. Branch fix/spec-structure-ratchet;no external delivery.
 
 ## Session
 
 **Last session:**2026-10-27
-**Stopped at:**Completed196-13;196-14 next under same live timer
-**Resume file:**.planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-13-SUMMARY.md
+**Stopped at:**196-14 halted;no eligible command pending explicit SPEC-04 disposition
+**Resume file:**.planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-14-SUMMARY.md
