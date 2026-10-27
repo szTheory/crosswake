@@ -192,6 +192,12 @@ const otherSpecs = {
   'swift-reply': [{ suite: 'BridgeReplyLegTests', symbol: 'test_committed_vectors_agree_with_the_shipped_landing_pad_name',
     kind: 'behavioral', resource: sharedResource, collection: 'reply_leg_vectors', loaded: 2, completed: 2,
     controls: ['missing', 'removed', 'empty', 'all-suppressed'] }],
+  'swift-metadata': [
+    { suite: 'ActivationConformanceTests', symbol: 'test_activation_success_resolves_to_liveView', completed: 14 },
+    { suite: 'OfflineIslandAdmissionTests', symbol: 'test_offline_island_route_resolves_to_offlineIsland_presentation', completed: null },
+    { suite: 'Phase180TwinFeasibilityTests', symbol: 'test_G3_invariant_activation_does_not_manufacture_registered_host_command', completed: null },
+  ].map(spec => ({ ...spec, readerSymbol: 'setUpWithError', kind: 'metadata-only', resource: sharedResource,
+    collection: 'vectors', loaded: 15, controls: ['missing', 'removed', 'empty'] })),
 };
 function otherPopulation(bytes, spec) {
   assert.ok(bytes, 'missing-input');
@@ -330,7 +336,7 @@ function otherFull(mode) {
       assert.equal(hash(readFileSync(ownerPath)), hash(source), 'owner-restoration-failed');
       after = otherConsumer(spec, 'pass');
     }
-    readers.push({ owner, symbol: spec.symbol, kind: spec.kind, resource: spec.resource,
+    readers.push({ owner, symbol: spec.readerSymbol ?? spec.symbol, testSymbol: spec.symbol, kind: spec.kind, resource: spec.resource,
       loaded: spec.loaded, completed: spec.completed, selectionControl: spec.kind === 'metadata-only' ? 'not-applicable-no-filter' : 'applicable',
       resourceSha256: hash(original), ownerSha256: hash(source), before, controls, restoration: { byteExact: true, after } });
   }
