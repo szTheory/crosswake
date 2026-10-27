@@ -198,12 +198,22 @@ const otherSpecs = {
     { suite: 'Phase180TwinFeasibilityTests', symbol: 'test_G3_invariant_activation_does_not_manufacture_registered_host_command', completed: null },
   ].map(spec => ({ ...spec, readerSymbol: 'setUpWithError', kind: 'metadata-only', resource: sharedResource,
     collection: 'vectors', loaded: 15, controls: ['missing', 'removed', 'empty'] })),
+  'swift-topology': [{ suite: 'NavigationCoordinatorTests', symbol: 'testCompiledRootRequiresResolverAuthorization',
+    kind: 'behavioral', resource: 'priv/contract_vectors/navigation_topology_vectors.json', collection: 'vectors',
+    loaded: 5, selected: 1, completed: 1, selectedID: 'synthetic_authorized_root',
+    controls: ['missing', 'removed', 'empty', 'selected-id-loss', 'duplicate-selected-id'] }],
 };
+function topologySelection(vectors, spec) {
+  const selected = vectors.filter(v => v.id === spec.selectedID).slice(0, 1);
+  assert.equal(selected.length, spec.selected, 'selected-count');
+  return selected;
+}
 function otherPopulation(bytes, spec) {
   assert.ok(bytes, 'missing-input');
   const vectors = JSON.parse(bytes)[spec.collection];
   assert.ok(Array.isArray(vectors), 'missing-collection');
   assert.equal(vectors.length, spec.loaded, 'loaded-count');
+  if (spec.selectedID) topologySelection(vectors, spec);
   assert.equal(new Set(vectors.map(v => v.id)).size, spec.loaded, 'duplicate-ids');
   if (spec.kind === 'metadata-only') assert.equal(spec.completed, null, 'metadata-execution-not-applicable');
   else assert.equal(spec.completed, spec.suite === 'BridgeReplyLegTests' ? 2 : 1, 'completed-count');
@@ -225,8 +235,13 @@ function otherQuick(mode) {
       } else {
         assert.throws(() => otherPopulation(bytes, { ...spec, completed: 0 }), /completed-count/);
         const requireCompleted = selected => assert.equal(selected.length, spec.completed, 'completed-count');
-        requireCompleted(corpus[spec.collection]);
+        requireCompleted(spec.selectedID ? topologySelection(corpus[spec.collection], spec) : corpus[spec.collection]);
         assert.throws(() => requireCompleted(corpus[spec.collection].filter(() => false)), /completed-count/);
+        if (spec.selectedID) {
+          assert.throws(() => topologySelection(corpus[spec.collection].map(v => ({ ...v, id: 'synthetic-unselected' })), spec), /selected-count/);
+          const duplicate = corpus[spec.collection].map((v, i) => i === 1 ? { ...v, id: spec.selectedID } : v);
+          assert.throws(() => topologySelection(duplicate, spec), /selected-count/);
+        }
       }
     }
   });
@@ -320,7 +335,14 @@ function otherFull(mode) {
             writeFileSync(ownerPath, mutated);
             expected = 'completed';
           } else {
-            const vectors = control === 'removed' ? corpus[spec.collection].slice(1) : [];
+            let vectors;
+            if (control === 'selected-id-loss') {
+              vectors = corpus[spec.collection].map(v => v.id === spec.selectedID ? { ...v, id: 'synthetic-unselected' } : v);
+              expected = 'selected';
+            } else if (control === 'duplicate-selected-id') {
+              vectors = corpus[spec.collection].map((v, i) => i === 1 ? { ...v, id: spec.selectedID } : v);
+              expected = 'selected';
+            } else vectors = control === 'removed' ? corpus[spec.collection].slice(1) : [];
             writeFileSync(path, JSON.stringify({ ...corpus, [spec.collection]: vectors }));
           }
           const resourceHash = existsSync(path) ? hash(readFileSync(path)) : null;
@@ -337,7 +359,8 @@ function otherFull(mode) {
       after = otherConsumer(spec, 'pass');
     }
     readers.push({ owner, symbol: spec.readerSymbol ?? spec.symbol, testSymbol: spec.symbol, kind: spec.kind, resource: spec.resource,
-      loaded: spec.loaded, completed: spec.completed, selectionControl: spec.kind === 'metadata-only' ? 'not-applicable-no-filter' : 'applicable',
+      loaded: spec.loaded, ...(spec.selected ? { selected: spec.selected } : {}), completed: spec.completed,
+      selectionControl: spec.kind === 'metadata-only' ? 'not-applicable-no-filter' : 'applicable',
       resourceSha256: hash(original), ownerSha256: hash(source), before, controls, restoration: { byteExact: true, after } });
   }
   const receiptPath = resolve(root, phase, '196-EVIDENCE/swift-other-vectors.json');
