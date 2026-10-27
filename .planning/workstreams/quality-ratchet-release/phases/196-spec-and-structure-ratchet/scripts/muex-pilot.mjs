@@ -186,7 +186,12 @@ function baselineRequest(p, now, terminal, output) {
   assert(remaining(p, now) > 0, 'budget-exhausted');
   return argumentsFor(targets, output).slice(1);
 }
-function evaluateDecision() { return null; }
+function evaluateDecision({ complete, classified, controls, infrastructure, aggregateMs, summary }) {
+  const denominator = summary.total - summary.equivalent;
+  if (!complete || !classified || !controls || infrastructure || summary.timeout > 0 || denominator <= 0 || !Number.isFinite(aggregateMs)) return { verdict: 'pending' };
+  const noise = (summary.invalid + summary.no_coverage) / denominator;
+  return { verdict: aggregateMs <= 1800000 && noise <= 0.2 ? 'adopt-advisory' : 'drop', noise };
+}
 const command = process.argv[2];
 if (command === 'bootstrap') await bootstrap();
 else if (command === 'controls') await controls();
@@ -484,4 +489,42 @@ async function baseline() {
     assert.equal(git('status', '--porcelain', '--', ...files), '', 'restoration-dirty');
     json(output, receipt); console.log(JSON.stringify({ status: receipt.status, reason: receipt.reason, summary: receipt.summary, aggregateElapsedMs: receipt.aggregateElapsedMs, cleanTests: receipt.cleanTests }));
   }
+}
+
+async function decision() {
+  const p = validateProtocol(JSON.parse(readFileSync(protocolPath)));
+  const result = JSON.parse(readFileSync(`${evidence}/muex-baseline/result.json`));
+  assert.notEqual(result.status, 'running', 'baseline-still-running');
+  assert.equal(result.attempt, p.attempt, 'wrong-attempt');
+  assert.equal(result.protocolSha256, digest(readFileSync(protocolPath)), 'protocol-changed');
+  const decisionPath = `${evidence}/MUEX-DECISION.md`; fresh(decisionPath);
+  if (result.status !== 'captured') {
+    writeFileSync(decisionPath, `# Muex pilot: pending\n\nThe full five-file baseline is terminal-incomplete: ${result.reason}. SPEC-04 remains pending. No adopt/drop verdict or complete survivor ledger is possible. Plans196-15 through196-17 remain blocked.\n\nAggregate elapsed at baseline cleanup: ${result.aggregateElapsedMs}ms, including carried attempt1 ${p.carriedMs}ms. Source restoration: ${result.restored === true}; clean selected tests: ${result.cleanTests?.tests ?? 'unproven'}, failures: ${result.cleanTests?.failures ?? 'unproven'}.\n\nNo new attempt, retry, recurring lane or automatic roadmap deferral is authorized by this result. Proposed explicit overrun route: move SPEC-04 to v29 through a separately recorded roadmap decision while preserving D-20..24 and both attempts. That change has not been approved or applied.\n`);
+    console.log(JSON.stringify({ verdict: 'pending', reason: result.reason, requirement: 'SPEC-04 pending' })); process.exitCode = 1; return;
+  }
+  const reportPath = `${evidence}/muex-baseline/report.json`;
+  assert.equal(digest(readFileSync(reportPath)), result.reportSha256, 'report-changed');
+  assert(result.restored && result.cleanTests?.tests === 236 && result.cleanTests?.failures === 0, 'restoration-unproven');
+  const parsed = adapt(JSON.parse(readFileSync(reportPath)), targets);
+  const ledgerPath = `${evidence}/muex-survivors.json`;
+  const survivors = parsed.records.filter(m => m.status === 'survived');
+  if (!existsSync(ledgerPath)) {
+    json(ledgerPath, { schema: 'crosswake-muex-survivors/1', reportSha256: result.reportSha256, survivors: survivors.map(m => ({ identity: m.identity, file: m.location.file, mutator: m.mutator, before: normalizePatch(m.patch.before), after: normalizePatch(m.patch.after), classification: 'unclassified', reason: 'Requires source and assertion review before acceptance.' })) });
+    assert(survivors.length === 0, 'survivors-unclassified');
+  }
+  const ledger = JSON.parse(readFileSync(ledgerPath));
+  assert.equal(ledger.reportSha256, result.reportSha256); assert.equal(ledger.survivors.length, survivors.length);
+  assert.equal(new Set(ledger.survivors.map(m => m.identity)).size, survivors.length, 'ledger-collision');
+  for (const m of survivors) {
+    const row = ledger.survivors.find(v => v.identity === m.identity); assert(row, 'missing-survivor');
+    assert.deepEqual([row.file, row.mutator, row.before, row.after], [m.location.file, m.mutator, normalizePatch(m.patch.before), normalizePatch(m.patch.after)], 'identity-changed');
+    assert(['missing behavioral assertion', 'equivalent', 'tool/infrastructure noise'].includes(row.classification), 'survivors-unclassified');
+    assert(typeof row.reason === 'string' && row.reason.trim().length > 15, 'reason-missing');
+  }
+  const controls = JSON.parse(readFileSync(`${attemptDir}/controls-result.json`));
+  assert.equal(digest(readFileSync(`${attemptDir}/controls-result.json`)), result.controlsSha256);
+  const verdict = evaluateDecision({ complete: true, classified: true, controls: controls.status === 'accepted' && controls.pairs.length === 5, infrastructure: false, aggregateMs: p.carriedMs + monotonic() - p.startedMonotonicMs, summary: parsed.summary });
+  assert.notEqual(verdict.verdict, 'pending', 'decision-incomplete');
+  writeFileSync(decisionPath, `# Muex pilot: ${verdict.verdict}\n\nFull uncapped five-file baseline, five discriminating control pairs, exact restoration and236 clean tests are verified. All ${survivors.length} survivors have one stable identity and reasoned classification in muex-survivors.json.\n\nOperational noise: (${parsed.summary.invalid}+${parsed.summary.no_coverage})/(${parsed.summary.total}-${parsed.summary.equivalent}) = ${verdict.noise}. Aggregate elapsed through decision: ${p.carriedMs + monotonic() - p.startedMonotonicMs}ms. Appetite: <=1800000ms and <=0.2 noise. No mutation-score threshold.\n\nPer-file categories, low/high scores and mutation duration sums are retained in muex-baseline/result.json. Pinned tool/protocol/source/test hashes and complete original report are retained. This verdict permits only later local advisory consideration; it adds no recurring infrastructure, dependency or CI lane.\n`);
+  console.log(JSON.stringify(verdict));
 }
