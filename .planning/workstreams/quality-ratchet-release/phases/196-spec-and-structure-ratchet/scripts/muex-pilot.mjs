@@ -186,10 +186,37 @@ function baselineRequest(p, now, terminal, output) {
   assert(remaining(p, now) > 0, 'budget-exhausted');
   return argumentsFor(targets, output).slice(1);
 }
+function evaluateDecision() { return null; }
 const command = process.argv[2];
 if (command === 'bootstrap') await bootstrap();
 else if (command === 'controls') await controls();
 else if (command === 'baseline') await baseline();
+else if (command === 'decision') await decision();
+else if (command === 'quick' && process.argv[3] === 'decision') {
+  test('decision boundaries preserve pending and exact operational appetite', () => {
+    const report = capturedFixture(); const summary = report.summary;
+    const good = { complete: true, classified: true, controls: true, infrastructure: false, aggregateMs: 1800000, summary };
+    assert.deepEqual(evaluateDecision(good), { verdict: 'adopt-advisory', noise: (summary.invalid + summary.no_coverage) / (summary.total - summary.equivalent) });
+    const boundary = { ...good, summary: { ...summary, total: 11, equivalent: 1, invalid: 2, no_coverage: 0 } };
+    assert.equal(evaluateDecision(boundary).noise, 0.2);
+    assert.equal(evaluateDecision(boundary).verdict, 'adopt-advisory');
+    assert.equal(evaluateDecision({ ...boundary, summary: { ...boundary.summary, no_coverage: 1 } }).verdict, 'drop');
+    assert.equal(evaluateDecision({ ...good, aggregateMs: 1800000.001 }).verdict, 'drop');
+    assert.equal(evaluateDecision({ ...good, summary: { ...summary, total: 6, equivalent: 6 } }).verdict, 'pending');
+    for (const change of [{ complete: false }, { classified: false }, { controls: false }, { infrastructure: true }, { summary: { ...summary, timeout: 1 } }]) assert.equal(evaluateDecision({ ...good, ...change }).verdict, 'pending');
+  });
+  test('survivor identities preserve real strings tokens and collision distinctions', () => {
+    const report = capturedFixture(); const parsed = adapt(report);
+    assert(parsed.records.some(m => m.status === 'survived'));
+    assert.equal(new Set(parsed.records.map(m => m.identity)).size, parsed.records.length);
+    const repeated = structuredClone(report); const survivor = repeated.mutations.find(m => m.status === 'survived');
+    repeated.mutations.push(structuredClone(survivor)); repeated.summary.total++; repeated.summary.survived++;
+    const same = adapt(repeated).records.filter(m => m.patch?.before === survivor.patch.before && m.patch?.after === survivor.patch.after && m.mutator === survivor.mutator);
+    assert.equal(new Set(same.map(m => m.identity)).size, same.length);
+    assert.notEqual(normalizePatch('"a b"'), normalizePatch('"ab"')); assert.notEqual(normalizePatch('foo bar'), normalizePatch('foobar'));
+    survivor.patch.before = ''; assert.throws(() => adapt(repeated), /unresolved-patch/);
+  });
+}
 else if (command === 'quick' && process.argv[3] === 'baseline') {
   test('full baseline selection and terminal budget refusal discriminate', () => {
     const p = validateProtocol(JSON.parse(readFileSync(protocolPath)));
