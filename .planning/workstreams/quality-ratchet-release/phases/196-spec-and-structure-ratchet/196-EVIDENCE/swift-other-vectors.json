@@ -787,6 +787,426 @@
         }
       ],
       "durationMs": 311517
+    },
+    "swift-topology": {
+      "helperSha256": "3d21604b2f70c1c6732c2d75f035422a119deaebb4d5acc916e38ccf12cfc374",
+      "readers": [
+        {
+          "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/NavigationCoordinatorTests.swift",
+          "symbol": "testCompiledRootRequiresResolverAuthorization",
+          "testSymbol": "testCompiledRootRequiresResolverAuthorization",
+          "kind": "behavioral",
+          "resource": "priv/contract_vectors/navigation_topology_vectors.json",
+          "loaded": 5,
+          "selected": 1,
+          "completed": 1,
+          "selectionControl": "applicable",
+          "resourceSha256": "eb5473bfcb4cb452fe86098823ac7024d12a19ef3bc8743e921c90e93122afe1",
+          "ownerSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414",
+          "before": [
+            {
+              "command": "swift",
+              "args": [
+                "package",
+                "clean"
+              ],
+              "cwd": "packages/crosswake-shell-core-ios",
+              "exit": 0,
+              "durationMs": 441,
+              "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "command": "swift",
+              "args": [
+                "test",
+                "--filter",
+                "NavigationCoordinatorTests"
+              ],
+              "cwd": "packages/crosswake-shell-core-ios",
+              "exit": 0,
+              "durationMs": 16282,
+              "outputSha256": "2e5030092d7a1775c589476cedbe7009aceafc94a716cb8abf88b378b7352631",
+              "tests": {
+                "discovered": 7,
+                "skipped": 0,
+                "failures": 0
+              }
+            }
+          ],
+          "controls": [
+            {
+              "control": "missing",
+              "expected": "missing",
+              "resourceSha256": null,
+              "ownerSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414",
+              "processes": [
+                {
+                  "command": "swift",
+                  "args": [
+                    "package",
+                    "clean"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 0,
+                  "durationMs": 403,
+                  "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "command": "swift",
+                  "args": [
+                    "test",
+                    "--filter",
+                    "NavigationCoordinatorTests"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 1,
+                  "durationMs": 16020,
+                  "outputSha256": "5c3d2db88570d81a41eeea2508eea7cfe1d19630eda0452dbd33f578a6d8a511",
+                  "tests": {
+                    "discovered": 7,
+                    "skipped": 0,
+                    "failures": 1
+                  }
+                }
+              ]
+            },
+            {
+              "control": "removed",
+              "expected": "loaded",
+              "resourceSha256": "41e32ba16933475e1f6ea85e93c7e0e405de923647d7ced635ef2e23a2753289",
+              "ownerSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414",
+              "processes": [
+                {
+                  "command": "swift",
+                  "args": [
+                    "package",
+                    "clean"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 0,
+                  "durationMs": 432,
+                  "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "command": "swift",
+                  "args": [
+                    "test",
+                    "--filter",
+                    "NavigationCoordinatorTests"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 1,
+                  "durationMs": 16091,
+                  "outputSha256": "a68ed5194d5960e700d6179cb5aab24eaec4a3bbfe823acf965e65af8f620938",
+                  "tests": {
+                    "discovered": 7,
+                    "skipped": 0,
+                    "failures": 1
+                  }
+                }
+              ]
+            },
+            {
+              "control": "empty",
+              "expected": "loaded",
+              "resourceSha256": "bc549525fcc7f5030d2f41ece56af1d7d2636720eeff9ab9533dd7b9cd3f2086",
+              "ownerSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414",
+              "processes": [
+                {
+                  "command": "swift",
+                  "args": [
+                    "package",
+                    "clean"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 0,
+                  "durationMs": 434,
+                  "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "command": "swift",
+                  "args": [
+                    "test",
+                    "--filter",
+                    "NavigationCoordinatorTests"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 1,
+                  "durationMs": 17147,
+                  "outputSha256": "6ecfe5f7a6aa74ed7dc8cf68479f843bc227810c3ac0c84c8309c882b2074c91",
+                  "tests": {
+                    "discovered": 7,
+                    "skipped": 0,
+                    "failures": 1
+                  }
+                }
+              ]
+            },
+            {
+              "control": "selected-id-loss",
+              "expected": "selected",
+              "resourceSha256": "7631e21ca5d430d086ad7a52a028af4b2e025bc688d1e9cae000fc36d4424f82",
+              "ownerSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414",
+              "processes": [
+                {
+                  "command": "swift",
+                  "args": [
+                    "package",
+                    "clean"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 0,
+                  "durationMs": 391,
+                  "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "command": "swift",
+                  "args": [
+                    "test",
+                    "--filter",
+                    "NavigationCoordinatorTests"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 1,
+                  "durationMs": 17031,
+                  "outputSha256": "8091262dbed4226b75c4a41d5854ea266d0d6443fd786a4e546ffbe305cfb560",
+                  "tests": {
+                    "discovered": 7,
+                    "skipped": 0,
+                    "failures": 1
+                  }
+                }
+              ]
+            },
+            {
+              "control": "duplicate-selected-id",
+              "expected": "selected",
+              "resourceSha256": "6da6ee109fc82688376380209179b275233d026f7068f4d89d286c8813fb1723",
+              "ownerSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414",
+              "processes": [
+                {
+                  "command": "swift",
+                  "args": [
+                    "package",
+                    "clean"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 0,
+                  "durationMs": 409,
+                  "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "command": "swift",
+                  "args": [
+                    "test",
+                    "--filter",
+                    "NavigationCoordinatorTests"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-ios",
+                  "exit": 1,
+                  "durationMs": 17954,
+                  "outputSha256": "fb7ae90205521b95081f655b0051166ed347a0704313805d6f1c765a6a4e68ba",
+                  "tests": {
+                    "discovered": 7,
+                    "skipped": 0,
+                    "failures": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "restoration": {
+            "byteExact": true,
+            "after": [
+              {
+                "command": "swift",
+                "args": [
+                  "package",
+                  "clean"
+                ],
+                "cwd": "packages/crosswake-shell-core-ios",
+                "exit": 0,
+                "durationMs": 441,
+                "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "command": "swift",
+                "args": [
+                  "test",
+                  "--filter",
+                  "NavigationCoordinatorTests"
+                ],
+                "cwd": "packages/crosswake-shell-core-ios",
+                "exit": 0,
+                "durationMs": 16039,
+                "outputSha256": "05964e1fe88f4dc88ca1fe908a6873f1529fc1076efe0915e88b1dfd7ddaaf4a",
+                "tests": {
+                  "discovered": 7,
+                  "skipped": 0,
+                  "failures": 0
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "durationMs": 119524
     }
-  }
+  },
+  "inventory": [
+    {
+      "owner": "test/crosswake/bridge/bridge_behavioral_vector_test.exs",
+      "symbol": "BridgeVectorBehavioralTest",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors.json",
+      "verification": "196-03",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "4f84721eeeccebb50abc3f3e87e3b92161f048fb9b2089252cc0c5ba605c314e"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift",
+      "symbol": "BridgeConformanceTests",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors",
+      "verification": "196-03",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "1a354799ec43a8c2aadc142a2336fe14a192583dbb4a424666bc951dfc16d295"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeReplyLegTests.swift",
+      "symbol": "BridgeReplyLegTests",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "0b94155aead94c3316a8a3a8c4a768fa57e7f3276d54c02ff06208f8506f31af"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/NavigationCoordinatorTests.swift",
+      "symbol": "testCompiledRootRequiresResolverAuthorization",
+      "kind": "behavioral",
+      "input": "navigation_topology_vectors.json",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/ActivationConformanceTests.swift",
+      "symbol": "setUpWithError",
+      "kind": "metadata-only",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "083d62ea3dfa3ed10ba58c33e3192c0cc7efb036d1084ea0830a74582acd2ff4"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/OfflineIslandAdmissionTests.swift",
+      "symbol": "setUpWithError",
+      "kind": "metadata-only",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "addb1bd8ae99f4adda0425498413cbd626a5a4ff2e1cf1f45b4d916d0bae07a4"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift",
+      "symbol": "setUpWithError",
+      "kind": "metadata-only",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "8849c4dc38ccf4e0db7666e14c25536efe530a4a9a5a6f48799daa7c9f097df5"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeConformanceTest.kt",
+      "symbol": "BridgeConformanceTest",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors.json",
+      "verification": "196-05-pending",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "df5c0c1037fd63d2fec335fc3b877ce6124b62e25b0c9e3c91b178a19b0da6d2"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeReplyLegTest.kt",
+      "symbol": "replyLegVector",
+      "kind": "behavioral",
+      "input": "reply_leg_vectors",
+      "verification": "196-05-pending",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "d0e48ae00c54e4a613491a3eb465fcda9e03dc26f1e738c2c50e19b00feda9bc"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/ActivationConformanceTest.kt",
+      "symbol": "ActivationConformanceTest",
+      "kind": "metadata-only",
+      "input": "bridge_protocol_version",
+      "verification": "196-05-pending",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "c8a400a940bc06d3e6b4b2d4bd6a7617be3a32111cad99cb737ad4028280d9c9"
+    },
+    {
+      "owner": "test/crosswake/contract/contract_drift_test.exs",
+      "symbol": "@generated_json_paths",
+      "kind": "structural-integrity",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "d697fcdc07338845a405810b28c1121d887678f35b523ce4e6b3ac6c9898f574"
+    },
+    {
+      "owner": "lib/crosswake/doctor/publish_readiness.ex",
+      "symbol": "contract_version_parity_check",
+      "kind": "structural-version",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "16819b23ff21b1b98533a5ffb101ea2251387f6d9ebcad7c8bdbb6dc41d12fd8"
+    },
+    {
+      "owner": "test/crosswake/proof/phase154_recipe_followable_test.exs",
+      "symbol": "@vector_paths",
+      "kind": "structural-vocabulary",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "6f4b670a7ad7a00de9e8b11d5b8b5fe9407696643b893c3f16d01094e60ac24f"
+    },
+    {
+      "owner": "test/crosswake/proof/phase154_catalog_guard_test.exs",
+      "symbol": "CatalogGuard.bridge_sources()",
+      "kind": "structural-source-scan",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "159248a8c80ea1bcff214e2e0ca0401ed54f8aecbc91949d715b7cf62884a97a"
+    },
+    {
+      "owner": "lib/crosswake/proof_lane/navigation_shell_advisory.ex",
+      "symbol": "transition_vectors",
+      "kind": "advisory-input",
+      "input": "navigation_transition_vectors.json",
+      "verification": "not-native-execution",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "8b2615998600e5ba31050f3d28b25d93e6256b471880bffd11d093cad04ae3ec"
+    },
+    {
+      "owner": "lib/mix/tasks/crosswake.contract.gen.ex",
+      "symbol": "write_if_changed",
+      "kind": "producer-integrity",
+      "input": "bridge_contract_vectors.json",
+      "verification": "producer-not-behavioral-reader",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "ce183a0835802f11977f8aad9d7c176052c2ba9d797f24051d0b4d083d44e817"
+    },
+    {
+      "owner": "test/crosswake/proof/phase166_repository_quality_test.exs",
+      "symbol": "remediation_command",
+      "kind": "reference-only",
+      "input": "bridge_contract_vectors.json",
+      "verification": "path-inventory-not-json-reader",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "647a05df47f596976c2b8b0f0f46b81498cfc127d8f6434d415a435d455dd7c1"
+    }
+  ],
+  "inventoryScope": "Existing bridge request/reply and navigation file references; source-checked roles, no new platform or device claim. Phase198 owns set hashes and parity ledger."
 }

@@ -204,7 +204,7 @@ const otherSpecs = {
     controls: ['missing', 'removed', 'empty', 'selected-id-loss', 'duplicate-selected-id'] }],
 };
 function topologySelection(vectors, spec) {
-  const selected = vectors.filter(v => v.id === spec.selectedID).slice(0, 1);
+  const selected = vectors.filter(v => v.id === spec.selectedID);
   assert.equal(selected.length, spec.selected, 'selected-count');
   return selected;
 }
@@ -252,6 +252,7 @@ function otherQuick(mode) {
       'swift-topology': ['NavigationCoordinatorTests'],
     }[mode];
     assert.deepEqual(otherSpecs[mode].map(s => s.suite), expected, 'owner-roster');
+    if (mode === 'swift-topology') readerInventory();
     for (const spec of otherSpecs[mode]) {
       assert.equal(spec.resource, spec.suite === 'NavigationCoordinatorTests'
         ? 'priv/contract_vectors/navigation_topology_vectors.json' : sharedResource, 'reader-resource');
@@ -306,6 +307,34 @@ function otherConsumer(spec, expected) {
       }
     }
     return { ...step, exit: result.exit, durationMs: result.durationMs, outputSha256: hash(result.output), ...(tests ? { tests } : {}) };
+  });
+}
+function readerInventory() {
+  const androidTests = 'packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core';
+  const rows = [
+    ['test/crosswake/bridge/bridge_behavioral_vector_test.exs', 'BridgeVectorBehavioralTest', 'behavioral', 'bridge_contract_vectors.json', '196-03'],
+    [`${swiftTests}/BridgeConformanceTests.swift`, 'BridgeConformanceTests', 'behavioral', 'bridge_contract_vectors', '196-03'],
+    [`${swiftTests}/BridgeReplyLegTests.swift`, 'BridgeReplyLegTests', 'behavioral', 'bridge_contract_vectors', '196-04'],
+    [`${swiftTests}/NavigationCoordinatorTests.swift`, 'testCompiledRootRequiresResolverAuthorization', 'behavioral', 'navigation_topology_vectors.json', '196-04'],
+    ...['ActivationConformanceTests', 'OfflineIslandAdmissionTests', 'Phase180TwinFeasibilityTests'].map(suite =>
+      [`${swiftTests}/${suite}.swift`, 'setUpWithError', 'metadata-only', 'bridge_contract_vectors', '196-04']),
+    [`${androidTests}/BridgeConformanceTest.kt`, 'BridgeConformanceTest', 'behavioral', 'bridge_contract_vectors.json', '196-05-pending'],
+    [`${androidTests}/BridgeReplyLegTest.kt`, 'replyLegVector', 'behavioral', 'reply_leg_vectors', '196-05-pending'],
+    [`${androidTests}/ActivationConformanceTest.kt`, 'ActivationConformanceTest', 'metadata-only', 'bridge_protocol_version', '196-05-pending'],
+    ['test/crosswake/contract/contract_drift_test.exs', '@generated_json_paths', 'structural-integrity', 'bridge_contract_vectors.json', 'not-executed-by-this-plan'],
+    ['lib/crosswake/doctor/publish_readiness.ex', 'contract_version_parity_check', 'structural-version', 'bridge_contract_vectors.json', 'not-executed-by-this-plan'],
+    ['test/crosswake/proof/phase154_recipe_followable_test.exs', '@vector_paths', 'structural-vocabulary', 'bridge_contract_vectors.json', 'not-executed-by-this-plan'],
+    ['test/crosswake/proof/phase154_catalog_guard_test.exs', 'CatalogGuard.bridge_sources()', 'structural-source-scan', 'bridge_contract_vectors.json', 'not-executed-by-this-plan'],
+    ['lib/crosswake/proof_lane/navigation_shell_advisory.ex', 'transition_vectors', 'advisory-input', 'navigation_transition_vectors.json', 'not-native-execution'],
+    ['lib/mix/tasks/crosswake.contract.gen.ex', 'write_if_changed', 'producer-integrity', 'bridge_contract_vectors.json', 'producer-not-behavioral-reader'],
+    ['test/crosswake/proof/phase166_repository_quality_test.exs', 'remediation_command', 'reference-only', 'bridge_contract_vectors.json', 'path-inventory-not-json-reader'],
+  ];
+  assert.equal(rows.length, 17, 'reader-inventory-count');
+  assert.equal(new Set(rows.map(row => row[0])).size, 17, 'reader-inventory-duplicates');
+  return rows.map(([owner, symbol, kind, inputToken, verification]) => {
+    const bytes = readFileSync(resolve(root, owner));
+    assert.ok(bytes.toString().includes(symbol) && bytes.toString().includes(inputToken), 'reader-inventory-source-mismatch');
+    return { owner, symbol, kind, input: inputToken, verification, corpusVerdictExecutions: kind === 'behavioral' ? 'reader-specific-see-owner-evidence' : 'not-applicable', sourceSha256: hash(bytes) };
   });
 }
 function otherFull(mode) {
@@ -366,6 +395,10 @@ function otherFull(mode) {
   const receiptPath = resolve(root, phase, '196-EVIDENCE/swift-other-vectors.json');
   const receipt = existsSync(receiptPath) ? JSON.parse(readFileSync(receiptPath)) : { schema: 1, modes: {} };
   receipt.modes[mode] = { helperSha256: hash(readFileSync(fileURLToPath(import.meta.url))), readers, durationMs: Math.round(performance.now() - started) };
+  if (mode === 'swift-topology') {
+    receipt.inventory = readerInventory();
+    receipt.inventoryScope = 'Existing bridge request/reply and navigation file references; source-checked roles, no new platform or device claim. Phase198 owns set hashes and parity ledger.';
+  }
   writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
   process.stdout.write(`vector-controls ${mode}: ${readers.length} owners restored; ${receipt.modes[mode].durationMs}ms\n`);
 }

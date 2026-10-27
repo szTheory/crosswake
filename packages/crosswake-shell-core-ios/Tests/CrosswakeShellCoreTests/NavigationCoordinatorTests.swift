@@ -37,17 +37,28 @@ final class NavigationCoordinatorTests: XCTestCase {
     }
     func testCompiledRootRequiresResolverAuthorization() throws {
         let vectorURL = URL(fileURLWithPath: "../../priv/contract_vectors/navigation_topology_vectors.json", relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
-        let vectors = try JSONDecoder().decode(NavigationTopologyVectors.self, from: Data(contentsOf: vectorURL))
-        let topology = try XCTUnwrap(vectors.topology(for: "synthetic_authorized_root"))
-        let manifest = makeManifest(routeID: "route-0123456789abcdef")
-        let coordinator = NavigationCoordinator(topology: topology, manifest: manifest, resolver: authorize)
+        let data = try XCTUnwrap(try? Data(contentsOf: vectorURL), "CW-VECTOR-MISSING navigation_topology_vectors.json")
+        let vectors = try JSONDecoder().decode(NavigationTopologyVectors.self, from: data)
+        _ = try XCTUnwrap(vectors.vectors.count == 5 ? true : nil, "CW-VECTOR-LOADED expected 5")
+        let selected = vectors.vectors.filter { $0.id == "synthetic_authorized_root" }
+        _ = try XCTUnwrap(selected.count == 1 ? true : nil, "CW-VECTOR-SELECTED expected 1")
+        var completedIDs: [String] = []
+        for vector in selected {
+            let topology = try XCTUnwrap(vectors.topology(for: vector.id))
+            let manifest = makeManifest(routeID: "route-0123456789abcdef")
+            let coordinator = NavigationCoordinator(topology: topology, manifest: manifest, resolver: authorize)
 
-        XCTAssertEqual(coordinator.selectRoot(routeID: "route-0123456789abcdef"), .authorized)
-        XCTAssertEqual(coordinator.selectedTabID, "tab-0123456789abcdef")
-        XCTAssertEqual(coordinator.stacks["tab-0123456789abcdef"]?.count, 1)
-        XCTAssertEqual(coordinator.activeRouteID, "route-0123456789abcdef")
+            XCTAssertEqual(coordinator.selectRoot(routeID: "route-0123456789abcdef"), .authorized)
+            XCTAssertEqual(coordinator.selectedTabID, "tab-0123456789abcdef")
+            XCTAssertEqual(coordinator.stacks["tab-0123456789abcdef"]?.count, 1)
+            XCTAssertEqual(coordinator.activeRouteID, "route-0123456789abcdef")
+            completedIDs.append(vector.id)
+        }
+        XCTAssertEqual(completedIDs.count, 1, "CW-VECTOR-COMPLETED expected 1")
+        XCTAssertEqual(Set(completedIDs).count, 1, "CW-VECTOR-COMPLETED-IDS expected unique IDs")
     }
 
+    // Remaining navigation scenarios are authored inline, not loaded JSON cases.
     func testDeniedSelectionPreservesExistingState() throws {
         let topology = NavigationTopology(
             topologySchemaVersion: "1.0.0", manifestSchemaVersion: "1.0.0", status: .ready,
