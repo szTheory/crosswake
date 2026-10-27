@@ -89,7 +89,7 @@ Plans:
   4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
   5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
 
-**Plans**: 21 plans; 01–19 executed with retained summaries; round-3 REL-03 gap closure 20–21 pending in sequential waves 4–6 after completed round-2 wave 3. One main checkout.
+**Plans**: 21 plans; 01–20 executed with retained summaries; round-3 REL-03 delivery plan 21 active in sequential waves 4–6 after completed round-2 wave 3. One main checkout.
 
 Plans:
 
@@ -141,13 +141,13 @@ Plans:
 - [x] 195-17-PLAN.md — Seeds-first warnings: provider tokens, PEM bodies, userinfo/key-ID/JWT variants, query and plural keys; literal-value exemptions; 200 ms budget; GR-06 census; final controls (GR-03 to GR-05, GR-07 to GR-09)
 - [x] 195-18-PLAN.md — Land PR5 (own allow); GR-01 and GR-02 closed on main; GR dispositions recorded, GR-06 route asked separately (recommended: carry to Phase 196)
 
-**Gap closure round 3 — REL-03 (19 implemented; 20–21 pending)**
+**Gap closure round 3 — REL-03 (19–20 implemented; 21 active)**
 
 **Wave 4** *(depends on completed 195-18)*
 - [x] 195-19-PLAN.md — Structural credential identifiers, workflow-name inventory, container/armor masking and bounded whitespace performance; mandatory executed-family checks
 
 **Wave 5** *(blocked on 195-19)*
-- [ ] 195-20-PLAN.md — Exact add-mask registration, non-vacuous tail windows, diagnostic tradeoffs and remaining GAP2 regressions
+- [x] 195-20-PLAN.md — Exact add-mask registration, non-vacuous tail windows, diagnostic tradeoffs and remaining GAP2 regressions
 
 **Wave 6** *(blocked on 195-20)*
 - [ ] 195-21-PLAN.md — Independent GAP3 review, exact-head green CI, fresh per-operation approval and process-derived proof on actual main
