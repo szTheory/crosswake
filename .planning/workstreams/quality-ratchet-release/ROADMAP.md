@@ -186,7 +186,7 @@ Plans:
 - [x] 196-05-PLAN.md — Wave 5: Kotlin request, reply and metadata reader proof
 
 **Wave 6** *(ready; Wave 5 complete)*
-- [ ] 196-06-PLAN.md — Wave 6: Branch-sensitive delta-only absence guard
+- [x] 196-06-PLAN.md — Wave 6: Branch-sensitive delta-only absence guard
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 196-07-PLAN.md — Wave 7: Scope and observation privacy boundaries
@@ -273,7 +273,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 5/17 | In progress; plan06 next | - |
+| 196. Spec and structure ratchet | 6/17 | In progress; plan07 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase: 195 (21/21 plans; passed 8/8, actual-main proof on b8398c38). Active phase: 196, executing, 5/17 plans complete. Plans01-04 preserved prior records, proved strict optional/browser lanes and Elixir/Swift readers with real restored-resource controls. Plan05 proved Kotlin request15/14, reply2/2 and metadata15/N/A with12 real clean Gradle controls, exact source restoration and full JVM12/12;17 reader-role inventory rows checked; SUMMARY committed50682257. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-06-PLAN.md. Do not repeat plans01-05, completed Phase195 work or Phase196 planning. All eight Phase196 requirements, GR-06, actual guard measurements, full Muex pilot, repaired baselines and new CI results remain pending. Original cleanroom debt stays with Phase197; the adopter lane stays parked. No irreversible-operation approval transfers.
+Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,6/17 plans complete. Plans01-05 retain strict optional/browser and Elixir/Swift/Kotlin reader proof. Plan06 proved absence enforcement311 files/84 reviewed occurrences/delta0,58 root tests and35 owner tests; final capsule c3642591 was measured on actual main b8398c38 with359 subjects/89 findings and exact restoration. Capture helper33 controls passed; default collection mode stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-07-PLAN.md. Do not repeat plans01-06, completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification; other guards,full Muex pilot and new CI remain pending. Original cleanroom debt stays with Phase197; adopter lane stays parked. No irreversible-operation approval transfers.

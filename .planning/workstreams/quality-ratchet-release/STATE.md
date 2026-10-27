@@ -2,38 +2,39 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 6 of 17
+current_plan: 7 of 17
 status: executing
-stopped_at: Completed 196-05-PLAN.md; next eligible plan196-06
-last_updated: "2026-10-27T15:29:14.687Z"
-state_head: 5068225790a430a5c3f0a8a48ee46db88814f5e8
+stopped_at: Completed 196-06-PLAN.md; next eligible plan196-07
+last_updated: "2026-10-27T15:53:58.673Z"
+state_head: 010764c1f8e4d4e02e320c9f954ba1e9b7a9ed4a
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 47
-  completed_plans: 35
-  percent: 74
+  completed_plans: 36
+  percent: 77
 last_activity: 2026-10-27
 current_phase: 196
 current_phase_name: Spec and structure ratchet
-last_activity_desc: Phase196 plans01-05 complete; three Kotlin readers and12 real controls proved; plan06 next
+last_activity_desc: Phase196 plans01-06 complete; absence58 controls and final actual-main capture passed; plan07 next
 ---
 
 ## Current Position
 
-Progress: [███████░░░] 74% (35/47 plans)
-Last completed phase: 195, 21/21 plans, passed 8/8 on actual main b8398c38. Phase196 plans01-05 are complete; plan05 SUMMARY committed50682257. Kotlin request15/14, reply2/2 and metadata15/N/A passed12 real clean Gradle controls with exact byte restoration; full JVM suite12/12. All eight Phase196 requirements and GR-06 remain pending.
+Current Plan: 7 of 17
+Progress: [████████░░] 77% (36/47 plans)
+Last completed phase: 195, 21/21 plans, passed8/8 on actual main b8398c38. Phase196 plans01-06 complete. Plan06 actual-main capture on b8398c38 used final capsule c3642591:359 subjects,89 main occurrences,exact restoration; candidate enforcement311 files,84 reviewed findings,delta0; root58/58 and owner35/35 tests passed. All eight Phase196 requirements and GR-06 remain pending independent verification.
 
 ## Exact Next Action
 
-Active phase196: executing, 5/17 complete. Exact next command: `$gsd-execute-phase 196 --ws quality-ratchet-release`; resume at196-06-PLAN.md. Do not repeat plans01-05. Branch fix/spec-structure-ratchet starts at fetched main b8398c38; docs/195-closeout and both receipts are preserved at101e853a. No push, PR, merge, publish, tag or deletion occurred; no approval transfers.
+Active phase196: executing,6/17 complete. Exact next command: `$gsd-execute-phase 196 --ws quality-ratchet-release`; resume at196-07-PLAN.md. Do not repeat plans01-06. Branch fix/spec-structure-ratchet starts at fetched main b8398c38; docs/195-closeout and both receipts remain preserved at101e853a. No push, PR, merge, publish, tag or deletion occurred; no approval transfers.
 
 ## Carried debt
 
-GR-06 stays with Phase196; cleanroom WR-04/05/06 and IN-03 stay with Phase197. Actual guard measurements, full pilot, repaired baselines and new CI results remain pending. Adopter lane stays parked. Plan05 metrics:8min,2 tasks,5 files; its SUMMARY holds decisions/actuals. Decisions: require fresh named JUnit suites/intended assertions; metadata verdicts/filtering remain N/A. Receipts preserve tested helper revisions; setup failures earn no evaluation credit. SDK progress/roadmap mismatches were reconciled to actual35/47 and5/17 counts. Prior full Swift:87 completed,2 existing optional skips,0 failures.
+GR-06 stays with Phase196; cleanroom WR-04/05/06 and IN-03 stay with Phase197. Other guards,full pilot and new CI remain pending; adopter lane stays parked. Plan06 metrics:19min,3 tasks,10 files; SUMMARY holds9 measured commits/35001 chars/4 tokens. Exact branch-local collection facts and84 semantic residuals are enforced explicitly; default stays report-only until Plan15. Capture helper33 controls prove repository/unknown-cwd refusal and foreign-process isolation. SDK progress/roadmap mismatches were reconciled to actual36/47 and6/17 counts. Earlier Kotlin12/12 and Swift87 completed/2 existing optional skips remain recorded.
 
 ## Session
 
-**Last session:** 2026-10-27T15:29:14.632Z
-**Stopped at:** Completed 196-05-PLAN.md; next eligible plan196-06
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-06-PLAN.md
+**Last session:** 2026-10-27T15:53:27.809Z
+**Stopped at:** Completed 196-06-PLAN.md; next eligible plan196-07
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-07-PLAN.md
