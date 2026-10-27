@@ -2,6 +2,16 @@
   "schema_version": 1,
   "plan": "196-07",
   "base_commit": "4a2d1611c3072be941e33d2fdea139be6730fd0f",
+  "safe_observation_red": {
+    "command": "mix test test/crosswake/offline/safe_observation_test.exs",
+    "exit_code": 2,
+    "tests": 11,
+    "failures": 2,
+    "target_case_ids": ["trailing_lf", "field_route_lf"],
+    "target_assertions_executed": true,
+    "semantic_assessment": "Both planned LF rejection assertions failed because the original validator accepted the route; all other tests passed. No import, fixture or discovery failure.",
+    "raw_output_retained": false
+  },
   "journal": {
     "command": "mix test test/crosswake/offline/journal_test.exs",
     "exit_code": 0,
