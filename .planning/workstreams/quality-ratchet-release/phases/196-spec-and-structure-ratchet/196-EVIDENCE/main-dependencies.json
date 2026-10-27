@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "guard": "dependencies",
+  "candidate_sha": "fcf747a38c0e16e60f596dffcf8dd5ee841a1bec",
+  "main_ref": "origin/main",
+  "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
+  "guard_blob": "d02f9429dbea1db9a2e5076eef181e0217668e9a",
+  "guard_sha256": "136558c543fd648fcc090e11ddfc95dba05225e4a24379278d12859fc298b747",
+  "tools": [
+    {
+      "path": "script/check_runtime_dependencies.exs",
+      "origin": "candidate",
+      "blob": "d02f9429dbea1db9a2e5076eef181e0217668e9a",
+      "sha256": "136558c543fd648fcc090e11ddfc95dba05225e4a24379278d12859fc298b747"
+    },
+    {
+      "path": "script/evaluate_runtime_dependencies.exs",
+      "origin": "candidate",
+      "blob": "11f2df45a88e3c3b9588615d105f32c3bdac8828",
+      "sha256": "c57cb1d65c9cdfac5184c17af4be0438d8f77d1bdd56bb8aaf3246d8a4539343"
+    },
+    {
+      "path": "script/fixtures/runtime_dependency_baseline.exs",
+      "origin": "candidate",
+      "blob": "71d714d5b9d2c13071e3542994a0d5853d7669b6",
+      "sha256": "46276457070ce3a166ca77d38b52fa3ab123268641130262701ecf0dcc7075e2"
+    }
+  ],
+  "subject_count": 6,
+  "subjects": [
+    {
+      "path": "mix.exs",
+      "sha256": "aceb7f154bdd4268e48f2950bd0cc7ec42ca00c88ee760db5692388db90035ea"
+    },
+    {
+      "path": "packages/crosswake_chimeway/mix.exs",
+      "sha256": "e16907dcde2212de9d2789d21ca7f680052f5fa75270e71c1314d1cf1398ffe9"
+    },
+    {
+      "path": "packages/crosswake_rindle/mix.exs",
+      "sha256": "59410a9b9934d078ecb2272904b624b8b017b405d3d6aefd11a384f93f97f314"
+    },
+    {
+      "path": "packages/crosswake_rulestead/mix.exs",
+      "sha256": "d2e4f5d5173bdee3787cff582b5e2ef829ea736e2531ee74161755fa5bf3e10a"
+    },
+    {
+      "path": "packages/crosswake_sigra/mix.exs",
+      "sha256": "f71385ac9d533e65c8e4701ce4c2b6acf17c8916410b1a3e197b37f6bf724b47"
+    },
+    {
+      "path": "packages/crosswake_threadline/mix.exs",
+      "sha256": "d57815929bf3d5fb66133a90c0ee2ec6e1d1dd416d24f7c37b12df0f21a2a7c7"
+    }
+  ],
+  "subject_sha256": "5fa595c8b9d42b4968bf2c626a02d21c3d76c9326f089459df46d82aadef3721",
+  "command": [
+    "elixir",
+    "script/check_runtime_dependencies.exs",
+    "--mode",
+    "report",
+    "--root",
+    "<actual-main>"
+  ],
+  "process_exit": 0,
+  "stdout_sha256": "55ae7434a7bab4a3579093d5b46e67d28a4c021251e75c8269b74509e6c581a9",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "counts": {
+    "branches": 2,
+    "declarations": 48,
+    "dependencies": 32,
+    "executions": 12,
+    "files": 6,
+    "projects": 6
+  },
+  "findings": [],
+  "restoration": {
+    "branch": "fix/spec-structure-ratchet",
+    "head": "fcf747a38c0e16e60f596dffcf8dd5ee841a1bec",
+    "index_sha256": "2a5f16c1997c0da61c6e29a9c6ec417826dc9c7fc4983ab78d505f2ce575ca1b",
+    "tracked_count": 6164,
+    "tracked_sha256": "d1cf294706bfa09aa2b962866a1226d22b62c9b9af777c12b1c699661af2760f",
+    "untracked_count": 0,
+    "untracked_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "privacy_before": {
+    "exit": 0,
+    "files": 166
+  },
+  "privacy_after": {
+    "exit": 0,
+    "files": 166
+  },
+  "duration_ms": 6239
+}
