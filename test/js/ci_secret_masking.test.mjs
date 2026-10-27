@@ -1504,3 +1504,93 @@ test("round3 residual rule adversaries", { timeout: 55000 }, (t) => {
     reportMetric(t, measureRound3Padding({ label: `residual/${label}`, input }));
   }
 });
+
+const REVIEW_ARMOR_ROWS = [
+  { name: "armor key same line", line: () => `private_key: ${PGP_BEGIN}\n${round3Fake("ReviewArmor", 1)}\n${PGP_END}`, seeds: [round3Fake("ReviewArmor", 1)] },
+  { name: "armor key next line", line: () => `private_key:\n${PGP_BEGIN}\n${round3Fake("ReviewArmor", 2)}\n${PGP_END}`, seeds: [round3Fake("ReviewArmor", 2)] },
+  { name: "armor JSON quoted value", line: () => `{"private_key":"${PGP_BEGIN}\n${round3Fake("ReviewArmor", 3)}\n${PGP_END}"}`, seeds: [round3Fake("ReviewArmor", 3)] },
+  { name: "armor escaped newlines", line: () => `private_key: ${PGP_BEGIN}${BS}n${round3Fake("ReviewArmor", 4)}${BS}n${PGP_END}`, seeds: [round3Fake("ReviewArmor", 4)] },
+  { name: "armor CRLF nested", line: () => `{"name":"private_key","value":"${PGP_BEGIN}\r\n${round3Fake("ReviewArmor", 5)}\r\n${PGP_END}"}`, seeds: [round3Fake("ReviewArmor", 5)] }
+];
+const REVIEW_RECORD_ROWS = [
+  { name: "record value first", line: () => `{"value":"${round3Fake("ReviewRecord", 1)}","name":"TOKEN"}`, seeds: [round3Fake("ReviewRecord", 1)] },
+  { name: "record intervening field", line: () => `{"name":"TOKEN","type":"secret","value":"${round3Fake("ReviewRecord", 2)}"}`, seeds: [round3Fake("ReviewRecord", 2)] },
+  { name: "record nested value", line: () => `{"name":"TOKEN","value":{"raw":"${round3Fake("ReviewRecord", 3)}"}}`, seeds: [round3Fake("ReviewRecord", 3)] },
+  { name: "record nested value first", line: () => `{"value":{"raw":["${round3Fake("ReviewRecord", 4)}"]},"name":"TOKEN"}`, seeds: [round3Fake("ReviewRecord", 4)] },
+  { name: "record duplicate names values", line: () => `{"name":"PASSWORD","value":"${round3Fake("ReviewRecord", 5)}","name":"TOKEN","value":"${round3Fake("ReviewRecord", 6)}"}`, seeds: [round3Fake("ReviewRecord", 5), round3Fake("ReviewRecord", 6)] },
+  { name: "record multiple nested objects", line: () => `[{"value":"${round3Fake("ReviewRecord", 7)}","name":"token"},{"name":"password","value":["${round3Fake("ReviewRecord", 8)}"]}]`, seeds: [round3Fake("ReviewRecord", 7), round3Fake("ReviewRecord", 8)] },
+  { name: "record malformed nested value", line: () => `{"name":"TOKEN","value":{"raw":"${round3Fake("ReviewRecord", 9)}"`, seeds: [round3Fake("ReviewRecord", 9)] }
+];
+const REVIEW_ESCAPED_ROWS = [
+  { name: "escaped JSON list", line: () => `{${BS}"password${BS}": [${BS}"${round3Fake("ReviewEscaped", 1)}${BS}"]}`, seeds: [round3Fake("ReviewEscaped", 1)] },
+  { name: "escaped JSON nested container", line: () => `{${BS}"password${BS}": {${BS}"value${BS}": [${BS}"${round3Fake("ReviewEscaped", 2)}${BS}"]}}`, seeds: [round3Fake("ReviewEscaped", 2)] },
+  { name: "escaped JSON malformed list", line: () => `{${BS}"password${BS}": [${BS}"${round3Fake("ReviewEscaped", 3)}${BS}"`, seeds: [round3Fake("ReviewEscaped", 3)] }
+];
+const REVIEW_IDENTIFIER_ROWS = [
+  { name: "camel quoted next line", line: () => `"signingInMemoryKey":\n  ${round3Fake("ReviewIdentifier", 1)}`, seeds: [round3Fake("ReviewIdentifier", 1)] },
+  { name: "fullwidth quoted next line", line: () => `"token"：\n  ${round3Fake("ReviewIdentifier", 2)}`, seeds: [round3Fake("ReviewIdentifier", 2)] },
+  { name: "camel CLI", line: () => `tool --signingInMemoryKey ${round3Fake("ReviewIdentifier", 3)}`, seeds: [round3Fake("ReviewIdentifier", 3)] },
+  { name: "CLI container", line: () => `tool --password ["${round3Fake("ReviewIdentifier", 4)}"]`, seeds: [round3Fake("ReviewIdentifier", 4)] },
+  { name: "CLI nested container", line: () => `tool --signingInMemoryKey {"value":["${round3Fake("ReviewIdentifier", 5)}"]}`, seeds: [round3Fake("ReviewIdentifier", 5)] },
+  { name: "CLI long identifier", line: () => `tool --${"x".repeat(80)}-password ${round3Fake("ReviewIdentifier", 6)}`, seeds: [round3Fake("ReviewIdentifier", 6)] },
+  { name: "escaped quoted camel CRLF", line: () => `${BS}"signingInMemoryKey${BS}":\r\n  ["${round3Fake("ReviewIdentifier", 7)}"]`, seeds: [round3Fake("ReviewIdentifier", 7)] }
+];
+const REVIEW_QUOTED_ROWS = [
+  { name: "triple quoted inline", line: () => `token: """${round3Fake("ReviewQuoted", 1)}"""`, seeds: [round3Fake("ReviewQuoted", 1)] },
+  { name: "triple quoted heredoc", line: () => `token: """\n${round3Fake("ReviewQuoted", 2)}\n"""`, seeds: [round3Fake("ReviewQuoted", 2)] },
+  { name: "triple single quoted", line: () => `token: '''\n${round3Fake("ReviewQuoted", 3)}\n'''`, seeds: [round3Fake("ReviewQuoted", 3)] },
+  { name: "single quoted concatenation", line: () => `token: 'prefix'${round3Fake("ReviewQuoted", 4)}`, seeds: [round3Fake("ReviewQuoted", 4)] },
+  { name: "double quoted concatenation", line: () => `token: "prefix"${round3Fake("ReviewQuoted", 5)}"suffix"`, seeds: [round3Fake("ReviewQuoted", 5)] }
+];
+
+for (const [name, rows] of [
+  ["round3 review keyed armor priority", REVIEW_ARMOR_ROWS],
+  ["round3 review name value record boundaries", REVIEW_RECORD_ROWS],
+  ["round3 review escaped json containers", REVIEW_ESCAPED_ROWS],
+  ["round3 review identifier and cli parity", REVIEW_IDENTIFIER_ROWS],
+  ["round3 review quoted value continuations", REVIEW_QUOTED_ROWS]
+]) {
+  test(name, () => {
+    const outcome = runRound3TailRows(rows);
+    assertRound3TailRows(outcome, name);
+    if (name !== "round3 review escaped json containers" && name !== "round3 review name value record boundaries") {
+      assert.ok(outcome.windows.every((window) => window.tail.includes("Finished in")), `${name} lost complete-value diagnostics`);
+    }
+  });
+}
+
+test("round3 review name value unrelated records", () => {
+  for (const text of ['{"hostname":"TOKEN","value":"readable"}', '[{"name":"token","value":"masked"},{"name":"label","value":"readable"}]']) {
+    const result = maskSecretShapes(text);
+    assert.ok(result.includes('"value":"readable"'), "unrelated record or suffix field was masked");
+  }
+});
+
+test("round3 review sigil diagnostic boundaries", () => {
+  const rows = ["/", "|", "<", "(", "[", "{"].map((delimiter, index) => {
+    const closer = { "<": ">", "(": ")", "[": "]", "{": "}" }[delimiter] ?? delimiter;
+    return { name: `sigil ${index}`, seeds: [round3Fake("ReviewSigil", index)], line: () => `token: ~s${delimiter}${round3Fake("ReviewSigil", index)}${closer}\nFinished in 0.1 seconds` };
+  });
+  const outcome = runRound3TailRows(rows);
+  assertRound3TailRows(outcome, "review sigil");
+  assert.ok(outcome.windows.every((window) => window.tail.includes("Finished in")), "closed sigil consumed later diagnostics");
+});
+
+test("round3 review persistent stdout context", () => {
+  const contexts = ['exec >/dev/null', 'exec 1>/dev/null', 'exec 3>&1\nexec >/dev/null', 'exec > >(cat >/dev/null)'];
+  assert.ok(contexts.length > 0, "stdout context inventory empty");
+  for (const [index, context] of contexts.entries()) {
+    const text = fixture(...context.split("\n"), 'TOKEN=$(printf %s "$MAVEN_PASSWORD" | base64)', 'echo "::add-mask::$TOKEN"', 'exec >&3', 'echo "$TOKEN"');
+    assert.ok(derivedSecretViolations(text).length === 1, `persistent stdout context ${index} accepted`);
+    assert.ok(!derivationScript(text, ["TOKEN"]).includes("::add-mask::"), `persistent stdout context ${index} extracted`);
+  }
+});
+
+test("round3 review curl missing separators bounded", { timeout: 10000 }, (t) => {
+  const rows = [
+    { label: "review/curl_short_missing_colon", input: `curl ${"-u".repeat(100000)}` },
+    { label: "review/curl_long_missing_colon", input: `curl ${"--user=".repeat(30000)}` }
+  ];
+  assert.ok(rows.length > 0, "curl missing-separator inventory empty");
+  for (const row of rows) reportMetric(t, measureRound3Padding(row));
+});
