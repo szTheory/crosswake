@@ -318,9 +318,9 @@ function readerInventory() {
     [`${swiftTests}/NavigationCoordinatorTests.swift`, 'testCompiledRootRequiresResolverAuthorization', 'behavioral', 'navigation_topology_vectors.json', '196-04'],
     ...['ActivationConformanceTests', 'OfflineIslandAdmissionTests', 'Phase180TwinFeasibilityTests'].map(suite =>
       [`${swiftTests}/${suite}.swift`, 'setUpWithError', 'metadata-only', 'bridge_contract_vectors', '196-04']),
-    [`${androidTests}/BridgeConformanceTest.kt`, 'BridgeConformanceTest', 'behavioral', 'bridge_contract_vectors.json', '196-05-pending'],
-    [`${androidTests}/BridgeReplyLegTest.kt`, 'replyLegVector', 'behavioral', 'reply_leg_vectors', '196-05-pending'],
-    [`${androidTests}/ActivationConformanceTest.kt`, 'ActivationConformanceTest', 'metadata-only', 'bridge_protocol_version', '196-05-pending'],
+    [`${androidTests}/BridgeConformanceTest.kt`, 'BridgeConformanceTest', 'behavioral', 'bridge_contract_vectors.json', '196-05'],
+    [`${androidTests}/BridgeReplyLegTest.kt`, 'replyLegVector', 'behavioral', 'reply_leg_vectors', '196-05'],
+    [`${androidTests}/ActivationConformanceTest.kt`, 'ActivationConformanceTest', 'metadata-only', 'bridge_protocol_version', '196-05'],
     ['test/crosswake/contract/contract_drift_test.exs', '@generated_json_paths', 'structural-integrity', 'bridge_contract_vectors.json', 'not-executed-by-this-plan'],
     ['lib/crosswake/doctor/publish_readiness.ex', 'contract_version_parity_check', 'structural-version', 'bridge_contract_vectors.json', 'not-executed-by-this-plan'],
     ['test/crosswake/proof/phase154_recipe_followable_test.exs', '@vector_paths', 'structural-vocabulary', 'bridge_contract_vectors.json', 'not-executed-by-this-plan'],
@@ -433,7 +433,10 @@ function kotlinPopulation(bytes, spec) {
   assert.equal(vectors.length, spec.loaded, 'loaded-count');
   if (spec.selectedIDs) kotlinSelection(vectors, spec);
   assert.equal(new Set(vectors.map(v => v.id)).size, spec.loaded, 'duplicate-ids');
-  if (spec.kind !== 'metadata-only') {
+  if (spec.kind === 'metadata-only') {
+    assert.equal(spec.completed, null, 'metadata-execution-not-applicable');
+    assert.ok(!spec.excluded && !spec.selectedIDs, 'metadata-kind-has-no-filter');
+  } else {
     assert.equal(vectors.filter(v => v[spec.excluded] !== true).length, spec.completed, 'completed-count');
   }
   return vectors;
@@ -589,10 +592,18 @@ function kotlinFull(mode) {
           writeFileSync(ownerPath, source);
           let expected = 'loaded';
           if (control === 'missing') { unlinkSync(path); expected = 'missing'; }
-          else {
+          else if (control === 'all-suppressed') {
+            const mutated = source.toString().replace('for (vector in selectedReplyVectors) {', 'for (vector in selectedReplyVectors.filter { false }) {');
+            assert.notEqual(mutated, source.toString(), 'selection-seam-not-found');
+            writeFileSync(ownerPath, mutated);
+            expected = 'completed';
+          } else {
             const vectors = control === 'removed' ? corpus[spec.collection].slice(1)
-              : control === 'empty' ? [] : corpus[spec.collection].map(v => ({ ...v, [spec.excluded]: true }));
+              : control === 'empty' ? [] : control === 'duplicate-selected-id'
+                ? corpus[spec.collection].map((v, i) => i === 1 ? { ...v, id: spec.selectedIDs[0] } : v)
+                : corpus[spec.collection].map(v => ({ ...v, [spec.excluded]: true }));
             if (control === 'all-excluded') expected = 'completed';
+            if (control === 'duplicate-selected-id') expected = 'selected';
             writeFileSync(path, JSON.stringify({ ...corpus, [spec.collection]: vectors }));
           }
           const resourceHash = existsSync(path) ? hash(readFileSync(path)) : null;
@@ -617,6 +628,10 @@ function kotlinFull(mode) {
   const receipt = existsSync(receiptPath) ? JSON.parse(readFileSync(receiptPath)) : { schema: 1, modes: {} };
   receipt.modes[mode] = { jdk: jdk.identity, helperSha256: hash(readFileSync(fileURLToPath(import.meta.url))), readers,
     durationMs: Math.round(performance.now() - started) };
+  if (mode === 'kotlin-other') {
+    receipt.inventory = readerInventory();
+    receipt.inventoryScope = 'All existing bridge request/reply and navigation file references have source-checked reader roles; Kotlin JVM owners now executed. Phase198 owns set hashes and parity ledger. No device claim.';
+  }
   writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
   process.stdout.write(`vector-controls ${mode}: ${readers.length} JVM owners restored; ${receipt.modes[mode].durationMs}ms\n`);
 }

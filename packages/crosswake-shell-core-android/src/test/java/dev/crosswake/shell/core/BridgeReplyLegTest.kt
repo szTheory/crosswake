@@ -24,22 +24,27 @@ class BridgeReplyLegTest {
 
     private lateinit var vectorsJson: JSONObject
     private lateinit var bridgeVersion: String
+    private lateinit var selectedReplyVectors: List<JSONObject>
 
     @Before
     fun loadVectors() {
-        val text = javaClass.getResourceAsStream("/bridge_contract_vectors.json")!!
-            .bufferedReader().readText()
+        val stream = javaClass.getResourceAsStream("/bridge_contract_vectors.json")
+            ?: throw AssertionError("CW-VECTOR-MISSING bridge_contract_vectors.json")
+        val text = stream.bufferedReader().use { it.readText() }
         vectorsJson = JSONObject(text)
         bridgeVersion = vectorsJson.getString("bridge_protocol_version")
+        val vectors = vectorsJson.getJSONArray("reply_leg_vectors")
+        assertEquals("CW-VECTOR-LOADED expected 2", 2, vectors.length())
+        val loaded = (0 until vectors.length()).map { vectors.getJSONObject(it) }
+        val intendedIds = listOf("vec-reply-001-ok-landing-pad", "vec-reply-002-adversarial-denial-message")
+        for (id in intendedIds) {
+            assertEquals("CW-VECTOR-SELECTED expected 1", 1, loaded.count { it.getString("id") == id })
+        }
+        selectedReplyVectors = loaded.filter { it.getString("id") in intendedIds }
     }
 
     private fun replyLegVector(id: String): JSONObject {
-        val vectors = vectorsJson.getJSONArray("reply_leg_vectors")
-        for (index in 0 until vectors.length()) {
-            val vector = vectors.getJSONObject(index)
-            if (vector.getString("id") == id) return vector
-        }
-        throw AssertionError("missing committed reply-leg vector $id — regenerate with: mix crosswake.contract.gen")
+        return selectedReplyVectors.single { it.getString("id") == id }
     }
 
     private fun session(capabilities: Map<String, String>) = LiveViewSession(
@@ -83,21 +88,34 @@ class BridgeReplyLegTest {
 
     @Test
     fun `the committed reply-leg vectors are present and name the shipped landing pad`() {
-        val ok = replyLegVector("vec-reply-001-ok-landing-pad")
-        val adversarial = replyLegVector("vec-reply-002-adversarial-denial-message")
-
         // The landing pad is an iOS-side concern (Android replies through the
         // replyProxy, never through evaluated JavaScript), but it is the same shipped
         // contract value in the same shared vector file — asserting it here keeps the
         // two native suites reading one source of truth.
-        assertEquals("window.crosswakeBridge.__reply", ok.getString("landing_pad"))
-        assertEquals("window.crosswakeBridge.__reply", adversarial.getString("landing_pad"))
-        assertTrue(adversarial.getBoolean("adversarial"))
+        val completed = mutableListOf<String>()
+        for (vector in selectedReplyVectors) {
+            assertEquals("window.crosswakeBridge.__reply", vector.getString("landing_pad"))
+            val id = vector.getString("id")
+            when (id) {
+                "vec-reply-001-ok-landing-pad" -> assertOkReply(vector)
+                "vec-reply-002-adversarial-denial-message" -> {
+                    assertTrue(vector.getBoolean("adversarial"))
+                    assertAdversarialReply(vector)
+                }
+                else -> throw AssertionError("CW-VECTOR-SELECTED unexpected reply case")
+            }
+            completed.add(id)
+        }
+        assertEquals("CW-VECTOR-COMPLETED expected 2", 2, completed.size)
+        assertEquals("CW-VECTOR-COMPLETED unique expected 2", 2, completed.toSet().size)
     }
 
     @Test
     fun `the ok reply-leg vector matches the shape Android's duplex path emits`() {
-        val vector = replyLegVector("vec-reply-001-ok-landing-pad")
+        assertOkReply(replyLegVector("vec-reply-001-ok-landing-pad"))
+    }
+
+    private fun assertOkReply(vector: JSONObject) {
         val expected = vector.getJSONObject("reply")
 
         val reply = JSONObject(
@@ -123,7 +141,10 @@ class BridgeReplyLegTest {
 
     @Test
     fun `adversarial reply content survives Android's duplex path byte-intact`() {
-        val vector = replyLegVector("vec-reply-002-adversarial-denial-message")
+        assertAdversarialReply(replyLegVector("vec-reply-002-adversarial-denial-message"))
+    }
+
+    private fun assertAdversarialReply(vector: JSONObject) {
         val adversarial = vector
             .getJSONObject("reply")
             .getJSONObject("denial")

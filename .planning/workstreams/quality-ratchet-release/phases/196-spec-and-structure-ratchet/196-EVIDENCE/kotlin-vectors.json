@@ -9,7 +9,7 @@
         "executableSha256": "7db0dd5c0c4dc931244875d0723783a32cc7912922e6aaac1dbb744bf8ae837f",
         "outputSha256": "67732c1a52f008070b8222ad1b1694a9643188135d8fcb7878cb6c21cda20237"
       },
-      "helperSha256": "12a6ca9318318cec2d9ac7daa9c7ee8d5bfe17b8ede5dc5683deeae6c44921bc",
+      "helperSha256": "cba824642680d6fc690070c6048e4d2a8c25bfef11041f29ca48b77dd223f54c",
       "readers": [
         {
           "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeConformanceTest.kt",
@@ -35,9 +35,9 @@
                 "JAVA_HOME": "discovered-installed-jdk17"
               },
               "exit": 0,
-              "durationMs": 3340,
-              "outputSha256": "e499abd760321899b07ff4c76802348c1e276c13df3194f43b4fd3350351c2c8",
-              "reportSha256": "5b5be2f2519d777350db955434499ed1805f5c7b64d0737fadf5111fa9f911e4",
+              "durationMs": 1807,
+              "outputSha256": "830e1d2a7a4300db38feed7c25bfd047262b4bf07ed369a317f97852e6bc7a4f",
+              "reportSha256": "674e62e5fbe9405173d1b16c84c9ef87c11d304a40f6cccc47902913abdc0377",
               "tests": {
                 "discovered": 3,
                 "skipped": 0,
@@ -66,9 +66,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 3015,
-                  "outputSha256": "9823dbe3d82491cfb523945472b1e5b5f3403d797178106b872383e49af331c3",
-                  "reportSha256": "f61ac52873e7aeebdfd41493a3806e68bffbcb9a285850d1d312fdd8c703ea60",
+                  "durationMs": 1638,
+                  "outputSha256": "f0fd8f0114bb14b500cc685c4728d0cf9e97bf57a7661da2cbfc375cc4487f2c",
+                  "reportSha256": "1b45cc4544904cc97f4d1947f7a896c8c62f311aaf3880e210c6a25d62830340",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -97,9 +97,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 2616,
-                  "outputSha256": "502543c4ca4a771ead318ac6307132277bcdab65ab3061a315dbefc5239e5e21",
-                  "reportSha256": "58c08c5a95a06fd5f4f2cfdd5b1ea3ed81baf4b4fdf7692ffcb4dcd545258529",
+                  "durationMs": 1769,
+                  "outputSha256": "0f21a4f2f496d0794467c704eff4defdef8425928a4c7c152050dce781db1322",
+                  "reportSha256": "b6f9b120d61c5a84ce55b1f066b605b82704a36c3a95af7b1f4a1a6c552d640b",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -128,9 +128,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 2775,
-                  "outputSha256": "7fe2517e080f1aa985fe3ee418472505298317bf6c51101a93aaf686d18a6f8d",
-                  "reportSha256": "cd66f0e7a87bab9f21e5e3dff61d4679886adca1174ac6682128c02e01cb5e3d",
+                  "durationMs": 1888,
+                  "outputSha256": "0f21a4f2f496d0794467c704eff4defdef8425928a4c7c152050dce781db1322",
+                  "reportSha256": "16df7058576d99104100338ad2fe9478c0b3b6340aa8278025461fa05882ba0a",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -159,9 +159,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 2309,
-                  "outputSha256": "2543f1c2457135afb6f6e6c351b8a165eb7e6249648695f9e666fc491fe0e302",
-                  "reportSha256": "820aa182845baa9d675aae39f0ebb707a04b2390522aa65a4721492f175fed0b",
+                  "durationMs": 2085,
+                  "outputSha256": "3de896344dee93bde42f290801bdd2064711f567092a274fd5ab14021d784ded",
+                  "reportSha256": "7d8f558c2355893f190dea085153b7172ab6d80c31a718c24d1ecba5f875092a",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -188,9 +188,9 @@
                   "JAVA_HOME": "discovered-installed-jdk17"
                 },
                 "exit": 0,
-                "durationMs": 2163,
-                "outputSha256": "25752e4ef52775ae355b28579abada386c9c5e03560fb48111dd8b759635d00c",
-                "reportSha256": "00cd7b16f3fe3b1ffef20bac8ca08b192fceeedc01124242d88790f09e8f3aee",
+                "durationMs": 2330,
+                "outputSha256": "9ce185eea4c71f12a73a77c4206a41a3bab2538905246775428d22e33a816c12",
+                "reportSha256": "33896eeabfd02c1cabc4bc5aa338462e84a3de08087a7fe183c38fcf714d13d8",
                 "tests": {
                   "discovered": 3,
                   "skipped": 0,
@@ -202,7 +202,556 @@
           }
         }
       ],
-      "durationMs": 16278
+      "durationMs": 11566
+    },
+    "kotlin-other": {
+      "jdk": {
+        "major": 17,
+        "version": "17.0.19",
+        "discovery": "homebrew-arm64-openjdk17",
+        "executableSha256": "7db0dd5c0c4dc931244875d0723783a32cc7912922e6aaac1dbb744bf8ae837f",
+        "outputSha256": "67732c1a52f008070b8222ad1b1694a9643188135d8fcb7878cb6c21cda20237"
+      },
+      "helperSha256": "cba824642680d6fc690070c6048e4d2a8c25bfef11041f29ca48b77dd223f54c",
+      "readers": [
+        {
+          "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeReplyLegTest.kt",
+          "testSymbol": "the committed reply-leg vectors are present and name the shipped landing pad",
+          "kind": "behavioral",
+          "resource": "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json",
+          "loaded": 2,
+          "completed": 2,
+          "selectionControl": "applicable",
+          "resourceSha256": "3b64c8d81e1ca086494a1910aa5fb2d05d7a2d263b3d72f229f319d22e0064c0",
+          "ownerSha256": "b06a976119bd5eceab06fcb25615cf8b82250be6176fd8b3f58598a1f6522b9b",
+          "before": [
+            {
+              "command": "./gradlew",
+              "args": [
+                "clean",
+                "testDebugUnitTest",
+                "--tests",
+                "dev.crosswake.shell.core.BridgeReplyLegTest"
+              ],
+              "cwd": "packages/crosswake-shell-core-android",
+              "environment": {
+                "JAVA_HOME": "discovered-installed-jdk17"
+              },
+              "exit": 0,
+              "durationMs": 1577,
+              "outputSha256": "830e1d2a7a4300db38feed7c25bfd047262b4bf07ed369a317f97852e6bc7a4f",
+              "reportSha256": "c00441c93a6dde5e9065443c3fa2ba4469d8e9b75a6d269cf57b70d4093668f9",
+              "tests": {
+                "discovered": 3,
+                "skipped": 0,
+                "failures": 0,
+                "errors": 0
+              }
+            }
+          ],
+          "controls": [
+            {
+              "control": "missing",
+              "expected": "missing",
+              "resourceSha256": null,
+              "ownerSha256": "b06a976119bd5eceab06fcb25615cf8b82250be6176fd8b3f58598a1f6522b9b",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeReplyLegTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1439,
+                  "outputSha256": "c8ce4d8a5ff54dcc14b47cd06e6b5cb13ddbad213ab0a8094a68ad021805e6ee",
+                  "reportSha256": "70815164ead6e08d8a20bb44ba9a8c07b8b23dc822a503b1df58935a0ab18ca5",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "removed",
+              "expected": "loaded",
+              "resourceSha256": "1b9274a4aa6dbe15019c6aca742de379bca3c8fe22112878e67bdc8fe33bfb5d",
+              "ownerSha256": "b06a976119bd5eceab06fcb25615cf8b82250be6176fd8b3f58598a1f6522b9b",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeReplyLegTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1485,
+                  "outputSha256": "3bfdd4d0d9605fe9c5cd26a35836c1462ef49bbd062c01a12598d023d7058af2",
+                  "reportSha256": "d86cc8cda5b54e3d26de886b9ce317016476d9f3462c7e2dcd65731c6016b76a",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "empty",
+              "expected": "loaded",
+              "resourceSha256": "09db9c63b73bbcc49072b039a2c461ff47044102ac2020cfcecd6f8b112be248",
+              "ownerSha256": "b06a976119bd5eceab06fcb25615cf8b82250be6176fd8b3f58598a1f6522b9b",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeReplyLegTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1884,
+                  "outputSha256": "3bfdd4d0d9605fe9c5cd26a35836c1462ef49bbd062c01a12598d023d7058af2",
+                  "reportSha256": "f57cea11cbda7427bf3a7e31826943a8ce95ee17859bf7536d326d42d1983ed6",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "all-suppressed",
+              "expected": "completed",
+              "resourceSha256": "3b64c8d81e1ca086494a1910aa5fb2d05d7a2d263b3d72f229f319d22e0064c0",
+              "ownerSha256": "c402788ca4bb65085d9033d98be53e9fccdb1cd271c5ae0b192f7d00d7878cb4",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeReplyLegTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1918,
+                  "outputSha256": "d81db2a3cb62ed2e43f94e3d9a50dced4c79d658511c3a1fb77eeca584b50e31",
+                  "reportSha256": "69e56cb870c1da67a076a7c1733c16f76ba6d40103951af5251afef3c313c51d",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 1,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "duplicate-selected-id",
+              "expected": "selected",
+              "resourceSha256": "3016560628591cefda5f854db6e4fa8f3910763adf49bfd1246ef50ebf787e44",
+              "ownerSha256": "b06a976119bd5eceab06fcb25615cf8b82250be6176fd8b3f58598a1f6522b9b",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.BridgeReplyLegTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1659,
+                  "outputSha256": "d76b752c17d61222ce598098e2148baea3655af2c74831d609e39ae26d7aa37e",
+                  "reportSha256": "037510b7fb04934f92c0a9b3e57bdadeee40d9603c4f22c60c6e461542a674bf",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "restoration": {
+            "byteExact": true,
+            "after": [
+              {
+                "command": "./gradlew",
+                "args": [
+                  "clean",
+                  "testDebugUnitTest",
+                  "--tests",
+                  "dev.crosswake.shell.core.BridgeReplyLegTest"
+                ],
+                "cwd": "packages/crosswake-shell-core-android",
+                "environment": {
+                  "JAVA_HOME": "discovered-installed-jdk17"
+                },
+                "exit": 0,
+                "durationMs": 1653,
+                "outputSha256": "9556d619c1643c3857f351b27f8a8d61d4cc00575deb774050823f5793d99b5b",
+                "reportSha256": "2eb41675c3d4242b22226c46e2493d920fd7d28422c6fab2364b5bfb8f98a94f",
+                "tests": {
+                  "discovered": 3,
+                  "skipped": 0,
+                  "failures": 0,
+                  "errors": 0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/ActivationConformanceTest.kt",
+          "testSymbol": "activation resolves live_view route to LiveView presentation",
+          "kind": "metadata-only",
+          "resource": "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json",
+          "loaded": 15,
+          "completed": null,
+          "selectionControl": "not-applicable-no-filter",
+          "resourceSha256": "3b64c8d81e1ca086494a1910aa5fb2d05d7a2d263b3d72f229f319d22e0064c0",
+          "ownerSha256": "e7787080513e7923790d2e6dbb9bfaaf4f451d3f2f556621f8e1f8dcdf0550cb",
+          "before": [
+            {
+              "command": "./gradlew",
+              "args": [
+                "clean",
+                "testDebugUnitTest",
+                "--tests",
+                "dev.crosswake.shell.core.ActivationConformanceTest"
+              ],
+              "cwd": "packages/crosswake-shell-core-android",
+              "environment": {
+                "JAVA_HOME": "discovered-installed-jdk17"
+              },
+              "exit": 0,
+              "durationMs": 1696,
+              "outputSha256": "830e1d2a7a4300db38feed7c25bfd047262b4bf07ed369a317f97852e6bc7a4f",
+              "reportSha256": "2e74273ec9257ef96e9e20cf72c327551049de5577d393b70602dd32b14e5be1",
+              "tests": {
+                "discovered": 3,
+                "skipped": 0,
+                "failures": 0,
+                "errors": 0
+              }
+            }
+          ],
+          "controls": [
+            {
+              "control": "missing",
+              "expected": "missing",
+              "resourceSha256": null,
+              "ownerSha256": "e7787080513e7923790d2e6dbb9bfaaf4f451d3f2f556621f8e1f8dcdf0550cb",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.ActivationConformanceTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1676,
+                  "outputSha256": "3d34926152bee3a9b90e52af4f5c7b7cc4a198b382c7c423667bd50bf5236b3f",
+                  "reportSha256": "9e6876bce1c28be132134ed75520972c3b58a4b82e4fad62cd34c227b61fe97b",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "removed",
+              "expected": "loaded",
+              "resourceSha256": "985257aa579cea3df06bd78288ba897a8bf8874f7387265e693ecfd1adec0267",
+              "ownerSha256": "e7787080513e7923790d2e6dbb9bfaaf4f451d3f2f556621f8e1f8dcdf0550cb",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.ActivationConformanceTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1729,
+                  "outputSha256": "58eacb6798fad075545246d99204115d1adf3c25ee57a618782cef0a880c15c9",
+                  "reportSha256": "afca5029b4a91c2c2aaa2b19b2bcf31f75b2150ff947b185f95147741121e328",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            },
+            {
+              "control": "empty",
+              "expected": "loaded",
+              "resourceSha256": "c57810a77d1d3d5c91e904f30f784c6e84481793dd551c4f177c36668cd67e78",
+              "ownerSha256": "e7787080513e7923790d2e6dbb9bfaaf4f451d3f2f556621f8e1f8dcdf0550cb",
+              "processes": [
+                {
+                  "command": "./gradlew",
+                  "args": [
+                    "clean",
+                    "testDebugUnitTest",
+                    "--tests",
+                    "dev.crosswake.shell.core.ActivationConformanceTest"
+                  ],
+                  "cwd": "packages/crosswake-shell-core-android",
+                  "environment": {
+                    "JAVA_HOME": "discovered-installed-jdk17"
+                  },
+                  "exit": 1,
+                  "durationMs": 1701,
+                  "outputSha256": "bc14f4deda89c9302534b93e20afd62bc3976d1d6a1b5eb64dcd579d35f4696e",
+                  "reportSha256": "73077e180f6f358ee39388860cbe0f41173db8db5b0f50b923d442e091e0277e",
+                  "tests": {
+                    "discovered": 3,
+                    "skipped": 0,
+                    "failures": 3,
+                    "errors": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "restoration": {
+            "byteExact": true,
+            "after": [
+              {
+                "command": "./gradlew",
+                "args": [
+                  "clean",
+                  "testDebugUnitTest",
+                  "--tests",
+                  "dev.crosswake.shell.core.ActivationConformanceTest"
+                ],
+                "cwd": "packages/crosswake-shell-core-android",
+                "environment": {
+                  "JAVA_HOME": "discovered-installed-jdk17"
+                },
+                "exit": 0,
+                "durationMs": 1706,
+                "outputSha256": "9556d619c1643c3857f351b27f8a8d61d4cc00575deb774050823f5793d99b5b",
+                "reportSha256": "8769a267e27cb628d62d2d5e7428512878bac2d2a5a7fdbceb3abb54a75bd782",
+                "tests": {
+                  "discovered": 3,
+                  "skipped": 0,
+                  "failures": 0,
+                  "errors": 0
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "durationMs": 20172
     }
-  }
+  },
+  "inventory": [
+    {
+      "owner": "test/crosswake/bridge/bridge_behavioral_vector_test.exs",
+      "symbol": "BridgeVectorBehavioralTest",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors.json",
+      "verification": "196-03",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "4f84721eeeccebb50abc3f3e87e3b92161f048fb9b2089252cc0c5ba605c314e"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeConformanceTests.swift",
+      "symbol": "BridgeConformanceTests",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors",
+      "verification": "196-03",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "1a354799ec43a8c2aadc142a2336fe14a192583dbb4a424666bc951dfc16d295"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/BridgeReplyLegTests.swift",
+      "symbol": "BridgeReplyLegTests",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "0b94155aead94c3316a8a3a8c4a768fa57e7f3276d54c02ff06208f8506f31af"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/NavigationCoordinatorTests.swift",
+      "symbol": "testCompiledRootRequiresResolverAuthorization",
+      "kind": "behavioral",
+      "input": "navigation_topology_vectors.json",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "c88ffb09421626f6fa57c0c020e4b001506a576287b93bf02cd58754af54e414"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/ActivationConformanceTests.swift",
+      "symbol": "setUpWithError",
+      "kind": "metadata-only",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "083d62ea3dfa3ed10ba58c33e3192c0cc7efb036d1084ea0830a74582acd2ff4"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/OfflineIslandAdmissionTests.swift",
+      "symbol": "setUpWithError",
+      "kind": "metadata-only",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "addb1bd8ae99f4adda0425498413cbd626a5a4ff2e1cf1f45b4d916d0bae07a4"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Phase180TwinFeasibilityTests.swift",
+      "symbol": "setUpWithError",
+      "kind": "metadata-only",
+      "input": "bridge_contract_vectors",
+      "verification": "196-04",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "8849c4dc38ccf4e0db7666e14c25536efe530a4a9a5a6f48799daa7c9f097df5"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeConformanceTest.kt",
+      "symbol": "BridgeConformanceTest",
+      "kind": "behavioral",
+      "input": "bridge_contract_vectors.json",
+      "verification": "196-05",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "e498b97d5d93fa89f123c33dd873935cea5fefc6d27ec5fa01b67d59eb5b711a"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/BridgeReplyLegTest.kt",
+      "symbol": "replyLegVector",
+      "kind": "behavioral",
+      "input": "reply_leg_vectors",
+      "verification": "196-05",
+      "corpusVerdictExecutions": "reader-specific-see-owner-evidence",
+      "sourceSha256": "b06a976119bd5eceab06fcb25615cf8b82250be6176fd8b3f58598a1f6522b9b"
+    },
+    {
+      "owner": "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/ActivationConformanceTest.kt",
+      "symbol": "ActivationConformanceTest",
+      "kind": "metadata-only",
+      "input": "bridge_protocol_version",
+      "verification": "196-05",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "e7787080513e7923790d2e6dbb9bfaaf4f451d3f2f556621f8e1f8dcdf0550cb"
+    },
+    {
+      "owner": "test/crosswake/contract/contract_drift_test.exs",
+      "symbol": "@generated_json_paths",
+      "kind": "structural-integrity",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "d697fcdc07338845a405810b28c1121d887678f35b523ce4e6b3ac6c9898f574"
+    },
+    {
+      "owner": "lib/crosswake/doctor/publish_readiness.ex",
+      "symbol": "contract_version_parity_check",
+      "kind": "structural-version",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "16819b23ff21b1b98533a5ffb101ea2251387f6d9ebcad7c8bdbb6dc41d12fd8"
+    },
+    {
+      "owner": "test/crosswake/proof/phase154_recipe_followable_test.exs",
+      "symbol": "@vector_paths",
+      "kind": "structural-vocabulary",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "6f4b670a7ad7a00de9e8b11d5b8b5fe9407696643b893c3f16d01094e60ac24f"
+    },
+    {
+      "owner": "test/crosswake/proof/phase154_catalog_guard_test.exs",
+      "symbol": "CatalogGuard.bridge_sources()",
+      "kind": "structural-source-scan",
+      "input": "bridge_contract_vectors.json",
+      "verification": "not-executed-by-this-plan",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "159248a8c80ea1bcff214e2e0ca0401ed54f8aecbc91949d715b7cf62884a97a"
+    },
+    {
+      "owner": "lib/crosswake/proof_lane/navigation_shell_advisory.ex",
+      "symbol": "transition_vectors",
+      "kind": "advisory-input",
+      "input": "navigation_transition_vectors.json",
+      "verification": "not-native-execution",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "8b2615998600e5ba31050f3d28b25d93e6256b471880bffd11d093cad04ae3ec"
+    },
+    {
+      "owner": "lib/mix/tasks/crosswake.contract.gen.ex",
+      "symbol": "write_if_changed",
+      "kind": "producer-integrity",
+      "input": "bridge_contract_vectors.json",
+      "verification": "producer-not-behavioral-reader",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "ce183a0835802f11977f8aad9d7c176052c2ba9d797f24051d0b4d083d44e817"
+    },
+    {
+      "owner": "test/crosswake/proof/phase166_repository_quality_test.exs",
+      "symbol": "remediation_command",
+      "kind": "reference-only",
+      "input": "bridge_contract_vectors.json",
+      "verification": "path-inventory-not-json-reader",
+      "corpusVerdictExecutions": "not-applicable",
+      "sourceSha256": "647a05df47f596976c2b8b0f0f46b81498cfc127d8f6434d415a435d455dd7c1"
+    }
+  ],
+  "inventoryScope": "All existing bridge request/reply and navigation file references have source-checked reader roles; Kotlin JVM owners now executed. Phase198 owns set hashes and parity ledger. No device claim."
 }
