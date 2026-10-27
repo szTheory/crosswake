@@ -1,0 +1,9 @@
+pr3: pr 255 state MERGED head 88727aeae158b96519fc3985acf010e6e8d2c8f1
+pr3: merge_commit ff63e5d84f459cb89f65e28a0bea7a87eb81d042
+pr3: merge_method merge match_head_commit yes admin no auto no
+pr3: root_tree .dockerignore .formatter.exs .github .gitignore .planning .release-please-manifest.json .tool-versions AGENTS.md CHANGELOG.md CONTRIBUTING.md LICENSE README.md bin brandbook docs examples gen_manifest.exs guides lib mix.exs mix.lock package.json packages priv prompts release-please-config.json script scripts test 
+pr3: bundle_paths_on_main 0
+pr3: remote branch kept (plan 13)
+pr3: tags_before 94 tags_after 94
+pr3: heads_before 20 heads_after 19
+pr3: correction remote branch chore/root-hygiene-and-cleanroom (#255) auto-deleted at merge (delete_branch_on_merge true); verified absent by ls-remote 2026-10-26

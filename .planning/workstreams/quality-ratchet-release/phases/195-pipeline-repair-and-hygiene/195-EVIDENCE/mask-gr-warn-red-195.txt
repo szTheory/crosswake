@@ -1,0 +1,52 @@
+red: base fix/secret-mask-key-forms c867af2
+red: task1 rc 1 fail 7
+red: task1 failing gap shape sk_project_key is masked
+red: task1 failing gap shape sk_versioned_key is masked
+red: task1 failing gap shape slack_bot_token is masked
+red: task1 failing gap shape npm_token is masked
+red: task1 failing gap shapes from a spawned child never reach the root-proof tail
+red: task1 failing prose round-trips unchanged: task-runner12345 started
+red: task1 failing a short GitHub token is masked
+red: task1 already_masked kiosk-mode-settings applied
+red: task1 already_masked npm_config_cache is set
+log-scan: red1 seed hits 0
+red: task1 commit 8c3f9ef
+red: task2 rc 1 fail 20
+red: task2 failing gap shape pem_multiline is masked
+red: task2 failing gap shape pem_no_end is masked
+red: task2 failing gap shape pem_escaped_newlines is masked
+red: task2 failing gap shape pem_encrypted_headers is masked
+red: task2 failing gap shape url_empty_user is masked
+red: task2 failing gap shape url_slash_password is masked
+red: task2 failing gap shape aws_key_id_prefixed is masked
+red: task2 failing gap shape aws_key_id_trailing is masked
+red: task2 failing gap shape jwt_two_segment is masked
+red: task2 failing gap shape query_key is masked
+red: task2 failing gap shape query_sig is masked
+red: task2 failing gap shape amz_signature is masked
+red: task2 failing gap shape cookie_assign is masked
+red: task2 failing gap shape cookies_header is masked
+red: task2 failing gap shape secrets_assign is masked
+red: task2 failing gap shape privatekey_assign is masked
+red: task2 failing gap shape passwords_assign is masked
+red: task2 failing gap shapes from a spawned child never reach the root-proof tail
+red: task2 failing accepted over-mask pinned: url_port_scoped_path
+red: task2 failing accepted over-mask pinned: secrets_inherit
+log-scan: red2 seed hits 0
+red: task2 commit 7243ab5
+red: task3 rc 1 fail 8
+red: task3 failing prose round-trips unchanged: token: nil
+red: task3 failing prose round-trips unchanged: password: nil
+red: task3 failing prose round-trips unchanged: token: true
+red: task3 failing prose round-trips unchanged: password: false
+red: task3 failing prose round-trips unchanged: "token":null
+red: task3 failing prose round-trips unchanged: token: undefined
+red: task3 failing prose round-trips unchanged: %{token: nil, password: nil}
+red: task3 failing prose round-trips unchanged: preauthorization: pending review
+red: task3 already_masked literal_prefixed_value
+red: task3 already_masked numeric_value
+red: task3 already_masked authorization_header_prose
+red: task3 already_masked cookie_colon_prose
+red: task3 already_masked ANSI-wrapped and CRLF secrets never reach the tail
+log-scan: red3 seed hits 0
+red: task3 commit 623d9d2

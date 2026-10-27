@@ -1,0 +1,7 @@
+pr3: number 255
+pr3: head 88727aeae158b96519fc3985acf010e6e8d2c8f1
+pr3: crosswake_ci failure on head 3b17022 (run 40361272003: format-proof, example-host bandit advisory, one inspect byte-equal test failure not reproduced locally; fixed forward by 88727ae)
+pr3: crosswake_ci success on head 88727ae
+pr3: run 40366309125 event pull_request (reports head sha; GitHub also tests a synthetic merge commit of the head into main)
+pr3: bundle_recheck 24c8389 on_origin_main yes at 2026-10-26T17:43:28Z
+pr3: bundle_recheck heads 1 yes 1 origin_main 0b28e6d

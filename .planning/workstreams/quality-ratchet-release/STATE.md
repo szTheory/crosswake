@@ -1,62 +1,39 @@
 ---
 gsd_state_version: "1.0"
-milestone: v28.0
+status: ready_to_execute
+stopped_at: Phase 196 planning verified; ready to execute
+last_updated: "2026-10-27T14:04:12.655Z"
+state_head: 64083ea1d6a34eec31c2638e7700dc2e3467589e
 milestone_name: Truth and Release Train
-current_phase: 195
-current_phase_name: Pipeline repair and hygiene
-status: executing
-stopped_at: Completed 195-11-PLAN.md
-last_updated: "2026-10-26T16:38:15.510Z"
-state_head: cb1b3871caba3df9cd57332616d16054a8302e9a
+milestone: v28.0
+last_activity: 2026-10-27
+current_phase: 196
+current_phase_name: Spec and structure ratchet
+last_activity_desc: Phase 196 planned; independent recheck passed; 17 plans and 40 tasks pending execution
 progress:
-  total_phases: 2
-  completed_phases: 1
-  total_plans: 22
-  completed_plans: 20
-  percent: 50
-last_activity: 2026-10-25
-last_activity_desc: Phase 195 planned
+  total_phases: 6
+  completed_phases: 2
+  total_plans: 47
+  completed_plans: 30
+  percent: 64
 ---
 
-# Project State
-
-See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.md` (now, next, later, parked) and [ROADMAP.md](ROADMAP.md) for the v28.0 phases 194–199.
+See `.planning/BEARINGS.md`, `.planning/ROADMAP-ROLLING.md` and [ROADMAP.md](ROADMAP.md).
 
 ## Current Position
 
-Phase: 195 (Pipeline repair and hygiene) — EXECUTING
-Plan: 12 of 13
-Status: Ready to execute
+Last completed phase: 195, 21/21 plans, verification passed 8/8; proof names actual main b8398c38 and reviewed head 24baafa3. Prior delivery approvals are consumed. Phase 196 planning passed independent recheck after one revision: 17 sequential plans, 40 tasks, 56 verification commands; all eight requirements, GR-06 and 27 decisions covered. No Phase 196 implementation, full pilot or new CI result is claimed.
 
 ## Exact Next Action
 
-What was checked: Phase 195 has 13 plans (195-01 to 195-13, waves 1 to 13 in order). They cover REL-01 to REL-06, HYG-01 and HYG-02. The plan checker ran three times, then a targeted fix closed the last 5 warnings. The probes found no verify-path or failing-direction problems in 53 commands. What happened: Phase 194's closeout PR #249 is merged. The plans are committed on local branch `fix/release-fixture-version-stamp` and are not pushed; plan 195-01 expects to start on that branch, and the plans reach `main` inside PR1. What is unknown: CI on PR1, because it is not opened yet. Nothing was released, tagged or pushed.
-
-Next action: `/gsd-execute-phase 195 --ws quality-ratchet-release` (plan 195-10, branch `chore/root-hygiene-and-cleanroom` from origin/main).
+Active phase 196: planned, ready to execute. Exact next command: `$gsd-execute-phase 196 --ws quality-ratchet-release`. Read 196-01-PLAN.md and 196-PLAN-CHECK.md. Execution starts by preserving docs/195-closeout and both existing privacy receipts, then branching from current origin/main. Planning remains on the docs branch for later PR delivery; no merge, publish, tag or delete is authorized.
 
 ## Carried debt
 
-See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md); the v23 deferred table is in `milestones/v23.0-closeout`. The adopter lane stays parked; its resume is in ROLLING PARKED.
-
-## Performance Metrics
-
-| Plan | Duration | Tasks | Files |
-|------|----------|-------|-------|
-| Phase 195 P01 | 100 min | 3 tasks | 11 files |
-| Phase 195 P04 | 1 session | 2 tasks | 6 files |
-| Phase 195 P06 | 25min | 2 tasks | 10 files |
-| Phase 195 P07 | 25min | 2 tasks | 9 files |
-| Phase 195 P08 | 30m | 2 tasks | 7 files |
-| Phase 195 P09 | 1 session | 3 tasks | 4 files |
-| Phase 195 P10 | 40m | 2 tasks | 22 files |
-| Phase 195 P11 | 30m | 3 tasks | 8 files |
-
-## Decisions
-
-- [Phase 195]: Shell fixture comparisons normalize only version-derived values (stamp, crosswake_version, SwiftPM minimumVersion) on both sides; fixtures keep literal 0.2.11
+GR-06 stays with Phase196; original cleanroom WR-04/05/06 and IN-03 stay with Phase197. Pilot outcomes and repaired baselines remain unmeasured. Historical HYG-02 override grants no new permission. The adopter lane remains parked.
 
 ## Session
 
-**Last session:** 2026-10-26T16:38:15.485Z
-**Stopped at:** Completed 195-11-PLAN.md
-**Resume file:** None
+**Last session:** 2026-10-27T14:04:12.655Z
+**Stopped at:** Phase 196 planning verified; ready to execute
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-01-PLAN.md

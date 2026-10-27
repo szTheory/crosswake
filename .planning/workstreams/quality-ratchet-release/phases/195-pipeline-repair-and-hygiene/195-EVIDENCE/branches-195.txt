@@ -1,0 +1,112 @@
+branch: refs/heads/chore/first-adopter-guidance-cleanup tip b3ed96d class archive_then_delete last_commit 2026-08-08 pr #106 CLOSED
+branch: refs/heads/chore/post-0.1.2-cleanup tip 2240ddf class delete_merged last_commit 2026-06-17 pr #22 MERGED
+branch: refs/heads/chore/track-110-patterns tip cf5a74b class archive_then_delete last_commit 2026-06-17 pr #26 CLOSED
+branch: refs/heads/collateral/auto-refresh tip c8d774f class keep_open_pr #253 last_commit 2026-10-26 pr #253 OPEN
+branch: refs/heads/dependabot/github_actions/actions-4430c5f07e tip cb639e9 class keep_open_pr #252 last_commit 2026-10-26 pr #252 OPEN
+branch: refs/heads/docs/alpha-reference-host-seed tip f2c502c class archive_then_delete last_commit 2026-08-25 pr #112 MERGED
+branch: refs/heads/docs/sigra-personal-account-authority-seed tip 9ca5fcc class archive_then_delete last_commit 2026-08-08 pr #109 CLOSED
+branch: refs/heads/docs/v11-complete tip aaa886e class delete_merged last_commit 2026-06-17 pr #23 MERGED
+branch: refs/heads/fix/align-companion-core-constraints tip 85e6aee class archive_then_delete last_commit 2026-09-10 pr #110 CLOSED
+branch: refs/heads/fix/android-auto-publish-and-firedrill-api tip de8b08e class delete_merged last_commit 2026-06-17 pr #21 MERGED
+branch: refs/heads/fix/fire-drill-artifact-classifier-assertion tip 8295fb0 class delete_merged last_commit 2026-06-16 pr #20 MERGED
+branch: refs/heads/main tip ff63e5d class keep_main last_commit 2026-10-26 pr none
+branch: refs/heads/phase-103-chimeway-notification-proof tip 65dd9f4 class archive_then_delete last_commit 2026-08-26 pr none
+branch: refs/heads/phase-104-provider-feedback-recipe-truth tip 36841e0 class archive_then_delete last_commit 2026-09-12 pr none
+branch: refs/heads/phase167-default-truth-closure tip cc5286d class archive_then_delete last_commit 2026-09-10 pr #148 CLOSED
+branch: refs/heads/release-attestation-diagnostics-2026-09-27 tip ff74b1f class archive_then_delete last_commit 2026-09-27 pr none
+branch: refs/heads/release-please--branches--main tip 64bd89e class keep_release last_commit 2026-10-25 pr #236 OPEN
+branch: refs/heads/resume/chimeway-notification-physical-proof tip 3165ab6 class archive_then_delete last_commit 2026-09-11 pr none
+branch: refs/heads/v4-v9-rollup tip f2eec3e class delete_merged last_commit 2026-06-12 pr #12 MERGED
+branches: total 19 keep 4 delete_merged 5 archive_then_delete 10
+branches: ls_remote_heads_count       19 ledger_lines 19 equal yes
+branches: auto_deleted_at_merge fix/release-fixture-version-stamp #250 already_absent; ci/recurring-lanes-and-secret-masking #251 already_absent; ci/weekly-canary-node-pin #254 already_absent; chore/root-hygiene-and-cleanroom #255 already_absent (delete_branch_on_merge true; no gate)
+worktree: <main-checkout>  ff63e5d8 [main]
+worktree: count 1
+ops: order merge #253; tag+delete chore/first-adopter-guidance-cleanup; delete chore/post-0.1.2-cleanup; tag+delete chore/track-110-patterns; tag+delete docs/alpha-reference-host-seed; tag+delete docs/sigra-personal-account-authority-seed; delete docs/v11-complete; tag+delete fix/align-companion-core-constraints; delete fix/android-auto-publish-and-firedrill-api; delete fix/fire-drill-artifact-classifier-assertion; tag+delete phase-103-chimeway-notification-proof; tag+delete phase-104-provider-feedback-recipe-truth; tag+delete phase167-default-truth-closure; tag+delete release-attestation-diagnostics-2026-09-27; tag+delete resume/chimeway-notification-physical-proof; delete v4-v9-rollup
+op: merge #253 head c8d774f approval allow
+op: merge #253 attempt 1 not_executed (pre-merge gh pr view returned HTTP 504; merge command never ran; read-back OPEN, no merge commit)
+op: merge #253 result held refused_by_protection (gh pr merge --match-head-commit c8d774f rc 1: head branch not up to date with base; Crosswake CI never executed, run 40328488899 action_required); allow consumed; read-back OPEN no merge commit
+op: tag refs/tags/archive/chore/first-adopter-guidance-cleanup tip b3ed96d approval allow
+op: tag refs/tags/archive/chore/first-adopter-guidance-cleanup result ok
+op: readback refs/tags/archive/chore/first-adopter-guidance-cleanup b3ed96d
+op: delete refs/heads/chore/first-adopter-guidance-cleanup tip b3ed96d approval allow
+op: delete refs/heads/chore/first-adopter-guidance-cleanup result ok
+op: readback refs/heads/chore/first-adopter-guidance-cleanup absent
+op: delete refs/heads/chore/post-0.1.2-cleanup tip 2240ddf approval allow
+op: delete refs/heads/chore/post-0.1.2-cleanup result ok
+op: readback refs/heads/chore/post-0.1.2-cleanup absent
+op: tag refs/tags/archive/chore/track-110-patterns tip cf5a74b approval allow
+op: tag refs/tags/archive/chore/track-110-patterns result ok
+op: readback refs/tags/archive/chore/track-110-patterns cf5a74b
+op: delete refs/heads/chore/track-110-patterns tip cf5a74b approval allow
+op: delete refs/heads/chore/track-110-patterns result ok
+op: readback refs/heads/chore/track-110-patterns absent
+op: tag refs/tags/archive/docs/alpha-reference-host-seed tip f2c502c approval allow
+op: tag refs/tags/archive/docs/alpha-reference-host-seed result ok
+op: readback refs/tags/archive/docs/alpha-reference-host-seed f2c502c
+op: delete refs/heads/docs/alpha-reference-host-seed tip f2c502c approval allow
+op: delete refs/heads/docs/alpha-reference-host-seed result ok
+op: readback refs/heads/docs/alpha-reference-host-seed absent
+op: tag refs/tags/archive/docs/sigra-personal-account-authority-seed tip 9ca5fcc approval allow
+op: tag refs/tags/archive/docs/sigra-personal-account-authority-seed result ok
+op: readback refs/tags/archive/docs/sigra-personal-account-authority-seed 9ca5fcc
+op: batch approval allow (user decision 2026-10-26: one-time exception to plan 13 one-operation-per-gate; scope = 17 listed operations, each bound to its ledger tip; moved branches skipped)
+op: tag refs/tags/archive/docs/sigra-personal-account-authority-seed result already_tagged
+op: readback refs/tags/archive/docs/sigra-personal-account-authority-seed 9ca5fcc
+op: delete refs/heads/docs/sigra-personal-account-authority-seed tip 9ca5fcc approval allow
+op: delete refs/heads/docs/sigra-personal-account-authority-seed result ok
+op: readback refs/heads/docs/sigra-personal-account-authority-seed absent
+op: delete refs/heads/docs/v11-complete tip aaa886e approval allow
+op: delete refs/heads/docs/v11-complete result ok
+op: readback refs/heads/docs/v11-complete absent
+op: tag refs/tags/archive/fix/align-companion-core-constraints tip 85e6aee approval allow
+op: tag refs/tags/archive/fix/align-companion-core-constraints result ok
+op: readback refs/tags/archive/fix/align-companion-core-constraints 85e6aee
+op: delete refs/heads/fix/align-companion-core-constraints tip 85e6aee approval allow
+op: delete refs/heads/fix/align-companion-core-constraints result ok
+op: readback refs/heads/fix/align-companion-core-constraints absent
+op: delete refs/heads/fix/android-auto-publish-and-firedrill-api tip de8b08e approval allow
+op: delete refs/heads/fix/android-auto-publish-and-firedrill-api result ok
+op: readback refs/heads/fix/android-auto-publish-and-firedrill-api absent
+op: delete refs/heads/fix/fire-drill-artifact-classifier-assertion tip 8295fb0 approval allow
+op: delete refs/heads/fix/fire-drill-artifact-classifier-assertion result ok
+op: readback refs/heads/fix/fire-drill-artifact-classifier-assertion absent
+op: tag refs/tags/archive/phase-103-chimeway-notification-proof tip 65dd9f4 approval allow
+op: tag refs/tags/archive/phase-103-chimeway-notification-proof result ok
+op: readback refs/tags/archive/phase-103-chimeway-notification-proof 65dd9f4
+op: delete refs/heads/phase-103-chimeway-notification-proof tip 65dd9f4 approval allow
+op: delete refs/heads/phase-103-chimeway-notification-proof result ok
+op: readback refs/heads/phase-103-chimeway-notification-proof absent
+op: tag refs/tags/archive/phase-104-provider-feedback-recipe-truth tip 36841e0 approval allow
+op: tag refs/tags/archive/phase-104-provider-feedback-recipe-truth result ok
+op: readback refs/tags/archive/phase-104-provider-feedback-recipe-truth 36841e0
+op: delete refs/heads/phase-104-provider-feedback-recipe-truth tip 36841e0 approval allow
+op: delete refs/heads/phase-104-provider-feedback-recipe-truth result ok
+op: readback refs/heads/phase-104-provider-feedback-recipe-truth absent
+op: tag refs/tags/archive/phase167-default-truth-closure tip cc5286d approval allow
+op: tag refs/tags/archive/phase167-default-truth-closure result ok
+op: readback refs/tags/archive/phase167-default-truth-closure cc5286d
+op: delete refs/heads/phase167-default-truth-closure tip cc5286d approval allow
+op: delete refs/heads/phase167-default-truth-closure result ok
+op: readback refs/heads/phase167-default-truth-closure absent
+op: tag refs/tags/archive/release-attestation-diagnostics-2026-09-27 tip ff74b1f approval allow
+op: tag refs/tags/archive/release-attestation-diagnostics-2026-09-27 result ok
+op: readback refs/tags/archive/release-attestation-diagnostics-2026-09-27 ff74b1f
+op: delete refs/heads/release-attestation-diagnostics-2026-09-27 tip ff74b1f approval allow
+op: delete refs/heads/release-attestation-diagnostics-2026-09-27 result ok
+op: readback refs/heads/release-attestation-diagnostics-2026-09-27 absent
+op: tag refs/tags/archive/resume/chimeway-notification-physical-proof tip 3165ab6 approval allow
+op: tag refs/tags/archive/resume/chimeway-notification-physical-proof result ok
+op: readback refs/tags/archive/resume/chimeway-notification-physical-proof 3165ab6
+op: delete refs/heads/resume/chimeway-notification-physical-proof tip 3165ab6 approval allow
+op: delete refs/heads/resume/chimeway-notification-physical-proof result ok
+op: readback refs/heads/resume/chimeway-notification-physical-proof absent
+op: delete refs/heads/v4-v9-rollup tip f2eec3e approval allow
+op: delete refs/heads/v4-v9-rollup result ok
+op: readback refs/heads/v4-v9-rollup absent
+branches: final_heads collateral/auto-refresh dependabot/github_actions/actions-4430c5f07e main release-please--branches--main
+branches: final_matches_keep_set yes
+branches: keep_set_note main, release-please--branches--main, open-PR heads #252 #253 #236; docs/195-closeout added when pushed; no branch held
+branches: batch_deviation the 17 operations after the first 7 gates ran under one user-approved batch (see op: batch approval line), a one-time exception to plan 13 one-operation-per-gate; user ran the script (agent run blocked by the auto-mode classifier); result 0 skipped, 0 lease_failed, 0 tag_conflict
+branches: tag_count_method earlier "94 tags" was the line count of `git ls-remote --tags origin` (annotated tags print an extra peeled ^{} line). Now 114 = 94 + 10 archive tags x 2 lines. Real new tags: 10 (grep -vc '\^{}' of refs/tags/archive/* = 10); no existing tag changed.
+branches: evidence_corrections fix/release-fixture-version-stamp, ci/recurring-lanes-and-secret-masking, ci/weekly-canary-node-pin, chore/root-hygiene-and-cleanroom were auto-deleted at merge (delete_branch_on_merge true) and are recorded already_absent, not as gated ops; the docs/sigra... tag was pushed at gate 8 and recorded already_tagged on the batch pass
