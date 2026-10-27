@@ -4,18 +4,18 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: Pipeline repair and hygiene
-status: ready_to_execute
-stopped_at: Planned round-3 gap closure 195-19 through 195-21
-last_updated: "2026-10-27T02:46:20Z"
+status: executing
+stopped_at: Completed 195-19; executing 195-20
+last_updated: "2026-10-27T03:31:53Z"
 state_head: 6b6dcf6315ca150def2b18a71faf217a41caafea
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 30
-  completed_plans: 27
+  completed_plans: 28
   percent: 17
 last_activity: 2026-10-27
-last_activity_desc: Phase 195 round-3 gap plans verified
+last_activity_desc: Phase 195 plan 19 verified and committed; plan 20 next
 ---
 
 # Project State
@@ -24,13 +24,13 @@ See `.planning/BEARINGS.md`, `.planning/ROADMAP-ROLLING.md` and [ROADMAP.md](ROA
 
 ## Current Position
 
-Last completed phase: 194. Phase 195: 18/21 plans executed; round-3 plans 19–21 ready in waves 4–6. Verification remains gaps_found (7/8); only REL-03 is pending. Plan checking passed after two blocker corrections; validation strategy is draft.
+Last completed phase: 194. Phase 195: 19/21 plans executed; plan 19 structural repair is committed on the isolated fix branch. Plans 20–21 remain. Verification stays gaps_found (7/8); REL-03 remains pending until fresh actual-main proof.
 
 ## Exact Next Action
 
-What was checked: authoritative closeout history reconciled locally; six leak probes and quadratic padding reproduced; existing masking 138/138 and targeted ExUnit 46/46 passed. Three new command gates correctly reject the current suite's missing round-3 families. Plans and requirement coverage passed independent review. Nothing is implemented by these plans yet; arbitrary secrets remain outside finite supported-rule proof.
+What was checked: plan 19 candidate masking file passed 149/149 and full Node suite passed 286/286; required TAP families, pre-fix, identity-mask and quadratic controls behaved as expected. Only the two planned code/test files differ on fix/secret-mask-structural (base 7621c0ce; head b0233b8e). No push or irreversible operation occurred. Planning and summary are preserved on docs/195-closeout; model-profile changes remain separate.
 
-Next: `$gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release` (start 195-19; do not repeat 01–18). Planning is local on `chore/codex-model-profile`; execution must reconcile intended phase artifacts onto `docs/195-closeout`, then branch code from fresh `origin/main` as plan 19 specifies. No push or irreversible operation was performed in this planning run; CI has not run on the new local planning head.
+Next: continue `$gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release` at 195-20, then 195-21. Do not repeat 01–19. The current execution is ongoing; no user verification is needed. Main delivery will require a fresh scoped merge decision after independent review and exact-head green CI.
 
 ## Carried debt
 
