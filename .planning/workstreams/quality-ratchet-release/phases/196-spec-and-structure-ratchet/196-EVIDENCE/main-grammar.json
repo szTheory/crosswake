@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "guard": "grammar",
-  "candidate_sha": "8b88fbf59d7002585a54799482e47806b45ece7c",
+  "candidate_sha": "0fc6df8a65e26c39fd88e9cbe748c435b5a4c57c",
   "main_ref": "origin/main",
   "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
-  "guard_blob": "e4d7bf30bf8b888288ef1da0e326c33de303f23d",
-  "guard_sha256": "b5bc91752acf74533cb6897dd1b21bdb619269c24234e956550e34f0a40dfd4a",
+  "guard_blob": "0f21505c161fb82ee7066464f2969f34535cf879",
+  "guard_sha256": "2af98c52739ede0a0a7710e99432ff2e080e8fb2a8b42cb0dea145ab6112eb79",
   "tools": [
     {
       "path": "test/js/ci_secret_masking.test.mjs",
       "origin": "candidate",
-      "blob": "e4d7bf30bf8b888288ef1da0e326c33de303f23d",
-      "sha256": "b5bc91752acf74533cb6897dd1b21bdb619269c24234e956550e34f0a40dfd4a"
+      "blob": "0f21505c161fb82ee7066464f2969f34535cf879",
+      "sha256": "2af98c52739ede0a0a7710e99432ff2e080e8fb2a8b42cb0dea145ab6112eb79"
     },
     {
       "path": "script/verify_repository.mjs",
@@ -158,10 +158,10 @@
   "findings": [],
   "restoration": {
     "branch": "fix/spec-structure-ratchet",
-    "head": "8b88fbf59d7002585a54799482e47806b45ece7c",
-    "index_sha256": "16a4444bf5527ff256602f1f9e1d6c1f995dd20be4fed54da6794729e6cdc0e6",
+    "head": "0fc6df8a65e26c39fd88e9cbe748c435b5a4c57c",
+    "index_sha256": "78cc5b1471125cb2d78214aded51de9ce052bb6eabf2a5aed6e89be385c5f958",
     "tracked_count": 6168,
-    "tracked_sha256": "63e5d52f9761bd713bbd49046a1beafb75f4ec02b40350abf94de4a70c222c64",
+    "tracked_sha256": "60253494d1534ab6539d9fbe8bd40ef33b5b7b800d0c27569db58aa6fae9f8fb",
     "untracked_count": 0,
     "untracked_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
   },
@@ -173,5 +173,5 @@
     "exit": 0,
     "files": 171
   },
-  "duration_ms": 4118
+  "duration_ms": 3966
 }

@@ -1466,21 +1466,14 @@ test("derived chains are tracked and non-secret env keys are ignored", () => {
 });
 
 test("live workflow tree: non-empty floor and zero violations", (t) => {
-  let total = 0;
-  let references = 0;
-  let aliases = 0;
-  const bad = [];
-  for (const f of workflowFiles()) {
-    const text = readFileSync(path.join(workflowDir, f), "utf8");
-    total += derivedSecretAssignments(text).length;
-    references += text.split("\n").filter((line) => CREDENTIAL_REFERENCE.test(line)).length;
-    aliases += secretBoundKeys(text).size;
-    for (const v of derivedSecretViolations(text)) bad.push(`${f}:${v.line} ${v.name} (${v.reason})`);
-  }
+  // Promoted after the committed report implementation was measured on actual fetched main.
+  const report = workflowGrammarCensus(repoRoot);
+  assertGrammarCensus(report);
+  const total = report.scanned_files.reduce((n, f) => n + derivedSecretAssignments(readFileSync(path.join(repoRoot, f), "utf8")).length, 0);
   assert.ok(total >= 1, "scan must find at least one derived assignment, else it is vacuous");
-  assert.ok(references > 0 && aliases > 0, "live credential census empty");
-  t.diagnostic(`live census references ${references}; aliases ${aliases}; derived ${total}; violations ${bad.length}`);
-  assert.deepEqual(bad, [], `unmasked derived secrets: ${bad.join("; ")}`);
+  assert.ok(workflowCredentialInventory().envAliases.length > 0, "live credential alias census empty");
+  const c = report.counts;
+  t.diagnostic(`live census workflows ${c.workflows}; references ${c.references}; candidates ${c.candidates}; supported ${c.supported}; denied ${c.denied}; unknown ${c.unknown}; derived ${total}`);
 });
 
 test("runnerMaskedLog drops add-mask lines and masks later occurrences only", () => {
