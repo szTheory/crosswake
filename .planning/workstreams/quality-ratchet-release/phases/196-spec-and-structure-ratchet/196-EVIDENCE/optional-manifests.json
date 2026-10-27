@@ -12,7 +12,11 @@
       "test/crosswake/guides/evidence_manifest_test.exs": "2472790e5e9892ffabc2a76c374c666874db1b301be87d5e3632bcd317bb9244",
       "test/test_helper.exs": "81372ee19239423e84440dc5122167dfe439cf5d058f6aec59f4a48f7ed5061d",
       "examples/phoenix_host/e2e/route_tour.spec.ts": "ff81992148e1cff046b048b41430b065dd9b71823ace0dcf8f280e6148828e9d",
-      "examples/phoenix_host/e2e/support/evidence_manifest.ts": "8c6df7a47da6dd11a55ab7606d408caa22aedb50921bb9c4dae2845525b78934"
+      "examples/phoenix_host/e2e/support/evidence_manifest.ts": "8c6df7a47da6dd11a55ab7606d408caa22aedb50921bb9c4dae2845525b78934",
+      "packages/crosswake_threadline/test/crosswake/proof/phase139_threadline_cleanroom_test.exs": "c6cc9c0d9d9791c9d06a172589e0b990d1d8492ed4572e96f9777a1bb365bf8f",
+      "packages/crosswake_threadline/test/test_helper.exs": "cdf8fa6f5ee0964363d2161c69329c64ee9e1092ba8dcb5eea116b6d898537c3",
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/tdd-manifest-red.json": "f4aea0fd733f0242b5084f12504e98648794a9be9a97e6687c7a03e23b628414",
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/tdd-plug-red.json": "2128f98ebe44c5f3449642b756128eb4875cf9ef2cbefc8113a2d2a45427c170"
     }
   },
   "producer": {
@@ -96,6 +100,48 @@
     "diagnostics": "Closed reason labels; synthetic input and artifact-root leakage assertions pass."
   },
   "threadline": {
-    "status": "pending"
+    "command": "mix cmd --cd packages/crosswake_threadline mix test test/crosswake/proof/phase139_threadline_cleanroom_test.exs",
+    "disabled": {
+      "exit": 0,
+      "executed": 4,
+      "failures": 0,
+      "excluded": 1
+    },
+    "enabled": {
+      "exit": 0,
+      "executed": 5,
+      "failures": 0,
+      "excluded": 0,
+      "environment": "MIX_INCLUDE_THREADLINE_PLUG=1"
+    },
+    "controls": [
+      {
+        "control": "disabled",
+        "exit": 0,
+        "executed": 3,
+        "failures": 0,
+        "excluded": 2
+      },
+      {
+        "control": "missing",
+        "exit": 2,
+        "executed": 4,
+        "failures": 1,
+        "excluded": 1
+      },
+      {
+        "control": "enabled",
+        "exit": 0,
+        "executed": 4,
+        "failures": 0,
+        "excluded": 1
+      }
+    ],
+    "missing_dependency_isolation": "Plug ebin omitted from real subprocess code paths; ensure_loaded? proves it unavailable before the actual consumer runs. Installed dependencies are unchanged."
+  },
+  "red_evidence": {
+    "format": "native Node TAP assertions over actual ExUnit process exits",
+    "manifest": "RED_EVIDENCE_OK",
+    "plug": "RED_EVIDENCE_OK"
   }
 }
