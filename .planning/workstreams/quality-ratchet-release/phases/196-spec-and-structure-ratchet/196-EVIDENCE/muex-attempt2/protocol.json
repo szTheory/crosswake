@@ -1,0 +1,169 @@
+{
+  "schema": "crosswake-muex-protocol/2",
+  "attempt": "27daad6d-8e3c-49c6-8f4f-9e89a9694692",
+  "version": "0.12.0",
+  "targets": [
+    "lib/crosswake/offline/safe_observation.ex",
+    "lib/crosswake/offline/journal.ex",
+    "lib/crosswake/policy/compiler.ex",
+    "lib/crosswake/policy/route.ex",
+    "lib/crosswake/bridge/contract.ex"
+  ],
+  "tests": [
+    "test/crosswake/offline",
+    "test/crosswake/policy",
+    "test/crosswake/bridge"
+  ],
+  "flags": [
+    "--no-filter",
+    "--no-tce",
+    "--no-optimize",
+    "--concurrency",
+    "1",
+    "--timeout",
+    "10000",
+    "--fail-at",
+    "0",
+    "--format",
+    "json"
+  ],
+  "budgetMs": 1800000,
+  "noiseLimit": 0.2,
+  "startedAt": "2026-10-27T17:35:52.983Z",
+  "startedMonotonicMs": 682893148.84275,
+  "toolRoot": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99",
+  "homes": {
+    "MIX_HOME": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/mix",
+    "MIX_ARCHIVES": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/archives",
+    "HEX_HOME": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/hex"
+  },
+  "sourceCommit": "dad4d998c63da02ef6c80d4745cd3c4659e20cb9",
+  "sourceTree": "a6a368f88585bec4268ab98a2feaba78bbbf4361",
+  "cleanTrackedInputs": true,
+  "sourceDigests": {
+    "lib/crosswake/offline/safe_observation.ex": "fc44a5e6fcbc7e92059d6e2f833503bc0d7762dafb00fc78649b46bc0c996965",
+    "lib/crosswake/offline/journal.ex": "48b89872653886c64cf6ac882dc9804be32fdc2f50f363ba54c795ce6c841bff",
+    "lib/crosswake/policy/compiler.ex": "c74d89ca28174b0fc881f537fe2e9ab1ea9d3093d2df88774485f1ccc07787aa",
+    "lib/crosswake/policy/route.ex": "164ce24fe98cd5f47b132c2d538e5c7ac9b1e4b7596ffaf8b43432eafd024d0f",
+    "lib/crosswake/bridge/contract.ex": "b4db73bbed37b27573a246d50f0f79079ae2a9ad4c1e2e8c8dbb94daeca28878",
+    "test/crosswake/offline/content_pack_test.exs": "5af8add5cfea070bec58933bbd17d357c3f15a19a717a1c009607bb7489d0adc",
+    "test/crosswake/offline/contracts_test.exs": "8c47e35577af627cd62b5bfed0e7b2e732b1919de9e94b0a0560fa31925a8e00",
+    "test/crosswake/offline/journal_test.exs": "ce166a4a5858b48981c0938e951c8ad7249838ae7d418874414e0eb213f3e76b",
+    "test/crosswake/offline/proof_lane_test.exs": "16feb5bbe32fbcaf418c31f2aec8f79e7e729f3f3868198ccc142f87db59901d",
+    "test/crosswake/offline/replay_test.exs": "31eb349ff88adb3bbe19cdb2c6e0fdb3a8fe66f459807279fef735c9ff504b7c",
+    "test/crosswake/offline/runtime_test.exs": "9c869dc50aaf4b69c8111737b9d107c7223b2c0d845cd606f38b72ccbc177954",
+    "test/crosswake/offline/safe_observation_test.exs": "677b41bdba5d8c6e37a49b65f88d2a199ad65abb59868fe735df51e14efaa920",
+    "test/crosswake/offline/status_test.exs": "8afc56f61bc81e675d9fd34830b90d8057e82712eb10e5ea0fde591203f6746c",
+    "test/crosswake/offline/telemetry_test.exs": "6128cd1d250353f9f876b59bfd2e257aacbb1db272c9979d5a51af328770ed3c",
+    "test/crosswake/policy/compile_error_test.exs": "7decaff79eb51ab50c1f219619399d926f9de19183d215ffaa4f0af3fe3732c7",
+    "test/crosswake/policy/compiler_test.exs": "da99792b8592fdc89628603569ffa0828f7cce3109c4ea418cab423b64026024",
+    "test/crosswake/policy/corridor_profiles_test.exs": "040fd516867cd7c4aad0219c049ca9d86c2b8e3065a649cd8ba7bf3a54c32e87",
+    "test/crosswake/policy/finite_product_test.exs": "c5603f37588389340425d935d2bbea3acf7e26c653d43014fd13ea350a950061",
+    "test/crosswake/policy/host_commands_test.exs": "a08403188d77f8a922924f640f973bade77fcd75f8bb498f16ff45b47d413342",
+    "test/crosswake/policy/route_test.exs": "76c95e443dd71e12565f3e2261aece1844d670936bbe42a65aee0436e7233aa2",
+    "test/crosswake/policy/schema_test.exs": "1588ccfd9902c2efb526a0b59c146be2fb3f2d59b39807af2b3e703434791528",
+    "test/crosswake/policy/warning_test.exs": "4b3e3743b4243bc613b475d81dd858296fc869bb2cd7e144e8eb8181e5c18548",
+    "test/crosswake/bridge/bridge_behavioral_vector_test.exs": "4f84721eeeccebb50abc3f3e87e3b92161f048fb9b2089252cc0c5ba605c314e",
+    "test/crosswake/bridge/catalog_guard_test.exs": "6525dda1d45ba6e3329a36b85acc53dd03aeebc109e2af62c427af6bac2f199c",
+    "test/crosswake/bridge/contract_test.exs": "9464d93136520fe56954ed00c5a0867668d4e57b07da53d5eff91ce6c092d30d",
+    "test/crosswake/bridge/location_diagnostics_test.exs": "dff90cceab91eaf2454883ca38b60e23a949feb63b3004d050b7672d159eca8f",
+    "test/crosswake/bridge/push_test.exs": "a0eaf01c93ee85dc26a2f135d4fa4774ee522e7c715b315cec16174b1f0d9e37",
+    "test/crosswake/bridge/registry_test.exs": "d48f0ea2c5c9aa567f649f04523e3a69d73829d9ddcd03a853a494b54c08f173",
+    "test/test_helper.exs": "81372ee19239423e84440dc5122167dfe439cf5d058f6aec59f4a48f7ed5061d",
+    "mix.exs": "aceb7f154bdd4268e48f2950bd0cc7ec42ca00c88ee760db5692388db90035ea",
+    "mix.lock": "4cbbee63844da78b803d8620f45aeec85921039146568cd6602a4343471c21be"
+  },
+  "machine": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0",
+    "logicalCpus": 18
+  },
+  "toolchain": {
+    "node": "v22.14.0",
+    "mix": "Erlang/OTP 27 [erts-15.2.3] [source] [64-bit] [smp:18:18] [ds:18:18:10] [async-threads:1] [jit]\n\nMix 1.19.5 (compiled with Erlang/OTP 27)"
+  },
+  "fullBaselineArguments": [
+    "muex",
+    "--files",
+    "lib/crosswake/offline/safe_observation.ex,lib/crosswake/offline/journal.ex,lib/crosswake/policy/compiler.ex,lib/crosswake/policy/route.ex,lib/crosswake/bridge/contract.ex",
+    "--test-paths",
+    "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+    "--no-filter",
+    "--no-tce",
+    "--no-optimize",
+    "--concurrency",
+    "1",
+    "--timeout",
+    "10000",
+    "--fail-at",
+    "0",
+    "--format",
+    "json",
+    "--output",
+    "<fresh-attempt2-baseline-path>"
+  ],
+  "bootstrapArguments": [
+    "muex",
+    "--files",
+    "lib/crosswake/offline/safe_observation.ex",
+    "--test-paths",
+    "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+    "--no-filter",
+    "--no-tce",
+    "--no-optimize",
+    "--concurrency",
+    "1",
+    "--timeout",
+    "10000",
+    "--fail-at",
+    "0",
+    "--format",
+    "json",
+    "--output",
+    ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/bootstrap-report.json"
+  ],
+  "archiveFirst": "satisfied-by-attempt1-observed-integration-failure",
+  "package": {
+    "registry": "https://hex.pm/api/packages/muex/releases/0.12.0",
+    "source": "https://github.com/Oeditus/muex/tree/v0.12.0",
+    "expectedChecksum": "a4b395b87d23b8d34f4508d0c13494b734f1fff8156eca2360fd279a0799d52e"
+  },
+  "attemptNumber": 2,
+  "carriedMs": 340269.58370900154,
+  "historyDigests": {
+    ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt1-history/196-13-SUMMARY.md": "8f365b55e6cd2a96be2f77cab7a5e809c356edd42a06899420415bd29ca43c4b",
+    ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt1-history/muex-pilot.mjs": "963a7f01c635f5e73fed162bfecf31a164ffd720f685cc99670091c213b2b827",
+    ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt1-history/muex-protocol.json": "b69ee6f299d28627eb6d4c9a0a376315b7cb4adcf70f7a7a7aae4b8cd278c949",
+    ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt1-history/report.json": "9f8aa1262c5c3e809bf98ecc11fbb4912fb23aaf3c39dc4c0113a6a590ba7e29",
+    ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt1-history/result.json": "01ed82f2351a423b21bf7cd8ab4135f79e3940e381385f1b03c005ae867889f2"
+  },
+  "fallback": "verified-existing-escript",
+  "controlSelection": {
+    "mutators": [
+      "comparison"
+    ],
+    "tests": [
+      "test/crosswake/offline",
+      "test/crosswake/policy",
+      "test/crosswake/bridge"
+    ],
+    "pairsRequired": [
+      "lib/crosswake/offline/safe_observation.ex",
+      "lib/crosswake/offline/journal.ex",
+      "lib/crosswake/policy/compiler.ex",
+      "lib/crosswake/policy/route.ex",
+      "lib/crosswake/bridge/contract.ex"
+    ],
+    "status": "exact-weakening-must-freeze-before-controls"
+  },
+  "verifiedEscriptSha256": "f99c30672230236f1a6e2cf09d9bfce5a9a353737e7e1c210569bd2e6fb25756",
+  "sourceChecksums": {
+    "lib/muex/config.ex": "a7049e01df4ebedf6377a857acade86554f4565aaf7aa2e313f23cd536d27302",
+    "lib/muex/reporter/json.ex": "eff24b3ddc2d01f8ed2356e660467d376206302c46dd5fa879b2d3eba0495c43",
+    "lib/muex/test_runner/port.ex": "ac1e03e4bcca2e60d4fd0a00a0fbab9db8a2e26dee12218dd9270cb32958c154",
+    "lib/mix/tasks/muex.ex": "1e976d017783e3548894283ef600f4f55ee7675f2a6e6ac08b0fc497bd2edc5d",
+    "mix.exs": "7a235023b42a3e9e8c73c9e03864d977237679e36d567bd0245b73b9c654786e"
+  },
+  "resolutionSha256": "a0e34b4b545719c48a63be1f5a78e87c13a56af37e45b197037d8b678b78391b"
+}

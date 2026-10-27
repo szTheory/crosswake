@@ -1,0 +1,89 @@
+{
+  "schema": "crosswake-muex-process/2",
+  "attempt": "27daad6d-8e3c-49c6-8f4f-9e89a9694692",
+  "status": "captured",
+  "commands": [
+    {
+      "label": "bootstrap",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/offline/safe_observation.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-tce",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-attempt2/bootstrap-report.json"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 222238.12183299998,
+      "outputSha256": "1700dad341133253820e95114a02590bb4ff4c43f17347384bea1160a4ffa2b6"
+    },
+    {
+      "label": "restore-compile",
+      "command": "mix",
+      "args": [
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 1704.0144589999982,
+      "outputSha256": "f8569a16a15a1cd88e1173a4d72122d3b4de31131d765eee37fb497cd3224d33"
+    },
+    {
+      "label": "restore-tests",
+      "command": "mix",
+      "args": [
+        "test",
+        "test/crosswake/offline",
+        "test/crosswake/policy",
+        "test/crosswake/bridge"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "durationMs": 1900.8802079999878,
+      "outputSha256": "b6573177d53eced458f37557ed12c49c3578a0614058b5767a62959a348955b2"
+    }
+  ],
+  "carriedMs": 340269.58370900154,
+  "requirement": "SPEC-04 pending",
+  "reportStartedAtMs": 1793122553352,
+  "reportSha256": "67fce5c924eb93b76f8d5e6caa45a26a94dc7ff261952c70a6cc3331911a60ec",
+  "summary": {
+    "timeout": 0,
+    "invalid": 50,
+    "killed": 271,
+    "total": 331,
+    "equivalent": 6,
+    "survived": 4,
+    "no_coverage": 0,
+    "mutation_score_high": 98.55,
+    "mutation_score_low": 98.55
+  },
+  "restored": true,
+  "cleanTests": [
+    {
+      "tests": 236,
+      "failures": 0
+    }
+  ],
+  "elapsedMs": 226221.03387498856,
+  "aggregateElapsedMs": 566490.6175839901,
+  "remainingMs": 1233509.38241601
+}
