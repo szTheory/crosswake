@@ -195,7 +195,7 @@ Plans:
 - [x] 196-08-PLAN.md — Wave 8: Independent finite policy oracle and diagnostic provenance
 
 **Wave 9** *(ready; Wave 8 complete)*
-- [ ] 196-09-PLAN.md — Wave 9: Protocol leaf and real Mix compile-cycle ratchet
+- [x] 196-09-PLAN.md — Wave 9: Protocol leaf and real Mix compile-cycle ratchet
 
 **Wave 10** *(blocked on Wave 9 completion)*
 - [ ] 196-10-PLAN.md — Wave 10: Explicit diagnostic fallbacks and exact broad-containment exceptions
@@ -273,7 +273,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 8/17 | In progress; plan09 next | - |
+| 196. Spec and structure ratchet | 9/17 | In progress; plan10 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,8/17 plans complete. Plans01-07 retain optional/browser/vector,absence and privacy proof. Plan08:28 focused tests passed;semantic108 and staged108 input/unique/completed;structured atom keys and exact original source tuples;5 actual-source corruption controls failed intended assertions,restored exact bytes and recompiled green. Collection enforcement312 files/84 findings/delta0;capture helper33 controls remain recorded;default stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-09-PLAN.md. Do not repeat plans01-08,completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification;SPEC-05/unclassified remains for checker review;other guards,full Muex pilot and new CI remain pending. Original cleanroom debt stays with Phase197;adopter lane stays parked. No irreversible-operation approval transfers.
+Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,9/17 plans complete. Plans01-08 retain optional/browser/vector,absence,privacy and policy proof. Plan09:20 existing contract/vector/drift tests and15 real-Mix tests passed;repaired counts compile0/connected0/all4 and threshold exits0/0/0;157lib sources,325modules,171manifest sources. Actual-main b8398c38 retains1/1/4 on156sources,exact restoration and final guard hashes. Capture helper33 controls remain recorded;collection default stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-10-PLAN.md. Do not repeat plans01-09,completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification;SPEC-05/unclassified and WINDOWS40 process deviation need independent review;other guards,full Muex pilot and new CI remain pending. Original cleanroom debt stays with Phase197;adopter lane stays parked. No irreversible-operation approval transfers.

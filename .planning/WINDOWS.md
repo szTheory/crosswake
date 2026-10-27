@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 38
+open_count: 39
 waived_count: 0
 fixed_count: 1
-total_count: 39
-last_updated: 2026-10-06T22:31:27.544Z
+total_count: 40
+last_updated: 2026-10-27T16:26:07.373Z
 ---
 
 # Broken Windows Ledger
@@ -54,6 +54,7 @@ last_updated: 2026-10-06T22:31:27.544Z
 | 37 | 175 | stub | lib/mix/tasks/crosswake.release.mirror_tag_026.ex | 49 | Plan83 apply remains a fail-closed guard; Task3 implementation was not executed because Task2 PREFLIGHT_READY is unmet. | open |  | 2026-10-06T01:17:05.490Z |  |
 | 38 | 175 | unrun-verify | .planning/workstreams/quality-ratchet-release/phases/175-rehearsal-and-publish/175-83-PLAN.md |  | Plan83 Task3 one-use tag/conditional-CI behavior verification is unrun; Task2 precondition is unmet after terminal UNKNOWN preflight. | open |  | 2026-10-06T01:17:05.574Z |  |
 | 39 | 175 | deviation | lib/crosswake/release_candidate/ios_mirror_tag_repair.ex | 922 | Corrected the observed child-timeout envelope classification; request count stays unknown. | open |  | 2026-10-06T22:31:27.544Z |  |
+| 40 | 196 | deviation | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-09-SUMMARY.md |  | Tasks2 and3 acceptance controls ran after implementation; no pre-implementation RED compliance is claimed. | open |  | 2026-10-27T16:26:07.373Z |  |
 
 ````json
 [
@@ -526,6 +527,19 @@ last_updated: 2026-10-06T22:31:27.544Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-06T22:31:27.544Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 40,
+    "kind": "deviation",
+    "phase": "196",
+    "file": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-09-SUMMARY.md",
+    "line": null,
+    "description": "Tasks2 and3 acceptance controls ran after implementation; no pre-implementation RED compliance is claimed.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T16:26:07.373Z",
     "resolved_at": null,
     "milestone": null
   }
