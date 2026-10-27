@@ -1413,3 +1413,53 @@ test("round3 references bracket and github token", () => {
     assert.ok(secretBoundKeys(alias).has("BOUND") && derivedSecretAssignments(alias).length === 1 && derivedSecretViolations(alias).length === 0, `env reference ${index} missed`);
   }
 });
+
+// Complete finite inventory of the forms named in GAP2 IN-01/04. No claim about arbitrary
+// credentials: bare values require these provider, header, identifier, URL or CLI contexts.
+const RESIDUAL_FORMS = [
+  ...[
+    ["gitlab", frag("gl", "pat-")], ["stripe_secret", frag("sk_", "live_")],
+    ["stripe_restricted", frag("rk_", "live_")], ["stripe_webhook", frag("wh", "sec_")],
+    ["google_api", frag("AI", "za")], ["twilio", frag("S", "K")]
+  ].map(([name, prefix], index) => {
+    const seed = name === "twilio" ? frag("a1".repeat(16)) : round3Fake("Provider", index);
+    return { name, family: "provider", line: () => `provider output ${prefix}${seed}`, seeds: [seed] };
+  }),
+  { name: "slack_webhook", family: "provider", line: () => `https://hooks.slack.com/services/${round3Fake("Slack", 1)}/${round3Fake("Slack", 2)}/${round3Fake("Slack", 3)}`, seeds: [1, 2, 3].map((n) => round3Fake("Slack", n)) },
+  { name: "azure_account_key", family: "identifier", line: () => `DefaultEndpointsProtocol=https;AccountKey=${round3Fake("Azure", 1)}==;EndpointSuffix=example.invalid`, seeds: [round3Fake("Azure", 1)] },
+  ...["docker -p ", "sshpass -p ", "mysql -p", "mix hex.publish --key ", "curl --user=deploy:", "curl -udeploy:", "curl --user deploy:", "curl -u deploy:", "openssl -pass pass:"].map((prefix, index) => ({ name: `cli_${index}`, family: "cli", line: () => `${prefix}${round3Fake("Cli", index)}`, seeds: [round3Fake("Cli", index)] })),
+  ...["pwd", "pass", "pw", "DB_PASS", "DB_PWD", "_auth", "session_id"].map((key, index) => ({ name: `alias_${key}`, family: "identifier", line: () => `${key}=${round3Fake("Alias", index)}`, seeds: [round3Fake("Alias", index)] })),
+  ...["?code=", "?sig%3D=", "?AWSAccessKeyId=", "?password%3D", "?password%3D="].map((prefix, index) => ({ name: `query_${index}`, family: "query", line: () => `https://example.invalid/${prefix}${round3Fake("QueryEncoding", index)}`, seeds: [round3Fake("QueryEncoding", index)] })),
+  { name: "url_user_only", family: "url", line: () => `https://${round3Fake("UserOnly", 1)}@example.invalid`, seeds: [round3Fake("UserOnly", 1)] },
+  { name: "url_long_user_password", family: "url", line: () => `https://${"u".repeat(600)}:${round3Fake("LongPass", 1)}${"p".repeat(600)}@example.invalid`, seeds: [round3Fake("LongPass", 1)] },
+  { name: "url_password_spaces", family: "url", line: () => `https://user:${round3Fake("SpacePass", 1)} ${round3Fake("SpacePass", 2)}@example.invalid`, seeds: [round3Fake("SpacePass", 1), round3Fake("SpacePass", 2)] },
+  { name: "url_encoded_colon", family: "url", line: () => `https://user%3A${round3Fake("EncodedUser", 1)}@example.invalid`, seeds: [round3Fake("EncodedUser", 1)] },
+  { name: "url_encoded_at", family: "url", line: () => `https://${round3Fake("EncodedAt", 1)}%40example.invalid`, seeds: [round3Fake("EncodedAt", 1)] },
+  { name: "full_width_separator", family: "encoding", line: () => `password：${round3Fake("FullWidth", 1)}`, seeds: [round3Fake("FullWidth", 1)] },
+  { name: "csi_key_erase", family: "encoding", line: () => `password\u001b[0K=${round3Fake("CsiErase", 1)}`, seeds: [round3Fake("CsiErase", 1)] },
+  { name: "csi_inside_key", family: "encoding", line: () => `pass\u001b[?25lword\u001b[1;2H： ["${round3Fake("CsiInside", 1)}"]\r\n`, seeds: [round3Fake("CsiInside", 1)] },
+  { name: "bearer_next_line", family: "authorization", line: () => `Bearer\n${round3Fake("BearerNext", 1)}`, seeds: [round3Fake("BearerNext", 1)] },
+  { name: "bearer_colon", family: "authorization", line: () => `bearer: ${round3Fake("BearerColon", 1)}`, seeds: [round3Fake("BearerColon", 1)] },
+  { name: "basic_standalone", family: "authorization", line: () => `Basic ${round3Fake("Basic", 1)}`, seeds: [round3Fake("Basic", 1)] },
+  ...["a-", "x_", "access_token_", "jwt-"].map((prefix, index) => ({ name: `jwt_prefix_${index}`, family: "jwt", line: () => `${prefix}${frag("ey", "J")}${round3Fake("JwtBoundary", index)}.body.signature`, seeds: [round3Fake("JwtBoundary", index)] })),
+  { name: "jwt_upper_header", family: "jwt", line: () => `${frag("EY", "J")}${round3Fake("JwtUpper", 1)}.body.signature`, seeds: [round3Fake("JwtUpper", 1)] }
+];
+
+test("round3 residual named credential forms", () => {
+  for (const family of ["provider", "identifier", "cli", "query", "url", "encoding", "authorization", "jwt"]) {
+    const rows = RESIDUAL_FORMS.filter((row) => row.family === family);
+    assert.ok(rows.length > 0, `residual ${family} family empty`);
+    assertRound3TailRows(runRound3TailRows(rows), `residual ${family}`);
+  }
+});
+
+test("round3 residual exact diagnostic pins", () => {
+  const rows = [
+    { text: `Bearer\n${round3Fake("ExactBearer", 1)}`, expected: "Bearer\n***" },
+    { text: `Basic ${round3Fake("ExactBasic", 1)}`, expected: "Basic ***" },
+    { text: `token\u001b[0K=${round3Fake("ExactCsi", 1)}`, expected: "token=***" },
+    { text: "ordinary：prose stays readable", expected: "ordinary：prose stays readable" },
+    { text: "Basic authentication failed", expected: "Basic *** failed" }
+  ];
+  for (const [index, row] of rows.entries()) assert.ok(maskSecretShapes(row.text) === row.expected, `residual exact diagnostic ${index} changed`);
+});
