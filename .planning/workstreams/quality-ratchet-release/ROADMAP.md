@@ -167,8 +167,61 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: TBD
-**Research**: Needs `--research-phase` (Muex runtime and noise on the four real modules; confirm whether `format --check` and xref already run in `crosswake-ci.yml`)
+**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. All execution remains pending.
+
+Plans:
+**Wave 1**
+- [ ] 196-01-PLAN.md — Wave 1: Preserve planning and establish actual-main measurement
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 196-02-PLAN.md — Wave 2: Strict optional proof lanes
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 196-03-PLAN.md — Wave 3: Elixir and primary Swift request-vector proof
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 196-04-PLAN.md — Wave 4: Remaining real Swift vector readers
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 196-05-PLAN.md — Wave 5: Kotlin request, reply and metadata reader proof
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 196-06-PLAN.md — Wave 6: Branch-sensitive delta-only absence guard
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 196-07-PLAN.md — Wave 7: Scope and observation privacy boundaries
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 196-08-PLAN.md — Wave 8: Independent finite policy oracle and diagnostic provenance
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 196-09-PLAN.md — Wave 9: Protocol leaf and real Mix compile-cycle ratchet
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 196-10-PLAN.md — Wave 10: Explicit diagnostic fallbacks and exact broad-containment exceptions
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 196-11-PLAN.md — Wave 11: Evaluated six-project production runtime dependency ratchet
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 196-12-PLAN.md — Wave 12: Close GR-06 with conserved workflow statement classification
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 196-13-PLAN.md — Wave 13: Freeze the pilot protocol and validate real nonempty Muex output
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 196-14-PLAN.md — Wave 14: Complete five-file baseline and honest adopt/drop decision
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 196-15-PLAN.md — Wave 15: Promote measured recurring guards and verify final candidate
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [ ] 196-16-PLAN.md — Wave 16: Prepare one exact-head PR and observe its CI
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [ ] 196-17-PLAN.md — Wave 17: Fresh one-use main merge and actual-main phase proof
+
+**Research**: Complete bounded research and pattern map (196-RESEARCH.md, 196-PATTERNS.md); no product fixes or full pilot are claimed. Guard findings on actual main, repaired cycle baseline and complete five-file pilot remain execution gates.
 **Carried from Phase 195 gap review**: GR-06 (derived-secret guard grammar: local/declare/readonly, +=, read and printf -v, GITHUB_ENV and GITHUB_OUTPUT writes, several assignments or a use on the assignment line) in test/js/ci_secret_masking.test.mjs; see 195-REVIEW-DISPOSITION.md.
 
 ### Phase 197: Public docs truth
@@ -220,7 +273,7 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 0/TBD | Not started | - |
+| 196. Spec and structure ratchet | 0/17 | Planned; execution pending | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -260,4 +313,4 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
 
 ## Exact Next Action
 
-Last completed phase: 195 (21/21 plans; passed8/8, actual-main proof on b8398c38). Active phase: 196, Spec and structure ratchet, not started and ready for discussion. Next: `$gsd-discuss-phase 196 --ws quality-ratchet-release`. Do not repeat completed Phase195 execution, verification, merge or deletion. GR-06 is received by Phase196; the original cleanroom debt remains Phase197. The adopter lane stays parked on its external gate.
+Last completed phase: 195 (21/21 plans; passed 8/8, actual-main proof on b8398c38). Active phase: 196, planned and ready to execute; 17 sequential plans and 40 tasks, independent recheck passed after one revision. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`. Implementation, full Muex pilot and repaired baselines remain pending. Do not repeat completed Phase195 work or Phase196 discussion/planning. GR-06 stays with Phase196; original cleanroom debt stays with Phase197. Preserve docs/195-closeout and both privacy receipts before execution source preparation. The adopter lane stays parked.
