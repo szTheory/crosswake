@@ -4,15 +4,15 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_phase: 195
 current_phase_name: pipeline-repair-and-hygiene
-status: executing
-stopped_at: Completed 195-17-PLAN.md
-last_updated: "2026-10-26T23:18:20.924Z"
-state_head: ec6893f3babec3902e5743fbb2f545de795662cb
+status: verifying
+stopped_at: Completed 195-18-PLAN.md
+last_updated: "2026-10-27T01:06:24.186Z"
+state_head: 078ff5da825d4be5c852fea765ceb0d1b9bc0824
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 27
-  completed_plans: 26
+  completed_plans: 27
   percent: 50
 last_activity: 2026-10-25
 last_activity_desc: Phase 195 planned
@@ -26,7 +26,7 @@ See `.planning/BEARINGS.md` (posture and tripwires), `.planning/ROADMAP-ROLLING.
 
 Phase: 195 (pipeline-repair-and-hygiene) — EXECUTING
 Plan: 18 of 18
-Status: Ready to execute
+Status: Phase complete — ready for verification
 
 ## Exact Next Action
 
@@ -56,6 +56,7 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 | Phase 195 P15 | 20min | 3 tasks | 8 files |
 | Phase 195 P16 | 45 min | 3 tasks | 2 files |
 | Phase 195 P17 | 1h | 3 tasks | 2 files |
+| Phase 195 P18 | n/a | 3 tasks | 8 files |
 
 ## Decisions
 
@@ -69,8 +70,8 @@ See [the v27.0 debt disposition](milestones/v27.0-closeout/debt-disposition.md);
 
 ## Session
 
-**Last session:** 2026-10-26T23:18:20.892Z
-**Stopped at:** Completed 195-17-PLAN.md
+**Last session:** 2026-10-27T01:06:24.136Z
+**Stopped at:** Completed 195-18-PLAN.md
 **Resume file:** None
 
 ### Blockers
