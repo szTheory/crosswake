@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 41
+open_count: 43
 waived_count: 0
 fixed_count: 1
-total_count: 42
-last_updated: 2026-10-27T16:53:20.655Z
+total_count: 44
+last_updated: 2026-10-27T17:28:29.118Z
 ---
 
 # Broken Windows Ledger
@@ -57,6 +57,8 @@ last_updated: 2026-10-27T16:53:20.655Z
 | 40 | 196 | deviation | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-09-SUMMARY.md |  | Tasks2 and3 acceptance controls ran after implementation; no pre-implementation RED compliance is claimed. | open |  | 2026-10-27T16:26:07.373Z |  |
 | 41 | 196 | deviation | script/check_rescue_boundaries.exs |  | Plan196-10 task3 guard implementation preceded its fixture assertions; only finite-rescue correction has pre-change RED/GREEN. Tasks1/2 preservation behavior was already green; structural contract assertions supplied RED. | open |  | 2026-10-27T16:38:32.665Z |  |
 | 42 | 196 | deviation | test/crosswake/proof/runtime_dependency_ratchet_test.exs |  | Plan196-11 Task2 characterized the already-implemented guard after required actual-main capture; no independent implementation RED is claimed. Task1 has classifier-validated RED before implementation. | open |  | 2026-10-27T16:53:20.655Z |  |
+| 43 | 196 | unmet-truth | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/report.json |  | SPEC-04 pending: pinned Muex TCE classifies all useful SafeObservation comparison mutations equivalent; remaining records are compile-invalid; plan196-13 halted with no accepted bootstrap. | open |  | 2026-10-27T17:28:29.046Z |  |
+| 44 | 196 | unrun-verify | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/muex-pilot.mjs |  | Plan196-13 controls acceptance and five known-kill/known-survive pairs not run: useful-bootstrap prerequisite failed terminally; no accepted fixture or adapter was created. | open |  | 2026-10-27T17:28:29.118Z |  |
 
 ````json
 [
@@ -568,6 +570,32 @@ last_updated: 2026-10-27T16:53:20.655Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-27T16:53:20.655Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 43,
+    "kind": "unmet-truth",
+    "phase": "196",
+    "file": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/report.json",
+    "line": null,
+    "description": "SPEC-04 pending: pinned Muex TCE classifies all useful SafeObservation comparison mutations equivalent; remaining records are compile-invalid; plan196-13 halted with no accepted bootstrap.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T17:28:29.046Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 44,
+    "kind": "unrun-verify",
+    "phase": "196",
+    "file": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/muex-pilot.mjs",
+    "line": null,
+    "description": "Plan196-13 controls acceptance and five known-kill/known-survive pairs not run: useful-bootstrap prerequisite failed terminally; no accepted fixture or adapter was created.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T17:28:29.118Z",
     "resolved_at": null,
     "milestone": null
   }

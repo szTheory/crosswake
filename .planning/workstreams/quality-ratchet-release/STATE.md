@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 13
-status: executing
-stopped_at: Completed 196-12-PLAN.md; next eligible plan196-13
-last_updated: "2026-10-27T17:13:50.440Z"
-state_head: 05b3a2b92797dd21af325bc123459071fc954e7d
+status: halted
+stopped_at: Plan196-13 terminal useful-bootstrap failure; orchestrator decision next
+last_updated: "2026-10-27T17:29:59.020Z"
+state_head: 8b7bd6f9f918506433b4c713e0b88fa005f26709
 progress:
   total_phases: 6
   completed_phases: 2
@@ -15,26 +15,24 @@ progress:
   percent: 89
 current_phase: 196
 current_phase_name: Spec and structure ratchet
-last_activity_desc: Phase196 plans01-12 complete; 207 masking tests passed; plan13 next
+last_activity_desc: Plan13 halted; genuine331records yielded zero useful outcomes;236 clean tests passed
 ---
 
 ## Current Position
 
-Current Plan: 13
-Total Plans in Phase: 17
-Progress: [█████████░] 89% (42/47 plans).
-Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Phase196 plans01-12 complete. Plan12:2 tasks,3 artifacts;207 masking tests passed. Actual-main and candidate:28 workflows,97 reference lines,13 candidates=13 supported+0 denied+0 unknown;final owner blob and exact restoration verified. All eight Phase196 requirements and GR-06 remain pending independent verification.
+Current Plan: 13 (halted,0/2 tasks). Total Plans in Phase:17. Progress:[█████████░]89%(42/47 plans).
+Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active phase196:halted after12/17 complete. Plan13 genuine report:331=281equivalent+50compile-invalid,zero killed/survived;upstream nested-module TCE;original report preserved;236 clean tests and exact restoration passed. All eight Phase196 requirements and GR-06 remain pending.
 
 ## Exact Next Action
 
-Active phase196: executing,12/17 complete. Exact next command: `$gsd-execute-phase 196 --ws quality-ratchet-release`; resume at196-13-PLAN.md. Do not repeat plans01-12. Branch fix/spec-structure-ratchet starts at main b8398c38; docs/195-closeout and both receipts remain preserved at101e853a. No external delivery or approval transfer occurred.
+No executor command is eligible for the terminal attempt. Receiver:execution orchestrator;resolve the recorded TCE failure into an authorized newly frozen attempt using official --no-tce with full unchanged success criteria and explicit budget,or the explicit scoped roadmap overrun route. After resolution only,resume `$gsd-execute-phase 196 --ws quality-ratchet-release` at196-13 under the resolved contract. Do not repeat01-12 or execute14-17 while13 is halted. This handoff creates no new human-approval gate.
 
 ## Carried debt
 
-Full pilot,promotion and required CI remain with Phase196;cleanroom WR-04/05/06 and IN-03 stay with Phase197;adopter lane stays parked. Earlier proof stays in summaries;collection default stays report-only until Plan15. SDK mismatch reconciled to6 phases,42/47 plans and12/17 counts. SPEC-05/unclassified,ARCH-02/unclassified and WINDOWS40/41/42 process deviations require independent review. Plan12 decisions and metrics live in its SUMMARY;GR-06 final closure awaits independent verification.
+Plan13 has0/5 kill/survive pairs and no accepted fixture/adapter;14-17 blocked. Full pilot,promotion,required CI remain pending. WINDOWS43/44 retain this failure/unrun verification;40/41/42 and SPEC-05/ARCH-02 unclassified entries remain. Collection default stays report-only until15;cleanroom WR-04/05/06 and IN-03 stay with197;adopter lane parked. SDK summary-count drift reconciled to6 phases,42/47 completed and12/17 counts;failed13 is not completed. Metrics/decisions and hashes live in13-SUMMARY. Branch fix/spec-structure-ratchet and preserved docs/195-closeout receipts unchanged;no external delivery.
 
 ## Session
 
-**Last session:** 2026-10-27T17:13:50.312Z
-**Stopped at:** Completed 196-12-PLAN.md; next eligible plan196-13
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-13-PLAN.md
+**Last session:**2026-10-27T17:29:59.020Z
+**Stopped at:**Halted196-13;next receiver execution orchestrator
+**Resume file:**.planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-13-SUMMARY.md

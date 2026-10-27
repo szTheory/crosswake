@@ -207,7 +207,7 @@ Plans:
 - [x] 196-12-PLAN.md — Wave 12: Close GR-06 with conserved workflow statement classification
 
 **Wave 13** *(ready; Wave 12 complete)*
-- [ ] 196-13-PLAN.md — Wave 13: Freeze the pilot protocol and validate real nonempty Muex output
+- [ ] 196-13-PLAN.md — HALTED: genuine331records=281equivalent+50compile-invalid,zero useful outcomes;upstream nested-module TCE;0/2 tasks,0/5 pairs;SPEC-04 pending;14-17 blocked pending orchestrator resolution
 
 **Wave 14** *(blocked on Wave 13 completion)*
 - [ ] 196-14-PLAN.md — Wave 14: Complete five-file baseline and honest adopt/drop decision
@@ -313,4 +313,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans; passed8/8 on actual main b8398c38). Active phase196: executing,12/17 plans complete. Plans01-11 proof remains in their summaries. Plan12:207 masking tests passed;actual-main and candidate each report28 workflows,97 reference lines,13 candidates=13 supported+0 denied+0 unknown. Final owner blob and exact restoration verified. Collection default stays report-only until Plan15. Next: `$gsd-execute-phase 196 --ws quality-ratchet-release`, resuming at196-13-PLAN.md. Do not repeat plans01-12,completed Phase195 work or Phase196 planning. All eight Phase196 requirements and GR-06 remain pending independent verification;SPEC-05/unclassified,ARCH-02/unclassified and WINDOWS40/41/42 process deviations need independent review;full Muex pilot,promotion and required CI remain pending. Original cleanroom debt stays with Phase197;adopter lane stays parked. No irreversible-operation approval transfers.
+Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:halted,12/17 plans complete. Plan13 retained a genuine331-record report with281equivalent+50compile-invalid and zero useful outcomes;upstream TCE fingerprints the nested module. Exact restoration and236 clean selected tests passed;Task1 acceptance failed,Task2/14-17 blocked,0/5 pairs and no accepted fixture. No executor command is eligible for this terminal attempt. Receiver:execution orchestrator;resolve an authorized newly frozen attempt with official --no-tce,full unchanged success criteria and explicit budget,or the explicit scoped roadmap overrun route. After resolution only,`$gsd-execute-phase 196 --ws quality-ratchet-release` resumes13 under that resolved contract;this handoff creates no new human-approval gate. Do not repeat01-12. All eight Phase196 requirements and GR-06 remain pending;WINDOWS43/44 retain this failure/unrun controls;earlier40/41/42 and SPEC-05/ARCH-02 review flags remain. Collection default stays report-only until15;full pilot,promotion,required CI pending. Original cleanroom debt stays with197;adopter lane parked. No external delivery or approval transfer.
