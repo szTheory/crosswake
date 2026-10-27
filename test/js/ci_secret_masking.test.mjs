@@ -1158,8 +1158,8 @@ function runBodies(workflowText) {
     const envHeader = /^(\s*)(-\s+)?env:\s*(.*)$/.exec(lines[i]);
     if (!envHeader) continue;
     const envIndent = envHeader[1].length + (envHeader[2]?.length ?? 0);
-    let owner = i - 1;
-    while (owner >= 0 && (!lines[owner].trim() || lines[owner].trimStart().startsWith("#") || indentOf(lines[owner]) >= envIndent)) owner -= 1;
+    let owner = envHeader[2] ? i : i - 1;
+    if (!envHeader[2]) while (owner >= 0 && (!lines[owner].trim() || lines[owner].trimStart().startsWith("#") || indentOf(lines[owner]) >= envIndent)) owner -= 1;
     const ownerIndent = owner < 0 ? -1 : indentOf(lines[owner]);
     let scopeEnd = i + 1;
     while (scopeEnd < lines.length && (!lines[scopeEnd].trim() || lines[scopeEnd].trimStart().startsWith("#") || indentOf(lines[scopeEnd]) > ownerIndent)) scopeEnd += 1;
@@ -1170,7 +1170,9 @@ function runBodies(workflowText) {
     for (const b of bodies) if (b.start > owner && b.start < scopeEnd) {
       for (const key of keys) b.keys.add(key);
       // Flow/anchored/other unsupported env mappings cannot silently erase run relevance.
-      if (envHeader[3] && !envHeader[3].startsWith("#") && RELEVANT_CREDENTIAL_REFERENCE.test(lines[i])) b.unknownEnv += 1;
+      const unsupported = envHeader[3] && !envHeader[3].startsWith("#");
+      const anchored = /(?:^|\s)[*&][A-Za-z_]\w*/.test(`${envHeader[3]}\n${envSource}`);
+      if ((unsupported || anchored) && RELEVANT_CREDENTIAL_REFERENCE.test(workflowText)) b.unknownEnv += 1;
     }
   }
   return bodies;
@@ -1234,7 +1236,7 @@ export function classifyCredentialStatements(workflowText) {
       const line = lines[index];
       if (!line.trim() || line.trimStart().startsWith("#")) continue;
       const bound = [...body.keys].find((key) => refsVar(line, key));
-      const alias = [...derived].find(([key]) => refsVar(line, key));
+      const alias = [...derived].filter(([key]) => refsVar(line, key)).sort((a, b) => a[1] - b[1])[0];
       const outer = statementSurface(line);
       const scalar = ASSIGN.exec(line);
       const assignments = [...outer.text.matchAll(/(?:^|[\s;|&])([A-Za-z_]\w*)\+?=/g)];
@@ -1787,6 +1789,12 @@ const GR06_FAMILIES = [
   { form: "assign_and_use", body: [`TOKEN=${GR06_DERIVE}; printf 'use %s\\n' "$TOKEN"`] }
 ];
 
+function grammarWorkflow(body, kind) {
+  if (kind === "block") return fixture(...body);
+  if (kind === "folded") return fixture("", ...body.flatMap((l) => [l, ""])).replace("run: |", "run: >-");
+  return FIXTURE_HEAD.slice(0, -2).join("\n") + `\n        run: ${JSON.stringify(body.join("\n"))}`;
+}
+
 function runGrammarShell(body, seed) {
   const result = spawnSync("bash", ["-c", `set -euo pipefail\n${body}`], {
     encoding: "utf8", timeout: 2000, maxBuffer: 64 * 1024,
@@ -1798,8 +1806,10 @@ function runGrammarShell(body, seed) {
 
 for (const row of GR06_FAMILIES) {
   test(`phase196 GR-06 family ${row.form} denied and executed`, () => {
-    const rows = classifyCredentialStatements(fixture(...row.body, 'echo "::add-mask::$TOKEN"', 'echo "$TOKEN"'));
-    assert.ok(rows.some((c) => c.classification === "denied" && c.form === row.form), `family ${row.form} disappeared or was accepted`);
+    for (const kind of ["block", "folded", "inline"]) {
+      const rows = classifyCredentialStatements(grammarWorkflow([...row.body, 'echo "::add-mask::$TOKEN"', 'echo "$TOKEN"'], kind));
+      assert.ok(rows.some((c) => c.classification === "denied" && c.form === row.form), `family ${row.form}/${kind} disappeared or was accepted`);
+    }
     const seed = frag("fake", "Grammar", "Denied", "Val41");
     const body = ['probe() {', ...row.body, 'if false; then echo "::add-mask::$TOKEN"; fi', 'printf "use %s\\n" "$TOKEN"', '}', 'probe'].join("\n");
     const result = runGrammarShell(body, seed);
@@ -1814,10 +1824,7 @@ test("phase196 GR-06 plain export and YAML forms execute exact stdout registrati
   for (const exported of ["", "export "]) for (const quoted of [false, true]) for (const kind of ["block", "folded", "inline"]) {
     const rhs = quoted ? `"${GR06_DERIVE}"` : GR06_DERIVE;
     const body = [`${exported}TOKEN=${rhs}`, 'echo "::add-mask::${TOKEN}"', 'printf "use %s\\n" "$TOKEN"'];
-    let text;
-    if (kind === "block") text = fixture(...body);
-    if (kind === "folded") text = fixture("", ...body.flatMap((l) => [l, ""])).replace("run: |", "run: >-");
-    if (kind === "inline") text = FIXTURE_HEAD.slice(0, -2).join("\n") + `\n        run: ${JSON.stringify(body.join("\n"))}`;
+    const text = grammarWorkflow(body, kind);
     const rows = classifyCredentialStatements(text);
     assert.ok(rows.length === 3 && rows.every((r) => r.classification === "supported"), `scalar/YAML form ${executed} was not supported`);
     const seed = frag("fake", "Grammar", "Supported", String(executed), "Val42");
@@ -1832,6 +1839,23 @@ test("phase196 GR-06 plain export and YAML forms execute exact stdout registrati
   }
   assert.ok(executed === 12, "supported scalar/YAML execution inventory incomplete");
   t.diagnostic(`GR-06 supported scalar/YAML executions ${executed}; mask-removed controls ${executed}`);
+});
+
+test("phase196 GR-06 supported credential reference spellings execute substituted shell values", (t) => {
+  const refs = ['${{ secrets.NAME }}', "${{ secrets['NAME'] }}", '${{ secrets["NAME"] }}', '${{ github.token }}'];
+  for (const [index, ref] of refs.entries()) {
+    const body = [`TOKEN=$(printf %s "${ref}" | base64)`, 'echo "::add-mask::$TOKEN"', 'echo "$TOKEN"'];
+    assert.ok(classifyCredentialStatements(fixture(...body)).every((c) => c.classification === "supported"), "supported reference spelling rejected");
+    const seed = frag("fake", "Grammar", "Reference", String(index), "Val45");
+    // Model only Actions expression substitution; Bash executes the actual derivation/mask/use.
+    const script = body.join("\n").replaceAll(ref, seed);
+    const result = runGrammarShell(script, seed);
+    const derived = Buffer.from(seed).toString("base64");
+    assert.ok(result.stdout.includes(`::add-mask::${derived}`) && !runnerMaskedLog(result.stdout, [seed]).includes(derived), "substituted reference did not register its derived value");
+    const removed = runGrammarShell(script.split("\n").filter((l) => !l.includes("::add-mask::")).join("\n"), seed);
+    assert.ok(runnerMaskedLog(removed.stdout, [seed]).includes(derived), "reference mask-removed control did not discriminate");
+  }
+  t.diagnostic(`GR-06 reference executions ${refs.length}; reference mask-removed controls ${refs.length}`);
 });
 
 test("phase196 GR-06 executed wrong quote stderr redirect conditional and late mask controls", (t) => {
@@ -1878,8 +1902,12 @@ test("phase196 GR-06 aliases remain run local with bounded transitivity", () => 
   assert.ok(classifyCredentialStatements(first + second).every((c) => c.classification === "supported"), "derived alias crossed a run boundary");
   const isolated = fixture('echo ordinary') + '\n      - name: next\n        run: |\n          TOKEN="$MAVEN_PASSWORD"\n          echo "$TOKEN"';
   assert.ok(classifyCredentialStatements(isolated).length === 0, "step-scoped env alias crossed a run boundary");
+  const firstEnv = 'jobs:\n  j:\n    steps:\n      - env:\n          BOUND: ${{ secrets.NAME }}\n        run: echo "$BOUND"\n      - run: echo "metadata=$BOUND" >> "$GITHUB_OUTPUT"';
+  assert.ok(classifyCredentialStatements(firstEnv).length === 1, "first-field env alias crossed a step boundary");
   const chain = fixture('A="$MAVEN_PASSWORD"', 'echo "::add-mask::$A"', 'B="$A"', 'echo "::add-mask::$B"', 'C=$(printf %s "$B")');
   assert.ok(derivedSecretAssignments(chain).length === 2 && derivedSecretViolations(chain).length === 0, "one-level derived alias convention changed");
+  const mixed = chain + '\n          D="$B:$A"';
+  assert.ok(derivedSecretAssignments(mixed).length === 3 && derivedSecretViolations(mixed).length === 1, "deeper alias hid a supported derivation source");
   for (const target of ["GITHUB_ENV", "GITHUB_OUTPUT"]) {
     const rows = classifyCredentialStatements(fixture('TOKEN="$MAVEN_PASSWORD"', 'echo "::add-mask::$TOKEN"', `echo "value=$TOKEN" >> "$${target}"`));
     assert.ok(rows.some((c) => c.form === "github_env_output" && c.classification === "denied"), "credential persistence was waived after masking");
@@ -1897,6 +1925,8 @@ test("phase196 GR-06 connected destinations and unsupported YAML stay accounted"
   assert.ok(overwritten.length === 2 && overwritten.every((c) => c.classification === "supported"), "ordinary metadata overwrite stayed tainted");
   const flow = 'jobs:\n  j:\n    steps:\n      - env: {BOUND: "${{ secrets.NAME }}"}\n        run: echo "$BOUND"';
   assert.ok(classifyCredentialStatements(flow).some((c) => c.classification === "unknown"), "unsupported relevant YAML env mapping disappeared");
+  const anchored = 'bound: &credentials\n  BOUND: ${{ secrets.NAME }}\njobs:\n  j:\n    steps:\n      - env: *credentials\n        run: echo "$BOUND"';
+  assert.ok(classifyCredentialStatements(anchored).some((c) => c.classification === "unknown"), "unsupported credential YAML alias disappeared");
   const continuation = 'jobs:\n  j:\n    steps:\n      - run: echo ordinary\n          "${{ secrets.NAME }}"';
   assert.ok(classifyCredentialStatements(continuation).some((c) => c.classification === "unknown"), "unsupported YAML scalar continuation disappeared");
 });
