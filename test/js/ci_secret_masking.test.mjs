@@ -112,7 +112,8 @@ const fastestMs = (text) => {
   }
   return best;
 };
-const prose = "ordinary diagnostic prose ".repeat(Math.ceil(row.input.length / 27)).slice(0, row.input.length);
+const proseUnit = "ordinary diagnostic prose ";
+const prose = proseUnit.repeat(Math.ceil(row.input.length / proseUnit.length)).slice(0, row.input.length);
 const baselineMs = fastestMs(prose);
 const measuredMs = fastestMs(row.input);
 const boundMs = Math.max(250, 10 * baselineMs);
@@ -846,6 +847,8 @@ const PROSE_LINES = [
 
 // Over-masks accepted as the safe direction. Each is pinned exactly so it can never drift silently.
 const ACCEPTED_OVERMASK = [
+  { name: "docker_short_flag_port", text: "docker -p 8080:80", expected: "docker -p ***", reason: "docker short-flag output is ambiguous between ports and password diagnostics; the named CLI context remains conservative" },
+  { name: "basic_authentication_error", text: "Basic authentication failed", expected: "Basic *** failed", reason: "standalone Basic credentials remain protected even when prose is indistinguishable" },
   { name: "bearer_required", text: "bearer token is required", expected: "bearer *** is required", reason: "a short bearer value cannot be distinguished from the word token" },
   { name: "bearer_authentication_error", text: "Bearer authentication failed", expected: "Bearer *** failed", reason: "short bearer credentials retain protection" },
   { name: "bearer_scheme_error", text: "the Bearer scheme is not supported", expected: "the Bearer *** is not supported", reason: "scheme is indistinguishable from a short bearer value" },
@@ -1462,4 +1465,42 @@ test("round3 residual exact diagnostic pins", () => {
     { text: "Basic authentication failed", expected: "Basic *** failed" }
   ];
   for (const [index, row] of rows.entries()) assert.ok(maskSecretShapes(row.text) === row.expected, `residual exact diagnostic ${index} changed`);
+  for (const name of ["cli_6", "cli_7", "query_2"]) {
+    const row = RESIDUAL_FORMS.find((candidate) => candidate.name === name);
+    assert.ok(row, "already-protected regression row absent");
+    const expected = row.line().replace(row.seeds[0], "***");
+    assert.ok(maskSecretShapes(row.line()) === expected, `already-protected exact pin ${name} changed`);
+    assert.ok(row.seeds.every((seed) => row.line().includes(seed)), `identity control ${name} failed`);
+  }
+});
+
+const RESIDUAL_RULE_ADVERSARIES = [
+  ["provider_extra", "gitlab", () => frag("gl", "pat-").repeat(40000)],
+  ["twilio", "twilio", () => frag("S", "K").repeat(100000)],
+  ["slack_webhook", "slack_webhook", () => "https://hooks.slack.com/services/".repeat(10000)],
+  ["command_password", "cli_0", () => "docker -p ".repeat(25000)],
+  ["command_curl", "cli_4", () => "curl --user=deploy:".repeat(15000)],
+  ["command_hex", "cli_3", () => "mix hex.publish --key ".repeat(12000)],
+  ["command_openssl", "cli_8", () => "openssl -pass pass:".repeat(15000)],
+  ["query_encoded", "query_3", () => "?password%3D".repeat(20000)],
+  ["userinfo_encoded", "url_encoded_colon", () => "://user%3A".repeat(25000)],
+  ["jwt_prefix_upper", "jwt_upper_header", () => frag("a-", "EY", "J-").repeat(40000)],
+  ["authorization_nextline", "bearer_next_line", () => "Bearer\n".repeat(30000)],
+  ["csi_normalization", "csi_inside_key", () => "pass\u001b[0Kword:".repeat(20000)],
+  ["full_width_separator", "full_width_separator", () => `password：${" \t".repeat(100000)}x`],
+  ["identifier_alias", "alias_DB_PASS", () => "DB_PASS=".repeat(30000)]
+];
+
+test("round3 residual rule adversaries", { timeout: 55000 }, (t) => {
+  assert.ok(RESIDUAL_RULE_ADVERSARIES.length > 0, "residual rule inventory empty");
+  for (const [label, name, pathological] of RESIDUAL_RULE_ADVERSARIES) {
+    const row = RESIDUAL_FORMS.find((candidate) => candidate.name === name);
+    assert.ok(row && row.seeds.length > 0, `residual rule ${label} positive family missing`);
+    assert.ok(row.seeds.every((seed) => !maskSecretShapes(row.line()).includes(seed)), `residual rule ${label} positive failed`);
+    const nonmatch = "  1) test ordinary output (RuleTest)\nFinished in 0.1 seconds\n";
+    assert.ok(maskSecretShapes(nonmatch) === nonmatch, `residual rule ${label} diagnostic nonmatch changed`);
+    const input = pathological();
+    assert.ok(input.length >= 200000, `residual rule ${label} adversary too short`);
+    reportMetric(t, measureRound3Padding({ label: `residual/${label}`, input }));
+  }
 });

@@ -85,8 +85,8 @@ const REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES = new Set([
   "MAVEN_USERNAME",
   "ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME"
 ]);
-const CREDENTIAL_FAMILY_TOKENS = new Set(["token", "secret", "password", "passwd", "passphrase", "credential", "cookie", "authorization"]);
-const KEY_QUALIFIER_TOKENS = new Set(["api", "auth", "access", "private", "deploy", "signing", "memory"]);
+const CREDENTIAL_FAMILY_TOKENS = new Set(["token", "secret", "password", "passwd", "passphrase", "credential", "cookie", "authorization", "pwd", "pass", "pw", "auth"]);
+const KEY_QUALIFIER_TOKENS = new Set(["api", "auth", "access", "private", "deploy", "signing", "memory", "account"]);
 const CREDENTIAL_METADATA_SUFFIXES = new Set(["count", "length", "size"]);
 function credentialIdentifierTokens(identifier) {
   return String(identifier)
@@ -101,6 +101,7 @@ function isCredentialIdentifier(identifier) {
   if (REVIEWED_CREDENTIAL_IDENTIFIER_ALIASES.has(String(identifier).replace(/[^A-Za-z0-9]/g, "_").toUpperCase())) return true;
   const tokens = credentialIdentifierTokens(identifier);
   if (CREDENTIAL_METADATA_SUFFIXES.has(tokens.at(-1))) return false;
+  if (tokens.join("_") === "session_id") return true;
   if (tokens.some((token) => CREDENTIAL_FAMILY_TOKENS.has(token) || CREDENTIAL_FAMILY_TOKENS.has(token.replace(/s$/, "")))) return true;
   return tokens.includes("key") && tokens.some((token) => KEY_QUALIFIER_TOKENS.has(token));
 }
@@ -121,7 +122,7 @@ function maskStructuralCredential(match, prefix, identifier, ...rest) {
   return maskValue(match, prefix, rest[rest.length - 1]);
 }
 
-const CREDENTIAL_ASSIGNMENT_PREFIX = /(?<![A-Za-z0-9_-])(?:(?<quote>["'])(?<quotedIdentifier>[A-Za-z_][A-Za-z0-9_-]*)\k<quote>|(?<identifier>[A-Za-z_][A-Za-z0-9_-]*))[ \t]*(?:=>|[:=]{1,3})[ \t]*/g;
+const CREDENTIAL_ASSIGNMENT_PREFIX = /(?<![A-Za-z0-9_-])(?:(?<quote>["'])(?<quotedIdentifier>[A-Za-z_][A-Za-z0-9_-]*)\k<quote>|(?<identifier>[A-Za-z_][A-Za-z0-9_-]*))[ \t]*(?:=>|[:=：]{1,3})[ \t]*/g;
 const CREDENTIAL_TUPLE_PREFIX = /\{[ \t]*(?::(?<atom>[A-Za-z0-9_-]+)|(?<quote>["'])(?<quoted>[A-Za-z0-9_-]+)\k<quote>)[ \t]*,[ \t]*/g;
 const STRUCTURAL_TUPLE_KEY_LINE = /^\s*\{\s*(?::(?<atom>[A-Za-z0-9_-]+)|(?:"(?<double>[A-Za-z0-9_-]+)"|'(?<single>[A-Za-z0-9_-]+)'))\s*,\s*$/;
 
@@ -351,14 +352,14 @@ function maskPrivateKeyBlocks(text) {
 }
 
 // Query-string credentials: `?key=`, `&sig=`, `&signature=` and the X-Amz signing parameters, value to `&`, `#` or space.
-const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|X-Amz-Signature|X-Amz-Credential|X-Amz-Security-Token)=)[^&#\s"']{3,}/gi;
+const QUERY_CREDENTIAL_RULE = /([?&](?:key|sig|signature|code|password|AWSAccessKeyId|X-Amz-Signature|X-Amz-Credential|X-Amz-Security-Token)(?:=|%3[dD]=?))[^&#\s"']{3,}/gi;
 
 const AUTHORIZATION_RULE = new RegExp(`((?<![A-Za-z0-9])authorization${KEY_QUOTE}[ \\t]*[:=][ \\t]*)[^\\n]+`, "gi");
 const COOKIE_RULE = new RegExp(`(\\bcookies?${KEY_QUOTE}[ \\t]*:[ \\t]*)[^\\n]+`, "gi");
 const SECRET_ACCESS_KEY_RULE = new RegExp(`((?:aws_)?secret[_-]access[_-]key${KEY_QUOTE}[ \\t]*[:=][ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`, "gi");
-// Bearer: a quoted value keeps its quotes around `***`; `realm="v"` style (non-space run then a quoted span)
-// and a 3+ character bare run become `***`. The separator is `[ \t]+`, so a line-final `Bearer` never reaches the next line.
-const BEARER_RULE = /\b(bearer[ \t]+)(?:"(?<dq>[^"\n]*)(?<dqc>"?)|'(?<sq>[^'\n]*)(?<sqc>'?)|[^\s"']*(?:"[^"\n]*"?|'[^'\n]*'?)|[^\s"']{3,})/gi;
+// Standalone Bearer/Basic and colon forms: quoted values retain their quotes; short values
+// remain protected. Only a whole-line scheme header may select the following line.
+const BEARER_RULE = /\b((?:bearer|basic)(?:[ \t]+|[ \t]*:[ \t]*))(?:"(?<dq>[^"\n]*)(?<dqc>"?)|'(?<sq>[^'\n]*)(?<sqc>'?)|[^\s"']*(?:"[^"\n]*"?|'[^'\n]*'?)|[^\s"']{3,})/gi;
 function maskBearer(match, prefix, ...rest) {
   const g = rest[rest.length - 1];
   if (g.dq !== undefined) return `${prefix}"***${g.dqc}`;
@@ -379,6 +380,86 @@ const GENERIC_CREDENTIAL_RULE = new RegExp(
   `((?:${CREDENTIAL_WORDS})${KEY_QUOTE}[ \\t]*(?:=>|[:=]{1,3})[ \\t]*(?=\\S))${SECRET_VALUE_SOURCE}`,
   "gi"
 );
+
+function maskUrlUserinfo(text) {
+  const markers = /:\/\//g;
+  let result = "";
+  let cursor = 0;
+  let marker;
+  while ((marker = markers.exec(text)) !== null) {
+    const start = markers.lastIndex;
+    let separator = -1;
+    let separatorLength = 0;
+    let i = start;
+    for (; i < text.length; i += 1) {
+      if (text[i] === "\n" || text[i] === "\r" || text[i] === '"' || text[i] === "'") break;
+      if (text.startsWith("://", i)) break;
+      const encodedAt = text.slice(i, i + 3).toLowerCase() === "%40";
+      if (text[i] === "@" || encodedAt) {
+        const atEnd = i + (encodedAt ? 3 : 1);
+        const valueStart = separator < 0 ? start : separator + separatorLength;
+        result += text.slice(cursor, valueStart) + "***" + text.slice(i, atEnd);
+        cursor = atEnd;
+        i = atEnd;
+        break;
+      }
+      if (separator < 0 && (text[i] === ":" || text.slice(i, i + 3).toLowerCase() === "%3a")) {
+        separator = i;
+        separatorLength = text[i] === ":" ? 1 : 3;
+      }
+    }
+    markers.lastIndex = i; // monotonic: repeated schemes never rescan the suffix
+  }
+  return cursor === 0 ? text : result + text.slice(cursor);
+}
+
+// Maximal token runs are visited once; segment scans never restart at each eyJ marker.
+// Hyphen/underscore context and uppercase headers are allowed without quadratic suffix rescans.
+function maskJwtTokens(text) {
+  return text.replace(/[A-Za-z0-9_.-]+/g, (run) => {
+    const segments = run.split(".");
+    if (segments.length < 2) return run;
+    const offsets = [];
+    let offset = 0;
+    for (const segment of segments) { offsets.push(offset); offset += segment.length + 1; }
+    let result = "";
+    let cursor = 0;
+    for (let i = 0; i + 1 < segments.length; i += 1) {
+      const match = /(?:^|[-_])(eyj)/i.exec(segments[i]);
+      if (!match || !segments[i + 1]) continue;
+      const header = match.index + match[0].length - 3;
+      if (segments[i].length <= header + 3) continue;
+      const last = i + 2 < segments.length && segments[i + 2] ? i + 2 : i + 1;
+      const start = offsets[i] + header;
+      const end = offsets[last] + segments[last].length;
+      result += run.slice(cursor, start) + run.slice(start, start + 3) + "***";
+      cursor = end;
+      i = last;
+    }
+    return cursor === 0 ? run : result + run.slice(cursor);
+  });
+}
+
+// Ambiguous short flags are scoped to the named command on that line. Existing separated
+// -u coverage remains conservative for commandless diagnostics (pinned in ACCEPTED_OVERMASK).
+function maskCommandCredentials(text) {
+  return text.split("\n").map((line) => {
+    if (/\b(?:docker|sshpass|mysql)\b/.test(line)) line = line.replace(/(\s-p[ \t]*)([^\s"']+|"[^"\n]*"|'[^'\n]*')/g, "$1***");
+    if (/\bmix\s+hex\.publish\b/.test(line)) line = line.replace(/(--key[ \t]+)([^\s"']+|"[^"\n]*"|'[^'\n]*')/g, "$1***");
+    if (/\bcurl\b/.test(line)) line = line.replace(/((?:--user(?:=|[ \t]+)|-u[ \t]*)[^\s:]+:)[^\s"']+/g, "$1***");
+    if (/\bopenssl\b/.test(line)) line = line.replace(/(-pass[ \t]+pass:)[^\s"']+/g, "$1***");
+    return line;
+  }).join("\n");
+}
+
+function maskStandaloneNextLineAuthorization(text) {
+  return text.replace(/(^|[\r\n])([ \t]*(?:bearer|basic)[ \t]*:?[ \t]*\r?\n)([^\r\n]+)/gi, (match, before, header, value) => STRUCTURAL_LINE.test(value) ? match : `${before}${header}***`);
+}
+
+const EXTRA_PROVIDER_PREFIX = ["gl" + "pat-", "sk_" + "live_", "rk_" + "live_", "wh" + "sec_", "AI" + "za"].join("|");
+const EXTRA_PROVIDER_RULE = new RegExp(`(?<![A-Za-z0-9])(${EXTRA_PROVIDER_PREFIX})[A-Za-z0-9_-]{6,}`, "g");
+
+const CSI_CONTROL = /\u001b\[[0-9;?]*[ -/]*[@-~]/g;
 const STRUCTURAL_LINE = /^\s*\d+\) (?:test|doctest|property) |^Finished in /;
 
 // First pass: when a line ends in a credential key plus separator, the value sits on a following line. Mask the
@@ -418,15 +499,17 @@ function maskNextLineValues(text) {
 //      missing/mismatched END consumes EOF; supports CR/LF and literal or double-escaped newline separators
 //   a. `Authorization:` / `Proxy-Authorization:` header (any scheme, Digest included), value to end of line
 //   b. `Cookie:` / `Cookies:` / `Set-Cookie:` header at any position, value to end of line
-//   c. `Bearer <v>`: bare run, quoted span (quotes kept) or `realm="v"` style, on one line
+//   c. `Bearer` / `Basic`: bare or quoted values, colon forms, or whole-line next-line headers
 //   d. `(aws_)secret[_-]access[_-]key` = quoted or unquoted value
 //   e. provider tokens, prefix kept: `gh[pousr]_` / `github_pat_` (6+ characters), `hex_` (8+), and, after a
 //      non-alphanumeric character, `sk-` (8+ of `A-Za-z0-9_-`, project and versioned forms), Slack `xox[abprs]-`
 //      (8+) and `npm_` plus exactly 36 letters or digits (`task-runner12345`, `npm_config_cache` stay readable)
-//   f. URL userinfo password (`scheme://user:<v>@host`; empty user and a `/` in the password allowed, parts bounded)
-//   g. JWTs (`eyJ` + two or three base64url segments; no base64url character before it, so a hyphenated run stays linear)
+//   f. URL userinfo password or user-only credential; monotonic scanning, no length cap;
+//      spaces, password slashes and single-level encoded colon/@ separators are supported
+//   g. JWTs (case-insensitive eyJ header plus two/three segments), including hyphen/underscore context;
+//      maximal token-run/segment scans do not restart at every marker
 //   h. AWS access key IDs (`AKIA` / `ASIA` + 16 characters, any non-uppercase/digit character before)
-//   q. query credentials (`?key=`, `&sig=`, `&signature=`, `X-Amz-Signature|Credential|Security-Token`)
+//   q. query credentials, including code, password, AWSAccessKeyId and one encoded equals separator
 //   i. Elixir tuples with an atom or closed-quote credential key and a comma (`{:token, "v"}`)
 //   j. CLI flags `--<name with a credential word> <v>` (not `--password-file`)
 //   k. curl basic auth `-u user:<v>` / `--user user:<v>`
@@ -434,17 +517,25 @@ function maskNextLineValues(text) {
 //      private key, credential[s], authorization) followed by `=>`, `:`/`=` (up to `==`) and a quoted
 //      (multi-word, escaped, unterminated, backslash-escaped JSON `\\"v\\"`) or 3+ character unquoted value; the
 //      key itself may be wrapped in plain or backslash-escaped quotes (rules a, b, d, i, l)
+//   r. reviewed GitLab/Stripe/Google/Twilio/Slack-webhook provider prefixes and command-scoped
+//      docker/sshpass/mysql/Hex/curl/openssl flags. Bare arbitrary strings are outside this finite inventory.
+// CSI controls are removed consistently before matching; full-width colon is a credential separator
+// only at recognized identifier boundaries, without rewriting ordinary prose.
 // Deliberately unmasked: unquoted nil/true/false/null/undefined after a credential key (whole value only), and
 // `preauthorization` (authorization needs a non-alphanumeric character before it).
 // Accepted over-masks (pinned in the tests as ACCEPTED_OVERMASK): `code: assert token == "x"`, a key line
 // followed by plain text, `--no-password prompt`, a port before a path containing `@`, `secrets: inherit`,
 // numeric values (`max_token: 1000`), `Authorization: required for route`, `stale cookie: expired at line`.
 export function maskSecretShapes(text) {
-  let masked = maskNextLineValues(String(text ?? ""));
+  let masked = maskNextLineValues(String(text ?? "").replace(CSI_CONTROL, ""));
+  masked = maskStandaloneNextLineAuthorization(masked);
+  masked = maskCommandCredentials(masked);
   masked = maskCredentialNameValueRecords(masked);
   masked = maskCredentialTupleValues(masked);
   masked = maskStructuredCredentialAssignments(masked);
   masked = maskPrivateKeyBlocks(masked);
+  masked = maskUrlUserinfo(masked);
+  masked = maskJwtTokens(masked);
   return masked.replace(STRUCTURAL_CREDENTIAL_RULE, maskStructuralCredential)
     .replace(AUTHORIZATION_RULE, "$1***")
     .replace(COOKIE_RULE, "$1***")
@@ -455,8 +546,9 @@ export function maskSecretShapes(text) {
     .replace(/(?<![A-Za-z0-9])(sk-)[A-Za-z0-9_-]{8,}/g, "$1***")
     .replace(/(?<![A-Za-z0-9])(xox[abprs]-)[A-Za-z0-9-]{8,}/g, "$1***")
     .replace(/(?<![A-Za-z0-9])(npm_)[A-Za-z0-9]{36}(?![A-Za-z0-9])/g, "$1***")
-    .replace(/(:\/\/[^/\s:@]{0,256}:)[^\s@]{1,256}@/g, "$1***@")
-    .replace(/(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)?/g, "eyJ***")
+    .replace(EXTRA_PROVIDER_RULE, "$1***")
+    .replace(/(?<![A-Za-z0-9])(SK)[a-fA-F0-9]{32}(?![a-fA-F0-9])/g, "$1***")
+    .replace(/(https:\/\/hooks\.slack\.com\/services\/)[^\s/"'?#]+\/[^\s/"'?#]+\/[^\s/"'?#]+/g, "$1***")
     .replace(/(?<![A-Z0-9])(A[KS]IA)[A-Z0-9]{16}/g, "$1***")
     .replace(QUERY_CREDENTIAL_RULE, "$1***")
     .replace(TUPLE_RULE, maskValue)
@@ -470,7 +562,7 @@ export function maskSecretShapes(text) {
 // test output (the run root, and with it the full log, is removed afterwards).
 // Credential-shaped values are masked once via maskSecretShapes; nothing is printed on success.
 export function rootProofFailureTail(outcome, result) {
-  const text = maskSecretShapes(`${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`.replace(/\u001b\[[0-9;]*m/g, ""));
+  const text = maskSecretShapes(`${String(result?.stdout ?? "")}${String(result?.stderr ?? "")}`);
   const lines = text.split("\n");
   let details = "";
   const first = lines.findIndex((line) => /^\s*1\) (test|doctest|property) /.test(line));
