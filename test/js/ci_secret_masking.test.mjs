@@ -1,7 +1,8 @@
 /* REL-03: secret values never reach CI output. Seeds are synthetic and built from fragments at runtime. */
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { test as nodeTest } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -1143,14 +1144,20 @@ function runBodies(workflowText) {
         try { value = JSON.parse(scalar); decoded = typeof value === "string"; } catch { decoded = false; }
       }
       body = value.split("\n");
+      while (end < lines.length && (!lines[end].trim() || indentOf(lines[end]) > base)) end += 1;
+      if (lines.slice(i + 1, end).some((l) => l.trim())) {
+        decoded = false; // Multiline inline scalars outside this bounded YAML convention.
+        body.push(...lines.slice(i + 1, end).map((l) => l.trim()));
+      }
     }
-    bodies.push({ start: i, end, kind, decoded, body, keys: new Set() });
-    if (kind !== "inline") i = end - 1;
+    bodies.push({ start: i, end, kind, decoded, body, keys: new Set(), unknownEnv: 0 });
+    i = end - 1;
   }
   for (let i = 0; i < lines.length; i += 1) {
     if (bodies.some((b) => i > b.start && i < b.end)) continue;
-    if (!/^\s*env:\s*(?:#.*)?$/.test(lines[i])) continue;
-    const envIndent = indentOf(lines[i]);
+    const envHeader = /^(\s*)(-\s+)?env:\s*(.*)$/.exec(lines[i]);
+    if (!envHeader) continue;
+    const envIndent = envHeader[1].length + (envHeader[2]?.length ?? 0);
     let owner = i - 1;
     while (owner >= 0 && (!lines[owner].trim() || lines[owner].trimStart().startsWith("#") || indentOf(lines[owner]) >= envIndent)) owner -= 1;
     const ownerIndent = owner < 0 ? -1 : indentOf(lines[owner]);
@@ -1158,8 +1165,13 @@ function runBodies(workflowText) {
     while (scopeEnd < lines.length && (!lines[scopeEnd].trim() || lines[scopeEnd].trimStart().startsWith("#") || indentOf(lines[scopeEnd]) > ownerIndent)) scopeEnd += 1;
     let envEnd = i + 1;
     while (envEnd < lines.length && (!lines[envEnd].trim() || indentOf(lines[envEnd]) > envIndent)) envEnd += 1;
-    const keys = secretBoundKeys(lines.slice(i + 1, envEnd).join("\n"));
-    for (const b of bodies) if (b.start > owner && b.start < scopeEnd) for (const key of keys) b.keys.add(key);
+    const envSource = lines.slice(i + 1, envEnd).join("\n");
+    const keys = secretBoundKeys(envSource);
+    for (const b of bodies) if (b.start > owner && b.start < scopeEnd) {
+      for (const key of keys) b.keys.add(key);
+      // Flow/anchored/other unsupported env mappings cannot silently erase run relevance.
+      if (envHeader[3] && !envHeader[3].startsWith("#") && RELEVANT_CREDENTIAL_REFERENCE.test(lines[i])) b.unknownEnv += 1;
+    }
   }
   return bodies;
 }
@@ -1167,18 +1179,40 @@ function runBodies(workflowText) {
 // Retain only the outer command surface. Quoted strings and $(...) are single scalar words;
 // their internal assignments/pipes do not impersonate outer multiple/inline assignments.
 function statementSurface(text) {
-  let surface = "", quote = "", depth = 0;
+  let surface = "", quote = "", complete = true;
+  const substitutions = [];
   for (let i = 0; i < text.length; i += 1) {
     const c = text[i];
-    if (c === "\\" && quote !== "'") { if (!quote && !depth) surface += "x"; i += 1; continue; }
-    if (quote) { if (c === quote) quote = ""; continue; }
-    if (c === "'" || c === '"') { quote = c; if (!depth) surface += "x"; continue; }
-    if (c === "$" && text[i + 1] === "(") { if (!depth) surface += "x"; depth += 1; i += 1; continue; }
-    if (depth) { if (c === "(") depth += 1; if (c === ")") depth -= 1; continue; }
+    if (c === "\\" && quote !== "'") { if (!quote && !substitutions.length) surface += "x"; if (i + 1 === text.length) complete = false; i += 1; continue; }
+    if (quote === "'") { if (c === "'") quote = ""; continue; }
+    if (c === "$" && text[i + 1] === "(") {
+      if (!quote && !substitutions.length) surface += "x";
+      substitutions.push(quote); quote = ""; i += 1; continue;
+    }
+    if (quote === '"') { if (c === '"') quote = ""; continue; }
+    if (c === "'" || c === '"') { quote = c; if (!substitutions.length) surface += "x"; continue; }
+    if (substitutions.length) {
+      if (c === "(") substitutions.push("");
+      if (c === ")") quote = substitutions.pop();
+      continue;
+    }
     if (c === "#" && (i === 0 || /\s/.test(text[i - 1]))) break;
     surface += c;
   }
-  return { text: surface.trim(), complete: !quote && depth === 0 && !/\\$/.test(text) };
+  return { text: surface.trim(), complete: complete && !quote && substitutions.length === 0 };
+}
+
+function persistenceGroupLines(lines) {
+  const open = [], persistent = new Set();
+  for (let index = 1; index < lines.length; index += 1) {
+    const text = lines[index].trim();
+    if (/^[{(]\s*$/.test(text)) open.push(index);
+    if (/^[})](?:\s|$)/.test(text) && open.length) {
+      const start = open.pop();
+      if (/>/.test(text) && /\$\{?GITHUB_(?:ENV|OUTPUT)\b/.test(text)) for (let k = start + 1; k < index; k += 1) persistent.add(k);
+    }
+  }
+  return persistent;
 }
 
 function registrationViolation(lines, assignment) {
@@ -1194,21 +1228,30 @@ export function classifyCredentialStatements(workflowText) {
   for (const body of runBodies(workflowText)) {
     const derived = new Map();
     const lines = ["run: |", ...body.body.map((l) => l ? `  ${l}` : "")];
+    const persistent = persistenceGroupLines(lines);
+    for (let k = 0; k < body.unknownEnv; k += 1) candidates.push({ classification: "unknown", form: "unknown", reason: null, assignment: null });
     for (let index = 1; index < lines.length; index += 1) {
       const line = lines[index];
       if (!line.trim() || line.trimStart().startsWith("#")) continue;
       const bound = [...body.keys].find((key) => refsVar(line, key));
       const alias = [...derived].find(([key]) => refsVar(line, key));
-      if (!bound && !alias && !RELEVANT_CREDENTIAL_REFERENCE.test(line)) continue;
       const outer = statementSurface(line);
       const scalar = ASSIGN.exec(line);
       const assignments = [...outer.text.matchAll(/(?:^|[\s;|&])([A-Za-z_]\w*)\+?=/g)];
+      const readTarget = /\bread\s+(?:-[^\s]+\s+)*([A-Za-z_]\w*)/.exec(outer.text)?.[1];
+      const printfTarget = /\bprintf\s+-v\s+([A-Za-z_]\w*)/.exec(outer.text)?.[1];
+      const appendTarget = assignments.find((m) => new RegExp(`\\b${m[1]}\\+=`).test(outer.text))?.[1];
+      const destination = [appendTarget, readTarget, printfTarget].find((name) => body.keys.has(name) || derived.has(name));
+      if (!bound && !alias && !destination && !RELEVANT_CREDENTIAL_REFERENCE.test(line)) {
+        if (scalar) { derived.delete(scalar[1]); body.keys.delete(scalar[1]); }
+        continue;
+      }
       const direct = Boolean(bound) || RELEVANT_CREDENTIAL_REFERENCE.test(line);
       const depth = direct ? 1 : alias?.[1] === 1 ? 2 : 0;
       const assignment = scalar && depth ? { name: scalar[1], from: bound ?? alias?.[0] ?? "credential reference", index, line: body.start + index + 1, bounds: { start: 0, end: lines.length }, lines } : null;
       let form = "use", classification = "supported", reason = null;
       if (!body.decoded || !outer.complete) { form = "unknown"; classification = "unknown"; }
-      else if (/[<>]/.test(line) && /\$\{?GITHUB_(?:ENV|OUTPUT)\b/.test(line)) form = "github_env_output";
+      else if (persistent.has(index) || (/[<>]/.test(line) && /\$\{?GITHUB_(?:ENV|OUTPUT)\b/.test(line))) form = "github_env_output";
       else if (/\b(?:local|declare|readonly|typeset)\b/.test(outer.text)) form = "decl_keyword";
       else if (assignments.some((m) => new RegExp(`\\b${m[1]}\\+=`).test(outer.text))) form = "append_assign";
       else if (/(?:^|[;|&]\s*)read\s/.test(outer.text)) form = "read_into";
@@ -1225,6 +1268,8 @@ export function classifyCredentialStatements(workflowText) {
       candidates.push({ classification, form, reason, assignment });
       // Denied declarations still taint later statements: rejection must not hide persistence.
       if (depth) for (const m of assignments) derived.set(m[1], depth);
+      if (depth && readTarget) derived.set(readTarget, depth);
+      if (depth && printfTarget) derived.set(printfTarget, depth);
     }
   }
   return candidates;
@@ -1291,6 +1336,13 @@ export function workflowGrammarCensus(root) {
   }
   counts.findings = findings.reduce((n, f) => n + f.count, 0);
   return { schema_version: 1, guard: "grammar", scanned_files, counts, findings };
+}
+
+function assertGrammarCensus(report) {
+  const c = report.counts;
+  assert.ok(c.files > 0 && c.workflows === c.files && c.references > 0 && c.candidates > 0, "credential census inventory empty");
+  assert.ok(c.candidates === c.supported + c.denied + c.unknown, "credential candidate conservation failed");
+  assert.ok(c.denied === 0 && c.unknown === 0 && c.findings === 0 && report.findings.length === 0, "credential census contains denied or unknown statements");
 }
 
 const NO_NETWORK = /\b(curl|wget)\b|\bgh /;
@@ -1724,6 +1776,171 @@ test("phase196 GR-06 grouped credential persistence is denied", () => {
   assert.ok(rows.length === 1 && rows[0].classification === "denied" && rows[0].form === "github_env_output", "grouped credential persistence was treated as an ordinary use");
 });
 
+const GR06_DERIVE = '$(printf %s "$MAVEN_PASSWORD" | base64)';
+const GR06_FAMILIES = [
+  { form: "decl_keyword", body: [`local TOKEN=${GR06_DERIVE}`] },
+  { form: "append_assign", body: ['TOKEN=prefix', `TOKEN+=${GR06_DERIVE}`] },
+  { form: "read_into", body: [`read -r TOKEN <<< "${GR06_DERIVE}"`] },
+  { form: "printf_v", body: [`printf -v TOKEN '%s' "${GR06_DERIVE}"`] },
+  { form: "github_env_output", body: [`TOKEN=${GR06_DERIVE}`, 'echo "value=$TOKEN" >> "$GITHUB_OUTPUT"'] },
+  { form: "multi_assign", body: [`PLAIN=ordinary TOKEN=${GR06_DERIVE}`] },
+  { form: "assign_and_use", body: [`TOKEN=${GR06_DERIVE}; printf 'use %s\\n' "$TOKEN"`] }
+];
+
+function runGrammarShell(body, seed) {
+  const result = spawnSync("bash", ["-c", `set -euo pipefail\n${body}`], {
+    encoding: "utf8", timeout: 2000, maxBuffer: 64 * 1024,
+    env: { PATH: process.env.PATH, MAVEN_PASSWORD: seed, GITHUB_ENV: "/dev/null", GITHUB_OUTPUT: "/dev/null" }
+  });
+  assert.ok(result.status === 0 && !result.error, "synthetic grammar shell failed; output withheld");
+  return result;
+}
+
+for (const row of GR06_FAMILIES) {
+  test(`phase196 GR-06 family ${row.form} denied and executed`, () => {
+    const rows = classifyCredentialStatements(fixture(...row.body, 'echo "::add-mask::$TOKEN"', 'echo "$TOKEN"'));
+    assert.ok(rows.some((c) => c.classification === "denied" && c.form === row.form), `family ${row.form} disappeared or was accepted`);
+    const seed = frag("fake", "Grammar", "Denied", "Val41");
+    const body = ['probe() {', ...row.body, 'if false; then echo "::add-mask::$TOKEN"; fi', 'printf "use %s\\n" "$TOKEN"', '}', 'probe'].join("\n");
+    const result = runGrammarShell(body, seed);
+    const derived = Buffer.from(seed).toString("base64");
+    assert.ok(result.stdout.includes(derived), `family ${row.form} did not actually derive a synthetic value`);
+    assert.ok(runnerMaskedLog(result.stdout, [seed]).includes(derived), `family ${row.form} inferred a registration that never executed`);
+  });
+}
+
+test("phase196 GR-06 plain export and YAML forms execute exact stdout registration", (t) => {
+  let executed = 0;
+  for (const exported of ["", "export "]) for (const quoted of [false, true]) for (const kind of ["block", "folded", "inline"]) {
+    const rhs = quoted ? `"${GR06_DERIVE}"` : GR06_DERIVE;
+    const body = [`${exported}TOKEN=${rhs}`, 'echo "::add-mask::${TOKEN}"', 'printf "use %s\\n" "$TOKEN"'];
+    let text;
+    if (kind === "block") text = fixture(...body);
+    if (kind === "folded") text = fixture("", ...body.flatMap((l) => [l, ""])).replace("run: |", "run: >-");
+    if (kind === "inline") text = FIXTURE_HEAD.slice(0, -2).join("\n") + `\n        run: ${JSON.stringify(body.join("\n"))}`;
+    const rows = classifyCredentialStatements(text);
+    assert.ok(rows.length === 3 && rows.every((r) => r.classification === "supported"), `scalar/YAML form ${executed} was not supported`);
+    const seed = frag("fake", "Grammar", "Supported", String(executed), "Val42");
+    const script = runBodies(text)[0].body.join("\n");
+    const result = runGrammarShell(script, seed);
+    const derived = Buffer.from(seed).toString("base64");
+    assert.ok(result.stdout.includes(`::add-mask::${derived}`) && result.stdout.includes(`use ${derived}`), "scalar did not expand and register on stdout before use");
+    assert.ok(!runnerMaskedLog(result.stdout, [seed]).includes(derived), "registered scalar leaked in synthetic step log");
+    const removed = runGrammarShell(script.split("\n").filter((l) => !l.includes("::add-mask::")).join("\n"), seed);
+    assert.ok(runnerMaskedLog(removed.stdout, [seed]).includes(derived), "mask-removed scalar control did not discriminate");
+    executed += 1;
+  }
+  assert.ok(executed === 12, "supported scalar/YAML execution inventory incomplete");
+  t.diagnostic(`GR-06 supported scalar/YAML executions ${executed}; mask-removed controls ${executed}`);
+});
+
+test("phase196 GR-06 executed wrong quote stderr redirect conditional and late mask controls", (t) => {
+  const controls = [
+    { mask: "echo '::add-mask::$TOKEN'", leak: true },
+    { mask: 'echo "::add-mask::$TOKEN" >&2', leak: true },
+    { mask: 'echo "::add-mask::$TOKEN" >/dev/null', leak: true },
+    { mask: 'if false; then echo "::add-mask::$TOKEN"; fi', leak: true },
+    { mask: 'false && echo "::add-mask::$TOKEN"', leak: true },
+    { mask: 'if true; then echo "::add-mask::$TOKEN"; fi', leak: false },
+    { mask: 'echo "$TOKEN"\necho "::add-mask::$TOKEN"', leak: true },
+    { mask: '', leak: true }
+  ];
+  for (const [index, row] of controls.entries()) {
+    const body = [`TOKEN=${GR06_DERIVE}`, ...row.mask.split("\n"), 'echo "$TOKEN"'];
+    assert.ok(classifyCredentialStatements(fixture(...body)).some((c) => c.classification === "denied"), `mask context ${index} was accepted`);
+    const seed = frag("fake", "Grammar", "Context", String(index), "Val43");
+    const result = runGrammarShell(body.join("\n"), seed);
+    const derived = Buffer.from(seed).toString("base64");
+    assert.ok(runnerMaskedLog(result.stdout, [seed]).includes(derived) === row.leak, `executed mask context ${index} did not discriminate`);
+  }
+  t.diagnostic(`GR-06 execution-context controls ${controls.length}`);
+});
+
+test("phase196 GR-06 YAML unsupported later assignment and same line use cannot vanish", () => {
+  for (const keyword of ["local", "declare", "readonly", "typeset"]) {
+    assert.ok(classifyCredentialStatements(fixture(`${keyword} TOKEN="$MAVEN_PASSWORD"`)).some((c) => c.form === "decl_keyword" && c.classification === "denied"), "declaration keyword disappeared");
+  }
+  const bodies = ['A=ordinary B="$MAVEN_PASSWORD"', 'TOKEN="$MAVEN_PASSWORD"; echo "$TOKEN"', 'TOKEN="$MAVEN_PASSWORD" command', 'eval "$MAVEN_PASSWORD"'];
+  for (const body of bodies) for (const kind of ["block", "folded", "inline"]) {
+    let text = fixture(body);
+    if (kind === "folded") text = text.replace("run: |", "run: >");
+    if (kind === "inline") text = FIXTURE_HEAD.slice(0, -2).join("\n") + `\n        run: ${JSON.stringify(body)}`;
+    const rows = classifyCredentialStatements(text);
+    assert.ok(rows.length === 1 && rows[0].classification !== "supported", "unsupported relevant YAML statement disappeared");
+  }
+  const folded = fixture('TOKEN="$MAVEN_PASSWORD"', 'echo "::add-mask::$TOKEN"').replace("run: |", "run: >");
+  assert.ok(classifyCredentialStatements(folded).some((c) => c.classification !== "supported"), "folded lines impersonated distinct assignment and mask statements");
+});
+
+test("phase196 GR-06 aliases remain run local with bounded transitivity", () => {
+  const first = fixture('TOKEN="$MAVEN_PASSWORD"', 'echo "::add-mask::$TOKEN"');
+  const second = '\n      - name: next\n        run: |\n          echo "value=$TOKEN" >> "$GITHUB_OUTPUT"';
+  assert.ok(classifyCredentialStatements(first + second).every((c) => c.classification === "supported"), "derived alias crossed a run boundary");
+  const isolated = fixture('echo ordinary') + '\n      - name: next\n        run: |\n          TOKEN="$MAVEN_PASSWORD"\n          echo "$TOKEN"';
+  assert.ok(classifyCredentialStatements(isolated).length === 0, "step-scoped env alias crossed a run boundary");
+  const chain = fixture('A="$MAVEN_PASSWORD"', 'echo "::add-mask::$A"', 'B="$A"', 'echo "::add-mask::$B"', 'C=$(printf %s "$B")');
+  assert.ok(derivedSecretAssignments(chain).length === 2 && derivedSecretViolations(chain).length === 0, "one-level derived alias convention changed");
+  for (const target of ["GITHUB_ENV", "GITHUB_OUTPUT"]) {
+    const rows = classifyCredentialStatements(fixture('TOKEN="$MAVEN_PASSWORD"', 'echo "::add-mask::$TOKEN"', `echo "value=$TOKEN" >> "$${target}"`));
+    assert.ok(rows.some((c) => c.form === "github_env_output" && c.classification === "denied"), "credential persistence was waived after masking");
+  }
+});
+
+test("phase196 GR-06 connected destinations and unsupported YAML stay accounted", () => {
+  const append = classifyCredentialStatements(fixture('TOKEN="$MAVEN_PASSWORD"', 'echo "::add-mask::$TOKEN"', 'TOKEN+=suffix'));
+  assert.ok(append.some((c) => c.classification === "denied" && c.form === "append_assign"), "append to a known credential alias disappeared");
+  for (const create of [`read -r TOKEN <<< "${GR06_DERIVE}"`, `printf -v TOKEN '%s' "${GR06_DERIVE}"`]) {
+    const rows = classifyCredentialStatements(fixture(create, 'echo "value=$TOKEN" >> "$GITHUB_ENV"'));
+    assert.ok(rows.length === 2 && rows.every((c) => c.classification === "denied"), "denied destination erased later credential persistence");
+  }
+  const overwritten = classifyCredentialStatements(fixture('TOKEN="$MAVEN_PASSWORD"', 'echo "::add-mask::$TOKEN"', 'TOKEN=ordinary', 'echo "value=$TOKEN" >> "$GITHUB_OUTPUT"'));
+  assert.ok(overwritten.length === 2 && overwritten.every((c) => c.classification === "supported"), "ordinary metadata overwrite stayed tainted");
+  const flow = 'jobs:\n  j:\n    steps:\n      - env: {BOUND: "${{ secrets.NAME }}"}\n        run: echo "$BOUND"';
+  assert.ok(classifyCredentialStatements(flow).some((c) => c.classification === "unknown"), "unsupported relevant YAML env mapping disappeared");
+  const continuation = 'jobs:\n  j:\n    steps:\n      - run: echo ordinary\n          "${{ secrets.NAME }}"';
+  assert.ok(classifyCredentialStatements(continuation).some((c) => c.classification === "unknown"), "unsupported YAML scalar continuation disappeared");
+});
+
+test("phase196 GR-06 standalone census suppresses tests conserves candidates and sanitizes findings", (t) => {
+  const root = mkdtempSync(path.join(tmpdir(), "cw196-grammar-"));
+  const dir = path.join(root, ".github/workflows");
+  mkdirSync(dir, { recursive: true });
+  const entry = fileURLToPath(import.meta.url);
+  const run = (source) => {
+    writeFileSync(path.join(dir, "fixture.yml"), source);
+    const result = spawnSync(process.execPath, [entry, "--phase196-census-root", root], { encoding: "utf8", timeout: 2000, maxBuffer: 64 * 1024, env: { PATH: process.env.PATH } });
+    assert.ok(!result.error && result.stderr === "", "standalone census failed operationally; output withheld");
+    const lines = result.stdout.trim().split("\n");
+    assert.ok(lines.length === 1 && lines[0].startsWith("PHASE196_REPORT "), "standalone mode registered unrelated tests or omitted report");
+    return { result, report: JSON.parse(lines[0].slice("PHASE196_REPORT ".length)) };
+  };
+  try {
+    const safe = run(fixture(`TOKEN=${GR06_DERIVE}`, 'echo "::add-mask::$TOKEN"', 'echo "$TOKEN"'));
+    assert.ok(safe.result.status === 0, "valid standalone census rejected");
+    assertGrammarCensus(safe.report);
+    for (const mutate of [
+      (c) => { c.candidates = 0; },
+      (c) => { c.candidates += 1; },
+      (c) => { c.denied = 1; c.supported -= 1; },
+      (c) => { c.unknown = 1; c.supported -= 1; },
+      (c) => { c.references = 0; },
+      (c) => { c.workflows = 0; }
+    ]) {
+      const changed = structuredClone(safe.report); mutate(changed.counts);
+      assert.throws(() => assertGrammarCensus(changed), /credential/, "broken census control passed");
+    }
+    const canary = frag("fake", "Grammar", "Rhs", "NotRetained44");
+    const bad = run(fixture(`local TOKEN="\${MAVEN_PASSWORD}${canary}"`, 'eval "$MAVEN_PASSWORD"'));
+    assert.ok(bad.result.status === 1, "unsupported standalone census passed");
+    assert.ok(bad.report.counts.candidates === 2 && bad.report.counts.denied === 1 && bad.report.counts.unknown === 1, "unsupported candidates were not conserved");
+    assert.ok(!bad.result.stdout.includes(canary) && !bad.result.stdout.includes("MAVEN_PASSWORD") && !bad.result.stdout.includes("TOKEN"), "census retained raw statement or alias data");
+    assert.ok(bad.report.findings.every((f) => Object.keys(f).sort().join(",") === "category,count,file"), "finding exceeded closed diagnostic shape");
+    const empty = run('jobs:\n  j:\n    steps:\n      - run: echo ordinary');
+    assert.ok(empty.result.status === 1 && empty.report.counts.candidates === 0, "empty census passed");
+    t.diagnostic("GR-06 standalone subprocesses 3; census mutation controls 6");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
 test("round3 review curl missing separators bounded", { timeout: 55000 }, (t) => {
   const rows = [
     { label: "review/curl_short_missing_colon", input: `curl ${"-u".repeat(100000)}` },
@@ -1747,7 +1964,7 @@ if (censusOnly) {
     if (process.argv.length !== 4) throw new Error("invalid census arguments");
     const report = workflowGrammarCensus(path.resolve(process.argv[3]));
     console.log(`PHASE196_REPORT ${JSON.stringify(report)}`);
-    process.exitCode = report.counts.files > 0 && report.counts.references > 0 && report.counts.candidates > 0 && report.counts.findings === 0 ? 0 : 1;
+    try { assertGrammarCensus(report); process.exitCode = 0; } catch { process.exitCode = 1; }
   } catch {
     console.error("phase196 grammar census failed");
     process.exitCode = 2;
