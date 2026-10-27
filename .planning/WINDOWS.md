@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 42
+open_count: 44
 waived_count: 0
 fixed_count: 3
-total_count: 45
-last_updated: 2026-10-27T17:46:09.118Z
+total_count: 47
+last_updated: 2026-10-27T18:00:36.188Z
 ---
 
 # Broken Windows Ledger
@@ -60,6 +60,8 @@ last_updated: 2026-10-27T17:46:09.118Z
 | 43 | 196 | unmet-truth | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/report.json |  | SPEC-04 pending: pinned Muex TCE classifies all useful SafeObservation comparison mutations equivalent; remaining records are compile-invalid; plan196-13 halted with no accepted bootstrap. | fixed |  | 2026-10-27T17:28:29.046Z | 2026-10-27T17:45:55.504Z |
 | 44 | 196 | unrun-verify | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/muex-pilot.mjs |  | Plan196-13 controls acceptance and five known-kill/known-survive pairs not run: useful-bootstrap prerequisite failed terminally; no accepted fixture or adapter was created. | fixed |  | 2026-10-27T17:28:29.118Z | 2026-10-27T17:45:55.580Z |
 | 45 | 196 | deviation | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/scripts/muex-pilot.mjs |  | Plan196-13 continuation adapter and refusal checks were implemented together after genuine useful capture; real controls pass but no independent continuation RED is claimed. | open |  | 2026-10-27T17:46:09.118Z |  |
+| 46 | 196 | unmet-truth | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-baseline/result.json |  | SPEC-04 pending: full uncapped five-file Muex baseline timed out at the conserved aggregate ceiling without report or output; exact restoration and236 clean tests passed; no retry or adopt/drop. | open |  | 2026-10-27T18:00:36.099Z |  |
+| 47 | 196 | unrun-verify | .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/MUEX-DECISION.md |  | Plan196-14 all-survivor classification and complete adopt/drop acceptance unavailable after terminal full-baseline timeout; decision command explicitly returned pending; plans15-17 blocked. | open |  | 2026-10-27T18:00:36.188Z |  |
 
 ````json
 [
@@ -610,6 +612,32 @@ last_updated: 2026-10-27T17:46:09.118Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-27T17:46:09.118Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 46,
+    "kind": "unmet-truth",
+    "phase": "196",
+    "file": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-baseline/result.json",
+    "line": null,
+    "description": "SPEC-04 pending: full uncapped five-file Muex baseline timed out at the conserved aggregate ceiling without report or output; exact restoration and236 clean tests passed; no retry or adopt/drop.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T18:00:36.099Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 47,
+    "kind": "unrun-verify",
+    "phase": "196",
+    "file": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/MUEX-DECISION.md",
+    "line": null,
+    "description": "Plan196-14 all-survivor classification and complete adopt/drop acceptance unavailable after terminal full-baseline timeout; decision command explicitly returned pending; plans15-17 blocked.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T18:00:36.188Z",
     "resolved_at": null,
     "milestone": null
   }
