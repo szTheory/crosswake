@@ -233,7 +233,31 @@ function mutableProcessLines(output) {
 function noMutableProcesses(root) {
   const result = child(root, "ps", ["-axo", "pid=,comm=,args="]);
   need(result.status === 0, "process_inventory_unavailable");
-  need(mutableProcessLines(result.stdout).length === 0, "mutable_process_active");
+  const related = repositoryMutableProcessLines(root, result.stdout, (pid) => {
+    const cwd = child(root, "lsof", ["-a", "-p", pid, "-d", "cwd", "-Fn"]);
+    if (cwd.status !== 0) return null;
+    const paths = cwd.stdout.split("\n").filter((line) => line.startsWith("n")).map((line) => line.slice(1));
+    return paths.length === 1 ? paths[0] : null;
+  });
+  need(related.length === 0, "mutable_process_active");
+}
+function repositoryMutableProcessLines(root, output, cwdFor) {
+  const canonical = realpathSync(root);
+  return mutableProcessLines(output).filter((line) => {
+    const pid = /^\s*(\d+)\s/.exec(line)?.[1];
+    if (!pid) return true;
+    const cwd = cwdFor(pid);
+    // A missing cwd cannot establish isolation. Explicit repository arguments
+    // are related even when a runner was launched from an external directory.
+    if (!cwd || [canonical, path.resolve(root)].some((base) => line.includes(`${base}/`) || line.includes(`${base} `))) return true;
+    let actual;
+    try {
+      // lsof still identifies an unlinked cwd. Resolve its existing parent;
+      // absence of that parent remains unknown and therefore blocking.
+      actual = existsSync(cwd) ? realpathSync(cwd) : path.join(realpathSync(path.dirname(cwd)), path.basename(cwd));
+    } catch { return true; }
+    return actual === canonical || actual.startsWith(`${canonical}/`);
+  });
 }
 function runGuard(root, command, args, timeout) {
   return new Promise((resolve, reject) => {
@@ -404,6 +428,39 @@ function captureFixture() {
   return f;
 }
 function captureTests() {
+  test("process isolation rejects repository and unknown cwd while ignoring foreign processes", () => {
+    const f = captureFixture(); try {
+      const row = "20 beam.smp beam.smp\n";
+      assert.equal(repositoryMutableProcessLines(f.root, row, () => f.root).length, 1);
+      assert.equal(repositoryMutableProcessLines(f.root, row, () => null).length, 1);
+      assert.equal(repositoryMutableProcessLines(f.root, row, () => path.dirname(f.root)).length, 0);
+      assert.equal(repositoryMutableProcessLines(f.root, row, () => path.join(path.dirname(f.root), "removed-foreign-cwd")).length, 0);
+      assert.equal(repositoryMutableProcessLines(f.root, row, () => path.join(f.root, "removed-cwd")).length, 1);
+      assert.equal(repositoryMutableProcessLines(f.root, row, () => "/unavailable-parent/unknown").length, 1);
+      assert.equal(repositoryMutableProcessLines(f.root, `20 beam.smp beam.smp ${f.root}/test\n`, () => path.dirname(f.root)).length, 1);
+    } finally { f.cleanup(); }
+  });
+  test("process isolation discriminates real mutable child working directories in real git fixtures", async () => {
+    const local = captureFixture(), foreign = captureFixture();
+    let proc;
+    const start = async (cwd) => {
+      proc = spawn(process.execPath, ["-e", "setInterval(()=>{},1000)", "--", "--test"], { cwd, stdio: "ignore" });
+      await new Promise((resolve, reject) => { proc.once("spawn", resolve); proc.once("error", reject); });
+    };
+    const stop = async () => {
+      const ended = new Promise((resolve) => proc.once("close", resolve));
+      proc.kill("SIGTERM"); await ended; proc = null;
+    };
+    try {
+      await start(foreign.root);
+      assert.doesNotThrow(() => noMutableProcesses(local.root));
+      await stop();
+      await start(local.root);
+      assert.throws(() => noMutableProcesses(local.root), { code: "mutable_process_active" });
+      await stop();
+      assert.doesNotThrow(() => noMutableProcesses(local.root));
+    } finally { if (proc) await stop(); local.cleanup(); foreign.cleanup(); }
+  });
   test("capture refuses wrong fetched source before executing guard", async () => {
     const f = captureFixture(); try {
       await assert.rejects(captureAt(f.root, f.options, { ...f.adapters, expectedMain: "0".repeat(40) }), { code: "wrong_main_sha" });

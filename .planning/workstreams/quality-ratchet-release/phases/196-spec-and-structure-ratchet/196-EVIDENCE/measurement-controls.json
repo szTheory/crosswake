@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "helper_sha256": "c179470074b0447fa1b2e006ac98e66122f661161f48f6d6a42c4f3e4bbd5a76",
-  "duration_ms": 13451,
-  "tests": 31,
+  "helper_sha256": "2ead890092a635eb81e1ffadf44b2f9f471102f03ae92cc608713f63f025c417",
+  "duration_ms": 15313,
+  "tests": 33,
   "suites": [
     {
       "mode": "source-controls",
@@ -27,7 +27,7 @@
         "source verifier rejects unexpected supported change",
         "source verifier rejects unrecognized state"
       ],
-      "stdout_sha256": "3412db0ab52a0dde6ef25d386544f0d995cce095039e40281c2c74e1e1a0890f",
+      "stdout_sha256": "21bd0f743a1cca8889ba831fc2b9328a464f10fd4833856322bc30b3c919bd02",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
@@ -38,10 +38,12 @@
         "capture-controls"
       ],
       "process_exit": 0,
-      "tests": 21,
-      "passed": 21,
+      "tests": 23,
+      "passed": 23,
       "failed": 0,
       "controls": [
+        "process isolation rejects repository and unknown cwd while ignoring foreign processes",
+        "process isolation discriminates real mutable child working directories in real git fixtures",
         "capture refuses wrong fetched source before executing guard",
         "capture reads actual main and restores candidate branch plus protected and untracked bytes",
         "capture preserves a report-mode finding exit without treating it as process success",
@@ -64,7 +66,7 @@
         "capture preserves a prior receipt when publication privacy is refused",
         "capture refuses a concurrent capture lock without altering the checkout"
       ],
-      "stdout_sha256": "391bd0eb0dddb25c686ff1e79acd354a2488a208421af9d1f4b2a97b56e56763",
+      "stdout_sha256": "15f3c82cef87527a306054e4fa687178c89be49f0cf18c9e551892a6dcd4f5fd",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
