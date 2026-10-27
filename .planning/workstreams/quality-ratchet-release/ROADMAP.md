@@ -89,58 +89,72 @@ Plans:
   4. A root-allowlist test fails on any new tracked root file or `*.bundle`; the 13 root scratch files and `crosswake-checkpoint-24c8389.bundle` are gone (bundle confirmed not the only copy; the denylist string in `first_adopter_context.ex` stays); `SETUP.md` lives under `docs/` without the personal email; merged or superseded remote branches are deleted (unmerged work tagged `archive/<name>` first, each delete behind its own `allow`) and `git worktree list` shows only the main checkout.
   5. SEED-003 is closed with mirror-tag evidence, and one clean-room command has run once against the real 0.2.11 artifacts with its output retained, and fails closed on a negative control (missing or wrong artifact).
 
-**Plans**: 18 plans (PR1: 01-02; PR queue: 03; PR2: 04-09; PR3: 10-12; branches and closeout: 13; REL-03 gap closure PR4: 14-15; REL-03 gap closure round 2 PR5: 16-18; sequential waves 1-13 in one checkout, gap waves 1-2, round-2 gap waves 1-3)
+**Plans**: 21 plans; 01–18 executed with retained summaries; round-3 REL-03 gap closure 19–21 ready in sequential waves 4–6 after completed round-2 wave 3. One main checkout.
 
 Plans:
 
 **Wave 1**
-- [ ] 195-01-PLAN.md — Version-agnostic shell fixture comparisons and shape-based action pins, rehearsed against the real #236, #210 and #211 diffs
+- [x] 195-01-PLAN.md — Version-agnostic shell fixture comparisons and shape-based action pins, rehearsed against the real #236, #210 and #211 diffs
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 195-02-PLAN.md — Land PR1 (privacy, CI on head, its own merge allow); observe release-please rewrite #236 and its eight test jobs pass on the new head
+- [x] 195-02-PLAN.md — Land PR1 (privacy, CI on head, its own merge allow); observe release-please rewrite #236 and its eight test jobs pass on the new head
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 195-03-PLAN.md — PR queue: #239/#240/#241 merged, #210/#211 and #238 merged or closed by recorded rule, one allow per merge, pin provenance checked
+- [x] 195-03-PLAN.md — PR queue: #239/#240/#241 merged, #210/#211 and #238 merged or closed by recorded rule, one allow per merge, pin provenance checked
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 195-04-PLAN.md — Secret masking: maskSecretShapes on the root-proof tail, add-mask for derived workflow secrets proven by a spawned-shell run, mask-removed negative controls
+- [x] 195-04-PLAN.md — Secret masking: maskSecretShapes on the root-proof tail, add-mask for derived workflow secrets proven by a spawned-shell run, mask-removed negative controls
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 195-05-PLAN.md — Recurring-lanes contract test (measured on main) and the first seven phase-proof schedules removed
+- [x] 195-05-PLAN.md — Recurring-lanes contract test (measured on main) and the first seven phase-proof schedules removed
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 195-06-PLAN.md — Remaining seven phase-proof schedules removed; one advisory weekly canary on main
+- [x] 195-06-PLAN.md — Remaining seven phase-proof schedules removed; one advisory weekly canary on main
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 195-07-PLAN.md — Cancel Obsolete controller and selector removed; controller-bound monitor subcommands retired explicitly; absence pinned
+- [x] 195-07-PLAN.md — Cancel Obsolete controller and selector removed; controller-bound monitor subcommands retired explicitly; absence pinned
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 195-08-PLAN.md — See It Run native split into a manual workflow; Dependabot grouped monthly with security updates separate
+- [x] 195-08-PLAN.md — See It Run native split into a manual workflow; Dependabot grouped monthly with security updates separate
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 195-09-PLAN.md — Land PR2 (own allow); See It Run web-and-gif and canary observed on main; Dependabot security updates enabled
+- [x] 195-09-PLAN.md — Land PR2 (own allow); See It Run web-and-gif and canary observed on main; Dependabot security updates enabled
 
 **Wave 10** *(blocked on Wave 9 completion)*
-- [ ] 195-10-PLAN.md — Root allowlist test, 13 scratch files and the checkpoint bundle removed (refs proven on origin), SETUP.md under docs/ without personal email
+- [x] 195-10-PLAN.md — Root allowlist test, 13 scratch files and the checkpoint bundle removed (refs proven on origin), SETUP.md under docs/ without personal email
 
 **Wave 11** *(blocked on Wave 10 completion)*
-- [ ] 195-11-PLAN.md — Fail-closed clean-room command run against real 0.2.11 Hex/Maven/iOS with retained output and negative controls; SEED-003 closed
+- [x] 195-11-PLAN.md — Fail-closed clean-room command run against real 0.2.11 Hex/Maven/iOS with retained output and negative controls; SEED-003 closed
 
 **Wave 12** *(blocked on Wave 11 completion)*
-- [ ] 195-12-PLAN.md — Land PR3 (own allow, bundle heads re-checked right before the gate); clean root confirmed on main
+- [x] 195-12-PLAN.md — Land PR3 (own allow, bundle heads re-checked right before the gate); clean root confirmed on main
 
 **Wave 13** *(blocked on Wave 12 completion)*
-- [ ] 195-13-PLAN.md — Remote branch cleanup (archive tags first, one allow per tag and per delete), stale PRs closed by recorded rule, one worktree, PR age audit, closeout branch pushed
+- [x] 195-13-PLAN.md — Remote branch cleanup (archive tags first, one allow per tag and per delete), stale PRs closed by recorded rule, one worktree, PR age audit, closeout branch pushed
 
 **Gap closure (REL-03 masking, from 195-VERIFICATION.md)**
-- [ ] 195-14-PLAN.md — Seeds-first masker fix: quoted, multi-word, mid-line Cookie, Digest, userinfo and JWT shapes masked; prose no longer masked; linear-time; non-vacuous add-mask guard (CR-01, CR-02, WR-01 to WR-03)
-- [ ] 195-15-PLAN.md — Land PR4 (own allow); verifier leak cases closed on main; review dispositions recorded, WR-04 to WR-06 and IN-03 carried to Phase 197
+- [x] 195-14-PLAN.md — Seeds-first masker fix: quoted, multi-word, mid-line Cookie, Digest, userinfo and JWT shapes masked; prose no longer masked; linear-time; non-vacuous add-mask guard (CR-01, CR-02, WR-01 to WR-03)
+- [x] 195-15-PLAN.md — Land PR4 (own allow); verifier leak cases closed on main; review dispositions recorded, WR-04 to WR-06 and IN-03 carried to Phase 197
 
 **Gap closure round 2 (REL-03 masking, from 195-VERIFICATION.md and 195-REVIEW-GAP.md)**
-- [ ] 195-16-PLAN.md — Seeds-first criticals: escaped-JSON, tuple, quoted-Bearer, next-line, CLI-flag and double-equals credential forms masked; named value groups; single-quoted add-mask rejected (GR-01, GR-02, GR-10)
-- [ ] 195-17-PLAN.md — Seeds-first warnings: provider tokens, PEM bodies, userinfo/key-ID/JWT variants, query and plural keys; literal-value exemptions; 200 ms budget; GR-06 census; final controls (GR-03 to GR-05, GR-07 to GR-09)
-- [ ] 195-18-PLAN.md — Land PR5 (own allow); GR-01 and GR-02 closed on main; GR dispositions recorded, GR-06 route asked separately (recommended: carry to Phase 196)
-**Research**: Skip; one feasibility look at clean-room command scope during planning
+- [x] 195-16-PLAN.md — Seeds-first criticals: escaped-JSON, tuple, quoted-Bearer, next-line, CLI-flag and double-equals credential forms masked; named value groups; single-quoted add-mask rejected (GR-01, GR-02, GR-10)
+- [x] 195-17-PLAN.md — Seeds-first warnings: provider tokens, PEM bodies, userinfo/key-ID/JWT variants, query and plural keys; literal-value exemptions; 200 ms budget; GR-06 census; final controls (GR-03 to GR-05, GR-07 to GR-09)
+- [x] 195-18-PLAN.md — Land PR5 (own allow); GR-01 and GR-02 closed on main; GR dispositions recorded, GR-06 route asked separately (recommended: carry to Phase 196)
+
+**Gap closure round 3 — REL-03 (planning verified; implementation pending)**
+
+**Wave 4** *(depends on completed 195-18)*
+- [ ] 195-19-PLAN.md — Structural credential identifiers, workflow-name inventory, container/armor masking and bounded whitespace performance; mandatory executed-family checks
+
+**Wave 5** *(blocked on 195-19)*
+- [ ] 195-20-PLAN.md — Exact add-mask registration, non-vacuous tail windows, diagnostic tradeoffs and remaining GAP2 regressions
+
+**Wave 6** *(blocked on 195-20)*
+- [ ] 195-21-PLAN.md — Independent GAP3 review, exact-head green CI, fresh per-operation approval and process-derived proof on actual main
+
+Cross-cutting constraints: REL-03 stays pending until fresh main proof; all twelve GAP2 findings have planned checks; prior GR-06/Phase197 deferrals remain; every commit/push uses conditional privacy scans; fresh one-use approval for each main merge or remote deletion; no release or tag in this round. Tests prove supported rules and the workflow-name inventory, with no universal arbitrary-secret claim.
+
+**Research**: Skipped for round-3 gap closure; existing inspected code and reproduced failures. Independent plan checker passed on its second review; see 195-PLAN-CHECK.md.
 
 ### Phase 196: Spec and structure ratchet
 
@@ -205,7 +219,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
-| 195. Pipeline repair and hygiene | 0/TBD | Not started | - |
+| 195. Pipeline repair and hygiene | 18/21 | REL-03 gap closure ready; verification gaps_found | - |
 | 196. Spec and structure ratchet | 0/TBD | Not started | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
@@ -246,4 +260,4 @@ Plans:
 
 ## Exact Next Action
 
-Next: `$gsd-plan-phase 194 --ws quality-ratchet-release`. Phase 194 context is gathered; no phase has been planned or executed. The adopter lane stays parked on its external gate.
+Last completed phase: 194. Phase 195 has 18 executed plans and three verified gap plans (19–21); REL-03 remains pending. Next: `$gsd-execute-phase 195 --gaps-only --ws quality-ratchet-release`. Start with 195-19 and preserve completed summaries; do not repeat prior gap rounds. Phase 196 waits for fresh passing Phase 195 verification. The adopter lane stays parked on its external gate.
