@@ -32,3 +32,5 @@ At 2026-10-27T11:47:32.343Z, attempt 03b7adfaed1c9423d2a345168b34a211 was reconc
 A fresh attempt now awaits both separate decisions; the earlier merge allow is historical, expired and unconsumed. The new display must include its unchanged PR/head and automatic deletion scope. No phase command is eligible until its two fresh decisions.
 
 2026-10-27T11:52:09.764506+00:00 — User explicitly allowed both operations on current attempt d00052b42c254fba3255930b75da574f: PR259 merge at24baafa3 and automatic remote deletion of fix/secret-mask-structural. Both permissions recorded, unconsumed pending live gate and actual operation.
+
+Delivery readback: PR259 merged2026-10-27T11:52:58Z as b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97 with exactly approved base/head parents. Approved automatic remote deletion occurred; both permissions consumed once. Tag inventory unchanged (114 refs; digest 4fd4838bdbdbff4d88b43553084ca882eafa207a5007f3d5a3a674a3321a72cd). Actual-main proof remains pending.

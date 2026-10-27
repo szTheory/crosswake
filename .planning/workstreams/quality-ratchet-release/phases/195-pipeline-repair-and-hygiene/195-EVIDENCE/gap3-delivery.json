@@ -2,15 +2,15 @@
   "version": 1,
   "ws": "quality-ratchet-release",
   "requirement": "REL-03",
-  "status": "candidate",
+  "status": "merged",
   "refs": {
     "base": "7621c0ce0c38edec76cc54209eccf5acf40feddf",
     "fix": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
     "reviewed": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
     "pr": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
     "synthetic": "86bc26ca1fc60a9bd9204f655cefc2b442100555",
-    "merge": null,
-    "main": null,
+    "merge": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
+    "main": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
     "docs": "c427365b9fbe16b78dfd7df3b717a78542cd6f94"
   },
   "pr": {
@@ -390,18 +390,18 @@
     "runId": 40449366324,
     "merge": {
       "answer": "allow",
-      "consumed": false
+      "consumed": true
     },
     "deletion": {
       "answer": "allow",
-      "consumed": false
+      "consumed": true
     }
   },
   "delivery": {
-    "status": "not-attempted",
-    "merge": null,
+    "status": "merged",
+    "merge": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
     "head": "24baafa3d5a65df6f84366209b372b7c5448cdbe",
-    "autoDeleted": false
+    "autoDeleted": true
   },
   "safeUntracked": [
     ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt",
