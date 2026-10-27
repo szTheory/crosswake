@@ -203,6 +203,83 @@ test("round3 padding credential whitespace matrix", (t) => {
   assert.ok(rowCount > 0, "padding family executed zero rows");
 });
 
+const round3Fake = (family, index) => frag("fake", "Round3", family, "Seed", String(index).padStart(2, "0"), "Val");
+const ROUND3_CONTAINER_ROWS = [
+  { name: "cookie inspect arrow list", line: () => `result: %{"cookie" => ["sid=${round3Fake("CookieMap", 1)}"]}`, seeds: [round3Fake("CookieMap", 1)] },
+  { name: "set-cookie inspect arrow list", line: () => `result: %{"set-cookie" => ["sid=${round3Fake("SetCookie", 2)}; path=/"]}`, seeds: [round3Fake("SetCookie", 2)] },
+  { name: "request cookies inspect map", line: () => `req_cookies: %{"_app_key" => "${round3Fake("ReqCookies", 3)}"}`, seeds: [round3Fake("ReqCookies", 3)] },
+  { name: "response cookies inspect nested map", line: () => `resp_cookies: %{"sid" => %{value: "${round3Fake("RespCookies", 4)}"}}`, seeds: [round3Fake("RespCookies", 4)] },
+  { name: "password list with two values", line: () => `password: ["${round3Fake("PasswordList", 5)}", "${round3Fake("PasswordList", 6)}"]`, seeds: [round3Fake("PasswordList", 5), round3Fake("PasswordList", 6)] },
+  { name: "tokens list with two values", line: () => `tokens: ["${round3Fake("TokensList", 7)}", "${round3Fake("TokensList", 8)}"]`, seeds: [round3Fake("TokensList", 7), round3Fake("TokensList", 8)] },
+  { name: "uppercase sigil", line: () => `token: ~S"${round3Fake("Sigil", 9)}"`, seeds: [round3Fake("Sigil", 9)] },
+  { name: "bitstring value", line: () => `token: <<"${round3Fake("Bitstring", 10)}">>`, seeds: [round3Fake("Bitstring", 10)] },
+  { name: "nested inspect values", line: () => `password: %{value: "${round3Fake("Nested", 11)}", nested: %{token: "${round3Fake("Nested", 12)}"}}`, seeds: [round3Fake("Nested", 11), round3Fake("Nested", 12)] },
+  { name: "nested JSON object", line: () => `{"password": {"v": "${round3Fake("JsonNested", 13)}"}}`, seeds: [round3Fake("JsonNested", 13)] },
+  { name: "unquoted multi-word value", line: () => `password: ${round3Fake("Multiword", 14)} ${round3Fake("Multiword", 15)}`, seeds: [round3Fake("Multiword", 14), round3Fake("Multiword", 15)] },
+  { name: "CRLF continuation", line: () => `password:\r\n  %{value: "${round3Fake("Crlf", 16)}"}`, seeds: [round3Fake("Crlf", 16)] },
+  { name: "ANSI wrapped storage cookie", line: () => `\u001b[31mcookies: [{ name: 'sid', value: '${round3Fake("StorageCookie", 17)}' }]\u001b[0m`, seeds: [round3Fake("StorageCookie", 17)] },
+  { name: "malformed nested container", line: () => `password: %{value: "${round3Fake("Malformed", 18)}", nested: ["${round3Fake("Malformed", 19)}"`, seeds: [round3Fake("Malformed", 18), round3Fake("Malformed", 19)] }
+];
+
+const ROUND3_NAME_VALUE_ROWS = [
+  { name: "JSON token record", line: () => `{"name":"token","value":"${round3Fake("NameValue", 20)}"}`, seeds: [round3Fake("NameValue", 20)], valueKey: '"value"' },
+  { name: "JSON uppercase secret record", line: () => `{"name":"SECRET_ACCESS_KEY","value":"${round3Fake("NameValue", 21)}"}`, seeds: [round3Fake("NameValue", 21)], valueKey: '"value"' },
+  { name: "JavaScript password record", line: () => `{ name: 'password', value: '${round3Fake("NameValue", 22)}' }`, seeds: [round3Fake("NameValue", 22)], valueKey: "value" },
+  { name: "unrelated record control", line: () => `{ name: 'feature', value: 'readable' }`, seeds: [], valueKey: "value", control: true }
+];
+
+const LONG_TUPLE_KEY = frag("token_", "x".repeat(80));
+const ROUND3_TUPLE_ROWS = [
+  { name: "atom tuple wrapped LF", line: () => `{:token,\n  "${round3Fake("Tuple", 23)}"\n}`, seeds: [round3Fake("Tuple", 23)] },
+  { name: "quoted tuple wrapped CRLF", line: () => `{"password",\r\n  "${round3Fake("Tuple", 24)}"\r\n}`, seeds: [round3Fake("Tuple", 24)] },
+  { name: "long atom tuple", line: () => `{:${LONG_TUPLE_KEY}, "${round3Fake("Tuple", 25)}"}`, seeds: [round3Fake("Tuple", 25)] },
+  { name: "tuple container value", line: () => `{:cookie, %{"sid" => ["${round3Fake("Tuple", 26)}"]}}`, seeds: [round3Fake("Tuple", 26)] },
+  { name: "tuple sigil value", line: () => `{:token, ~s(${round3Fake("Tuple", 27)})}`, seeds: [round3Fake("Tuple", 27)] }
+];
+
+function runRound3TailRows(rows, { diagnosticsBeforeLast = false } = {}) {
+  const lines = rows.slice(0, diagnosticsBeforeLast ? -1 : rows.length).map((row) => row.line());
+  if (diagnosticsBeforeLast) lines.push("  1) test something (RepositoryTest)", "Finished in 0.1 seconds");
+  if (diagnosticsBeforeLast) lines.push(rows.at(-1).line());
+  else lines.push("  1) test something (RepositoryTest)", "Finished in 0.1 seconds");
+  const result = runChildLines(lines);
+  const seeds = rows.flatMap((row) => row.seeds);
+  const raw = `${result.stdout}${result.stderr}`;
+  const rawTail = raw.split("\n").slice(-ROOT_PROOF_TAIL_LINES).join("\n");
+  const tail = rootProofFailureTail("failed", result);
+  return { result, rows, seeds, rawTail, tail };
+}
+
+function assertRound3TailRows(outcome, family) {
+  const rawHits = outcome.seeds.filter((seed) => outcome.rawTail.includes(seed)).length;
+  const maskedHits = outcome.seeds.filter((seed) => outcome.tail.includes(seed)).length;
+  assert.ok(outcome.rows.length > 0 && outcome.seeds.length > 0, `${family} family executed zero rows`);
+  assert.ok(outcome.result.status === 2, `${family} child did not fail as required`);
+  assert.ok(rawHits === outcome.seeds.length, `${family} raw tail window contains ${rawHits} of ${outcome.seeds.length} seeds`);
+  assert.ok(maskedHits === 0, `${family} masked tail contains ${maskedHits} of ${outcome.seeds.length} seeds`);
+}
+
+test("round3 container inspect values", () => {
+  const outcome = runRound3TailRows(ROUND3_CONTAINER_ROWS, { diagnosticsBeforeLast: true });
+  assertRound3TailRows(outcome, "container inspect");
+  assert.ok(outcome.tail.includes("test something") && outcome.tail.includes("Finished in"), "complete-container diagnostics disappeared");
+});
+
+test("round3 name-value record isolation", () => {
+  const outcome = runRound3TailRows(ROUND3_NAME_VALUE_ROWS);
+  assertRound3TailRows(outcome, "name-value record");
+  const keyRows = outcome.rows.filter((row) => row.valueKey);
+  const preservedKeys = keyRows.filter((row) => outcome.tail.includes(row.valueKey)).length;
+  assert.ok(preservedKeys === keyRows.length, `tail preserves ${preservedKeys} of ${keyRows.length} value keys`);
+  assert.ok(outcome.tail.includes("readable"), "unrelated name-value record changed");
+});
+
+test("round3 tuple wrapped values", () => {
+  const outcome = runRound3TailRows(ROUND3_TUPLE_ROWS);
+  assertRound3TailRows(outcome, "tuple wrapped values");
+  assert.ok(outcome.tail.includes("test something") && outcome.tail.includes("Finished in"), "tuple diagnostics disappeared");
+});
+
 function runSeededChild(s) {
   return runChildLines(seedLines(s));
 }
