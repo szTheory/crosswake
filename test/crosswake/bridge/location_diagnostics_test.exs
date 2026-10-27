@@ -42,6 +42,47 @@ defmodule Crosswake.Bridge.LocationDiagnosticsTest do
     end
   end
 
+  test "missing, unreadable and malformed source hints cannot replace authoring errors" do
+    root = Path.join(System.tmp_dir!(), "bridge-location-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(root)
+    on_exit(fn -> File.rm_rf!(root) end)
+
+    for {name, content, suffix} <- [
+          {"missing", nil, ""},
+          {"directory", :directory, ""},
+          {"invalid", <<255>>, ""},
+          {"no_hint", "defmodule SourceWithoutHint do\nend", ""},
+          {"valid", "# router\nid: \"diagnostic\"", ":2"}
+        ] do
+      file = Path.join(root, name)
+
+      case content do
+        nil -> :ok
+        :directory -> File.mkdir_p!(file)
+        bytes -> File.write!(file, bytes)
+      end
+
+      module = Module.concat(__MODULE__, "Source#{name}")
+
+      Code.compile_string(
+        """
+        defmodule #{inspect(module)} do
+          def __routes__ do
+            [%{metadata: %{crosswake_policy: Crosswake.Policy.Route.new!(id: "diagnostic", runtime: :live_view, offline: :unavailable)}}]
+          end
+        end
+        """,
+        file
+      )
+
+      message = authoring_error(module)
+      assert message =~ "Router location: #{file}#{suffix}\n"
+      assert message =~ "[crosswake.bridge.undeclared_capability]"
+      refute message =~ "File.Error"
+      refute message =~ "synthetic_private_hint"
+    end
+  end
+
   defp authoring_error(router) do
     manifest =
       Types.new_root(
