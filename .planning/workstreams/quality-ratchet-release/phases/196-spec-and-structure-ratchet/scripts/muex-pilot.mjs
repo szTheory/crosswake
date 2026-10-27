@@ -181,9 +181,27 @@ async function bootstrap() {
 }
 
 const outcomes = ['killed', 'survived', 'invalid', 'timeout', 'equivalent', 'no_coverage'];
+function baselineRequest(p, now, terminal, output) {
+  validateProtocol(p); assert(!terminal, 'terminal-attempt-reuse');
+  assert(remaining(p, now) > 0, 'budget-exhausted');
+  return argumentsFor(targets, output).slice(1);
+}
 const command = process.argv[2];
 if (command === 'bootstrap') await bootstrap();
 else if (command === 'controls') await controls();
+else if (command === 'baseline') await baseline();
+else if (command === 'quick' && process.argv[3] === 'baseline') {
+  test('full baseline selection and terminal budget refusal discriminate', () => {
+    const p = validateProtocol(JSON.parse(readFileSync(protocolPath)));
+    const now = p.startedMonotonicMs + 100;
+    assert.deepEqual(baselineRequest(p, now, false, 'fresh.json'), argumentsFor(targets, 'fresh.json').slice(1));
+    assert.throws(() => baselineRequest(p, now, true, 'fresh.json'), /terminal/);
+    assert.throws(() => baselineRequest(p, p.startedMonotonicMs + p.budgetMs, false, 'fresh.json'), /budget/);
+    assert.throws(() => baselineRequest({ ...p, targets: targets.slice(1) }, now, false, 'fresh.json'), /targets/);
+    assert.throws(() => baselineRequest({ ...p, flags: flags.concat('--max-mutations', '1') }, now, false, 'fresh.json'), /flags/);
+  });
+  test('genuine bootstrap schema is useful but never full coverage', () => reportControls());
+}
 else if (command === 'quick' && process.argv[3] === 'controls') {
   test('genuine report adapter and corruptions discriminate', () => reportControls());
   test('actual child exit timeout interruption and finally cleanup discriminate', async () => {
@@ -368,5 +386,75 @@ async function controls() {
     for (const [f, hash] of Object.entries(p.historyDigests)) assert.equal(digest(readFileSync(f)), hash, 'history-changed');
     assert.equal(git('status', '--porcelain', '--', ...files), '', 'restoration-dirty');
     json(output, receipt); console.log(JSON.stringify({ status: receipt.status, reason: receipt.reason, pairsCompleted: receipt.pairs.length, remainingMs: receipt.remainingMs, restored: true, cleanTests: receipt.cleanTests }));
+  }
+}
+
+async function baseline() {
+  const p = validateProtocol(JSON.parse(readFileSync(protocolPath)));
+  const output = `${evidence}/muex-baseline/result.json`;
+  const reportPath = `${evidence}/muex-baseline/report.json`;
+  const args = baselineRequest(p, monotonic(), existsSync(output), reportPath);
+  fresh(output); fresh(reportPath);
+  const controlsPath = `${attemptDir}/controls-result.json`;
+  const c = JSON.parse(readFileSync(controlsPath));
+  assert.equal(c.status, 'accepted', 'controls-required'); assert.equal(c.attempt, p.attempt);
+  assert(c.restored && c.cleanTests.tests === 236 && c.cleanTests.failures === 0);
+  assert.equal(c.protocolSha256, digest(readFileSync(`${attemptDir}/controls-protocol.json`)));
+  assert.equal(c.pairs.length, targets.length);
+  for (const file of targets) {
+    const pair = c.pairs.find(v => v.file === file); assert(pair, 'control-file-missing');
+    assert(pair.kill.status === 'killed' && pair.survive.status === 'survived' && pair.execution.mutantCallObserved);
+    assert.equal(pair.kill.identity, pair.survive.identity);
+    for (const mode of ['kill', 'survive']) assert.equal(digest(readFileSync(pair[mode].report)), pair[mode].reportSha256);
+  }
+  const files = protectedFiles();
+  const saved = new Map(files.map(f => [f, readFileSync(f)]));
+  for (const [f, hash] of Object.entries(p.sourceDigests)) assert.equal(digest(readFileSync(f)), hash, 'source-changed');
+  assert.equal(digest(readFileSync(`${p.toolRoot}/source/muex`)), p.verifiedEscriptSha256, 'tool-changed');
+  for (const [f, hash] of Object.entries(p.sourceChecksums)) assert.equal(digest(readFileSync(`${p.toolRoot}/source/${f}`)), hash, 'tool-source-changed');
+  assert.equal(git('status', '--porcelain', '--', ...files), '', 'dirty-input');
+  const receipt = { schema: 'crosswake-muex-baseline/1', attempt: p.attempt, status: 'running', sourceCommit: p.sourceCommit, sourceTree: p.sourceTree,
+    executionHead: git('rev-parse', 'HEAD'), protocolSha256: digest(readFileSync(protocolPath)), controlsSha256: digest(readFileSync(controlsPath)), wrapperSha256: digest(readFileSync(`${phase}/scripts/muex-pilot.mjs`)),
+    sourceDigests: p.sourceDigests, executableSha256: p.verifiedEscriptSha256, args, targets, tests, commands: [], startedAt: new Date().toISOString(), reportStartedAtMs: Date.now() };
+  json(output, receipt);
+  const bin = dirname(execFileSync('asdf', ['which', 'elixir'], { encoding: 'utf8' }).trim());
+  const env = { ...process.env, ...p.homes, PATH: `${bin}${delimiter}${process.env.PATH}`, MIX_ENV: 'test' };
+  async function run(label, executable, argv, cleanup = false) {
+    const left = cleanup ? Math.max(60000, p.budgetMs - p.carriedMs - (monotonic() - p.startedMonotonicMs)) : remaining(p, monotonic());
+    const r = await child(executable, argv, { env, timeoutMs: left });
+    writeFileSync(`${p.toolRoot}/baseline-${label}.log`, r.output);
+    receipt.commands.push({ label, executable: label === 'baseline' ? 'verified-pinned-escript' : executable, args: argv, exit: r.exit, signal: r.signal, timedOut: r.timedOut, interrupted: r.interrupted, durationMs: r.durationMs, outputSha256: digest(r.output) });
+    json(output, receipt); console.log(JSON.stringify({ stage: label, exit: r.exit, timedOut: r.timedOut, durationMs: r.durationMs }));
+    successful(r); return r;
+  }
+  try {
+    const r = await run('baseline', `${p.toolRoot}/source/muex`, args);
+    const parsed = acceptedProcess(r, reportPath, receipt.reportStartedAtMs, targets);
+    receipt.reportSha256 = digest(readFileSync(reportPath)); receipt.summary = parsed.summary;
+    receipt.perFile = targets.map(file => {
+      const records = parsed.records.filter(m => m.location.file === file);
+      const counts = Object.fromEntries(outcomes.map(s => [s, records.filter(m => m.status === s).length]));
+      const denominator = counts.killed + counts.survived + counts.timeout;
+      assert(denominator > 0, 'empty-file-score');
+      return { file, total: records.length, ...counts, scoreLow: counts.killed / denominator * 100, scoreHigh: (counts.killed + counts.timeout) / denominator * 100, durationMs: records.reduce((s, m) => s + m.duration_ms, 0) };
+    });
+    receipt.status = 'captured';
+  } catch (error) { receipt.status = 'terminal-incomplete'; receipt.reason = String(error.message).split('\n')[0]; process.exitCode = 1; }
+  finally {
+    for (const [f, bytes] of saved) { if (!readFileSync(f).equals(bytes)) writeFileSync(f, bytes); assert.deepEqual(readFileSync(f), bytes); }
+    receipt.restored = true;
+    if (existsSync(reportPath)) { receipt.reportSha256 = digest(readFileSync(reportPath)); receipt.reportBytes = statSync(reportPath).size; }
+    try {
+      await run('restore-compile', 'mix', ['compile', '--force', '--warnings-as-errors'], true);
+      const clean = await run('restore-tests', 'mix', ['test', ...tests], true);
+      assert(/236 tests, 0 failures/.test(clean.output), 'clean-tests-unproven'); receipt.cleanTests = { tests: 236, failures: 0 };
+    } catch { receipt.status = 'terminal-incomplete'; receipt.reason ??= 'restoration-verification-failed'; process.exitCode = 1; }
+    receipt.aggregateElapsedMs = p.carriedMs + monotonic() - p.startedMonotonicMs;
+    receipt.remainingMs = Math.max(0, p.budgetMs - receipt.aggregateElapsedMs);
+    if (receipt.remainingMs === 0) { receipt.status = 'terminal-incomplete'; receipt.reason = 'aggregate-budget-exhausted'; process.exitCode = 1; }
+    for (const [f, hash] of Object.entries(p.historyDigests)) assert.equal(digest(readFileSync(f)), hash, 'history-changed');
+    for (const [f, hash] of Object.entries(p.sourceDigests)) assert.equal(digest(readFileSync(f)), hash, 'restoration-changed');
+    assert.equal(git('status', '--porcelain', '--', ...files), '', 'restoration-dirty');
+    json(output, receipt); console.log(JSON.stringify({ status: receipt.status, reason: receipt.reason, summary: receipt.summary, aggregateElapsedMs: receipt.aggregateElapsedMs, cleanTests: receipt.cleanTests }));
   }
 }
