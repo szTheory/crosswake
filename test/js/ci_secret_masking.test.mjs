@@ -1719,6 +1719,11 @@ test("phase196 GR-06 relevant statements conserve and unknown syntax is visible"
   assert.ok(safe.length === 0, "nonsecret metadata became a credential candidate");
 });
 
+test("phase196 GR-06 grouped credential persistence is denied", () => {
+  const rows = classifyCredentialStatements(fixture('{', '  echo "$MAVEN_PASSWORD"', '} >> "$GITHUB_OUTPUT"'));
+  assert.ok(rows.length === 1 && rows[0].classification === "denied" && rows[0].form === "github_env_output", "grouped credential persistence was treated as an ordinary use");
+});
+
 test("round3 review curl missing separators bounded", { timeout: 55000 }, (t) => {
   const rows = [
     { label: "review/curl_short_missing_colon", input: `curl ${"-u".repeat(100000)}` },
