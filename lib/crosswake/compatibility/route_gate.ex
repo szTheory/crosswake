@@ -153,7 +153,7 @@ defmodule Crosswake.Compatibility.RouteGate do
                   {result, %{companion_id: companion.companion_id(), route_id: route.id}}
               end
             rescue
-              _ ->
+              _extension_error ->
                 result = {{:error, nil}, :adapter_unloadable}
 
                 {result,
@@ -310,7 +310,7 @@ defmodule Crosswake.Compatibility.RouteGate do
             try do
               authority.evaluate_auth(route, auth_context, opts)
             rescue
-              _ ->
+              _extension_error ->
                 {:deny,
                  Denial.new(
                    reason: :dependency_missing,
