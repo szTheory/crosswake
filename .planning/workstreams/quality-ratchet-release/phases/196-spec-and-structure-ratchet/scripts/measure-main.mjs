@@ -63,6 +63,13 @@ function object(root, ref, name) {
 function names(root, ref) {
   return git(root, ["ls-tree", "-r", "--name-only", ref]).split("\n").filter(Boolean).map(rel);
 }
+function sourceRoster(root, ref) {
+  return git(root, ["ls-tree", "-r", ref]).split("\n").filter(Boolean).map((line) => {
+    const match = /^(\d+) blob ([0-9a-f]{40})\t(.+)$/.exec(line);
+    need(match && match[1] === "100644" || match && match[1] === "100755", "unsupported_tree_entry");
+    return { path: rel(match[3]), blob: match[2] };
+  }).filter(({ path: p }) => !p.startsWith(".planning/"));
+}
 function ancestry(root, ancestor, descendant) {
   need(child(root, "git", ["merge-base", "--is-ancestor", ancestor, descendant]).status === 0, "main_not_ancestor");
 }
@@ -78,8 +85,7 @@ function sourceRecord(root, { main, preserved, transfer, original }) {
   const preservedFiles = changed.map((name) => ({ path: name, sha256: sha(object(root, preservedSha, name)) }));
   const protectedFiles = preservedFiles.filter(({ path: p }) => RECEIPTS.includes(p) ||
     (p.startsWith(`${PHASE}/`) && p.endsWith(".md")));
-  const roster = names(root, mainSha).filter((p) => !p.startsWith(".planning/"))
-    .map((name) => ({ path: name, blob: git(root, ["rev-parse", `${mainSha}:${name}`]) }));
+  const roster = sourceRoster(root, mainSha);
   return {
     schema_version: 1, main_ref: "origin/main", main_sha: mainSha, branch: BRANCH,
     original_head: fullRef(root, original), preserved_ref: PRESERVED, preserved_sha: preservedSha,
@@ -90,6 +96,37 @@ function sourceRecord(root, { main, preserved, transfer, original }) {
   };
 }
 function verifySourceAt(root, record) {
+  need(record?.schema_version === 1 && record.branch === BRANCH && record.main_ref === "origin/main" && record.preserved_ref === PRESERVED, "unrecognized_source_state");
+  need(fullRef(root, "origin/main") === record.main_sha, "main_ref_mismatch");
+  need(git(root, ["branch", "--show-current"]) === BRANCH, "wrong_branch");
+  need(fullRef(root, PRESERVED) === record.preserved_sha, "preserved_ref_mismatch");
+  ancestry(root, record.main_sha, "HEAD"); ancestry(root, record.transfer_sha, "HEAD");
+  ancestry(root, record.original_head, record.preserved_sha);
+  const roster = sourceRoster(root, record.main_sha);
+  need(Array.isArray(record.source_roster) && record.source_roster.length > 0, "empty_source_roster");
+  need(same(roster, record.source_roster) && roster.length === record.source_count && sha(JSON.stringify(roster)) === record.source_roster_sha256, "source_roster_mismatch");
+  need(git(root, ["diff", "--name-only", record.main_sha, "HEAD", "--", ":!.planning"]) === "", "unexpected_supported_code");
+  const changes = git(root, ["diff", "--name-only", "HEAD"]).split("\n").filter(Boolean);
+  const staged = git(root, ["diff", "--cached", "--name-only"]).split("\n").filter(Boolean);
+  need([...changes, ...staged].every((p) => p.startsWith(".planning/")), "dirty_supported_code");
+  need(Array.isArray(record.preserved_files) && record.preserved_files.length > 0, "empty_preservation");
+  const expected = git(root, ["diff", "--name-only", record.main_sha, record.preserved_sha]).split("\n").filter(Boolean);
+  need(same(expected, record.preserved_files.map((entry) => entry.path)) && expected.every((p) => p.startsWith(".planning/")), "preservation_scope_mismatch");
+  for (const item of record.preserved_files) {
+    need(sha(object(root, record.preserved_sha, item.path)) === item.sha256 &&
+      sha(object(root, record.transfer_sha, item.path)) === item.sha256, "preservation_hash_mismatch");
+    need(existsSync(path.join(root, rel(item.path))), "preserved_file_lost");
+  }
+  const protectedFiles = record.preserved_files.filter(({ path: p }) => RECEIPTS.includes(p) ||
+    (p.startsWith(`${PHASE}/`) && p.endsWith(".md")));
+  need(same(protectedFiles, record.protected_files) && RECEIPTS.every((p) => protectedFiles.some((f) => f.path === p)), "protected_scope_mismatch");
+  for (const item of protectedFiles) need(sha(fileAt(root, item.path)) === item.sha256, "protected_hash_mismatch");
+  // Independently hash the worktree as well: a clean index alone is not evidence.
+  for (const item of roster) {
+    const bytes = fileAt(root, item.path);
+    const blob = createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+    need(blob === item.blob, "supported_blob_mismatch");
+  }
   return true;
 }
 function parse(argv) {
@@ -130,6 +167,19 @@ function sourceTests() {
     const f = fixture(); try {
       assert.throws(() => verifySourceAt(f.root, { ...f.record, main_sha: f.record.preserved_sha }), { code: "main_ref_mismatch" });
     } finally { f.cleanup(); }
+  });
+  const controls = [
+    ["empty source roster", "empty_source_roster", (f) => { f.record.source_roster = []; }],
+    ["source roster hash mismatch", "source_roster_mismatch", (f) => { f.record.source_roster_sha256 = "0".repeat(64); }],
+    ["lost receipt", "preserved_file_lost", (f) => { rmSync(path.join(f.root, RECEIPTS[0])); }],
+    ["altered receipt", "protected_hash_mismatch", (f) => { f.put(RECEIPTS[0], "changed\n"); }],
+    ["wrong preservation hash", "preservation_hash_mismatch", (f) => { f.record.preserved_files[0].sha256 = "0".repeat(64); }],
+    ["wrong branch", "wrong_branch", (f) => { f.g("switch", "main"); }],
+    ["unexpected supported change", "dirty_supported_code", (f) => { f.put("lib/subject.ex", "changed\n"); }],
+    ["unrecognized state", "unrecognized_source_state", (f) => { f.record.schema_version = 9; }],
+  ];
+  for (const [name, code, change] of controls) test(`source verifier rejects ${name}`, () => {
+    const f = fixture(); try { change(f); assert.throws(() => verifySourceAt(f.root, f.record), { code }); } finally { f.cleanup(); }
   });
 }
 async function main() {
