@@ -323,8 +323,990 @@ function disposition(root, ref = "HEAD") {
   return { ...verdict, candidate_identity: candidateIdentity(root, ref) };
 }
 
-// ---------------------------------------------------------------- candidate registry (completed in the candidate task)
+// ---------------------------------------------------------------- candidate registry (filled below)
 const REGISTRY = [];
+// ---------------------------------------------------------------- promotion inventory (D-02)
+// Only final-hash, actual-main-measured stable guards become required. Report/advisory lanes stay advisory.
+const CI_WORKFLOW = ".github/workflows/crosswake-ci.yml";
+const STAGES_FILE = "script/repository_verification_stages.json";
+const EXCLUDED_TAGS = ["advisory_only", "engine_present", "requires_example_host", "collateral_binaries", "generated_manifest", "requires_xcodebuild"];
+const PROMOTION = [
+  { guard: "absence", file: "script/check_absence_is_not_success.exs", receipt: `${EVIDENCE}/main-absence.json`,
+    caller: "test/crosswake/proof/absence_is_not_success_test.exs", stage: "root-proof", job: "phase130-core-hermetic-proof", change: "default_flipped" },
+  { guard: "compile", file: "script/check_compile_structure.exs", receipt: `${EVIDENCE}/main-compile.json`,
+    caller: "test/crosswake/proof/compile_structure_ratchet_test.exs", stage: "root-proof", job: "phase130-core-hermetic-proof", change: "already_required" },
+  { guard: "rescue", file: "script/check_rescue_boundaries.exs", receipt: `${EVIDENCE}/main-rescue.json`,
+    caller: "test/crosswake/proof/rescue_boundary_ratchet_test.exs", stage: "root-proof", job: "phase130-core-hermetic-proof", change: "already_required" },
+  { guard: "dependencies", file: "script/check_runtime_dependencies.exs", receipt: `${EVIDENCE}/main-dependencies.json`,
+    caller: "test/crosswake/proof/runtime_dependency_ratchet_test.exs", stage: "root-proof", job: "phase130-core-hermetic-proof", change: "already_required" },
+  { guard: "grammar", file: "test/js/ci_secret_masking.test.mjs", receipt: `${EVIDENCE}/main-grammar.json`,
+    caller: "test/js/ci_secret_masking.test.mjs", stage: null, job: "guard-01-e2e-honesty", ciStep: "node --test test/js/*.mjs", change: "already_required" },
+];
+const generation = (root, commit) => Number(git(root, ["rev-list", "--count", commit]));
+function newestCommit(root, ref, name) {
+  const value = git(root, ["log", "-n", "1", "--format=%H", ref, "--", name]);
+  need(/^[0-9a-f]{40}$/.test(value), "promotion_history_missing");
+  return value;
+}
+function gatherPromotion(root, ref = "HEAD") {
+  const stages = JSON.parse(object(root, ref, STAGES_FILE).toString("utf8")).stages;
+  const workflow = object(root, ref, CI_WORKFLOW).toString("utf8");
+  return PROMOTION.map((entry) => {
+    const guardBlob = git(root, ["rev-parse", `${ref}:${entry.file}`]);
+    let receiptBlob = null;
+    try { receiptBlob = JSON.parse(object(root, ref, entry.receipt).toString("utf8")).guard_blob ?? null; } catch { receiptBlob = null; }
+    const callerExists = gitTry(root, ["cat-file", "-e", `${ref}:${entry.caller}`]) !== null;
+    const callerText = callerExists ? object(root, ref, entry.caller).toString("utf8") : "";
+    const stage = entry.stage ? stages.find((s) => s.stage_id === entry.stage) : null;
+    const jobBlock = workflow.split(/^  (?=[A-Za-z0-9_-]+:\n)/m).find((block) => block.startsWith(`${entry.job}:`)) ?? "";
+    const guardText = object(root, ref, entry.file).toString("utf8");
+    const order = entry.change === "default_flipped" ? {
+      flip: generation(root, newestCommit(root, ref, entry.file)),
+      capture: generation(root, newestCommit(root, ref, entry.receipt)),
+      caller: generation(root, newestCommit(root, ref, entry.caller)),
+    } : null;
+    return {
+      guard: entry.guard, guard_file: entry.file, guard_blob: guardBlob, receipt_guard_blob: receiptBlob,
+      caller: entry.caller, caller_exists: callerExists,
+      caller_excluded_tags: EXCLUDED_TAGS.filter((tag) => new RegExp(`@(?:module)?tag :${tag}\\b|@(?:module)?tag ${tag}:`).test(callerText)),
+      stage: entry.stage, stage_owned: entry.stage === null ? true : Boolean(stage && stage.argv.join(" ") === "mix verify" && stage.ci_owners.some((o) => o.job_id === entry.job)),
+      job: entry.job, job_owned: jobBlock !== "" && (entry.ciStep ? jobBlock.includes(entry.ciStep) : true),
+      change: entry.change,
+      default_enforce: entry.change === "default_flipped"
+        ? (guardText.match(/collections_mode, "enforce"\)/g) ?? []).length === 2 && !/collections_mode, "report"\)/.test(guardText) : undefined,
+      order,
+    };
+  });
+}
+function checkPromotion(entries) {
+  need(Array.isArray(entries) && entries.length === PROMOTION.length, "promotion_inventory_incomplete");
+  for (const e of entries) {
+    need(["default_flipped", "already_required"].includes(e.change), "promotion_change_unknown");
+    need(typeof e.receipt_guard_blob === "string" && e.receipt_guard_blob.length === 40, "measured_receipt_missing", e.guard);
+    need(e.receipt_guard_blob === e.guard_blob, "stale_measured_blob", e.guard);
+    need(e.caller_exists, "caller_missing", e.guard);
+    need(e.caller_excluded_tags.length === 0, "caller_excluded", e.guard);
+    need(e.stage_owned && e.job_owned, "stage_unowned", e.guard);
+    if (e.change === "default_flipped") {
+      need(e.default_enforce === true, "flip_missing", e.guard);
+      need(e.order && e.order.flip < e.order.capture, "flip_without_recapture", e.guard);
+      need(e.order.capture <= e.order.caller, "premature_wiring", e.guard);
+    } else {
+      need(e.order === null && e.default_enforce === undefined, "wiring_change_on_already_required", e.guard);
+    }
+  }
+  return entries.map((e) => ({ guard: e.guard, guard_blob: e.guard_blob, receipt_guard_blob: e.receipt_guard_blob, caller: e.caller, stage: e.stage, job: e.job, change: e.change }));
+}
+
+// ---------------------------------------------------------------- candidate: environment routes
+const NODE_VERSION = "v22.14.0";
+const NPM_VERSION = "10.9.2";
+const JDK_HOME = "/opt/homebrew/opt/openjdk@17";
+async function versionOf(env, command, args) {
+  const result = await runChild(OWNER_ROOT, command, args, { env, timeout: 30_000 });
+  return result.status === 0 ? `${result.stdout}${result.stderr}`.trim() : null;
+}
+// Node route: the repository asdf toolchain when it asserts exactly, else a SHA-256-verified official tarball in
+// tool scratch. Both routes apply only to the child environment; no repository, global or asdf state changes.
+async function nodeRoute(scratchParent = tmpdir()) {
+  const asdf = { };
+  const [node, npm] = [await versionOf(asdf, "node", ["--version"]), await versionOf(asdf, "npm", ["--version"])];
+  if (node === NODE_VERSION && npm === NPM_VERSION) return { route: "asdf", env: {}, node, npm };
+  const arch = process.arch === "arm64" ? "arm64" : "x64";
+  const name = `node-${NODE_VERSION}-darwin-${arch}.tar.gz`;
+  const scratch = mkdtempSync(path.join(scratchParent, "cw196-node-"));
+  const base = `https://nodejs.org/dist/${NODE_VERSION}`;
+  const get = (file) => runChild(scratch, "curl", ["--fail", "--silent", "--show-error", "--location", "--max-time", "300", "-o", file, `${base}/${file}`], { timeout: 330_000 });
+  const [tar, sums] = [await get(name), await get("SHASUMS256.txt")];
+  if (tar.status !== 0 || sums.status !== 0) return { route: "tarball", blocked: "download_failed", scratch };
+  const expected = readFileSync(path.join(scratch, "SHASUMS256.txt"), "utf8").split("\n").map((l) => l.trim().split(/\s+/)).find(([, file]) => file === name)?.[0];
+  if (!expected || sha(readFileSync(path.join(scratch, name))) !== expected) return { route: "tarball", blocked: "checksum_mismatch", scratch };
+  const extract = await runChild(scratch, "tar", ["-xzf", name], { timeout: 120_000 });
+  if (extract.status !== 0) return { route: "tarball", blocked: "extract_failed", scratch };
+  const bin = path.join(scratch, name.replace(/\.tar\.gz$/, ""), "bin");
+  const env = { PATH: `${bin}:${process.env.PATH}` };
+  const [n2, p2] = [await versionOf(env, "node", ["--version"]), await versionOf(env, "npm", ["--version"])];
+  if (n2 !== NODE_VERSION || p2 !== NPM_VERSION) return { route: "tarball", blocked: "version_assertion_failed", scratch };
+  return { route: "tarball", env, node: n2, npm: p2, scratch };
+}
+async function jdkRoute() {
+  const env = { JAVA_HOME: JDK_HOME, PATH: `${JDK_HOME}/bin:${process.env.PATH}` };
+  const out = await versionOf(env, "java", ["-version"]);
+  const major = /version "(\d+)(?:\.|")/.exec(out ?? "")?.[1];
+  if (major !== "17") return { route: "jdk17", blocked: "java_major_not_17" };
+  return { route: "jdk17", env, java_major: 17 };
+}
+
+// ---------------------------------------------------------------- candidate: process-result adapters
+// Counts come from the child's own summary output, never from a caller-authored value.
+function parseExUnit(output) {
+  const total = { tests: 0, failures: 0, excluded: 0, skipped: 0, summaries: 0 };
+  for (const m of output.matchAll(/(?:(\d+) doctests?, )?(\d+) tests?, (\d+) failures?(?:, (\d+) excluded)?(?:, (\d+) skipped)?/g)) {
+    total.tests += Number(m[2]) + Number(m[1] ?? 0); total.failures += Number(m[3]);
+    total.excluded += Number(m[4] ?? 0); total.skipped += Number(m[5] ?? 0); total.summaries += 1;
+  }
+  return total;
+}
+function parseNodeTest(output) {
+  const pick = (name) => Number(new RegExp(`^# ${name} (\\d+)$`, "m").exec(output)?.[1] ?? NaN);
+  return { tests: pick("tests"), failures: pick("fail"), excluded: pick("skipped") + pick("todo"), skipped: pick("skipped"), summaries: Number.isNaN(pick("tests")) ? 0 : 1 };
+}
+function parseVector(output, mode) {
+  const lines = output.split("\n");
+  const controls = lines.filter((l) => new RegExp(`^vector-control ${mode}\\b.*: discriminating failure$`).test(l)).length;
+  const summary = new RegExp(`^vector-controls ${mode}: (.+)$`, "m").exec(output)?.[1] ?? "";
+  const loaded = Number(/loaded (\d+)/.exec(summary)?.[1] ?? NaN);
+  const completed = Number(/completed (\d+)/.exec(summary)?.[1] ?? NaN);
+  const owners = Number(/(\d+) (?:JVM )?owners restored/.exec(summary)?.[1] ?? NaN);
+  return { tests: controls, failures: 0, excluded: 0, skipped: 0, summaries: summary ? 1 : 0, loaded, completed, owners, restored: /restored/.test(summary) };
+}
+function parseStage(output, stage) {
+  const passed = new RegExp(`^PASS ${stage}$`, "m").test(output);
+  const bad = /^(?:FAIL|BLOCKED) /m.test(output);
+  return { tests: null, failures: bad ? 1 : 0, excluded: 0, skipped: 0, summaries: passed ? 1 : 0, stage_pass: passed };
+}
+function parseScript(output) {
+  return { tests: null, failures: 0, excluded: 0, skipped: 0, summaries: 1, enforce: /collections mode=enforce /.test(output), delta0: /delta=0\b/.test(output), ok: (output.match(/^\[crosswake\] OK:/gm) ?? []).length };
+}
+const PARSERS = { exunit: parseExUnit, "node-test": parseNodeTest, vector: parseVector, stage: parseStage, script: parseScript };
+
+// ---------------------------------------------------------------- candidate: registry
+// Pins are executed/excluded expectations per child. A change to any pin changes this file's hash and stales the candidate.
+const MIX = (args, extra = {}) => ({ command: "mix", args, cwd: ".", ...extra });
+const MIXTEST = (id, files, req, pin, extra = {}) => ({ id, req, kind: "exunit", route: "plain", ...MIX(["test", ...files], extra), expect: pin });
+const VEC = (mode, route, pin, req = ["SPEC-01"]) => ({ id: `vector-${mode}`, req, kind: "vector", route, command: "node", args: [`${PHASE}/scripts/vector-controls.mjs`, mode], cwd: ".", mode, expect: pin });
+const STAGE = (stage, route = "plain", extra = {}) => ({ id: stage, req: [], kind: "stage", route, command: "script/verify_repository.sh", args: ["--stage", stage], cwd: ".", stage, expect: { stage_pass: true }, ...extra });
+const MANIFEST_PATH = "examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json";
+const REGISTRY_NODE_TEST_FILES = "test/js/*.mjs";
+const CANDIDATE_REGISTRY = [
+  STAGE("format-proof"), STAGE("warnings-proof"), STAGE("repository-cleanliness"), STAGE("example-host-proof"),
+  STAGE("root-proof", "plain", { timeout: 3_600_000 }),
+  STAGE("browser-proof", "node", { timeout: 1_800_000, env: { GITHUB_ACTIONS: "true" }, envFromRepo: "crosswake_version" }),
+  STAGE("ios-package-proof", "plain", { timeout: 3_600_000 }),
+  STAGE("android-package-proof", "jdk", { timeout: 3_600_000 }),
+  { id: "node-tests", req: [], kind: "node-test", route: "plain", command: "node", args: ["--test", `@glob:${REGISTRY_NODE_TEST_FILES}`], cwd: ".", expect: { minTests: 1, failures: 0, excluded: 0 } },
+  { id: "format-explicit", req: [], kind: "format", route: "plain", command: "mix", args: ["format", "--check-formatted", "@changed-elixir"], cwd: ".", expect: { minFiles: 1 } },
+  // SPEC-01 enabled lanes: the real producer's manifest, then the manifest test with the path set (11 tests, 0 excluded).
+  MIXTEST("manifest-lane", ["test/crosswake/guides/evidence_manifest_test.exs"], ["SPEC-01"], { tests: 11, failures: 0, excluded: 0 },
+    { route: "node", envFromRepo: "manifest_path" }),
+  { id: "threadline-lane", req: ["SPEC-01"], kind: "exunit", route: "plain", command: "mix", cwd: ".",
+    args: ["cmd", "--cd", "packages/crosswake_threadline", "mix", "test", "test/crosswake/proof/phase139_threadline_cleanroom_test.exs"],
+    env: { MIX_INCLUDE_THREADLINE_PLUG: "1" }, expect: { tests: 5, failures: 0, excluded: 0 } },
+  // The default (disabled) lanes stay as visible optional-skip evidence and are never credited as positive proof.
+  { ...MIXTEST("manifest-lane-default", ["test/crosswake/guides/evidence_manifest_test.exs"], [], { minTests: 1, failures: 0, anyExcluded: true }), credit: "optional_skip_visible" },
+  { id: "threadline-lane-default", req: [], kind: "exunit", route: "plain", command: "mix", cwd: ".", credit: "optional_skip_visible",
+    args: ["cmd", "--cd", "packages/crosswake_threadline", "mix", "test", "test/crosswake/proof/phase139_threadline_cleanroom_test.exs"], expect: { minTests: 1, failures: 0, anyExcluded: true } },
+  MIXTEST("wire-contract", ["test/crosswake/bridge/contract_test.exs", "test/crosswake/contract/contract_drift_test.exs"], ["SPEC-01"], { minTests: 1, failures: 0, excluded: 0 }),
+  { id: "wire-version", req: ["SPEC-01"], kind: "version", route: "plain", command: "mix", cwd: ".", env: { MIX_ENV: "test" },
+    args: ["run", "--no-start", "-e", "IO.puts(Crosswake.Bridge.ProtocolVersion.version())"], expect: { lastLine: "1.1.0" } },
+  VEC("elixir", "plain", { tests: 4, failures: 0, loaded: 15, completed: 9, restored: true }),
+  VEC("swift-request", "plain", { tests: 4, failures: 0, loaded: 15, completed: 14, restored: true }),
+  VEC("swift-reply", "plain", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
+  VEC("swift-metadata", "plain", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
+  VEC("swift-topology", "plain", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
+  VEC("kotlin-request", "jdk", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
+  VEC("kotlin-other", "jdk", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
+  { id: "absence-enforce", req: ["SPEC-02"], kind: "script", route: "plain", command: "elixir", args: ["script/check_absence_is_not_success.exs", "--collections-mode", "enforce"], cwd: ".", expect: { enforce: true, delta0: true, minOk: 2 } },
+  MIXTEST("absence-test", ["test/crosswake/proof/absence_is_not_success_test.exs"], ["SPEC-02"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("journal", ["test/crosswake/offline/journal_test.exs"], ["SPEC-03"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("safe-observation", ["test/crosswake/offline/safe_observation_test.exs"], ["SPEC-03"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("policy-compiler", ["test/crosswake/policy/compiler_test.exs"], ["SPEC-05"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("policy-product-route", ["test/crosswake/policy/finite_product_test.exs", "test/crosswake/policy/compiler_test.exs", "test/crosswake/policy/route_test.exs"], ["SPEC-05"], { minTests: 1, failures: 0, excluded: 0 }),
+  { id: "compile-force", req: ["ARCH-01"], kind: "compile", route: "plain", command: "mix", args: ["compile", "--force", "--warnings-as-errors"], cwd: ".", env: { MIX_ENV: "test" }, expect: { minCompiled: 1 } },
+  { id: "xref-compile-connected", req: ["ARCH-01"], kind: "xref", route: "plain", command: "mix", args: ["xref", "graph", "--format", "cycles", "--label", "compile-connected", "--fail-above", "0"], cwd: ".", env: { MIX_ENV: "test" }, expect: {} },
+  MIXTEST("compile-structure", ["test/crosswake/proof/compile_structure_ratchet_test.exs"], ["ARCH-01"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("location-router", ["test/crosswake/bridge/location_diagnostics_test.exs", "test/crosswake/router_test.exs"], ["ARCH-02"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("compatibility", ["test/crosswake/compatibility/compatibility_test.exs"], ["ARCH-02"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("rescue-boundary", ["test/crosswake/proof/rescue_boundary_ratchet_test.exs"], ["ARCH-02"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("runtime-dependencies", ["test/crosswake/proof/runtime_dependency_ratchet_test.exs"], ["ARCH-03"], { minTests: 1, failures: 0, excluded: 0 }),
+  { id: "secret-masking", req: ["SPEC-02", "GR-06"], kind: "node-test", route: "plain", command: "node", args: ["--test", "test/js/ci_secret_masking.test.mjs"], cwd: ".", expect: { minTests: 1, failures: 0, excluded: 0 } },
+];
+REGISTRY.push(...CANDIDATE_REGISTRY);
+const REQUIREMENT_MAP_KEYS = [...IN_SCOPE, "GR-06"];
+function requirementMap(children) {
+  const map = Object.fromEntries(REQUIREMENT_MAP_KEYS.map((key) => [key, []]));
+  for (const child of children) for (const key of child.req ?? []) if (Object.hasOwn(map, key) && child.credit !== "optional_skip_visible") map[key].push(child.id);
+  return map;
+}
+// A result is credited only when it ran, passed and executed at least one test (or the stage marker for facade stages).
+function judgeChild(entry, result) {
+  const e = entry.expect;
+  const fail = (code) => ({ status: "fail", reason: code });
+  if (result.preflightBlocked) return { status: "preflight-blocked", reason: result.preflightBlocked };
+  if (result.timedOut) return fail("child_timeout");
+  if (result.status !== 0) return fail("child_exit_nonzero");
+  if (result.overflow) return fail("child_output_limit");
+  if (result.groupGone === false) return fail("child_group_survived");
+  const c = result.counts;
+  if (entry.kind === "version") return result.lastLine === e.lastLine ? { status: "pass" } : fail("wire_version_mismatch");
+  if (entry.kind === "format") return Number.isSafeInteger(result.files) && result.files >= e.minFiles ? { status: "pass" } : fail("format_scope_empty");
+  if (entry.kind === "compile") return Number.isSafeInteger(result.compiled) && result.compiled >= e.minCompiled ? { status: "pass" } : fail("compile_nothing_compiled");
+  if (entry.kind === "xref") return result.xrefClean === true ? { status: "pass" } : fail("xref_unproven");
+  if (!c || c.summaries < 1) return fail("no_summary");
+  if (entry.kind === "stage") return c.stage_pass === true && c.failures === 0 ? { status: "pass" } : fail("stage_not_passed");
+  if (entry.kind === "script") {
+    return c.enforce === e.enforce && c.delta0 === e.delta0 && c.ok >= e.minOk ? { status: "pass" } : fail("script_output_mismatch");
+  }
+  if (c.failures !== 0) return fail("child_failures");
+  if (e.tests !== undefined && c.tests !== e.tests) return fail("test_count_mismatch");
+  if (e.minTests !== undefined && !(c.tests >= e.minTests)) return fail("zero_or_low_executed");
+  if (!(c.tests > 0)) return fail("zero_executed");
+  if (e.excluded !== undefined && c.excluded !== e.excluded) return fail("excluded_above_pin");
+  if (e.anyExcluded === true && !(c.excluded > 0)) return fail("optional_lane_not_visibly_skipped");
+  if (entry.kind === "vector") {
+    if (e.restored && !c.restored) return fail("vector_not_restored");
+    if (e.loaded !== undefined && c.loaded !== e.loaded) return fail("vector_loaded_mismatch");
+    if (e.completed !== undefined && c.completed !== e.completed) return fail("vector_completed_mismatch");
+    if (e.minOwners !== undefined && !(c.owners >= e.minOwners)) return fail("vector_owners_missing");
+  }
+  return { status: "pass" };
+}
+// Verdict over a set of judged children: every registry entry present exactly once, all pass, map non-empty.
+function judgeCandidate(registry, children) {
+  const ids = registry.map((e) => e.id);
+  need(same(sorted(children.map((c) => c.id)), sorted(ids)) && new Set(children.map((c) => c.id)).size === ids.length, "registry_child_omitted");
+  const bad = children.filter((c) => c.status !== "pass");
+  const map = requirementMap(registry.map((e) => ({ ...e, ...children.find((c) => c.id === e.id) })));
+  for (const key of REQUIREMENT_MAP_KEYS) {
+    need(map[key].length > 0 && map[key].every((id) => children.find((c) => c.id === id)?.status === "pass" && children.find((c) => c.id === id)?.counted === true), "requirement_unmapped", key);
+  }
+  return { verdict: bad.length === 0 ? "pass" : "fail", failing: bad.map((c) => ({ id: c.id, status: c.status, reason: c.reason })), requirement_map: map };
+}
+function identityEqual(a, b) { return same(a, b); }
+function reviewState(text) {
+  need(typeof text === "string" && text.length > 0, "review_missing");
+  const iterations = Number(/^Iterations: (\d+)\s*$/m.exec(text)?.[1] ?? NaN);
+  need(Number.isInteger(iterations) && iterations >= 1 && iterations <= 3, "review_iterations");
+  const rows = text.split("\n").filter((line) => /^\| R-\d+ \|/.test(line)).map((line) => line.split("|").map((c) => c.trim()));
+  const open = rows.filter((cells) => cells[3] === "open");
+  const openHigh = open.filter((cells) => ["high", "critical"].includes(cells[2]));
+  return { iterations, findings: rows.length, open: open.length, open_high: openHigh.length };
+}
+
+// ---------------------------------------------------------------- candidate: runner
+const BRANCH = "fix/spec-structure-ratchet";
+const PRIVACY = `.planning/workstreams/quality-ratchet-release/phases/193-cleanup-and-new-working-rules/scripts/privacy-193.sh`;
+const CANDIDATE = `${EVIDENCE}/candidate.json`;
+const REVIEW = `${PHASE}/196-REVIEW.md`;
+const DELIVERY = `${EVIDENCE}/delivery.json`;
+const LANDED = `${EVIDENCE}/landed.json`;
+const PR_BODY = `${EVIDENCE}/pr-body.md`;
+function privacyScan(root, files) {
+  need(files.length > 0, "empty_privacy_scope");
+  const result = sync(root, "bash", [path.join(root, PRIVACY), ...files.map((name) => (path.isAbsolute(name) ? name : path.join(root, rel(name))))], { timeout: 120_000 });
+  need(result.status === 0, "privacy_refused");
+  return { exit: result.status, files: files.length };
+}
+function supportedTreeClean(root) {
+  const changed = [...git(root, ["diff", "--name-only", "HEAD"]).split("\n"), ...git(root, ["diff", "--cached", "--name-only"]).split("\n")].filter(Boolean);
+  const untracked = git(root, ["ls-files", "--others", "--exclude-standard"]).split("\n").filter(Boolean);
+  return [...changed, ...untracked].every((name) => name.startsWith(".planning/"));
+}
+function expandArgs(root, args) {
+  return args.flatMap((arg) => {
+    if (arg === "@changed-elixir") {
+      const files = git(root, ["diff", "--name-only", "--diff-filter=ACMRT", "origin/main", "HEAD", "--", "*.ex", "*.exs"]).split("\n").filter(Boolean)
+        .filter((name) => existsSync(path.join(root, name)));
+      return files;
+    }
+    if (arg.startsWith("@glob:")) {
+      const [dir, pattern] = [path.posix.dirname(arg.slice(6)), path.posix.basename(arg.slice(6))];
+      const re = new RegExp(`^${pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^/]*")}$`);
+      return sorted(readdirSync(path.join(root, dir)).filter((name) => re.test(name))).map((name) => `${dir}/${name}`);
+    }
+    return [arg];
+  });
+}
+function crosswakeVersion(root) {
+  const text = object(root, "HEAD", "mix.exs").toString("utf8");
+  const version = /^  @version "([^"]+)"/m.exec(text)?.[1];
+  need(version, "version_unreadable");
+  return version;
+}
+async function runEntry(root, entry, routes) {
+  const route = entry.route === "node" ? routes.node() : entry.route === "jdk" ? routes.jdk() : null;
+  const resolved = route ? await route : null;
+  if (resolved?.blocked) return { preflightBlocked: `${resolved.route}:${resolved.blocked}` };
+  const env = { ...(resolved?.env ?? {}), ...(entry.env ?? {}) };
+  if (entry.envFromRepo === "crosswake_version") env.CROSSWAKE_VERSION = crosswakeVersion(root);
+  if (entry.envFromRepo === "manifest_path") {
+    const manifest = path.join(root, MANIFEST_PATH);
+    if (!existsSync(manifest)) return { preflightBlocked: "manifest_not_produced" };
+    env.CROSSWAKE_EVIDENCE_MANIFEST_PATH = manifest;
+  }
+  const args = expandArgs(root, entry.args);
+  if (entry.kind === "format" && args.length <= 2) return { status: 0, files: 0, counts: null, groupGone: true, ms: 0 };
+  const run = await runChild(root, entry.command, args, { env, timeout: entry.timeout ?? 1_200_000, cwd: path.join(root, entry.cwd) });
+  const output = `${run.stdout}\n${run.stderr}`;
+  const result = { status: run.status, timedOut: run.timedOut, overflow: run.overflow, groupGone: run.groupGone, ms: run.ms, output_sha256: sha(output), route: resolved?.route ?? null };
+  if (entry.kind === "format") result.files = args.length - 2;
+  if (entry.kind === "compile") result.compiled = Number(/Compiling (\d+) files? \(\.ex\)/.exec(output)?.[1] ?? 0);
+  if (entry.kind === "xref") result.xrefClean = run.status === 0;
+  if (entry.kind === "version") result.lastLine = run.stdout.split("\n").map((line) => line.trim()).filter(Boolean).pop() ?? "";
+  const parser = PARSERS[entry.kind];
+  result.counts = parser ? (entry.kind === "vector" ? parser(output, entry.mode) : entry.kind === "stage" ? parser(output, entry.stage) : parser(output)) : null;
+  return result;
+}
+async function runRegistry(root, registry, { progress = true, only = null } = {}) {
+  const cache = {};
+  const routes = { node: () => (cache.node ??= nodeRoute()), jdk: () => (cache.jdk ??= jdkRoute()) };
+  const children = [];
+  try {
+    for (const entry of registry.filter((e) => !only || only.includes(e.id))) {
+      if (progress) console.error(`phase-evidence: running ${entry.id}`);
+      let result;
+      try { result = await runEntry(root, entry, routes); } catch (error) { result = { status: null, runError: error instanceof Refusal ? error.code : "internal_error", ms: 0 }; }
+      const judged = result.runError ? { status: "fail", reason: result.runError } : judgeChild(entry, result);
+      const clean = supportedTreeClean(root);
+      const status = clean ? judged.status : "fail";
+      const reason = clean ? judged.reason : "child_dirtied_supported_source";
+      const c = result.counts ?? {};
+      children.push({
+        id: entry.id, req: entry.req ?? [], credit: entry.credit ?? "positive", kind: entry.kind, route: result.route ?? entry.route,
+        status, ...(reason ? { reason } : {}), exit: result.status ?? null, ms: result.ms ?? 0,
+        tests: c.tests ?? null, failures: c.failures ?? null, excluded: c.excluded ?? null, skipped: c.skipped ?? null,
+        ...(entry.kind === "vector" ? { loaded: c.loaded, completed: c.completed, owners: c.owners } : {}),
+        ...(entry.kind === "version" ? { output: result.lastLine } : {}),
+        ...(entry.kind === "compile" ? { compiled: result.compiled } : {}),
+        counted: status === "pass" && (c.tests === null || c.tests === undefined || c.tests > 0),
+        output_sha256: result.output_sha256 ?? null,
+      });
+    }
+  } finally {
+    for (const key of ["node"]) if (cache[key]) { const r = await cache[key]; if (r?.scratch) rmSync(r.scratch, { recursive: true, force: true }); }
+  }
+  const routesUsed = {};
+  for (const key of ["node", "jdk"]) if (cache[key]) { const r = await cache[key]; routesUsed[key] = r.blocked ? { route: r.route, blocked: r.blocked } : { route: r.route, ...(r.node ? { node: r.node, npm: r.npm } : { java_major: r.java_major }) }; }
+  return { children, routes: routesUsed };
+}
+async function candidate(root, { observe = false } = {}) {
+  need(git(root, ["branch", "--show-current"]) === BRANCH, "wrong_branch");
+  need(supportedTreeClean(root), "dirty_supported_code");
+  const identity = candidateIdentity(root, "HEAD");
+  const disp = checkDisposition(loadInputs(root, "HEAD"));
+  const reviewText = existsSync(path.join(root, REVIEW)) ? readFileSync(path.join(root, REVIEW), "utf8") : null;
+  const review = observe && reviewText === null ? null : reviewState(reviewText);
+  need(observe || review.open_high === 0, "review_high_open");
+  git(root, ["fetch", "origin", "main"]);
+  const run = await runRegistry(root, REGISTRY);
+  need(identityEqual(candidateIdentity(root, "HEAD"), identity), "candidate_identity_moved");
+  need(same(checkDisposition(loadInputs(root, "HEAD")), disp), "disposition_moved");
+  const judged = judgeCandidate(REGISTRY, run.children);
+  const wire = run.children.find((c) => c.id === "wire-version");
+  const record = {
+    schema_version: 1, purpose: "phase196_candidate", head_sha: ref40(root, "HEAD"), main_sha: ref40(root, "origin/main"),
+    candidate_identity: identity, spec04: disp.spec04, moved: [MOVED],
+    routes: run.routes, wire_version: wire?.output ?? null,
+    native_claim_ceiling: "jvm_hermetic_and_swift_package_only_never_device",
+    children: run.children, requirement_map: judged.requirement_map, failing: judged.failing,
+    review: review ? { path: REVIEW, ...review, sha256: sha(reviewText) } : null, verdict: judged.verdict,
+  };
+  const text = `${JSON.stringify(record, null, 2)}\n`;
+  scanClaims(text, "json");
+  if (reviewText) scanClaims(reviewText, "markdown");
+  if (observe) { console.log(text); return record; }
+  const scratch = mkdtempSync(path.join(tmpdir(), "cw196-candidate-"));
+  try {
+    const staged = path.join(scratch, "candidate.json"); writeFileSync(staged, text);
+    privacyScan(root, [staged]);
+    writeFileSync(path.join(root, CANDIDATE), text);
+  } finally { rmSync(scratch, { recursive: true, force: true }); }
+  console.log(`phase-evidence: candidate ${record.verdict} children ${record.children.length}${judged.failing.length ? ` failing ${judged.failing.map((f) => `${f.id}:${f.reason}`).join(",")}` : ""}`);
+  need(record.verdict === "pass", "candidate_failed", judged.failing.map((f) => f.id).join(","));
+  return record;
+}
+
+// ---------------------------------------------------------------- gates (196-16 pr-open/ready, 196-17 merge/approval-binding/landed)
+// Pure validators take an explicit context so scoped self-tests exercise them with isolated inputs and never
+// touch a remote. Live adapters (gh, git) fill the same context shape. Remote state is always re-read, never assumed.
+const APPROVAL_REF = "refs/crosswake/196-17-approval";
+const EVIDENCE_BRANCH = "docs/196-landed-evidence";
+const POLL_SECONDS = 60;
+const POLL_MAX = 90;
+const MERGE_SCOPE = "merge_pr_to_main";
+const SHA40 = /^[0-9a-f]{40}$/;
+function spec04Claims(deliveryText, bodyText) {
+  if (deliveryText !== null) scanClaims(deliveryText, "json");
+  if (bodyText !== null) { scanClaims(bodyText, "markdown"); need(bodyText.includes(REQUIRED_STATEMENT), "required_statement_missing"); }
+}
+function sameIdentity(ctx) {
+  need(ctx.candidate && ctx.candidate.verdict === "pass", "candidate_not_passed");
+  need(identityEqual(ctx.identityNow, ctx.candidate.candidate_identity), "candidate_stale");
+  need(same(ctx.dispositionNow.spec04, ctx.candidate.spec04), "disposition_changed");
+  need(ctx.dispositionNow.spec04.roster_digest === ctx.candidate.candidate_identity.preserved_roster_sha256, "roster_digest_changed");
+}
+// pr-open: reviewed current-base head, remote read-back, fresh privacy scan, exact body and delivery claims.
+function gatePrOpen(ctx) {
+  sameIdentity(ctx);
+  need(SHA40.test(ctx.localHead) && ctx.remoteHead === ctx.localHead, "remote_sha_mismatch");
+  need(ctx.privacyExit === 0, "privacy_scan_failed");
+  need(ctx.baseContained === true, "base_behind");
+  need(ctx.review && ctx.review.open_high === 0, "review_high_open");
+  spec04Claims(ctx.deliveryText, ctx.bodyText);
+  const delivery = JSON.parse(ctx.deliveryText);
+  need(delivery.spec04?.disposition === "moved_to_v29" && same(delivery.spec04, ctx.candidate.spec04), "delivery_disposition_mismatch");
+  need(ctx.pr && ctx.pr.state === "OPEN" && ctx.pr.baseRefName === "main" && ctx.pr.headRefOid === ctx.localHead, "pr_head_mismatch");
+  need(ctx.pr.body === ctx.bodyText, "pr_body_mismatch");
+  need(ctx.pr.title && /^fix\(196\)/.test(ctx.pr.title), "pr_title_type");
+  return { stage: "pr-open", head: ctx.localHead, pr: ctx.pr.number };
+}
+// ready: required checks on the PR head, synthetic merge identity reported separately, no open high finding.
+function gateReady(ctx) {
+  sameIdentity(ctx);
+  need(ctx.pr && ctx.pr.state === "OPEN" && SHA40.test(ctx.pr.headRefOid), "pr_head_mismatch");
+  need(ctx.remoteHead === ctx.pr.headRefOid && ctx.localHead === ctx.pr.headRefOid, "remote_sha_mismatch");
+  need(Array.isArray(ctx.requiredContexts) && ctx.requiredContexts.length > 0, "required_checks_empty");
+  need(Array.isArray(ctx.checkRuns) && ctx.checkRuns.length > 0, "check_inventory_empty");
+  need(ctx.checkRuns.every((run) => run.head_sha === ctx.pr.headRefOid), "check_head_mismatch");
+  for (const name of ctx.requiredContexts) {
+    const runs = ctx.checkRuns.filter((run) => run.name === name);
+    need(runs.length > 0, "required_check_missing", name);
+    need(runs.every((run) => run.status === "completed"), "required_check_pending", name);
+    need(runs.every((run) => run.conclusion === "success"), "required_check_failed", name);
+  }
+  need(!ctx.checkRuns.some((run) => run.status === "completed" && ["failure", "timed_out", "cancelled", "action_required"].includes(run.conclusion) && ctx.requiredContexts.includes(run.name)), "required_check_failed");
+  need(SHA40.test(ctx.syntheticSha ?? "") && ctx.syntheticSha !== ctx.pr.headRefOid, "synthetic_identity_conflated");
+  need(ctx.externalOpenHigh === 0, "external_high_open");
+  need(ctx.review && ctx.review.open_high === 0, "review_high_open");
+  need(ctx.protectedBypass !== true, "protected_branch_bypass");
+  return { stage: "ready", head: ctx.pr.headRefOid, synthetic: ctx.syntheticSha, checks: ctx.checkRuns.length };
+}
+function checkMergeCommand(argv, head) {
+  const list = argv.map(String);
+  need(list[0] === "gh" && list[1] === "pr" && list[2] === "merge", "merge_command_shape");
+  need(list.includes("--merge") && !list.includes("--squash") && !list.includes("--rebase"), "merge_method");
+  const at = list.indexOf("--match-head-commit");
+  need(at > 0 && list[at + 1] === head, "merge_head_guard_missing");
+  need(!list.includes("--delete-branch") && !list.includes("-d") && !list.includes("--admin"), "merge_forbidden_flag");
+}
+// The final head/base/tip read and the merge call must be adjacent in the recorded step ledger.
+function checkBackToBack(steps) {
+  const read = steps.findIndex((s) => s === "final-read");
+  const merge = steps.findIndex((s) => s === "merge-call");
+  need(read >= 0 && merge === read + 1 && steps.filter((s) => s === "merge-call").length === 1, "steps_between_read_and_write");
+}
+function gateMerge(ctx) {
+  // Order is fixed: every other check first, the head/base/tip read last.
+  sameIdentity(ctx);
+  need(ctx.deleteBranchOnMerge === false, "auto_delete_on_or_unreadable");
+  need(ctx.attempt && ctx.attempt.scope === MERGE_SCOPE && Object.keys(ctx.attempt).every((k) => ["scope", "pr", "head", "base", "decision", "consumed"].includes(k)), "approval_scope_mismatch");
+  need(ctx.attempt.decision === "allow" && ctx.attempt.consumed === false, "approval_not_fresh_allow");
+  need(SHA40.test(ctx.attempt.head) && SHA40.test(ctx.attempt.base), "attempt_identity_malformed");
+  checkMergeCommand(ctx.mergeArgv, ctx.attempt.head);
+  need(ctx.final && ctx.final.prHead === ctx.attempt.head, "head_moved_after_display");
+  need(ctx.final.prBase === ctx.attempt.base, "base_moved_since_display");
+  need(ctx.final.mainTip === ctx.attempt.base, "base_moved_since_display");
+  need(ctx.final.prOpen === true, "pr_not_open");
+  if (ctx.steps) checkBackToBack(ctx.steps);
+  return { stage: "merge", head: ctx.attempt.head, base: ctx.attempt.base };
+}
+// approval-binding: decision_recorded (196-17-02) or durable (196-17-03, before the write).
+function gateApprovalBinding(ctx) {
+  const a = ctx.attempt;
+  need(a && a.scope === MERGE_SCOPE && a.decision === "allow" && a.consumed === false, "approval_not_fresh_allow");
+  need(Number.isInteger(a.pr) && SHA40.test(a.head) && SHA40.test(a.base) && typeof a.at === "string", "attempt_identity_malformed");
+  need(ctx.remotePrHead === a.head, "head_moved_after_display");
+  need(ctx.prBase === a.base, "base_moved_since_display");
+  if (ctx.state === "decision_recorded") return { stage: "approval-binding", state: "decision_recorded", head: a.head };
+  need(ctx.state === "durable", "approval_state_unknown");
+  const ref = ctx.approvalRef;
+  need(ref && ref.exists, "approval_ref_missing");
+  need(ref.parent === a.head, "approval_ref_wrong_parent");
+  need(same(ref.diffPaths, [DELIVERY]), "approval_ref_extra_diff");
+  need(ref.pushed === false, "approval_ref_pushed");
+  need(ref.marker && ref.marker.status === "consuming" && ref.marker.pr === a.pr && ref.marker.head === a.head && ref.marker.base === a.base, "approval_marker_mismatch");
+  need(ref.otherConsuming !== true, "approval_other_attempt_consuming");
+  return { stage: "approval-binding", state: "durable", head: a.head };
+}
+// landed: two-parent merge, second parent the approved head, first parent the displayed base (else base drift).
+function judgeMergeCommit(commit) {
+  need(commit && Array.isArray(commit.parents) && commit.parents.length === 2, "merge_not_two_parent");
+  need(commit.parents[1] === commit.attempt.head, "merge_excludes_approved_head");
+  if (commit.parents[0] !== commit.attempt.base) return { landed_as_displayed: false, base_drift_at_write: true };
+  return { landed_as_displayed: true, base_drift_at_write: false };
+}
+function checkLandedPlan(plan) {
+  need(plan.registryComplete === true && plan.children === REGISTRY.length, "landed_registry_incomplete");
+  need(plan.pushTarget === EVIDENCE_BRANCH && plan.pushTarget !== "main", "landed_push_target");
+  need(plan.evidenceBase === plan.mergeCommit, "landed_evidence_base");
+  need(plan.restored === true && plan.dirty === false, "landed_restoration");
+  need(plan.consumedWrittenOn === EVIDENCE_BRANCH, "consumed_record_location");
+  need(plan.validationUnchanged === true, "validation_modified");
+}
+function reconcileMarker(state) {
+  // A leftover consuming marker is reconciled by reading remote state, never by retrying the write.
+  if (state.marker?.status !== "consuming") return "none";
+  if (state.remote.merged && state.remote.mergedHead === state.marker.head) return "landed_continue";
+  return "unconsumed_uncertain";
+}
+
+// ---------------------------------------------------------------- live adapters (gh/git reads; the only write is the guarded merge call)
+function ghJson(root, args) {
+  const result = sync(root, "gh", args, { timeout: 90_000 });
+  need(result.status === 0, "gh_failed");
+  try { return JSON.parse(result.stdout); } catch { throw new Refusal("gh_output_malformed"); }
+}
+function repoSlug(root) {
+  const url = git(root, ["remote", "get-url", "origin"]);
+  const match = /github\.com[:/]([A-Za-z0-9._-]+\/[A-Za-z0-9._-]+?)(?:\.git)?$/.exec(url);
+  need(match, "remote_unrecognized");
+  return match[1];
+}
+function readJsonFile(root, name, code) {
+  try { return JSON.parse(worktree(root, name).toString("utf8")); } catch { throw new Refusal(code); }
+}
+function readText(root, name, code) {
+  try { return worktree(root, name).toString("utf8"); } catch { throw new Refusal(code); }
+}
+function livePr(root, number) {
+  need(Number.isInteger(number) && number > 0, "pr_number_missing");
+  const view = ghJson(root, ["pr", "view", String(number), "--json", "number,state,title,body,baseRefName,baseRefOid,headRefOid"]);
+  const api = ghJson(root, ["api", `repos/${repoSlug(root)}/pulls/${number}`]);
+  return { ...view, merge_commit_sha: api.merge_commit_sha ?? null };
+}
+function liveCheckRuns(root, sha) {
+  const result = sync(root, "gh", ["api", "--paginate", `repos/${repoSlug(root)}/commits/${sha}/check-runs?per_page=100`, "--jq", ".check_runs[] | {name,status,conclusion,head_sha,app_id:.app.id}"], { timeout: 120_000 });
+  need(result.status === 0, "gh_failed");
+  return result.stdout.split("\n").filter(Boolean).map((line) => JSON.parse(line));
+}
+function liveDeleteBranchOnMerge(root) {
+  const result = sync(root, "gh", ["api", `repos/${repoSlug(root)}`, "--jq", ".delete_branch_on_merge"], { timeout: 60_000 });
+  if (result.status !== 0) return null;
+  const value = result.stdout.trim();
+  return value === "false" ? false : value === "true" ? true : null;
+}
+function remoteHead(root, branch) {
+  const out = gitTry(root, ["ls-remote", "origin", `refs/heads/${branch}`]);
+  return out ? out.split(/\s+/)[0] : null;
+}
+function currentIdentity(root) {
+  return { identityNow: candidateIdentity(root, "HEAD"), dispositionNow: checkDisposition(loadInputs(root, "HEAD")) };
+}
+function liveReview(root) { return reviewState(readText(root, REVIEW, "review_missing")); }
+function requiredContexts(root) {
+  return JSON.parse(object(root, "HEAD", "script/required_check_policy.json").toString("utf8")).target_contexts;
+}
+function readApprovalRef(root, attempt) {
+  const sha = gitTry(root, ["rev-parse", "--verify", `${APPROVAL_REF}^{commit}`]);
+  if (!sha) return { exists: false };
+  let marker = null;
+  try { marker = JSON.parse(git(root, ["show", `${APPROVAL_REF}:${DELIVERY}`])).approval ?? null; } catch { marker = null; }
+  const pushed = (gitTry(root, ["ls-remote", "origin", APPROVAL_REF]) ?? "") !== "";
+  return {
+    exists: true, parent: git(root, ["rev-parse", `${APPROVAL_REF}^`]),
+    diffPaths: git(root, ["diff", "--name-only", `${APPROVAL_REF}^`, APPROVAL_REF]).split("\n").filter(Boolean),
+    pushed, marker, otherConsuming: Boolean(marker && attempt && marker.head !== attempt.head && marker.status === "consuming"),
+  };
+}
+async function runGate(root, opts) {
+  const stage = opts.stage;
+  need(["pr-open", "ready", "merge", "approval-binding"].includes(stage), "unknown_stage");
+  const delivery = readJsonFile(root, DELIVERY, "delivery_missing");
+  const candidateRecord = readJsonFile(root, CANDIDATE, "candidate_missing");
+  const base = { ...currentIdentity(root), candidate: candidateRecord, review: liveReview(root), localHead: ref40(root, "HEAD") };
+  const number = delivery.pr?.number ?? delivery.attempt?.pr;
+  if (stage === "pr-open") {
+    git(root, ["fetch", "origin", "main"]);
+    const changed = git(root, ["diff", "--name-only", "--diff-filter=ACMRT", "origin/main", "HEAD"]).split("\n").filter(Boolean);
+    const branch = git(root, ["branch", "--show-current"]);
+    const ctx = {
+      ...base, remoteHead: remoteHead(root, branch), privacyExit: privacyScan(root, changed).exit,
+      baseContained: child0(root, ["merge-base", "--is-ancestor", "origin/main", "HEAD"]),
+      deliveryText: readText(root, DELIVERY, "delivery_missing"), bodyText: readText(root, PR_BODY, "pr_body_missing"),
+      pr: livePr(root, number),
+    };
+    return gatePrOpen(ctx);
+  }
+  if (stage === "ready") {
+    const readyOnce = () => {
+      const pr = livePr(root, number);
+      const policy = requiredContexts(root);
+      const runs = liveCheckRuns(root, pr.headRefOid);
+      const branch = git(root, ["branch", "--show-current"]);
+      return gateReady({ ...base, pr, remoteHead: remoteHead(root, branch), requiredContexts: policy, checkRuns: runs, syntheticSha: pr.merge_commit_sha,
+        externalOpenHigh: (delivery.external_findings ?? []).filter((f) => ["high", "critical"].includes(f.severity) && f.status === "open").length,
+        protectedBypass: delivery.protected_branch_bypass === true });
+    };
+    if (opts.poll !== "yes") return readyOnce();
+    // Bounded polling: every 60 s, at most 90 polls. Run this as a background process; progress lands in the git dir.
+    const notes = path.join(root, git(root, ["rev-parse", "--git-dir"]), "phase196-ready-poll.log");
+    for (let poll = 1; poll <= POLL_MAX; poll += 1) {
+      try { const result = readyOnce(); writeFileSync(notes, `poll ${poll}/${POLL_MAX} success\n`, { flag: "a" }); return result; } catch (error) {
+        const code = error instanceof Refusal ? error.code : "internal_error";
+        writeFileSync(notes, `poll ${poll}/${POLL_MAX} ${code}\n`, { flag: "a" });
+        if (!["required_check_pending", "required_check_missing", "check_inventory_empty"].includes(code)) throw error;
+      }
+      if (poll < POLL_MAX) await new Promise((resolve) => setTimeout(resolve, POLL_SECONDS * 1000));
+    }
+    throw new Refusal("ready_pending_bound_expired");
+  }
+  const attempt = delivery.attempt;
+  if (stage === "approval-binding") {
+    const pr = livePr(root, attempt?.pr);
+    const durable = opts.state === "durable";
+    return gateApprovalBinding({ attempt, state: durable ? "durable" : "decision_recorded", remotePrHead: pr.headRefOid, prBase: pr.baseRefOid, approvalRef: durable ? readApprovalRef(root, attempt) : null });
+  }
+  // merge: all other checks first, the head/base/tip read last, then (only with --execute yes) the guarded merge call.
+  const consuming = delivery.approval ?? null;
+  const mergeArgv = ["gh", "pr", "merge", String(attempt?.pr), "--merge", "--match-head-commit", String(attempt?.head)];
+  const steps = [];
+  const ctx = { ...base, deleteBranchOnMerge: liveDeleteBranchOnMerge(root), attempt: attempt ? { ...attempt } : null, mergeArgv, steps };
+  if (ctx.attempt) { delete ctx.attempt.at; ctx.attempt.consumed = consuming?.status === "consumed"; }
+  steps.push("final-read");
+  git(root, ["fetch", "origin", "main"]);
+  const pr = livePr(root, attempt?.pr);
+  ctx.final = { prHead: pr.headRefOid, prBase: pr.baseRefOid, mainTip: ref40(root, "origin/main"), prOpen: pr.state === "OPEN" };
+  steps.push("merge-call");
+  const verdict = gateMerge(ctx);
+  if (opts.execute !== "yes") { steps.pop(); return { ...verdict, executed: false }; }
+  const result = sync(root, mergeArgv[0], mergeArgv.slice(1), { timeout: 120_000 });
+  need(result.status === 0, "merge_call_failed");
+  return { ...verdict, executed: true };
+}
+function child0(root, args) { return sync(root, "git", args).status === 0; }
+
+// ---------------------------------------------------------------- landed (196-17-03): reconcile once, prove actual main, retain evidence
+function readMergeCommit(root, sha, attempt) {
+  const line = git(root, ["rev-list", "--parents", "-n", "1", sha]).split(" ");
+  need(line[0] === sha, "merge_commit_unreadable");
+  return { sha, parents: line.slice(1), attempt };
+}
+function inventoryHash(root) {
+  return sha(JSON.stringify({
+    branch: git(root, ["branch", "--show-current"]), head: ref40(root, "HEAD"), index: sha(git(root, ["ls-files", "--stage"])),
+    tracked: git(root, ["ls-files", "-z"]).split("\0").filter(Boolean).map((name) => [name, sha(worktree(root, name))]),
+  }));
+}
+async function landed(root) {
+  need(supportedTreeClean(root), "dirty_supported_code");
+  const original = { branch: git(root, ["branch", "--show-current"]), head: ref40(root, "HEAD") };
+  need(original.branch !== "", "landed_requires_branch");
+  const before = inventoryHash(root);
+  const candidateRecord = readJsonFile(root, CANDIDATE, "candidate_missing");
+  const delivery = JSON.parse(git(root, ["show", `${APPROVAL_REF}:${DELIVERY}`]));
+  const attempt = delivery.attempt;
+  const marker = delivery.approval ?? null;
+  need(attempt && marker, "approval_record_missing");
+  git(root, ["fetch", "origin", "main"]);
+  const pr = livePr(root, attempt.pr);
+  const mergedHead = pr.state === "MERGED" ? attempt.head : null;
+  const outcome = reconcileMarker({ marker, remote: { merged: pr.state === "MERGED", mergedHead } });
+  need(outcome === "landed_continue", "attempt_not_merged_unconsumed_uncertain");
+  const mergeSha = pr.merge_commit_sha;
+  need(SHA40.test(mergeSha ?? "") && child0(root, ["merge-base", "--is-ancestor", mergeSha, "origin/main"]), "merge_not_on_main");
+  const judgement = judgeMergeCommit(readMergeCommit(root, mergeSha, attempt));
+  let run, disp, idMatches;
+  try {
+    git(root, ["switch", "--detach", mergeSha]);
+    need(ref40(root, "HEAD") === mergeSha && supportedTreeClean(root), "landed_detach_failed");
+    // The landed proof uses the committed tools at the merge commit, so identity is recomputed there.
+    const identity = candidateIdentity(root, "HEAD");
+    idMatches = identityEqual(identity, candidateRecord.candidate_identity);
+    disp = checkDisposition(loadInputs(root, "HEAD"));
+    need(disp.spec04.roster_digest === candidateRecord.spec04.roster_digest, "roster_digest_changed");
+    run = await runRegistry(root, REGISTRY);
+  } finally {
+    // Restoration is verified before any evidence is written.
+    if (git(root, ["branch", "--show-current"]) === "") git(root, ["switch", original.branch]);
+  }
+  need(ref40(root, "HEAD") === original.head && inventoryHash(root) === before, "landed_restoration_failed");
+  const verdict = judgeCandidate(REGISTRY, run.children);
+  const landedRecord = {
+    schema_version: 1, purpose: "phase196_landed", merge_commit: mergeSha, merge_parents: readMergeCommit(root, mergeSha, attempt).parents,
+    approved_head: attempt.head, displayed_base: attempt.base, ...judgement,
+    candidate_identity_matches: idMatches, spec04: disp.spec04, moved: [MOVED], routes: run.routes,
+    native_claim_ceiling: "jvm_hermetic_and_swift_package_only_never_device",
+    children: run.children, requirement_map: verdict.requirement_map, failing: verdict.failing, verdict: verdict.verdict,
+  };
+  const consumed = { ...delivery, approval: { ...marker, status: "consumed", merge_commit: mergeSha } };
+  const inputs = [
+    "# Phase 196 verification inputs", "",
+    `Merge commit: ${mergeSha}. Approved head: ${attempt.head}. Displayed base: ${attempt.base}.`, "",
+    "The seven requirements SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 are pending phase verification.", "",
+    REQUIRED_STATEMENT, "", "Plan 196-14 is retired, not executed to completion.", "",
+    `Per-task results: ${verdict.verdict}; children ${run.children.length}; failing ${verdict.failing.length}.`, "",
+    "Next command: `$gsd-verify-work 196 --ws quality-ratchet-release`", "",
+  ].join("\n");
+  const [landedText, deliveryText] = [`${JSON.stringify(landedRecord, null, 2)}\n`, `${JSON.stringify(consumed, null, 2)}\n`];
+  scanClaims(landedText, "json"); scanClaims(deliveryText, "json"); scanClaims(inputs, "markdown");
+  const planCheck = { registryComplete: run.children.length === REGISTRY.length, children: run.children.length, pushTarget: EVIDENCE_BRANCH, evidenceBase: mergeSha, mergeCommit: mergeSha,
+    restored: true, dirty: false, consumedWrittenOn: EVIDENCE_BRANCH, validationUnchanged: sha(object(root, original.head, `${PHASE}/196-VALIDATION.md`)) === sha(worktree(root, `${PHASE}/196-VALIDATION.md`)) };
+  checkLandedPlan(planCheck);
+  git(root, ["switch", "-c", EVIDENCE_BRANCH, mergeSha]);
+  try {
+    const files = [[LANDED, landedText], [DELIVERY, deliveryText], [`${PHASE}/196-VERIFICATION-INPUTS.md`, inputs]];
+    for (const [name, text] of files) writeFileSync(path.join(root, name), text);
+    privacyScan(root, files.map(([name]) => name));
+    git(root, ["add", "--", ...files.map(([name]) => name)]);
+    git(root, ["commit", "-q", "-m", "docs(196): record actual-main phase evidence"]);
+  } finally { git(root, ["switch", original.branch]); }
+  need(ref40(root, "HEAD") === original.head, "landed_restoration_failed");
+  console.log(`phase-evidence: landed ${verdict.verdict} base_drift_at_write=${judgement.base_drift_at_write} evidence_branch=${EVIDENCE_BRANCH}`);
+  need(verdict.verdict === "pass" && judgement.landed_as_displayed, "landed_failed");
+  return landedRecord;
+}
+
+// ---------------------------------------------------------------- scoped self-tests: promotion, candidate, merge, landed
+function fixtureRepo() {
+  const root = mkdtempSync(path.join(tmpdir(), "cw196-pe-"));
+  const g = (...args) => git(root, ["-c", "core.hooksPath=/dev/null", "-c", "commit.gpgsign=false", ...args]);
+  g("init", "-q", "-b", "main"); g("config", "user.name", "Fixture"); g("config", "user.email", "fixture@users.noreply.github.com");
+  const put = (name, text) => writeFileSync(path.join(root, name), text);
+  put("a.txt", "a\n"); g("add", "a.txt"); g("commit", "-q", "-m", "base");
+  return { root, g, put, cleanup: () => rmSync(root, { recursive: true, force: true }) };
+}
+async function selfTestPromotion(root) {
+  const started = Date.now();
+  const before = git(root, ["status", "--porcelain", "--", EVIDENCE]);
+  const genuine = gatherPromotion(root, "HEAD");
+  const inventory = checkPromotion(genuine);
+  assert.equal(inventory.length, PROMOTION.length);
+  assert.equal(inventory.filter((e) => e.change === "default_flipped").length, 1);
+  assert.equal(inventory.find((e) => e.guard === "absence").change, "default_flipped");
+  const refuses = (code, mutate) => {
+    const copy = structuredClone(genuine); mutate(copy);
+    assert.throws(() => checkPromotion(copy), { code }, code);
+  };
+  const absence = (i) => i.find((e) => e.guard === "absence");
+  refuses("stale_measured_blob", (i) => { absence(i).receipt_guard_blob = "0".repeat(40); });
+  refuses("stale_measured_blob", (i) => { i.find((e) => e.guard === "compile").guard_blob = "1".repeat(40); });
+  refuses("measured_receipt_missing", (i) => { absence(i).receipt_guard_blob = null; });
+  refuses("flip_without_recapture", (i) => { absence(i).order = { flip: 9, capture: 9, caller: 10 }; });
+  refuses("flip_without_recapture", (i) => { absence(i).order = { flip: 10, capture: 9, caller: 11 }; });
+  refuses("premature_wiring", (i) => { absence(i).order = { flip: 1, capture: 5, caller: 4 }; });
+  refuses("flip_missing", (i) => { absence(i).default_enforce = false; });
+  refuses("caller_missing", (i) => { i[1].caller_exists = false; });
+  refuses("caller_excluded", (i) => { i[2].caller_excluded_tags = ["advisory_only"]; });
+  refuses("stage_unowned", (i) => { i[3].stage_owned = false; });
+  refuses("stage_unowned", (i) => { i[4].job_owned = false; });
+  refuses("wiring_change_on_already_required", (i) => { i[1].order = { flip: 1, capture: 2, caller: 3 }; });
+  refuses("promotion_change_unknown", (i) => { i[1].change = "advisory_to_required"; });
+  assert.throws(() => checkPromotion(genuine.slice(1)), { code: "promotion_inventory_incomplete" });
+  assert.equal(PROMOTION.some((e) => /muex/i.test(JSON.stringify(e))), false);
+  await realChildControls();
+  assert.equal(git(root, ["status", "--porcelain", "--", EVIDENCE]), before, "promotion scope must write no receipt");
+  assert.ok(Date.now() - started < DEADLINE_MS, "promotion scope exceeded its deadline");
+  return { scope: "promotion", ms: Date.now() - started };
+}
+function checkRegistry(registry) {
+  need(new Set(registry.map((e) => e.id)).size === registry.length, "registry_duplicate_id");
+  need(!registryNamesMuex(registry), "registry_muex_pilot");
+  const map = requirementMap(registry);
+  for (const key of REQUIREMENT_MAP_KEYS) need(map[key].length > 0, "requirement_unmapped", key);
+  need(!Object.hasOwn(map, MOVED), "spec04_in_requirements");
+  for (const e of registry) {
+    need(["plain", "node", "jdk"].includes(e.route), "registry_route");
+    need(e.expect && typeof e.expect === "object", "registry_pin_missing", e.id);
+    if (["exunit", "node-test", "vector"].includes(e.kind)) need(e.expect.tests !== undefined || e.expect.minTests !== undefined, "registry_pin_missing", e.id);
+    if (e.kind === "exunit" || e.kind === "node-test") need(e.expect.failures === 0 && (e.expect.excluded !== undefined || e.expect.anyExcluded === true), "registry_pin_missing", e.id);
+  }
+  const by = (id) => registry.find((e) => e.id === id);
+  need(by("manifest-lane")?.expect.tests === 11 && by("manifest-lane").expect.excluded === 0 && by("manifest-lane").route === "node", "manifest_lane_pin");
+  need(by("threadline-lane")?.expect.tests === 5 && by("threadline-lane").expect.excluded === 0 && by("threadline-lane").env?.MIX_INCLUDE_THREADLINE_PLUG === "1", "threadline_lane_pin");
+  need(by("wire-version")?.expect.lastLine === "1.1.0", "wire_version_pin");
+  need(["browser-proof"].every((id) => by(id)?.route === "node") && ["android-package-proof", "vector-kotlin-request", "vector-kotlin-other"].every((id) => by(id)?.route === "jdk"), "route_pin");
+  const order = registry.map((e) => e.id);
+  need(order.indexOf("browser-proof") >= 0 && order.indexOf("browser-proof") < order.indexOf("manifest-lane"), "producer_before_manifest");
+  return true;
+}
+async function selfTestCandidate(root) {
+  const started = Date.now();
+  const before = git(root, ["status", "--porcelain", "--", EVIDENCE]);
+  assert.equal(checkRegistry(REGISTRY), true);
+  assert.equal(NODE_VERSION, "v22.14.0"); assert.equal(NPM_VERSION, "10.9.2"); assert.equal(JDK_HOME, "/opt/homebrew/opt/openjdk@17");
+  // Registry shape refusals on in-memory copies.
+  const registry = () => structuredClone(REGISTRY);
+  assert.throws(() => checkRegistry(registry().filter((e) => e.id !== "manifest-lane")), { code: "manifest_lane_pin" });
+  assert.throws(() => checkRegistry(registry().filter((e) => e.id !== "threadline-lane")), { code: "threadline_lane_pin" });
+  assert.throws(() => checkRegistry(registry().filter((e) => !["journal", "safe-observation"].includes(e.id))), { code: "requirement_unmapped" });
+  assert.throws(() => checkRegistry([...registry(), { id: "x", req: [], kind: "script", route: "plain", command: "node", args: [`${PHASE}/scripts/muex-pilot.mjs`], cwd: ".", expect: {} }]), { code: "registry_muex_pilot" });
+  assert.throws(() => checkRegistry(registry().map((e) => (e.id === "manifest-lane" ? { ...e, expect: { ...e.expect, tests: 10, excluded: 1 } } : e))), { code: "manifest_lane_pin" });
+  assert.throws(() => checkRegistry(registry().map((e) => (e.id === "journal" ? { ...e, expect: {} } : e))), { code: "registry_pin_missing" });
+  // Process-result adapter on genuine captured and genuinely generated output.
+  const exunit = parseExUnit("Finished in 30.4 seconds (30.4s async, 0.00s sync)\n59 tests, 0 failures\n");
+  assert.deepEqual([exunit.tests, exunit.failures, exunit.excluded], [59, 0, 0]);
+  assert.equal(parseExUnit("Finished in 0.1 seconds\n11 tests, 0 failures, 1 excluded\n").excluded, 1);
+  assert.equal(parseExUnit("nothing summarised").summaries, 0);
+  const scratch = mkdtempSync(path.join(tmpdir(), "cw196-cand-"));
+  try {
+    const file = path.join(scratch, "tiny.test.mjs");
+    writeFileSync(file, "import test from 'node:test';\ntest('one',()=>{});\ntest('two',()=>{});\n");
+    const real = await runChild(scratch, process.execPath, ["--test", file], { timeout: 15_000 });
+    const parsed = parseNodeTest(real.stdout);
+    assert.equal(real.status, 0); assert.deepEqual([parsed.tests, parsed.failures], [2, 0]);
+    writeFileSync(file, "import test from 'node:test';\ntest('bad',()=>{throw new Error('x')});\n");
+    const failing = await runChild(scratch, process.execPath, ["--test", file], { timeout: 15_000 });
+    assert.notEqual(failing.status, 0);
+  } finally { rmSync(scratch, { recursive: true, force: true }); }
+  // judgeChild refusals: zero execution, failure, excluded tagged positive test, failed preflight.
+  const manifest = REGISTRY.find((e) => e.id === "manifest-lane");
+  const good = { status: 0, groupGone: true, counts: { tests: 11, failures: 0, excluded: 0, skipped: 0, summaries: 1 } };
+  assert.equal(judgeChild(manifest, good).status, "pass");
+  assert.equal(judgeChild(manifest, { ...good, counts: { ...good.counts, tests: 10, excluded: 1 } }).reason, "test_count_mismatch");
+  assert.equal(judgeChild(manifest, { ...good, counts: { ...good.counts, tests: 11, excluded: 1 } }).reason, "excluded_above_pin");
+  assert.equal(judgeChild(manifest, { ...good, counts: { ...good.counts, tests: 0 } }).reason, "test_count_mismatch");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 0 } }).reason, "zero_or_low_executed");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, status: 2 }).reason, "child_exit_nonzero");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 5, failures: 1 } }).reason, "child_failures");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: null }).reason, "no_summary");
+  assert.equal(judgeChild(manifest, { preflightBlocked: "asdf:version_assertion_failed" }).status, "preflight-blocked");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "wire-version"), { status: 0, groupGone: true, lastLine: "1.0.0" }).reason, "wire_version_mismatch");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "wire-version"), { status: 0, groupGone: true, lastLine: "1.1.0" }).status, "pass");
+  // judgeCandidate: omitted child, failing child, missing mapping, preflight-blocked FAIL.
+  const children = REGISTRY.map((e) => ({ id: e.id, status: "pass", counted: true }));
+  assert.equal(judgeCandidate(REGISTRY, children).verdict, "pass");
+  assert.throws(() => judgeCandidate(REGISTRY, children.slice(1)), { code: "registry_child_omitted" });
+  assert.equal(judgeCandidate(REGISTRY, children.map((c) => (c.id === "browser-proof" ? { ...c, status: "preflight-blocked" } : c))).verdict, "fail");
+  assert.equal(judgeCandidate(REGISTRY, children.map((c) => (c.id === "format-proof" ? { ...c, status: "fail" } : c))).verdict, "fail");
+  assert.throws(() => judgeCandidate(REGISTRY, children.map((c) => (c.id === "journal" || c.id === "safe-observation" ? { ...c, status: "fail" } : c))), { code: "requirement_unmapped" });
+  assert.throws(() => judgeCandidate(REGISTRY, children.map((c) => (c.id === "journal" || c.id === "safe-observation" ? { ...c, counted: false } : c))), { code: "requirement_unmapped" });
+  // Stale identity, changed disposition and a SPEC-04 claim in a candidate record all refuse.
+  const identity = { source_roster_sha256: "a", phase_evidence_sha256: "b", measure_main_sha256: "c", preserved_roster_sha256: "d" };
+  const spec04 = { disposition: "moved_to_v29", receiver: RECEIVER, roster_digest: "d" };
+  const ctx = { candidate: { verdict: "pass", candidate_identity: identity, spec04 }, identityNow: identity, dispositionNow: { spec04 } };
+  assert.doesNotThrow(() => sameIdentity(ctx));
+  assert.throws(() => sameIdentity({ ...ctx, identityNow: { ...identity, phase_evidence_sha256: "z" } }), { code: "candidate_stale" });
+  assert.throws(() => sameIdentity({ ...ctx, identityNow: { ...identity, measure_main_sha256: "z" } }), { code: "candidate_stale" });
+  assert.throws(() => sameIdentity({ ...ctx, candidate: { ...ctx.candidate, verdict: "fail" } }), { code: "candidate_not_passed" });
+  assert.throws(() => sameIdentity({ ...ctx, dispositionNow: { spec04: { ...spec04, disposition: "adopted" } } }), { code: "disposition_changed" });
+  assert.throws(() => scanClaims(JSON.stringify({ spec04: { disposition: "moved_to_v29" }, requirement_map: { x: 1 }, requirements: ["SPEC-04"] }), "json"), { code: "spec04_in_requirements" });
+  // Review gate: findings and iterations are machine-read; an open high or critical finding blocks.
+  const review = (rows, n = 1) => `# Review\n\nIterations: ${n}\n\n| ID | Severity | Status | Finding |\n|----|----------|--------|---------|\n${rows}\n`;
+  assert.equal(reviewState(review("| R-01 | low | fixed | x |")).open_high, 0);
+  assert.equal(reviewState(review("| R-01 | high | open | x |\n| R-02 | critical | open | y |")).open_high, 2);
+  assert.equal(reviewState(review("| R-01 | high | fixed | x |")).open_high, 0);
+  assert.throws(() => reviewState(review("| R-01 | low | fixed | x |", 4)), { code: "review_iterations" });
+  assert.throws(() => reviewState(""), { code: "review_missing" });
+  assert.equal(git(root, ["status", "--porcelain", "--", EVIDENCE]), before, "candidate scope must write no receipt");
+  assert.ok(Date.now() - started < DEADLINE_MS, "candidate scope exceeded its deadline");
+  return { scope: "candidate", ms: Date.now() - started };
+}
+async function selfTestMerge(root) {
+  const started = Date.now();
+  const H = "a".repeat(40), B = "b".repeat(40), M = "c".repeat(40);
+  const identity = { source_roster_sha256: "a", phase_evidence_sha256: "b", measure_main_sha256: "c", preserved_roster_sha256: "d" };
+  const spec04 = { disposition: "moved_to_v29", receiver: RECEIVER, roster_digest: "d" };
+  const base = { candidate: { verdict: "pass", candidate_identity: identity, spec04 }, identityNow: identity, dispositionNow: { spec04 }, review: { open_high: 0 } };
+  const argv = ["gh", "pr", "merge", "7", "--merge", "--match-head-commit", H];
+  const attempt = { scope: MERGE_SCOPE, pr: 7, head: H, base: B, decision: "allow", consumed: false };
+  const merge = { ...base, deleteBranchOnMerge: false, attempt, mergeArgv: argv, final: { prHead: H, prBase: B, mainTip: B, prOpen: true }, steps: ["final-read", "merge-call"] };
+  assert.equal(gateMerge(merge).stage, "merge");
+  const refuses = (code, ctx, fn = gateMerge) => assert.throws(() => fn(ctx), { code }, code);
+  refuses("head_moved_after_display", { ...merge, final: { ...merge.final, prHead: "d".repeat(40) } });
+  refuses("base_moved_since_display", { ...merge, final: { ...merge.final, prBase: M } });
+  refuses("base_moved_since_display", { ...merge, final: { ...merge.final, mainTip: M } });
+  refuses("steps_between_read_and_write", { ...merge, steps: ["final-read", "tool-step", "merge-call"] });
+  refuses("steps_between_read_and_write", { ...merge, steps: ["merge-call", "final-read"] });
+  refuses("auto_delete_on_or_unreadable", { ...merge, deleteBranchOnMerge: true });
+  refuses("auto_delete_on_or_unreadable", { ...merge, deleteBranchOnMerge: null });
+  refuses("approval_scope_mismatch", { ...merge, attempt: { ...attempt, scope: "merge_and_publish" } });
+  refuses("approval_scope_mismatch", { ...merge, attempt: { ...attempt, tag: "v1" } });
+  refuses("approval_not_fresh_allow", { ...merge, attempt: { ...attempt, consumed: true } });
+  refuses("approval_not_fresh_allow", { ...merge, attempt: { ...attempt, decision: "hold" } });
+  refuses("candidate_stale", { ...merge, identityNow: { ...identity, source_roster_sha256: "z" } });
+  refuses("disposition_changed", { ...merge, dispositionNow: { spec04: { ...spec04, disposition: "dropped" } } });
+  refuses("pr_not_open", { ...merge, final: { ...merge.final, prOpen: false } });
+  refuses("merge_head_guard_missing", { ...merge, mergeArgv: ["gh", "pr", "merge", "7", "--merge"] });
+  refuses("merge_forbidden_flag", { ...merge, mergeArgv: [...argv, "--delete-branch"] });
+  refuses("merge_forbidden_flag", { ...merge, mergeArgv: [...argv, "--admin"] });
+  refuses("merge_method", { ...merge, mergeArgv: ["gh", "pr", "merge", "7", "--squash", "--match-head-commit", H] });
+  // approval-binding: decision_recorded and durable.
+  const bind = { attempt: { ...attempt, at: "2026-10-28T00:00:00Z" }, remotePrHead: H, prBase: B, state: "decision_recorded" };
+  assert.equal(gateApprovalBinding(bind).state, "decision_recorded");
+  const ref = { exists: true, parent: H, diffPaths: [DELIVERY], pushed: false, marker: { status: "consuming", pr: 7, head: H, base: B }, otherConsuming: false };
+  assert.equal(gateApprovalBinding({ ...bind, state: "durable", approvalRef: ref }).state, "durable");
+  const durable = (change) => ({ ...bind, state: "durable", approvalRef: { ...ref, ...change } });
+  refuses("head_moved_after_display", { ...bind, remotePrHead: M }, gateApprovalBinding);
+  refuses("approval_not_fresh_allow", { ...bind, attempt: { ...bind.attempt, decision: "hold" } }, gateApprovalBinding);
+  refuses("approval_not_fresh_allow", { ...bind, attempt: { ...bind.attempt, consumed: true } }, gateApprovalBinding);
+  refuses("approval_ref_missing", durable({ exists: false }), gateApprovalBinding);
+  refuses("approval_ref_wrong_parent", durable({ parent: M }), gateApprovalBinding);
+  refuses("approval_ref_extra_diff", durable({ diffPaths: [DELIVERY, "lib/x.ex"] }), gateApprovalBinding);
+  refuses("approval_ref_pushed", durable({ pushed: true }), gateApprovalBinding);
+  refuses("approval_marker_mismatch", durable({ marker: { status: "consumed", pr: 7, head: H, base: B } }), gateApprovalBinding);
+  refuses("approval_other_attempt_consuming", durable({ otherConsuming: true }), gateApprovalBinding);
+  // pr-open and ready on isolated inputs.
+  const body = `Change summary.\n\n${REQUIRED_STATEMENT}\n`;
+  const delivery = JSON.stringify({ spec04: { ...spec04 }, pr: { number: 7 } });
+  const open = { ...base, localHead: H, remoteHead: H, privacyExit: 0, baseContained: true, bodyText: body, deliveryText: delivery,
+    pr: { number: 7, state: "OPEN", baseRefName: "main", headRefOid: H, body, title: "fix(196): spec and structure ratchet" } };
+  assert.equal(gatePrOpen(open).stage, "pr-open");
+  refuses("remote_sha_mismatch", { ...open, remoteHead: M }, gatePrOpen);
+  refuses("privacy_scan_failed", { ...open, privacyExit: 1 }, gatePrOpen);
+  refuses("base_behind", { ...open, baseContained: false }, gatePrOpen);
+  refuses("candidate_stale", { ...open, identityNow: { ...identity, phase_evidence_sha256: "z" } }, gatePrOpen);
+  refuses("required_statement_missing", { ...open, bodyText: "Change summary.\n", pr: { ...open.pr, body: "Change summary.\n" } }, gatePrOpen);
+  refuses("spec04_prose_claim", { ...open, bodyText: `${body}\nThe Muex pilot passed.\n`, pr: { ...open.pr, body: `${body}\nThe Muex pilot passed.\n` } }, gatePrOpen);
+  refuses("spec04_disposition", { ...open, deliveryText: JSON.stringify({ spec04: { disposition: "adopted" } }) }, gatePrOpen);
+  refuses("pr_head_mismatch", { ...open, pr: { ...open.pr, headRefOid: M } }, gatePrOpen);
+  refuses("pr_body_mismatch", { ...open, pr: { ...open.pr, body: "different" } }, gatePrOpen);
+  refuses("review_high_open", { ...open, review: { open_high: 1 } }, gatePrOpen);
+  const run = (name, status, conclusion, sha = H) => ({ name, status, conclusion, head_sha: sha });
+  const ready = { ...base, localHead: H, remoteHead: H, pr: { state: "OPEN", headRefOid: H }, requiredContexts: ["Crosswake CI"], checkRuns: [run("Crosswake CI", "completed", "success")], syntheticSha: M, externalOpenHigh: 0 };
+  assert.equal(gateReady(ready).stage, "ready");
+  refuses("check_inventory_empty", { ...ready, checkRuns: [] }, gateReady);
+  refuses("required_checks_empty", { ...ready, requiredContexts: [] }, gateReady);
+  refuses("required_check_missing", { ...ready, checkRuns: [run("Other", "completed", "success")] }, gateReady);
+  refuses("required_check_pending", { ...ready, checkRuns: [run("Crosswake CI", "in_progress", null)] }, gateReady);
+  refuses("required_check_failed", { ...ready, checkRuns: [run("Crosswake CI", "completed", "failure")] }, gateReady);
+  refuses("check_head_mismatch", { ...ready, checkRuns: [run("Crosswake CI", "completed", "success", M)] }, gateReady);
+  refuses("synthetic_identity_conflated", { ...ready, syntheticSha: H }, gateReady);
+  refuses("external_high_open", { ...ready, externalOpenHigh: 1 }, gateReady);
+  refuses("protected_branch_bypass", { ...ready, protectedBypass: true }, gateReady);
+  assert.equal(POLL_SECONDS, 60); assert.equal(POLL_MAX, 90);
+  await realChildControls();
+  assert.ok(Date.now() - started < DEADLINE_MS, "merge scope exceeded its deadline");
+  return { scope: "merge", ms: Date.now() - started };
+}
+async function selfTestLanded(root) {
+  const started = Date.now();
+  const f = fixtureRepo();
+  try {
+    f.g("switch", "-q", "-c", "feature"); f.put("b.txt", "b\n"); f.g("add", "b.txt"); f.g("commit", "-q", "-m", "feature");
+    const head = ref40(f.root, "HEAD");
+    f.g("switch", "-q", "main");
+    const base = ref40(f.root, "HEAD");
+    f.g("merge", "-q", "--no-ff", "-m", "merge feature", "feature");
+    const merged = ref40(f.root, "HEAD");
+    const attempt = { head, base };
+    const commit = readMergeCommit(f.root, merged, attempt);
+    assert.equal(commit.parents.length, 2);
+    assert.deepEqual(judgeMergeCommit(commit), { landed_as_displayed: true, base_drift_at_write: false });
+    // Base drift: main advanced after display, so the first parent differs and the approved attempt is not "landed as displayed".
+    f.g("reset", "-q", "--hard", base); f.put("c.txt", "c\n"); f.g("add", "c.txt"); f.g("commit", "-q", "-m", "main advanced");
+    f.g("merge", "-q", "--no-ff", "-m", "merge feature late", "feature");
+    assert.deepEqual(judgeMergeCommit(readMergeCommit(f.root, ref40(f.root, "HEAD"), attempt)), { landed_as_displayed: false, base_drift_at_write: true });
+    assert.throws(() => judgeMergeCommit({ parents: [base], attempt }), { code: "merge_not_two_parent" });
+    assert.throws(() => judgeMergeCommit({ parents: [base, "e".repeat(40)], attempt }), { code: "merge_excludes_approved_head" });
+    // Restoration predicate: detach, change a tracked byte, and the inventory hash must differ.
+    const before = inventoryHash(f.root);
+    f.g("switch", "-q", "--detach", base);
+    f.g("switch", "-q", "main");
+    assert.equal(inventoryHash(f.root), before);
+    f.put("a.txt", "changed\n");
+    assert.notEqual(inventoryHash(f.root), before);
+  } finally { f.cleanup(); }
+  const plan = { registryComplete: true, children: REGISTRY.length, pushTarget: EVIDENCE_BRANCH, evidenceBase: "m", mergeCommit: "m", restored: true, dirty: false, consumedWrittenOn: EVIDENCE_BRANCH, validationUnchanged: true };
+  assert.doesNotThrow(() => checkLandedPlan(plan));
+  const refuses = (code, change) => assert.throws(() => checkLandedPlan({ ...plan, ...change }), { code }, code);
+  refuses("landed_registry_incomplete", { registryComplete: false });
+  refuses("landed_registry_incomplete", { children: REGISTRY.length - 1 });
+  refuses("landed_push_target", { pushTarget: "main" });
+  refuses("landed_evidence_base", { evidenceBase: "main-tip" });
+  refuses("landed_restoration", { dirty: true });
+  refuses("landed_restoration", { restored: false });
+  refuses("consumed_record_location", { consumedWrittenOn: "main" });
+  refuses("validation_modified", { validationUnchanged: false });
+  assert.equal(reconcileMarker({ marker: null, remote: {} }), "none");
+  assert.equal(reconcileMarker({ marker: { status: "consuming", head: "h" }, remote: { merged: true, mergedHead: "h" } }), "landed_continue");
+  assert.equal(reconcileMarker({ marker: { status: "consuming", head: "h" }, remote: { merged: false } }), "unconsumed_uncertain");
+  assert.equal(reconcileMarker({ marker: { status: "consuming", head: "h" }, remote: { merged: true, mergedHead: "other" } }), "unconsumed_uncertain");
+  assert.throws(() => scanClaims(JSON.stringify({ spec04: { disposition: "moved_to_v29" }, note: "SPEC-04 is complete." }), "json"), { code: "spec04_prose_claim" });
+  assert.throws(() => scanClaims("The pilot passed.", "markdown"), { code: "spec04_prose_claim" });
+  await realChildControls();
+  assert.ok(Date.now() - started < DEADLINE_MS, "landed scope exceeded its deadline");
+  return { scope: "landed", ms: Date.now() - started };
+}
 
 // ---------------------------------------------------------------- scoped self-tests
 const DEADLINE_MS = 20_000;
@@ -426,7 +1408,7 @@ async function selfTestDisposition(root) {
   assert.ok(Date.now() - started < DEADLINE_MS, "disposition scope exceeded its deadline");
   return { scope: "disposition", ms: Date.now() - started };
 }
-const SCOPES = { disposition: selfTestDisposition };
+const SCOPES = { disposition: selfTestDisposition, promotion: selfTestPromotion, candidate: selfTestCandidate, merge: selfTestMerge, landed: selfTestLanded };
 async function selfTest(root, scope) {
   need(scope === undefined || Object.hasOwn(SCOPES, scope), "unknown_scope");
   const names = scope ? [scope] : Object.keys(SCOPES);
@@ -455,6 +1437,18 @@ async function main() {
   } else if (mode === "disposition") {
     need(Object.keys(opts).length === 0, "invalid_arguments");
     console.log(JSON.stringify(disposition(root), null, 2));
+  } else if (mode === "promotion") {
+    need(Object.keys(opts).length === 0, "invalid_arguments");
+    console.log(JSON.stringify(checkPromotion(gatherPromotion(root)), null, 2));
+  } else if (mode === "candidate") {
+    need(Object.keys(opts).every((key) => key === "observe"), "invalid_arguments");
+    await candidate(root, { observe: opts.observe === "yes" });
+  } else if (mode === "gate") {
+    need(Object.keys(opts).every((key) => ["stage", "poll", "execute", "state"].includes(key)), "invalid_arguments");
+    console.log(JSON.stringify(await runGate(root, opts)));
+  } else if (mode === "landed") {
+    need(Object.keys(opts).length === 0, "invalid_arguments");
+    await landed(root);
   } else throw new Refusal("invalid_mode");
 }
 if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
@@ -464,4 +1458,4 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
     process.exitCode = 1;
   });
 }
-export { scanClaims, disposition, candidateIdentity, checkDisposition, runChild, sha, Refusal };
+export { scanClaims, disposition, candidateIdentity, checkDisposition, checkPromotion, runChild, sha, Refusal };
