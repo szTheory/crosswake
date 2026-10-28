@@ -485,12 +485,12 @@ const STAGE = (stage, route = "plain", extra = {}) => ({ id: stage, req: [], kin
 const MANIFEST_PATH = "examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json";
 const REGISTRY_NODE_TEST_FILES = "test/js/*.mjs";
 const CANDIDATE_REGISTRY = [
-  STAGE("format-proof"), STAGE("warnings-proof"), STAGE("repository-cleanliness"), STAGE("example-host-proof"),
+  STAGE("format-proof"), STAGE("warnings-proof"), STAGE("repository-cleanliness"), STAGE("example-host-proof", "plain", { timeout: 3_600_000 }),
   STAGE("root-proof", "plain", { timeout: 3_600_000 }),
   STAGE("browser-proof", "node", { timeout: 1_800_000, env: { GITHUB_ACTIONS: "true" }, envFromRepo: "crosswake_version" }),
   STAGE("ios-package-proof", "plain", { timeout: 3_600_000 }),
   STAGE("android-package-proof", "jdk", { timeout: 3_600_000 }),
-  { id: "node-tests", req: [], kind: "node-test", route: "plain", command: "node", args: ["--test", `@glob:${REGISTRY_NODE_TEST_FILES}`], cwd: ".", expect: { minTests: 1, failures: 0, excluded: 0 } },
+  { id: "node-tests", req: [], kind: "node-test", route: "plain", command: "node", args: ["--test", `@glob:${REGISTRY_NODE_TEST_FILES}`], cwd: ".", expect: { tests: 344, failures: 0, excluded: 0 } },
   { id: "format-explicit", req: [], kind: "format", route: "plain", command: "mix", args: ["format", "--check-formatted", "@changed-elixir"], cwd: ".", expect: { minFiles: 1 } },
   // SPEC-01 enabled lanes: the real producer's manifest, then the manifest test with the path set (11 tests, 0 excluded).
   MIXTEST("manifest-lane", ["test/crosswake/guides/evidence_manifest_test.exs"], ["SPEC-01"], { tests: 11, failures: 0, excluded: 0 },
@@ -499,10 +499,10 @@ const CANDIDATE_REGISTRY = [
     args: ["cmd", "--cd", "packages/crosswake_threadline", "mix", "test", "test/crosswake/proof/phase139_threadline_cleanroom_test.exs"],
     env: { MIX_INCLUDE_THREADLINE_PLUG: "1" }, expect: { tests: 5, failures: 0, excluded: 0 } },
   // The default (disabled) lanes stay as visible optional-skip evidence and are never credited as positive proof.
-  { ...MIXTEST("manifest-lane-default", ["test/crosswake/guides/evidence_manifest_test.exs"], [], { minTests: 1, failures: 0, anyExcluded: true }), credit: "optional_skip_visible" },
+  { ...MIXTEST("manifest-lane-default", ["test/crosswake/guides/evidence_manifest_test.exs"], [], { tests: 10, failures: 0, excluded: 1 }), credit: "optional_skip_visible" },
   { id: "threadline-lane-default", req: [], kind: "exunit", route: "plain", command: "mix", cwd: ".", credit: "optional_skip_visible",
-    args: ["cmd", "--cd", "packages/crosswake_threadline", "mix", "test", "test/crosswake/proof/phase139_threadline_cleanroom_test.exs"], expect: { minTests: 1, failures: 0, anyExcluded: true } },
-  MIXTEST("wire-contract", ["test/crosswake/bridge/contract_test.exs", "test/crosswake/contract/contract_drift_test.exs"], ["SPEC-01"], { minTests: 1, failures: 0, excluded: 0 }),
+    args: ["cmd", "--cd", "packages/crosswake_threadline", "mix", "test", "test/crosswake/proof/phase139_threadline_cleanroom_test.exs"], expect: { tests: 4, failures: 0, excluded: 1 } },
+  MIXTEST("wire-contract", ["test/crosswake/bridge/contract_test.exs", "test/crosswake/contract/contract_drift_test.exs"], ["SPEC-01"], { tests: 19, failures: 0, excluded: 0 }),
   { id: "wire-version", req: ["SPEC-01"], kind: "version", route: "plain", command: "mix", cwd: ".", env: { MIX_ENV: "test" },
     args: ["run", "--no-start", "-e", "IO.puts(Crosswake.Bridge.ProtocolVersion.version())"], expect: { lastLine: "1.1.0" } },
   VEC("elixir", "plain", { tests: 4, failures: 0, loaded: 15, completed: 9, restored: true }),
@@ -513,19 +513,19 @@ const CANDIDATE_REGISTRY = [
   VEC("kotlin-request", "jdk", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
   VEC("kotlin-other", "jdk", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
   { id: "absence-enforce", req: ["SPEC-02"], kind: "script", route: "plain", command: "elixir", args: ["script/check_absence_is_not_success.exs", "--collections-mode", "enforce"], cwd: ".", expect: { enforce: true, delta0: true, minOk: 2 } },
-  MIXTEST("absence-test", ["test/crosswake/proof/absence_is_not_success_test.exs"], ["SPEC-02"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("journal", ["test/crosswake/offline/journal_test.exs"], ["SPEC-03"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("safe-observation", ["test/crosswake/offline/safe_observation_test.exs"], ["SPEC-03"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("policy-compiler", ["test/crosswake/policy/compiler_test.exs"], ["SPEC-05"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("policy-product-route", ["test/crosswake/policy/finite_product_test.exs", "test/crosswake/policy/compiler_test.exs", "test/crosswake/policy/route_test.exs"], ["SPEC-05"], { minTests: 1, failures: 0, excluded: 0 }),
+  MIXTEST("absence-test", ["test/crosswake/proof/absence_is_not_success_test.exs"], ["SPEC-02"], { tests: 59, failures: 0, excluded: 0 }),
+  MIXTEST("journal", ["test/crosswake/offline/journal_test.exs"], ["SPEC-03"], { tests: 4, failures: 0, excluded: 0 }),
+  MIXTEST("safe-observation", ["test/crosswake/offline/safe_observation_test.exs"], ["SPEC-03"], { tests: 11, failures: 0, excluded: 0 }),
+  MIXTEST("policy-compiler", ["test/crosswake/policy/compiler_test.exs"], ["SPEC-05"], { tests: 9, failures: 0, excluded: 0 }),
+  MIXTEST("policy-product-route", ["test/crosswake/policy/finite_product_test.exs", "test/crosswake/policy/compiler_test.exs", "test/crosswake/policy/route_test.exs"], ["SPEC-05"], { tests: 28, failures: 0, excluded: 0 }),
   { id: "compile-force", req: ["ARCH-01"], kind: "compile", route: "plain", command: "mix", args: ["compile", "--force", "--warnings-as-errors"], cwd: ".", env: { MIX_ENV: "test" }, expect: { minCompiled: 1 } },
   { id: "xref-compile-connected", req: ["ARCH-01"], kind: "xref", route: "plain", command: "mix", args: ["xref", "graph", "--format", "cycles", "--label", "compile-connected", "--fail-above", "0"], cwd: ".", env: { MIX_ENV: "test" }, expect: {} },
-  MIXTEST("compile-structure", ["test/crosswake/proof/compile_structure_ratchet_test.exs"], ["ARCH-01"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("location-router", ["test/crosswake/bridge/location_diagnostics_test.exs", "test/crosswake/router_test.exs"], ["ARCH-02"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("compatibility", ["test/crosswake/compatibility/compatibility_test.exs"], ["ARCH-02"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("rescue-boundary", ["test/crosswake/proof/rescue_boundary_ratchet_test.exs"], ["ARCH-02"], { minTests: 1, failures: 0, excluded: 0 }),
-  MIXTEST("runtime-dependencies", ["test/crosswake/proof/runtime_dependency_ratchet_test.exs"], ["ARCH-03"], { minTests: 1, failures: 0, excluded: 0 }),
-  { id: "secret-masking", req: ["SPEC-02", "GR-06"], kind: "node-test", route: "plain", command: "node", args: ["--test", "test/js/ci_secret_masking.test.mjs"], cwd: ".", expect: { minTests: 1, failures: 0, excluded: 0 } },
+  MIXTEST("compile-structure", ["test/crosswake/proof/compile_structure_ratchet_test.exs"], ["ARCH-01"], { tests: 15, failures: 0, excluded: 0 }),
+  MIXTEST("location-router", ["test/crosswake/bridge/location_diagnostics_test.exs", "test/crosswake/router_test.exs"], ["ARCH-02"], { tests: 6, failures: 0, excluded: 0 }),
+  MIXTEST("compatibility", ["test/crosswake/compatibility/compatibility_test.exs"], ["ARCH-02"], { tests: 17, failures: 0, excluded: 0 }),
+  MIXTEST("rescue-boundary", ["test/crosswake/proof/rescue_boundary_ratchet_test.exs"], ["ARCH-02"], { tests: 30, failures: 0, excluded: 0 }),
+  MIXTEST("runtime-dependencies", ["test/crosswake/proof/runtime_dependency_ratchet_test.exs"], ["ARCH-03"], { tests: 25, failures: 0, excluded: 0 }),
+  { id: "secret-masking", req: ["SPEC-02", "GR-06"], kind: "node-test", route: "plain", command: "node", args: ["--test", "test/js/ci_secret_masking.test.mjs"], cwd: ".", expect: { tests: 207, failures: 0, excluded: 0 } },
 ];
 REGISTRY.push(...CANDIDATE_REGISTRY);
 const REQUIREMENT_MAP_KEYS = [...IN_SCOPE, "GR-06"];
@@ -1157,7 +1157,10 @@ async function selfTestCandidate(root) {
   assert.equal(judgeChild(manifest, { ...good, counts: { ...good.counts, tests: 10, excluded: 1 } }).reason, "test_count_mismatch");
   assert.equal(judgeChild(manifest, { ...good, counts: { ...good.counts, tests: 11, excluded: 1 } }).reason, "excluded_above_pin");
   assert.equal(judgeChild(manifest, { ...good, counts: { ...good.counts, tests: 0 } }).reason, "test_count_mismatch");
-  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 0 } }).reason, "zero_or_low_executed");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 0 } }).reason, "test_count_mismatch");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 3 } }).reason, "test_count_mismatch");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "vector-swift-reply"), { ...good, counts: { ...good.counts, tests: 0, restored: true, owners: 1 } }).reason, "zero_or_low_executed");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "node-tests"), { ...good, counts: { ...good.counts, tests: 0 } }).reason, "test_count_mismatch");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, status: 2 }).reason, "child_exit_nonzero");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 5, failures: 1 } }).reason, "child_failures");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: null }).reason, "no_summary");
