@@ -166,7 +166,7 @@ defmodule Crosswake.AbsenceIsNotSuccess do
     }
 
     IO.puts("PHASE196_REPORT " <> AST.json(receipt))
-    mode = Keyword.get(opts, :collections_mode, "report")
+    mode = Keyword.get(opts, :collections_mode, "enforce")
 
     IO.puts(
       "[crosswake] collections mode=#{mode} files=#{length(files)} findings=#{length(findings)} delta=#{length(changes)}"
@@ -566,7 +566,7 @@ end
 
 root = Keyword.get(opts, :root) || File.cwd!()
 
-unless Keyword.get(opts, :collections_mode, "report") in ["report", "enforce"],
+unless Keyword.get(opts, :collections_mode, "enforce") in ["report", "enforce"],
   do: usage_fail.("invalid collections mode")
 
 expanded = Path.expand(root)
