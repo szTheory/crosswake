@@ -85,6 +85,17 @@ defmodule Crosswake.Offline.RuntimeTest do
     assert {:ok, _lease} = Runtime.lease(switched, "v1.scope_fixture_bravo_01", 3)
   end
 
+  test "activation applies the same absolute scope grammar as the journal" do
+    inactive = Runtime.new_lifecycle()
+    valid = "v1.scope_fixture_alpha_01"
+
+    assert {:ok, _active} = Runtime.activate(inactive, valid)
+
+    for hostile <- [valid <> "\n", valid <> "\r\n", "\n" <> valid, valid <> "\u00e9"] do
+      assert {:error, :scope_inactive} = Runtime.activate(inactive, hostile)
+    end
+  end
+
   test "runtime retains unaccepted entries in journal order when replay is blocked" do
     entries = [:first, :second, :third]
 
