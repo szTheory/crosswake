@@ -153,6 +153,43 @@ function reviewedAmendment(root, record, reviewed) {
   need(sha(fileAt(root, AMENDMENT)) === sha(object(root, "HEAD", AMENDMENT)), "amendment_evidence_uncommitted");
   return new Map(entries.map((entry) => [entry.path, entry.after_sha256]));
 }
+function reviewedReplan(root, record, reviewed, replan) {
+  if (!existsSync(path.join(root, REPLAN_EVIDENCE))) {
+    need(child(root, "git", ["merge-base", "--is-ancestor", replan.commit, "HEAD"]).status !== 0, "replan_evidence_missing");
+    return new Map();
+  }
+  // Identity: an unreachable replan is stale; a wrong or non-ancestor base is a scope error.
+  need(child(root, "git", ["merge-base", "--is-ancestor", replan.commit, "HEAD"]).status === 0, "replan_stale");
+  need(/^[0-9a-f]{40}$/.test(replan.base) && /^[0-9a-f]{40}$/.test(replan.commit), "replan_scope_mismatch");
+  need(child(root, "git", ["merge-base", "--is-ancestor", replan.base, replan.commit]).status === 0 && replan.base !== replan.commit, "replan_scope_mismatch");
+  need(child(root, "git", ["merge-base", "--is-ancestor", reviewed.commit, replan.base]).status === 0, "replan_scope_mismatch");
+  // The delta covers EVERY phase Markdown path and both Phase195 receipts, not only record.protected_files.
+  const changed = git(root, ["diff", "--name-only", replan.base, replan.commit, "--", PHASE, ...RECEIPTS]).split("\n").filter(Boolean)
+    .filter((name) => RECEIPTS.includes(name) || (name.startsWith(`${PHASE}/`) && name.endsWith(".md")));
+  need(same(sorted(changed), sorted(replan.paths)), "replan_scope_mismatch");
+  const entries = replan.paths.map((name) => {
+    const original = record.protected_files.find((f) => f.path === name);
+    need(original && sha(object(root, replan.base, name)) === original.sha256, "replan_scope_mismatch");
+    const after = sha(object(root, replan.commit, name));
+    need(after !== original.sha256, "replan_scope_mismatch");
+    need(sha(fileAt(root, name)) === after && sha(object(root, "HEAD", name)) === after, "replan_stale");
+    return { path: name, before_sha256: original.sha256, after_sha256: after };
+  });
+  need(sha(fileAt(root, SOURCE)) === reviewed.sourceSha256 && sha(object(root, "HEAD", SOURCE)) === reviewed.sourceSha256, "replan_evidence_mismatch");
+  const expected = {
+    schema_version: 1, purpose: "reviewed_plan15_17_spec04_move_replan",
+    source_receipt_sha256: reviewed.sourceSha256, source_receipt_commit: reviewed.sourceCommit,
+    preserved_sha: record.preserved_sha, transfer_sha: record.transfer_sha,
+    replan_base: replan.base, replan_commit: replan.commit, paths: entries,
+  };
+  let evidence;
+  try { evidence = JSON.parse(fileAt(root, REPLAN_EVIDENCE)); } catch { throw new Refusal("replan_evidence_mismatch"); }
+  need(same(evidence, expected), "replan_evidence_mismatch");
+  let committed;
+  try { committed = object(root, "HEAD", REPLAN_EVIDENCE); } catch { throw new Refusal("replan_evidence_uncommitted"); }
+  need(sha(fileAt(root, REPLAN_EVIDENCE)) === sha(committed), "replan_evidence_uncommitted");
+  return new Map(entries.map((entry) => [entry.path, entry.after_sha256]));
+}
 function verifySourceAt(root, record, reviewed = REVIEWED_AMENDMENT, replan = REVIEWED_REPLAN) {
   need((reviewed === REVIEWED_AMENDMENT && replan === REVIEWED_REPLAN) || realpathSync(root) !== OWNER_ROOT, "test_adapter_on_repository");
   need(record?.schema_version === 1 && record.branch === BRANCH && record.main_ref === "origin/main" && record.preserved_ref === PRESERVED, "unrecognized_source_state");
@@ -180,8 +217,11 @@ function verifySourceAt(root, record, reviewed = REVIEWED_AMENDMENT, replan = RE
   const protectedFiles = record.preserved_files.filter(({ path: p }) => RECEIPTS.includes(p) ||
     (p.startsWith(`${PHASE}/`) && p.endsWith(".md")));
   need(same(protectedFiles, record.protected_files) && RECEIPTS.every((p) => protectedFiles.some((f) => f.path === p)), "protected_scope_mismatch");
+  // The replan scope is judged first so an extra edit to a 13/14 plan inside the replan commit reports replan_scope_mismatch.
+  const replans = reviewedReplan(root, record, reviewed, replan);
   const amendments = reviewedAmendment(root, record, reviewed);
-  for (const item of protectedFiles) need(sha(fileAt(root, item.path)) === (amendments.get(item.path) ?? item.sha256), "protected_hash_mismatch");
+  need([...replans.keys()].every((name) => !amendments.has(name)), "replan_scope_mismatch");
+  for (const item of protectedFiles) need(sha(fileAt(root, item.path)) === (replans.get(item.path) ?? amendments.get(item.path) ?? item.sha256), "protected_hash_mismatch");
   // Independently hash the worktree as well: a clean index alone is not evidence.
   for (const item of sourceRoster(root, "HEAD")) {
     const bytes = fileAt(root, item.path);

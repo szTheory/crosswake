@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "helper_sha256": "f005d41b965912fcd7285fe72cb4d8c904356b0a937ab1c1c86f68ad0fe3d3b1",
-  "duration_ms": 22929,
-  "tests": 50,
+  "helper_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
+  "duration_ms": 50228,
+  "tests": 73,
   "suites": [
     {
       "mode": "source-controls",
@@ -12,8 +12,8 @@
         "source-controls"
       ],
       "process_exit": 0,
-      "tests": 27,
-      "passed": 27,
+      "tests": 50,
+      "passed": 50,
       "failed": 0,
       "controls": [
         "source verifier accepts independently established clean source",
@@ -42,9 +42,32 @@
         "source verifier refuses uncommitted evidence bytes",
         "source verifier refuses wrong amendment parent",
         "source verifier refuses additional protected amendment at reviewed commit",
-        "source verifier refuses unreachable reviewed amendment"
+        "source verifier refuses unreachable reviewed amendment",
+        "source verifier accepts the reviewed committed replan delta, keeps the 13/14 amendment and the original receipt",
+        "replan fixture override is inaccessible on the actual repository",
+        "source verifier refuses a replan commit that also edits a listed protected context path",
+        "source verifier refuses a replan commit that also edits a listed protected earlier plan",
+        "source verifier refuses a replan commit that also edits a listed protected amended plan",
+        "source verifier refuses a replan commit that also edits a Phase195 privacy receipt",
+        "source verifier refuses a replan commit that also edits an unlisted summary",
+        "source verifier refuses a replan commit that also edits an unlisted follow-up document",
+        "source verifier refuses a replan commit that also edits an unlisted evidence document",
+        "source verifier refuses a replan commit that also edits the plan-check document, which is outside the pin",
+        "source verifier refuses later committed plan edit",
+        "source verifier refuses dirty replanned plan",
+        "source verifier refuses restored original instead of replanned plan",
+        "source verifier refuses wrong replan identity",
+        "source verifier refuses unreachable replan commit",
+        "source verifier refuses non-ancestor replan base",
+        "source verifier refuses missing replan evidence",
+        "source verifier refuses malformed replan evidence",
+        "source verifier refuses uncommitted replan evidence bytes",
+        "source verifier refuses wrong replan evidence hash",
+        "source verifier refuses extra replan evidence path",
+        "source verifier refuses different replan evidence commit",
+        "source verifier refuses wrong replan evidence purpose"
       ],
-      "stdout_sha256": "14e4e74b13f8551a2d05cdf9d90f55b98db1ce08a0729f900de611f8180e5602",
+      "stdout_sha256": "4518586d8b4484b24cd8d0dd317a8f22b1231b189442c08421b79f06de010fbf",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
@@ -83,7 +106,7 @@
         "capture preserves a prior receipt when publication privacy is refused",
         "capture refuses a concurrent capture lock without altering the checkout"
       ],
-      "stdout_sha256": "4cd528cf6b572b1e4c416ca381195336f490990787dd9df9bf408ad653aeca20",
+      "stdout_sha256": "5a2dde7a94b90f8dd6eb5334b48ba5eb36f11593b75d884c897378cff2b09985",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
