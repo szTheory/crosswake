@@ -22,6 +22,16 @@ const REVIEWED_AMENDMENT = {
   sourceCommit: "8b613331f6b81419e1e4eb928355d5a20692e1ff",
   sourceSha256: "4395af905530c1d1bd5680276faf2e6586f21352bfaf65c4bf7a807bf6c16aec",
 };
+const REPLAN_EVIDENCE = `${PHASE}/196-EVIDENCE/source-amendment-15-17.json`;
+const REPLAN_PLANS = [15, 16, 17].map((n) => `${PHASE}/196-${n}-PLAN.md`);
+// Second fixed reviewed identity (SPEC-04 move to v29.0 and replan of 196-15..17). Like
+// REVIEWED_AMENDMENT it is a constant, never a caller-supplied registry or override.
+// base: newest ancestor whose 15/16/17 plans hold their execution-source.json hashes.
+const REVIEWED_REPLAN = {
+  base: "90a809ce43adec4fb2b04ae38e658854317c9d9c",
+  commit: "f04c98cff8188099ac58ea21f78bdde129dc31c6",
+  paths: REPLAN_PLANS,
+};
 const PRIVACY = ".planning/workstreams/quality-ratchet-release/phases/193-cleanup-and-new-working-rules/scripts/privacy-193.sh";
 const SELF = `${PHASE}/scripts/measure-main.mjs`;
 const OWNER_ROOT = realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../../.."));
@@ -143,8 +153,8 @@ function reviewedAmendment(root, record, reviewed) {
   need(sha(fileAt(root, AMENDMENT)) === sha(object(root, "HEAD", AMENDMENT)), "amendment_evidence_uncommitted");
   return new Map(entries.map((entry) => [entry.path, entry.after_sha256]));
 }
-function verifySourceAt(root, record, reviewed = REVIEWED_AMENDMENT) {
-  need(reviewed === REVIEWED_AMENDMENT || realpathSync(root) !== OWNER_ROOT, "test_adapter_on_repository");
+function verifySourceAt(root, record, reviewed = REVIEWED_AMENDMENT, replan = REVIEWED_REPLAN) {
+  need((reviewed === REVIEWED_AMENDMENT && replan === REVIEWED_REPLAN) || realpathSync(root) !== OWNER_ROOT, "test_adapter_on_repository");
   need(record?.schema_version === 1 && record.branch === BRANCH && record.main_ref === "origin/main" && record.preserved_ref === PRESERVED, "unrecognized_source_state");
   need(fullRef(root, "origin/main") === record.main_sha, "main_ref_mismatch");
   need(git(root, ["branch", "--show-current"]) === BRANCH, "wrong_branch");
@@ -205,6 +215,7 @@ function fixture() {
   put(`${PHASE}/196-01-PLAN.md`, "fixture source plan\n");
   put(`${PHASE}/196-CONTEXT.md`, "fixture source context\n");
   for (const name of AMENDED_PLANS) put(name, "fixture original criteria\n\n## Ordering and interfaces\n");
+  for (const name of REPLAN_PLANS) put(name, "fixture original replan source\n\n## Ordering and interfaces\n");
   g("add", ".planning"); g("commit", "-m", "fixture preserved planning");
   const preserved = fullRef(root, "HEAD");
   g("switch", "-c", BRANCH, main); g("cherry-pick", preserved);
@@ -623,6 +634,32 @@ function captureTests() {
     } finally { f.cleanup(); }
   });
 }
+function amendedFixture() {
+  const f = fixture();
+  const sourceBytes = `${JSON.stringify(f.record, null, 2)}\n`;
+  f.put(SOURCE, sourceBytes); f.g("add", SOURCE); f.g("commit", "-m", "fixture immutable receipt");
+  const parent = fullRef(f.root, "HEAD");
+  const entries = AMENDED_PLANS.map((name) => {
+    const before = fileAt(f.root, name);
+    const after = before.toString().replace("## Ordering and interfaces", "## Resolved attempt contract\n\nSame criteria, carried aggregate budget, no new authority.\n\n## Ordering and interfaces");
+    assert.notEqual(after, before.toString()); f.put(name, after);
+    return { path: name, before_sha256: sha(before), after_sha256: sha(after) };
+  });
+  f.put(RESOLUTION, "Synthetic reviewed local configuration; criteria and aggregate clock unchanged.\n");
+  f.g("add", ...AMENDED_PLANS, RESOLUTION); f.g("commit", "-m", "fixture reviewed amendment");
+  const commit = fullRef(f.root, "HEAD");
+  f.reviewed = { commit, parent, sourceCommit: parent, sourceSha256: sha(sourceBytes) };
+  f.evidence = {
+    schema_version: 1, purpose: "reviewed_plan13_14_local_attempt_configuration",
+    source_receipt_sha256: sha(sourceBytes), source_receipt_commit: parent,
+    preserved_sha: f.record.preserved_sha, transfer_sha: f.record.transfer_sha,
+    amendment_commit: commit, amendment_parent: parent,
+    resolution: { path: RESOLUTION, sha256: sha(fileAt(f.root, RESOLUTION)) }, paths: entries,
+  };
+  f.saveEvidence = () => f.put(AMENDMENT, `${JSON.stringify(f.evidence, null, 2)}\n`);
+  f.saveEvidence(); f.g("add", AMENDMENT); f.g("commit", "-m", "fixture amendment evidence");
+  return f;
+}
 function sourceTests() {
   test("source verifier accepts independently established clean source", () => {
     const f = fixture(); try { assert.equal(verifySourceAt(f.root, f.record), true); } finally { f.cleanup(); }
@@ -645,32 +682,6 @@ function sourceTests() {
   for (const [name, code, change] of controls) test(`source verifier rejects ${name}`, () => {
     const f = fixture(); try { change(f); assert.throws(() => verifySourceAt(f.root, f.record), { code }); } finally { f.cleanup(); }
   });
-  function amendedFixture() {
-    const f = fixture();
-    const sourceBytes = `${JSON.stringify(f.record, null, 2)}\n`;
-    f.put(SOURCE, sourceBytes); f.g("add", SOURCE); f.g("commit", "-m", "fixture immutable receipt");
-    const parent = fullRef(f.root, "HEAD");
-    const entries = AMENDED_PLANS.map((name) => {
-      const before = fileAt(f.root, name);
-      const after = before.toString().replace("## Ordering and interfaces", "## Resolved attempt contract\n\nSame criteria, carried aggregate budget, no new authority.\n\n## Ordering and interfaces");
-      assert.notEqual(after, before.toString()); f.put(name, after);
-      return { path: name, before_sha256: sha(before), after_sha256: sha(after) };
-    });
-    f.put(RESOLUTION, "Synthetic reviewed local configuration; criteria and aggregate clock unchanged.\n");
-    f.g("add", ...AMENDED_PLANS, RESOLUTION); f.g("commit", "-m", "fixture reviewed amendment");
-    const commit = fullRef(f.root, "HEAD");
-    f.reviewed = { commit, parent, sourceCommit: parent, sourceSha256: sha(sourceBytes) };
-    f.evidence = {
-      schema_version: 1, purpose: "reviewed_plan13_14_local_attempt_configuration",
-      source_receipt_sha256: sha(sourceBytes), source_receipt_commit: parent,
-      preserved_sha: f.record.preserved_sha, transfer_sha: f.record.transfer_sha,
-      amendment_commit: commit, amendment_parent: parent,
-      resolution: { path: RESOLUTION, sha256: sha(fileAt(f.root, RESOLUTION)) }, paths: entries,
-    };
-    f.saveEvidence = () => f.put(AMENDMENT, `${JSON.stringify(f.evidence, null, 2)}\n`);
-    f.saveEvidence(); f.g("add", AMENDMENT); f.g("commit", "-m", "fixture amendment evidence");
-    return f;
-  }
   test("source verifier accepts only the reviewed committed two-plan amendment and preserves original receipt", () => {
     const f = amendedFixture(); try {
       const original = fileAt(f.root, SOURCE);
@@ -709,6 +720,87 @@ function sourceTests() {
     const f = amendedFixture(); try { change(f); assert.throws(() => verifySourceAt(f.root, f.record, f.reviewed), { code }); } finally { f.cleanup(); }
   });
 }
+function replanTests() {
+  const unrelated = (f, name) => {
+    f.g("switch", "-c", name, f.record.main_sha);
+    f.put("isolated-replan.txt", "unrelated\n"); f.g("add", "isolated-replan.txt"); f.g("commit", "-m", "fixture unrelated replan commit");
+    const sha1 = fullRef(f.root, "HEAD"); f.g("switch", BRANCH);
+    return sha1;
+  };
+  function replanFixture(extra = () => {}) {
+    const f = amendedFixture();
+    f.put(`${PHASE}/196-01-SUMMARY.md`, "fixture summary\n");
+    f.put(`${PHASE}/196-SOURCE-VERIFIER-FOLLOWUP.md`, "fixture followup\n");
+    f.put(`${PHASE}/196-EVIDENCE/MUEX-DECISION.md`, "fixture decision\n");
+    f.put(`${PHASE}/196-PLAN-CHECK.md`, "fixture plan check\n");
+    f.g("add", ".planning"); f.g("commit", "-m", "fixture replan base");
+    const base = fullRef(f.root, "HEAD");
+    const entries = REPLAN_PLANS.map((name) => {
+      const before = fileAt(f.root, name);
+      const after = `${before}\nReplanned: the recorded move changes no authority.\n`;
+      f.put(name, after);
+      return { path: name, before_sha256: sha(before), after_sha256: sha(after) };
+    });
+    extra(f);
+    f.g("add", ".planning"); f.g("commit", "-m", "fixture replan");
+    const commit = fullRef(f.root, "HEAD");
+    f.replan = { base, commit, paths: REPLAN_PLANS };
+    f.replanEvidence = {
+      schema_version: 1, purpose: "reviewed_plan15_17_spec04_move_replan",
+      source_receipt_sha256: f.reviewed.sourceSha256, source_receipt_commit: f.reviewed.sourceCommit,
+      preserved_sha: f.record.preserved_sha, transfer_sha: f.record.transfer_sha,
+      replan_base: base, replan_commit: commit, paths: entries,
+    };
+    f.saveReplan = () => f.put(REPLAN_EVIDENCE, `${JSON.stringify(f.replanEvidence, null, 2)}\n`);
+    f.saveReplan(); f.g("add", REPLAN_EVIDENCE); f.g("commit", "-m", "fixture replan evidence");
+    return f;
+  }
+  test("source verifier accepts the reviewed committed replan delta, keeps the 13/14 amendment and the original receipt", () => {
+    const f = replanFixture(); try {
+      const original = fileAt(f.root, SOURCE);
+      assert.equal(verifySourceAt(f.root, f.record, f.reviewed, f.replan), true);
+      assert.deepEqual(fileAt(f.root, SOURCE), original);
+      for (const item of f.record.protected_files) assert.equal(sha(object(f.root, f.record.preserved_sha, item.path)), item.sha256);
+    } finally { f.cleanup(); }
+  });
+  test("replan fixture override is inaccessible on the actual repository", () => {
+    assert.throws(() => verifySourceAt(OWNER_ROOT, {}, REVIEWED_AMENDMENT, { ...REVIEWED_REPLAN, commit: "0".repeat(40) }), { code: "test_adapter_on_repository" });
+    assert.throws(() => verifySourceAt(OWNER_ROOT, {}, { ...REVIEWED_AMENDMENT }, REVIEWED_REPLAN), { code: "test_adapter_on_repository" });
+  });
+  const scope = [
+    ["a listed protected context path", `${PHASE}/196-CONTEXT.md`],
+    ["a listed protected earlier plan", `${PHASE}/196-01-PLAN.md`],
+    ["a listed protected amended plan", AMENDED_PLANS[0]],
+    ["a Phase195 privacy receipt", RECEIPTS[0]],
+    ["an unlisted summary", `${PHASE}/196-01-SUMMARY.md`],
+    ["an unlisted follow-up document", `${PHASE}/196-SOURCE-VERIFIER-FOLLOWUP.md`],
+    ["an unlisted evidence document", `${PHASE}/196-EVIDENCE/MUEX-DECISION.md`],
+    ["the plan-check document, which is outside the pin", `${PHASE}/196-PLAN-CHECK.md`],
+  ];
+  for (const [name, target] of scope) test(`source verifier refuses a replan commit that also edits ${name}`, () => {
+    const f = replanFixture((g) => g.put(target, "unreviewed replan edit\n")); try {
+      assert.throws(() => verifySourceAt(f.root, f.record, f.reviewed, f.replan), { code: "replan_scope_mismatch" });
+    } finally { f.cleanup(); }
+  });
+  const replans = [
+    ["later committed plan edit", "replan_stale", (f) => { f.put(REPLAN_PLANS[0], "later unreviewed edit\n"); f.g("add", REPLAN_PLANS[0]); f.g("commit", "-m", "fixture stale replan"); }],
+    ["dirty replanned plan", "replan_stale", (f) => { f.put(REPLAN_PLANS[1], "dirty plan\n"); }],
+    ["restored original instead of replanned plan", "replan_stale", (f) => { f.put(REPLAN_PLANS[2], object(f.root, f.record.preserved_sha, REPLAN_PLANS[2])); }],
+    ["wrong replan identity", "replan_scope_mismatch", (f) => { f.replan = { ...f.replan, commit: f.reviewed.commit }; }],
+    ["unreachable replan commit", "replan_stale", (f) => { f.replan = { ...f.replan, commit: unrelated(f, "fixture-unrelated-commit") }; }],
+    ["non-ancestor replan base", "replan_scope_mismatch", (f) => { f.replan = { ...f.replan, base: unrelated(f, "fixture-unrelated-base") }; }],
+    ["missing replan evidence", "replan_evidence_missing", (f) => { rmSync(path.join(f.root, REPLAN_EVIDENCE)); }],
+    ["malformed replan evidence", "replan_evidence_mismatch", (f) => { f.put(REPLAN_EVIDENCE, "{broken\n"); }],
+    ["uncommitted replan evidence bytes", "replan_evidence_uncommitted", (f) => { f.put(REPLAN_EVIDENCE, `${JSON.stringify(f.replanEvidence, null, 4)}\n`); }],
+    ["wrong replan evidence hash", "replan_evidence_mismatch", (f) => { f.replanEvidence.paths[0].after_sha256 = "0".repeat(64); f.saveReplan(); }],
+    ["extra replan evidence path", "replan_evidence_mismatch", (f) => { f.replanEvidence.paths.push({ ...f.replanEvidence.paths[0], path: `${PHASE}/196-CONTEXT.md` }); f.saveReplan(); }],
+    ["different replan evidence commit", "replan_evidence_mismatch", (f) => { f.replanEvidence.replan_commit = f.record.transfer_sha; f.saveReplan(); }],
+    ["wrong replan evidence purpose", "replan_evidence_mismatch", (f) => { f.replanEvidence.purpose = "reviewed_plan13_14_local_attempt_configuration"; f.saveReplan(); }],
+  ];
+  for (const [name, code, change] of replans) test(`source verifier refuses ${name}`, () => {
+    const f = replanFixture(); try { change(f); assert.throws(() => verifySourceAt(f.root, f.record, f.reviewed, f.replan), { code }); } finally { f.cleanup(); }
+  });
+}
 function selfTest(root) {
   const started = Date.now();
   const suites = [];
@@ -733,7 +825,7 @@ function selfTest(root) {
 }
 async function main() {
   const { mode, opts } = parse(process.argv.slice(2));
-  if (mode === "source-controls") { sourceTests(); return; }
+  if (mode === "source-controls") { sourceTests(); replanTests(); return; }
   if (mode === "capture-controls") { captureTests(); return; }
   const root = git(process.cwd(), ["rev-parse", "--show-toplevel"]);
   need(realpathSync(root) === realpathSync(process.cwd()), "wrong_working_directory");
