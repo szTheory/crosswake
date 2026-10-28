@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 16
-status: ready_to_execute
-stopped_at: Completed 196-15-PLAN.md
-last_updated: "2026-10-28T16:46:38.427Z"
-state_head: ed15e5e7210e2295fd4653c4da1863240977324e
+status: blocked
+stopped_at: "Halted 196-16 (BLOCKED): PR 260 open, CI red on exact head"
+last_updated: "2026-10-28T17:10:46.560Z"
+state_head: 89073a21c6a9ddcb1cb2dae8bb8e381fe384c1d0
 progress:
   total_phases: 3
   completed_phases: 2
@@ -25,7 +25,7 @@ Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active p
 
 ## Exact Next Action
 
-`/gsd-execute-phase 196 --ws quality-ratchet-release`: execute 196-16 (gate pr-open, one reviewed PR, gate ready on the exact head), then 196-17. 196-01..13 and 196-15 are complete; 196-14 is retired. Plans 16 and 17 must not edit `phase-evidence.mjs` or `measure-main.mjs`: a defect found there costs a fixing commit and a fresh 196-15 candidate run. Pushing the feature branch needs no gate; merging to main, in 196-17, needs a fresh one-use `allow` bound to the displayed head H and base. Do not rerun the Muex baseline, reset its clock or start a new pilot attempt.
+No command is eligible for 196-16 task 2 until its blocker clears (`196-16-BLOCKED.md`). PR 260 is open on head `3b5f77e6` (gate pr-open passed); Crosswake CI on the first head `979bec85` was red: two ratchet tests (`rescue_boundary_ratchet_test.exs`, `runtime_dependency_ratchet_test.exs`) read `git show <main_sha>` and fail in a shallow checkout, and `proof-dependency-security` reports a `bandit` advisory in the example host lock. Reopens when the tests are fixed with a negative control, a fresh 196-15 candidate run and review exist on the new identity, and the `bandit` advisory has a decision; then push, wait for CI on the new head and run `gate --stage ready`. 196-17 must not start before then. Do not edit `phase-evidence.mjs` or `measure-main.mjs` without a fresh candidate run.
 
 ## Carried debt
 
@@ -33,9 +33,9 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-10-28T16:46:38.185Z
-**Stopped at:** Completed 196-15-PLAN.md
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-15-SUMMARY.md
+**Last session:** 2026-10-28T17:10:46.393Z
+**Stopped at:** Halted 196-16 (BLOCKED): PR 260 open, CI red on exact head
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-16-BLOCKED.md
 
 ## Accumulated Context
 
@@ -55,3 +55,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 196]: Candidate identity hashes phase-evidence.mjs and measure-main.mjs whole, so plans 16 and 17 run finished modes only and edit neither tool.
 - [Phase 196]: Facade stages expose no counts, so the core, Swift and Android suites also run directly; Gradle is forced to execute because an unchanged test task reports UP-TO-DATE.
 - [Phase 196]: Absence collections default is enforce; the Phase 170 ledger is regenerated with cited overrides rather than retired, since retiring it is a separate decision.
+
+### Blockers
+
+- 196-16 halted: PR 260 (head 3b5f77e6) CI red on first head 979bec85: two ratchet tests need main history (shallow checkout) plus example host bandit advisory; fix needs fresh 196-15 candidate run. See 196-16-BLOCKED.md
