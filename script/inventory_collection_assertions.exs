@@ -496,7 +496,23 @@ defmodule Crosswake.CollectionAssertionInventory do
     # test/crosswake/planning/first_adopter_context_test.exs:281
     "sha256:36575ec13936cbc3" =>
       {"safe-cardinality-pinned",
-       "the enclosing test's title (\"positional placeholders are preserved\") states the intent: `$1`/`$0.0` inside a `.sh`/`.swift` file are recognized as positional placeholders, not commercial amounts, so `scan_filesystem/2` legitimately returns zero violations for this fixture — the contrast case to the same test's earlier prose-file assertion, which DOES produce `privacy.commercial_detail` violations for `.md`/`.html`/`.svg` paths with identical dollar amounts. Confirmed via `mix test test/crosswake/planning/first_adopter_context_test.exs` (the `single-digit commercial amounts are prose-aware while positional placeholders are preserved` test), `scan_filesystem(root, []) == []`."}
+       "the enclosing test's title (\"positional placeholders are preserved\") states the intent: `$1`/`$0.0` inside a `.sh`/`.swift` file are recognized as positional placeholders, not commercial amounts, so `scan_filesystem/2` legitimately returns zero violations for this fixture — the contrast case to the same test's earlier prose-file assertion, which DOES produce `privacy.commercial_detail` violations for `.md`/`.html`/`.svg` paths with identical dollar amounts. Confirmed via `mix test test/crosswake/planning/first_adopter_context_test.exs` (the `single-digit commercial amounts are prose-aware while positional placeholders are preserved` test), `scan_filesystem(root, []) == []`."},
+    # test/crosswake/proof/absence_is_not_success_test.exs:169
+    "sha256:14583a344ef7f602" =>
+      {"safe-cardinality-pinned",
+       "the matched text is fixture SOURCE inside a string literal that the enclosing test writes to a temporary directory and feeds to `script/check_absence_is_not_success.exs`; it is never executed as an assertion. The test pins the guard's observed exit code and exact finding delta for that fixture (`assert code == 1`, `count=1 baseline=0`, then the exact-baseline run exits 0 and the doubled source produces a separate count), so the unsafe shape is shown to be detected rather than left unchecked — recorded as a manual override with this citation, not a widened heuristic."},
+    # test/crosswake/proof/absence_is_not_success_test.exs:191
+    "sha256:1e83ab52dbd3d1a4" =>
+      {"safe-cardinality-pinned",
+       "the matched text is fixture SOURCE inside a string literal that the enclosing test writes to a temporary directory and feeds to `script/check_absence_is_not_success.exs`; it is never executed as an assertion. The test pins the guard's observed exit code and exact finding delta for that fixture (`assert code == 1`, `count=1 baseline=0`, then the exact-baseline run exits 0 and the doubled source produces a separate count), so the unsafe shape is shown to be detected rather than left unchecked — recorded as a manual override with this citation, not a widened heuristic."},
+    # test/crosswake/proof/absence_is_not_success_test.exs:192
+    "sha256:1a4f88b2538d149b" =>
+      {"safe-cardinality-pinned",
+       "the matched text is fixture SOURCE inside a string literal that the enclosing test writes to a temporary directory and feeds to `script/check_absence_is_not_success.exs`; it is never executed as an assertion. The test pins the guard's observed exit code and exact finding delta for that fixture (`assert code == 1`, `count=1 baseline=0`, then the exact-baseline run exits 0 and the doubled source produces a separate count), so the unsafe shape is shown to be detected rather than left unchecked — recorded as a manual override with this citation, not a widened heuristic."},
+    # test/crosswake/proof/absence_is_not_success_test.exs:192
+    "sha256:7930c4f2fc9a8f76" =>
+      {"safe-cardinality-pinned",
+       "the matched text is fixture SOURCE inside a string literal that the enclosing test writes to a temporary directory and feeds to `script/check_absence_is_not_success.exs`; it is never executed as an assertion. The test pins the guard's observed exit code and exact finding delta for that fixture (`assert code == 1`, `count=1 baseline=0`, then the exact-baseline run exits 0 and the doubled source produces a separate count), so the unsafe shape is shown to be detected rather than left unchecked — recorded as a manual override with this citation, not a widened heuristic."}
   }
 
   defp classify(row, lines, test_start_line) do

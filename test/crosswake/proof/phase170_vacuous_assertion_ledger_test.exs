@@ -27,8 +27,12 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # 2026-09-16 (Task 2), never the numbers this plan predicted going in.
   # Phase 180 (2026-10-15) added 8 sites in the twin runner tests: 7 guarded or pinned in place
   # and 1 manual override for the SHA-pinned G1 negative control (see @manual_overrides).
-  @audited_site_count 243
-  @shape_counts %{"assert_all" => 57, "assert_any" => 135, "refute_any" => 51, "refute_all" => 0}
+  # Phase 196 (2026-10-28) added 30 sites: absence_is_not_success_test.exs carries the guard's own
+  # lexical fixture sources as string literals, which this line-based scanner reads as sites (26
+  # sites there, 4 of them manual overrides, see @manual_overrides), plus 2 sites in the dependency
+  # ratchet test, 1 in the rescue ratchet test and 1 guarded site in policy/compiler_test.exs.
+  @audited_site_count 273
+  @shape_counts %{"assert_all" => 84, "assert_any" => 138, "refute_any" => 51, "refute_all" => 0}
   # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
   # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
   # real test execution proved their collections are permanently empty by design (positive-path
@@ -38,10 +42,10 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # `needs-fix` is intentionally absent: `Enum.frequencies_by/2` never emits a key for zero
   # occurrences, and the committed ledger now has zero `needs-fix` rows (VAC-02 complete).
   @bucket_counts %{
-    "safe-by-construction" => 135,
-    "safe-compile-time-literal" => 4,
-    "safe-cardinality-pinned" => 41,
-    "safe-guarded" => 63
+    "safe-by-construction" => 138,
+    "safe-compile-time-literal" => 9,
+    "safe-cardinality-pinned" => 51,
+    "safe-guarded" => 75
   }
 
   describe "Task 1: a clean run against the committed ledger" do
@@ -442,12 +446,14 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
              "expected every bucket value to be drawn from the five-member vocabulary, got: #{inspect(buckets)}"
     end
 
-    test "reconciliation: raw grep over-counts @audited_site_count by exactly 6, all of them this file's own fixture heredocs" do
+    test "reconciliation: raw grep over-counts @audited_site_count by exactly 5: this file's 6 fixture heredoc lines minus one raw line that carries two ledger sites" do
       # Raw grep has no notion of a heredoc fixture string — it counts source TEXT, including the
       # flagged-shape occurrences quoted inside this very test file's own fixture
       # sources (the adjacency/encoding-edge tests above). The scanner's strip_heredocs/1
       # correctly excludes them, which is exactly why the committed count is 6 LOWER than
-      # a naive grep over both assertion shapes. Named here per Task 2's
+      # a naive grep over both assertion shapes, before Phase 196: one absence_is_not_success_test.exs
+      # line now carries TWO ledger sites (the doubled fixture source), so one raw line yields two
+      # rows and the net raw-minus-ledger difference is 6 - 1 = 5. Named here per Task 2's
       # instruction that any delta be reconciled by naming the specific excluded sites, not
       # absorbed silently.
       {assert_output, 0} =
@@ -474,7 +480,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
           )
         )
 
-      assert raw_count - @audited_site_count == 6
+      assert raw_count - @audited_site_count == 5
 
       assert length(fixture_only_lines) == 6,
              "expected exactly 6 raw grep matches inside this file's own fixture heredocs, got: #{inspect(fixture_only_lines)}"
