@@ -474,22 +474,62 @@ function parseStage(output, stage) {
 function parseScript(output) {
   return { tests: null, failures: 0, excluded: 0, skipped: 0, summaries: 1, enforce: /collections mode=enforce /.test(output), delta0: /delta=0\b/.test(output), ok: (output.match(/^\[crosswake\] OK:/gm) ?? []).length };
 }
-const PARSERS = { exunit: parseExUnit, "node-test": parseNodeTest, vector: parseVector, stage: parseStage, script: parseScript };
+// Swift: the final XCTest "All tests" line plus any swift-testing "Test run with N tests" line.
+function parseSwift(output) {
+  const executed = [...output.matchAll(/Executed (\d+) tests?, with (?:(\d+) tests? skipped and )?(\d+) failures?/g)].pop();
+  const testing = [...output.matchAll(/Test run with (\d+) tests?/g)].pop();
+  const testingFailed = /Test run with \d+ tests? .*failed/.test(output);
+  return {
+    tests: Number(executed?.[1] ?? 0) + Number(testing?.[1] ?? 0), failures: Number(executed?.[3] ?? 0) + (testingFailed ? 1 : 0),
+    excluded: 0, skipped: Number(executed?.[2] ?? 0), summaries: executed || testing ? 1 : 0,
+  };
+}
+// Gradle: fresh JUnit XML only (never console totals). Each element is { text, mtimeMs }.
+function sumJunit(files, sinceMs) {
+  const total = { tests: 0, failures: 0, excluded: 0, skipped: 0, summaries: 0 };
+  for (const { text, mtimeMs } of files) {
+    if (mtimeMs < sinceMs) continue;
+    const attrs = /<testsuite\s+([^>]+)>/.exec(text)?.[1];
+    if (!attrs) continue;
+    const read = (name) => Number(new RegExp(`${name}="(\\d+)"`).exec(attrs)?.[1] ?? NaN);
+    const [tests, failures, errors, skipped] = [read("tests"), read("failures"), read("errors"), read("skipped")];
+    if ([tests, failures, errors, skipped].some(Number.isNaN)) continue;
+    total.tests += tests; total.failures += failures + errors; total.skipped += skipped; total.summaries += 1;
+  }
+  return total;
+}
+function freshJunit(root, dir, sinceMs) {
+  const base = path.join(root, dir);
+  if (!existsSync(base)) return sumJunit([], sinceMs);
+  const files = readdirSync(base).filter((name) => /^TEST-.*\.xml$/.test(name)).sort()
+    .map((name) => ({ text: readFileSync(path.join(base, name), "utf8"), mtimeMs: lstatSync(path.join(base, name)).mtimeMs }));
+  return sumJunit(files, sinceMs);
+}
+const PARSERS = { exunit: parseExUnit, "node-test": parseNodeTest, vector: parseVector, stage: parseStage, script: parseScript, swift: parseSwift };
 
 // ---------------------------------------------------------------- candidate: registry
 // Pins are executed/excluded expectations per child. A change to any pin changes this file's hash and stales the candidate.
 const MIX = (args, extra = {}) => ({ command: "mix", args, cwd: ".", ...extra });
 const MIXTEST = (id, files, req, pin, extra = {}) => ({ id, req, kind: "exunit", route: "plain", ...MIX(["test", ...files], extra), expect: pin });
 const VEC = (mode, route, pin, req = ["SPEC-01"]) => ({ id: `vector-${mode}`, req, kind: "vector", route, command: "node", args: [`${PHASE}/scripts/vector-controls.mjs`, mode], cwd: ".", mode, expect: pin });
-const STAGE = (stage, route = "plain", extra = {}) => ({ id: stage, req: [], kind: "stage", route, command: "script/verify_repository.sh", args: ["--stage", stage], cwd: ".", stage, expect: { stage_pass: true }, ...extra });
+const STAGE = (stage, route = "plain", { expect = {}, ...extra } = {}) => ({ id: stage, req: [], kind: "stage", route, command: "script/verify_repository.sh", args: ["--stage", stage], cwd: ".", stage, expect: { stage_pass: true, ...expect }, ...extra });
+const ANDROID_PACKAGE = "packages/crosswake-shell-core-android";
 const MANIFEST_PATH = "examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json";
 const REGISTRY_NODE_TEST_FILES = "test/js/*.mjs";
 const CANDIDATE_REGISTRY = [
   STAGE("format-proof"), STAGE("warnings-proof"), STAGE("repository-cleanliness"), STAGE("example-host-proof", "plain", { timeout: 3_600_000 }),
   STAGE("root-proof", "plain", { timeout: 3_600_000 }),
-  STAGE("browser-proof", "node", { timeout: 1_800_000, env: { GITHUB_ACTIONS: "true" }, envFromRepo: "crosswake_version" }),
+  // The facade exposes only its PASS marker, so the full core suite is also run directly for its own counts.
+  { id: "root-core-suite", req: [], kind: "exunit", route: "plain", command: "mix", cwd: ".", env: { MIX_ENV: "test" }, timeout: 1_800_000,
+    args: ["test", "--exclude", "phase41_nested_process", "--exclude", "requires_example_host", "--exclude", "advisory_only", "--seed", "748644", "--max-cases", "8"],
+    expect: { minTests: 2500, failures: 0, maxExcluded: 150 } },
+  // The producer is credited only when its manifest is fresh (written during this child's run).
+  STAGE("browser-proof", "node", { timeout: 1_800_000, env: { GITHUB_ACTIONS: "true" }, envFromRepo: "crosswake_version", expect: { manifest_fresh: true } }),
   STAGE("ios-package-proof", "plain", { timeout: 3_600_000 }),
+  { id: "ios-package-counts", req: [], kind: "swift", route: "plain", command: "swift", args: ["test"], cwd: "packages/crosswake-shell-core-ios", timeout: 1_800_000, expect: { minTests: 1, failures: 0, excluded: 0, skipped: 0 } },
   STAGE("android-package-proof", "jdk", { timeout: 3_600_000 }),
+  { id: "android-package-counts", req: [], kind: "gradle-xml", route: "jdk", command: "./gradlew", args: ["--no-daemon", "cleanTest", "testDebugUnitTest"], cwd: ANDROID_PACKAGE, timeout: 1_800_000,
+    env: { CROSSWAKE_ANDROID_CONNECTED_TESTS: "0" }, expect: { minTests: 1, failures: 0, excluded: 0, skipped: 0 } },
   { id: "node-tests", req: [], kind: "node-test", route: "plain", command: "node", args: ["--test", `@glob:${REGISTRY_NODE_TEST_FILES}`], cwd: ".", expect: { tests: 344, failures: 0, excluded: 0 } },
   { id: "format-explicit", req: [], kind: "format", route: "plain", command: "mix", args: ["format", "--check-formatted", "@changed-elixir"], cwd: ".", expect: { minFiles: 1 } },
   // SPEC-01 enabled lanes: the real producer's manifest, then the manifest test with the path set (11 tests, 0 excluded).
@@ -549,7 +589,11 @@ function judgeChild(entry, result) {
   if (entry.kind === "compile") return Number.isSafeInteger(result.compiled) && result.compiled >= e.minCompiled ? { status: "pass" } : fail("compile_nothing_compiled");
   if (entry.kind === "xref") return result.xrefClean === true ? { status: "pass" } : fail("xref_unproven");
   if (!c || c.summaries < 1) return fail("no_summary");
-  if (entry.kind === "stage") return c.stage_pass === true && c.failures === 0 ? { status: "pass" } : fail("stage_not_passed");
+  if (entry.kind === "stage") {
+    if (!(c.stage_pass === true && c.failures === 0)) return fail("stage_not_passed");
+    if (e.manifest_fresh && result.manifestFresh !== true) return fail("producer_manifest_not_fresh");
+    return { status: "pass" };
+  }
   if (entry.kind === "script") {
     return c.enforce === e.enforce && c.delta0 === e.delta0 && c.ok >= e.minOk ? { status: "pass" } : fail("script_output_mismatch");
   }
@@ -558,6 +602,8 @@ function judgeChild(entry, result) {
   if (e.minTests !== undefined && !(c.tests >= e.minTests)) return fail("zero_or_low_executed");
   if (!(c.tests > 0)) return fail("zero_executed");
   if (e.excluded !== undefined && c.excluded !== e.excluded) return fail("excluded_above_pin");
+  if (e.maxExcluded !== undefined && c.excluded > e.maxExcluded) return fail("excluded_above_pin");
+  if (e.skipped !== undefined && c.skipped !== e.skipped) return fail("skipped_above_pin");
   if (e.anyExcluded === true && !(c.excluded > 0)) return fail("optional_lane_not_visibly_skipped");
   if (entry.kind === "vector") {
     if (e.restored && !c.restored) return fail("vector_not_restored");
@@ -642,6 +688,7 @@ async function runEntry(root, entry, routes) {
   }
   const args = expandArgs(root, entry.args);
   if (entry.kind === "format" && args.length <= 2) return { status: 0, files: 0, counts: null, groupGone: true, ms: 0 };
+  const startedAt = Date.now() - 1000;
   const run = await runChild(root, entry.command, args, { env, timeout: entry.timeout ?? 1_200_000, cwd: path.join(root, entry.cwd) });
   const output = `${run.stdout}\n${run.stderr}`;
   const result = { status: run.status, timedOut: run.timedOut, overflow: run.overflow, groupGone: run.groupGone, ms: run.ms, output_sha256: sha(output), route: resolved?.route ?? null };
@@ -649,7 +696,12 @@ async function runEntry(root, entry, routes) {
   if (entry.kind === "compile") result.compiled = Number(/Compiling (\d+) files? \(\.ex\)/.exec(output)?.[1] ?? 0);
   if (entry.kind === "xref") result.xrefClean = run.status === 0;
   if (entry.kind === "version") result.lastLine = run.stdout.split("\n").map((line) => line.trim()).filter(Boolean).pop() ?? "";
+  if (entry.stage === "browser-proof") {
+    const manifest = path.join(root, MANIFEST_PATH);
+    result.manifestFresh = existsSync(manifest) && lstatSync(manifest).mtimeMs >= startedAt;
+  }
   const parser = PARSERS[entry.kind];
+  if (entry.kind === "gradle-xml") { result.counts = freshJunit(root, `${entry.cwd}/build/test-results/testDebugUnitTest`, startedAt); return result; }
   result.counts = parser ? (entry.kind === "vector" ? parser(output, entry.mode) : entry.kind === "stage" ? parser(output, entry.stage) : parser(output)) : null;
   return result;
 }
@@ -1105,8 +1157,8 @@ function checkRegistry(registry) {
   for (const e of registry) {
     need(["plain", "node", "jdk"].includes(e.route), "registry_route");
     need(e.expect && typeof e.expect === "object", "registry_pin_missing", e.id);
-    if (["exunit", "node-test", "vector"].includes(e.kind)) need(e.expect.tests !== undefined || e.expect.minTests !== undefined, "registry_pin_missing", e.id);
-    if (e.kind === "exunit" || e.kind === "node-test") need(e.expect.failures === 0 && (e.expect.excluded !== undefined || e.expect.anyExcluded === true), "registry_pin_missing", e.id);
+    if (["exunit", "node-test", "vector", "swift", "gradle-xml"].includes(e.kind)) need(e.expect.tests !== undefined || e.expect.minTests !== undefined, "registry_pin_missing", e.id);
+    if (["exunit", "node-test", "swift", "gradle-xml"].includes(e.kind)) need(e.expect.failures === 0 && (e.expect.excluded !== undefined || e.expect.maxExcluded !== undefined || e.expect.anyExcluded === true), "registry_pin_missing", e.id);
   }
   const by = (id) => registry.find((e) => e.id === id);
   need(by("manifest-lane")?.expect.tests === 11 && by("manifest-lane").expect.excluded === 0 && by("manifest-lane").route === "node", "manifest_lane_pin");
@@ -1115,6 +1167,8 @@ function checkRegistry(registry) {
   need(["browser-proof"].every((id) => by(id)?.route === "node") && ["android-package-proof", "vector-kotlin-request", "vector-kotlin-other"].every((id) => by(id)?.route === "jdk"), "route_pin");
   const order = registry.map((e) => e.id);
   need(order.indexOf("browser-proof") >= 0 && order.indexOf("browser-proof") < order.indexOf("manifest-lane"), "producer_before_manifest");
+  need(by("browser-proof")?.expect.manifest_fresh === true, "producer_freshness_pin");
+  for (const id of ["root-core-suite", "ios-package-counts", "android-package-counts"]) need(by(id) !== undefined, "count_child_missing", id);
   return true;
 }
 async function selfTestCandidate(root) {
@@ -1135,6 +1189,17 @@ async function selfTestCandidate(root) {
   assert.deepEqual([exunit.tests, exunit.failures, exunit.excluded], [59, 0, 0]);
   assert.equal(parseExUnit("Finished in 0.1 seconds\n11 tests, 0 failures, 1 excluded\n").excluded, 1);
   assert.equal(parseExUnit("nothing summarised").summaries, 0);
+  // Swift: genuine captured XCTest and swift-testing summary lines.
+  const swiftOut = "\t Executed 6 tests, with 2 tests skipped and 0 failures (0 unexpected) in 0.002 (0.002) seconds\nTest Suite 'All tests' passed at 2026-10-28 11:31:34.756.\n\t Executed 89 tests, with 2 tests skipped and 0 failures (0 unexpected) in 0.042 (0.046) seconds\n\u2714 Test run with 0 tests in 0 suites passed after 0.001 seconds.\n";
+  assert.deepEqual([parseSwift(swiftOut).tests, parseSwift(swiftOut).skipped, parseSwift(swiftOut).failures], [89, 2, 0]);
+  assert.equal(parseSwift("\t Executed 3 tests, with 1 failures (0 unexpected) in 0.1 seconds\n").failures, 1);
+  assert.equal(parseSwift("no summary").summaries, 0);
+  // Gradle: genuine JUnit XML header; stale files are never credited.
+  const junit = `<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="dev.crosswake.shell.core.BridgeReplyLegTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-28T15:31:49" hostname="Mac" time="0.005">\n`;
+  assert.deepEqual([sumJunit([{ text: junit, mtimeMs: 2000 }], 1000).tests, sumJunit([{ text: junit, mtimeMs: 2000 }], 1000).summaries], [3, 1]);
+  assert.equal(sumJunit([{ text: junit, mtimeMs: 500 }], 1000).summaries, 0);
+  assert.equal(sumJunit([{ text: junit.replace('errors="0"', 'errors="2"'), mtimeMs: 2000 }], 1000).failures, 2);
+  assert.equal(sumJunit([{ text: "<broken>", mtimeMs: 2000 }], 1000).summaries, 0);
   assert.equal(parseExUnit("12 tests, 0 failures, 2 skipped, 3 excluded\n").excluded, 3);
   assert.equal(parseExUnit("12 tests, 0 failures, 3 excluded, 2 skipped\n").skipped, 2);
   assert.equal(parseExUnit("3 doctests, 12 tests, 0 failures\n").tests, 15);
@@ -1165,6 +1230,19 @@ async function selfTestCandidate(root) {
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 5, failures: 1 } }).reason, "child_failures");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: null }).reason, "no_summary");
   assert.equal(judgeChild(manifest, { preflightBlocked: "asdf:version_assertion_failed" }).status, "preflight-blocked");
+  // The producer stage is credited only with a fresh manifest; facade markers alone are not enough.
+  const browser = REGISTRY.find((e) => e.id === "browser-proof");
+  const stageOk = { status: 0, groupGone: true, counts: { stage_pass: true, failures: 0, summaries: 1 } };
+  assert.equal(judgeChild(browser, { ...stageOk, manifestFresh: true }).status, "pass");
+  assert.equal(judgeChild(browser, { ...stageOk, manifestFresh: false }).reason, "producer_manifest_not_fresh");
+  assert.equal(judgeChild(browser, { ...stageOk, counts: { ...stageOk.counts, stage_pass: false }, manifestFresh: true }).reason, "stage_not_passed");
+  const coreSuite = REGISTRY.find((e) => e.id === "root-core-suite");
+  assert.equal(judgeChild(coreSuite, { ...good, counts: { ...good.counts, tests: 3000, excluded: 79 } }).status, "pass");
+  assert.equal(judgeChild(coreSuite, { ...good, counts: { ...good.counts, tests: 3000, excluded: 400 } }).reason, "excluded_above_pin");
+  assert.equal(judgeChild(coreSuite, { ...good, counts: { ...good.counts, tests: 5 } }).reason, "zero_or_low_executed");
+  const ios = REGISTRY.find((e) => e.id === "ios-package-counts");
+  assert.equal(judgeChild(ios, { ...good, counts: { tests: 89, failures: 0, excluded: 0, skipped: 2, summaries: 1 } }).reason, ios.expect.skipped === 2 ? undefined : "skipped_above_pin");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "android-package-counts"), { ...good, counts: { tests: 0, failures: 0, excluded: 0, skipped: 0, summaries: 1 } }).status, "fail");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "wire-version"), { status: 0, groupGone: true, lastLine: "1.0.0" }).reason, "wire_version_mismatch");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "wire-version"), { status: 0, groupGone: true, lastLine: "1.1.0" }).status, "pass");
   // judgeCandidate: omitted child, failing child, missing mapping, preflight-blocked FAIL.
