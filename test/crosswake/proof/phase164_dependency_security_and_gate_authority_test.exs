@@ -19,7 +19,7 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
   }
 
   @example_targets %{
-    "bandit" => "1.14.0",
+    "bandit" => "1.14.1",
     "hpax" => "1.1.0",
     "phoenix" => "1.8.13",
     "phoenix_live_view" => "1.1.33",
@@ -54,7 +54,7 @@ defmodule Crosswake.Proof.Phase164DependencySecurityAndGateAuthorityTest do
   }
 
   @example_lock_versions %{
-    "bandit" => "1.14.0",
+    "bandit" => "1.14.1",
     "cc_precompiler" => "0.1.11",
     "db_connection" => "2.10.1",
     "decimal" => "3.1.2",
