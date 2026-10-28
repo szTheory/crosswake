@@ -16,11 +16,11 @@ const routeTourScreenshotDir = path.join(screenshotDir, 'screenshots');
 const routerPath = path.join(process.cwd(), 'lib', 'crosswake_example', 'router.ex');
 const routeTourCommand = 'npx playwright test e2e/route_tour.spec.ts';
 
-// Read from the library's own contract rather than hardcoded, so a protocol version
-// bump can never leave this spec asserting a stale number the way the deleted
-// hand-built envelope did.
-const contractPath = path.join(process.cwd(), '..', '..', 'lib', 'crosswake', 'bridge', 'contract.ex');
-const BRIDGE_PROTOCOL_VERSION = /@version\s+"([^"]+)"/.exec(readFileSync(contractPath, 'utf8'))![1];
+// Read from the library's single wire-version owner rather than hardcoded, so a protocol
+// version bump can never leave this spec asserting a stale number the way the deleted
+// hand-built envelope did. `Crosswake.Bridge.Contract` delegates to this module.
+const protocolVersionPath = path.join(process.cwd(), '..', '..', 'lib', 'crosswake', 'bridge', 'protocol_version.ex');
+const BRIDGE_PROTOCOL_VERSION = /def version, do: "([^"]+)"/.exec(readFileSync(protocolVersionPath, 'utf8'))![1];
 
 const bridgeReplySelector = '#crosswake-bridge-reply';
 

@@ -62,7 +62,7 @@ const APPROVAL_LIVE_RELATIVE_PATH = 'lib/crosswake_example/saas_portal/approval_
 // Two directories up from examples/phoenix_host (this project's cwd) to the repo
 // root, then into the core library — the same relative-path discipline
 // route_tour.spec.ts:19-23 uses to read the bridge protocol version from
-// contract.ex rather than hardcoding it.
+// protocol_version.ex rather than hardcoding it.
 const CORE_LIB_ROOT = path.join(process.cwd(), '..', '..', 'lib', 'crosswake');
 
 // D-46 discipline: the A1 catalog sentence lives in ONE place —
