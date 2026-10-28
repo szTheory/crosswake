@@ -17,8 +17,8 @@
       ],
       "cwd": ".",
       "exit": 0,
-      "durationMs": 437,
-      "outputSha256": "11bedfa579c06c7684cb745378ce73e8b3b7098dfc177e1cc83628a3e757326a",
+      "durationMs": 428,
+      "outputSha256": "228f52c4e021929c9de4bddfa70e1f1cbe7398ee2b5d361f837333b0199bcf98",
       "tests": {
         "discovered": 1,
         "skipped": 0,
@@ -40,8 +40,8 @@
           ],
           "cwd": ".",
           "exit": 1,
-          "durationMs": 407,
-          "outputSha256": "118294a9be02ed5f8c1c14405b87a208ee510bb94e8fea16703640f247c0f0e9"
+          "durationMs": 380,
+          "outputSha256": "3f774ac0d0ae718d3f3ec8f7ef7f63720f5be260ecf2a9a0a3fedf3cf882fc07"
         }
       ]
     },
@@ -58,8 +58,8 @@
           ],
           "cwd": ".",
           "exit": 2,
-          "durationMs": 485,
-          "outputSha256": "b32cdbc805b821a49c573216cd48cd88f4ee36e2608e2555bf42e55b23f71c2c",
+          "durationMs": 398,
+          "outputSha256": "b474d139e25406fb912f91bd232f1775f3817588e4db835e8386e0c51d504cd2",
           "tests": {
             "discovered": 1,
             "skipped": 0,
@@ -81,8 +81,8 @@
           ],
           "cwd": ".",
           "exit": 2,
-          "durationMs": 479,
-          "outputSha256": "b283e96b229821799e0d1f86eea8d2c83f3910907774cb70a4a3fe2d3ba3a08a",
+          "durationMs": 405,
+          "outputSha256": "c7bfca302d0ab5d230229339aace1531a87d88b58d046230084f3f9b5e0a49f5",
           "tests": {
             "discovered": 1,
             "skipped": 0,
@@ -104,8 +104,8 @@
           ],
           "cwd": ".",
           "exit": 2,
-          "durationMs": 449,
-          "outputSha256": "2d769bae9b83ac1b80fd41ee94cf74d16f971a7d278cffe7d71a20d54f8ea24f",
+          "durationMs": 401,
+          "outputSha256": "89987a165a9c6a8b333c5bf04fd9b38290dd35ee7f8196ca5d3f038bd07ebbc9",
           "tests": {
             "discovered": 1,
             "skipped": 0,
@@ -126,8 +126,8 @@
         ],
         "cwd": ".",
         "exit": 0,
-        "durationMs": 466,
-        "outputSha256": "152f3c0bc45259965efcd5c80a7e54cb7a9a016d507d125262a004f6bff06d92",
+        "durationMs": 405,
+        "outputSha256": "3ac6bb7942a7fa71cd3b37cc2d2da29f6f25fb9cd03bf61033015443e4316275",
         "tests": {
           "discovered": 1,
           "skipped": 0,
@@ -136,5 +136,5 @@
       }
     ]
   },
-  "durationMs": 2726
+  "durationMs": 2420
 }

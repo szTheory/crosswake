@@ -20,11 +20,13 @@ The branch contains a few genuine library behavior fixes, so the title is a `fix
 
 **ARCH-03, runtime dependencies.** A test compares each package's runtime direct deps, evaluated in isolated Mix contexts, to a committed list with a one-line justification each. Adding a dependency requires editing that list.
 
+**Shallow checkouts.** The rescue and dependency ratchet tests re-read their subjects at the actual-main commit their receipts pin. They now do so through `Crosswake.Test.GitObjectAt.read!/3`, which fetches only that one commit when a CI checkout lacks it and raises, never skips, if it is still unreadable. Five controls cover the present, shallow-fetched, unfetchable, missing-path and malformed-pin cases.
+
 **GR-06, workflow grammar.** The existing `test/js/ci_secret_masking.test.mjs` grammar census now executes bounded grammar families and keeps denied statements conserved, with a real-tree census. No second analyzer was added.
 
 ## Validation
 
-A 40-child candidate run on local head `6fa356a6` produced a pass verdict: core suite 2915 tests, 0 failures; Swift package suite 89 tests, 0 failures; Android JVM package suite 12 tests, 0 failures; node suite 344 tests, 0 failures; the enabled manifest lane ran 11 tests and the enabled Threadline lane 5 tests with none excluded. An internal review ran three iterations with no open high or critical finding.
+A 40-child candidate run on local head `d76d1507` (which contains main at `4ebe37fe`) produced a pass verdict: core suite 2920 tests, 0 failures; Swift package suite 89 tests, 0 failures; Android JVM package suite 12 tests, 0 failures; node suite 344 tests, 0 failures; the enabled manifest lane ran 11 tests and the enabled Threadline lane 5 tests with none excluded. An internal review ran three iterations plus a delta amendment with no open high or critical finding. Two earlier runs on the same bytes each failed one child (the example host stage, then the core suite) and both children passed when re-run alone; their records are retained in the phase evidence and the cause was not observed.
 
 Native proof is JVM-hermetic and Swift-package only. No emulator, device or feature-breadth claim is made.
 

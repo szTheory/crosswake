@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "purpose": "phase196_candidate",
-  "head_sha": "6fa356a62c03edb82b7598bbfbb9bb1679c8f5a4",
-  "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
+  "head_sha": "d76d1507f17733460524e30f7d7be8fa1a72c20d",
+  "main_sha": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
   "candidate_identity": {
-    "source_roster_sha256": "685bcd499f549e1476c4695caf5ecfc31a8d8785ef154a57b94f3cb296a36a3f",
-    "source_count": 1374,
+    "source_roster_sha256": "72e22d9916ccce3a79a73e5c8376d92a75a85751484ff7d9e66d70b53764235c",
+    "source_count": 1376,
     "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
     "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
     "preserved_roster_sha256": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
@@ -42,7 +42,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 875,
+      "ms": 1117,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -58,7 +58,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 677,
+      "ms": 790,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -74,7 +74,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1360,
+      "ms": 1724,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -90,7 +90,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1689821,
+      "ms": 1986323,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -106,7 +106,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 726182,
+      "ms": 573562,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -122,13 +122,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 588952,
-      "tests": 2915,
+      "ms": 567233,
+      "tests": 2920,
       "failures": 0,
       "excluded": 79,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "48e9cf84fb56f816c71d0fe2f72d64b2c87d23c8d4d6e07236779b496268735c"
+      "output_sha256": "a45ac2aa71b1cc797de8c5174c47e8137f56bc847e7db70c6b06e9efd1c8ef1a"
     },
     {
       "id": "browser-proof",
@@ -138,7 +138,7 @@
       "route": "asdf",
       "status": "pass",
       "exit": 0,
-      "ms": 27636,
+      "ms": 20862,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -154,7 +154,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1037,
+      "ms": 973,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -170,13 +170,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 563,
+      "ms": 490,
       "tests": 89,
       "failures": 0,
       "excluded": 0,
       "skipped": 2,
       "counted": true,
-      "output_sha256": "0ad98c2f5527e2f2912d014a3e53a6b140e12b5b2a951f69ccbdb6bfa8e680c5"
+      "output_sha256": "6f494fbda57dceb5d3bb4a6a400d976bf546b92208a9c4a95439c388d284de78"
     },
     {
       "id": "android-package-proof",
@@ -186,7 +186,7 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 8141,
+      "ms": 6352,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -202,13 +202,13 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 6169,
+      "ms": 4316,
       "tests": 12,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "3c7f6bf6fa34d29df9ac147faf09c6dba86131ae40bbea239fd57571f92b7227"
+      "output_sha256": "9af0b973227e8008fe06d4c3cefc9c01f7c825234603130480a5a5cd48c77b4d"
     },
     {
       "id": "node-tests",
@@ -218,13 +218,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 28801,
+      "ms": 19788,
       "tests": 344,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "f33979ae2c24111552e89387d14b258c17932e96a22b980eed313ad2ba5dd65f"
+      "output_sha256": "3ad54b03ab25ffa5db4c02beb73b99674bf52e12ef7e39f463aa068fa2e1544e"
     },
     {
       "id": "format-explicit",
@@ -234,7 +234,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 391,
+      "ms": 304,
       "tests": null,
       "failures": null,
       "excluded": null,
@@ -252,13 +252,13 @@
       "route": "asdf",
       "status": "pass",
       "exit": 0,
-      "ms": 5964,
+      "ms": 4204,
       "tests": 11,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "03ec47024620096a9e5469ba4b8cf392231db8a4752b73955b4e72483b09bcf4"
+      "output_sha256": "b9eec305625fc144da6a7675e24430acda3aeffb95b9374a26dbc2bd5a829f57"
     },
     {
       "id": "threadline-lane",
@@ -270,13 +270,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 2525,
+      "ms": 1448,
       "tests": 5,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "23db1fcc13ef05e308a584111693fd889f9334819abebfd665ff1a7019103676"
+      "output_sha256": "9faa3c4d260a346212b43a95eb2d24fe922da208e59d78194029c23dcfeb296e"
     },
     {
       "id": "manifest-lane-default",
@@ -286,13 +286,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 6843,
+      "ms": 4130,
       "tests": 10,
       "failures": 0,
       "excluded": 1,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "40f49f72302854570ff8afe4dce88a4483a7fa5f2566f03f2cc78bb6af9545ab"
+      "output_sha256": "8014bd976d3fa9728ba332bda01cd9a770daa1d9eb3f4007c3f7bc0781c29e82"
     },
     {
       "id": "threadline-lane-default",
@@ -302,13 +302,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1839,
+      "ms": 1384,
       "tests": 4,
       "failures": 0,
       "excluded": 1,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "3d4c4c75346fdad4e0c824caa2fc86edfe3014cc2f233eeeee6d6dd379009090"
+      "output_sha256": "eb90ee680af56c7d49207dbc3d46676dae11eab770c04b10fada94a1d259ab5b"
     },
     {
       "id": "wire-contract",
@@ -320,13 +320,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 447,
+      "ms": 429,
       "tests": 19,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "4c1e3fa6eb8452f2ecc54952eb444707793aa1b419a1ddd33e7f6ba4a3999675"
+      "output_sha256": "0d5691b3bae9ea4791e925c0b74cbabb1dc433055394f973f5921319fe62c8e0"
     },
     {
       "id": "wire-version",
@@ -338,7 +338,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 371,
+      "ms": 333,
       "tests": null,
       "failures": null,
       "excluded": null,
@@ -357,7 +357,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 2754,
+      "ms": 2445,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -366,7 +366,7 @@
       "completed": 9,
       "owners": null,
       "counted": true,
-      "output_sha256": "c1d43eeaf0430f6b4348ef66fa909fe109c1409d2e76f5b7ef91021b40550a78"
+      "output_sha256": "50919d53994991d218a31d9e1309aa8f3bcedbdf8f9133c318726e1b77ec7509"
     },
     {
       "id": "vector-swift-request",
@@ -378,7 +378,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 105042,
+      "ms": 90965,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -387,7 +387,7 @@
       "completed": 14,
       "owners": null,
       "counted": true,
-      "output_sha256": "a4324e8bd3961da7b006bf8c4a38d1edacb1622a8d0f849bf90e9fa19d258dc4"
+      "output_sha256": "42668f9445525dee6f85238831a5ef3b19b8d4792256f07bd4b1dd77f1469ab3"
     },
     {
       "id": "vector-swift-reply",
@@ -399,7 +399,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 114451,
+      "ms": 100672,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -408,7 +408,7 @@
       "completed": null,
       "owners": 1,
       "counted": true,
-      "output_sha256": "038a6236302eb54d197acdb4746e1a05225ae9b2a637d469d2addb66f70d80c9"
+      "output_sha256": "697f5ca3c6a5194f45ab136e84d7aa04054e4b9143e6f0d4eccae241e8c0225c"
     },
     {
       "id": "vector-swift-metadata",
@@ -420,7 +420,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 282504,
+      "ms": 257283,
       "tests": 9,
       "failures": 0,
       "excluded": 0,
@@ -429,7 +429,7 @@
       "completed": null,
       "owners": 3,
       "counted": true,
-      "output_sha256": "b3ce734f80a87f01340d9c14e37f759af4da6dea796fbd45722076038a25fc5b"
+      "output_sha256": "015d77972e6cf041b6a13ca29e56e3549804fcaad95159345dea4bc29e01af6a"
     },
     {
       "id": "vector-swift-topology",
@@ -441,7 +441,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 125348,
+      "ms": 116387,
       "tests": 5,
       "failures": 0,
       "excluded": 0,
@@ -450,7 +450,7 @@
       "completed": null,
       "owners": 1,
       "counted": true,
-      "output_sha256": "01e05d9440797d77f99b116a6db039db080c52c74ff183a937528e73e3957bb0"
+      "output_sha256": "80791c787139d046b2805ca51adc24a45d25f78fe3d95ff0f315949fafee36dc"
     },
     {
       "id": "vector-kotlin-request",
@@ -462,7 +462,7 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 16330,
+      "ms": 9460,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -471,7 +471,7 @@
       "completed": null,
       "owners": 1,
       "counted": true,
-      "output_sha256": "161bc689122d41310f40dee67325a801efcd5ceb7846f04de2d21d24897ddead"
+      "output_sha256": "f1ebb38224e00882f71a8d1053162daf821f0bd80f4d6c522a82d5b15eac57af"
     },
     {
       "id": "vector-kotlin-other",
@@ -483,7 +483,7 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 28193,
+      "ms": 17147,
       "tests": 8,
       "failures": 0,
       "excluded": 0,
@@ -492,7 +492,7 @@
       "completed": null,
       "owners": 2,
       "counted": true,
-      "output_sha256": "8af9b7e61f4ad03eca8cc7963ccfb1b302126ae1119952f5d49bcf3868c829d1"
+      "output_sha256": "f4ab82d23cd22358e770f64acb2bd7d04831ae3e1778c2d58341ecdfde0175a2"
     },
     {
       "id": "absence-enforce",
@@ -504,13 +504,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 2226,
+      "ms": 1476,
       "tests": null,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "78a4e75b8acdde02533aa5e2575585a6b5171825b3832080af3e0ad9d2cfb04d"
+      "output_sha256": "9c4a6319015756099e3a8fbc7604a18d1806e3048d177f6a757980002b924db4"
     },
     {
       "id": "absence-test",
@@ -522,13 +522,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 37706,
+      "ms": 30277,
       "tests": 59,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "c8793e29c3360491c6f0ddf50564d9eaf155b6168acf1f38f95ed9225a1125bf"
+      "output_sha256": "efb64053b9305c4ae34f8d745eb43adbcaeb4cfa4ceb308a86a4e52d9ba11f42"
     },
     {
       "id": "journal",
@@ -540,13 +540,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 424,
+      "ms": 616,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "cb5b8071d3467fd02c6ea8f16bc8bcf945812ce5c36b099180a175e943b3c284"
+      "output_sha256": "acf0ceddb71f68a75f010edbbb92c6f64ee26f9fe917bade46aa00485be90fb3"
     },
     {
       "id": "safe-observation",
@@ -558,13 +558,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 652,
+      "ms": 640,
       "tests": 11,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "ff30a70f1a13fe63533225b755e02d1829b7504e89520645c2a7d472df90d2e8"
+      "output_sha256": "17025894c4d9a864a53cba1ca1715bd100834f1e3f19ba536a098f208feb6ce6"
     },
     {
       "id": "policy-compiler",
@@ -576,13 +576,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1146,
+      "ms": 577,
       "tests": 9,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "3f7c3f69da20952d0828493bc51bb3c176e240475a7942cd4cb0a0c91d3ce1ff"
+      "output_sha256": "f1680ce21e9a834ba1d4927b783cf416aeba58f74b2014869f3628961d613f1c"
     },
     {
       "id": "policy-product-route",
@@ -594,13 +594,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1335,
+      "ms": 616,
       "tests": 28,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "36fbe68f0d193af45f9524921de7c93584a2353256e90ae24150e518af961417"
+      "output_sha256": "37d36a5de244336050fc4984f5c0b33cc6d178d7f546c07080d60068fc4e11fc"
     },
     {
       "id": "compile-force",
@@ -612,14 +612,14 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 8043,
+      "ms": 2732,
       "tests": null,
       "failures": null,
       "excluded": null,
       "skipped": null,
-      "compiled": 171,
+      "compiled": 172,
       "counted": true,
-      "output_sha256": "813c140c7e52a702e1323af0993e808fa5106a002c4ccc8ff3201d256d07c35b"
+      "output_sha256": "8b3495b00968a0bb9e7eefdc69c45666023f8426d6db9b3f833ae8681d018668"
     },
     {
       "id": "xref-compile-connected",
@@ -631,7 +631,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 926,
+      "ms": 447,
       "tests": null,
       "failures": null,
       "excluded": null,
@@ -649,13 +649,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 109248,
+      "ms": 53756,
       "tests": 15,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "ed3ba2b1cd87f767a2ee247d16f404d8566a71cf18fc747b7c4dd9966014e8f9"
+      "output_sha256": "90295d43abdf970e7eea36913ddfe6ef05fd02c605bf343351240faa4a8ef093"
     },
     {
       "id": "location-router",
@@ -667,13 +667,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 431,
+      "ms": 445,
       "tests": 6,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "49ecbbd946c8fd6609da521bded51c101bc0813693428102f8cf4baf04724d0a"
+      "output_sha256": "c760f619242c93798037d18cc2b8fc627a562ee0ca0ec67fae4b36b822e9b9d2"
     },
     {
       "id": "compatibility",
@@ -685,13 +685,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 507,
+      "ms": 590,
       "tests": 17,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "d20a4f76410979e36dfba34f9414124ec39d568a34aeb3ba6d63638cc57e9fe3"
+      "output_sha256": "0e12485a6d0fa79462bc5ccfdd3c6c2262e7fd2453acb6f62a2d0361e867fed9"
     },
     {
       "id": "rescue-boundary",
@@ -703,13 +703,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 10200,
+      "ms": 9540,
       "tests": 30,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "379f657f2d6aa4c63fd75a49cccd848c525297ae31278ac9008f5a21d491d9cb"
+      "output_sha256": "eb7f27432b37e6e085b9816178c848fb5564d04aacbc381db8a839657fec0a43"
     },
     {
       "id": "runtime-dependencies",
@@ -721,13 +721,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 131407,
+      "ms": 64811,
       "tests": 25,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "d55d25938bad97717894e03ccdf60cf09fa31128ce449fe3c6c23cd7b8881236"
+      "output_sha256": "45c6528523027811fe8fcf12ef058848d4b8d440138198ac1898249cb502dbf5"
     },
     {
       "id": "secret-masking",
@@ -740,13 +740,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 19813,
+      "ms": 19575,
       "tests": 207,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "b5c8cce4de23c6fae98c5e20804c8d13843057c488f8148587b1dc4cd4cd8567"
+      "output_sha256": "0278b9f35e0ae1a0b139faabbb9e7d65e5f5a21cbe68a22f39cadbac831b8f59"
     }
   ],
   "requirement_map": {
@@ -797,10 +797,10 @@
   "review": {
     "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-REVIEW.md",
     "iterations": 3,
-    "findings": 12,
+    "findings": 16,
     "open": 0,
     "open_high": 0,
-    "sha256": "77f1d4f46d5fca197b7ca7e1461f71f12d285af2218ecc63ea953658f648df6f"
+    "sha256": "e2495d531ad1a9de35d3016e39d17cbb39d223889abe9e57f44fff49b7d1a66d"
   },
   "verdict": "pass"
 }
