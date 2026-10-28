@@ -58,8 +58,7 @@ defmodule Crosswake.Proof.RuntimeDependencyRatchetTest do
     end
 
     for subject <- receipt["subjects"] do
-      {bytes, 0} =
-        System.cmd("git", ["show", receipt["main_sha"] <> ":" <> subject["path"]], cd: @root)
+      bytes = Crosswake.Test.GitObjectAt.read!(@root, receipt["main_sha"], subject["path"])
 
       assert hash(:sha256, bytes) == subject["sha256"]
     end
