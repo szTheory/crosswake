@@ -8,6 +8,14 @@
     "sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97"
   },
   "reviewed_head": "6fa356a62c03edb82b7598bbfbb9bb1679c8f5a4",
+  "opened_head": "979bec852c4b96815e6cebd66194d3d45291cba9",
+  "pr": {
+    "number": 260,
+    "url": "https://github.com/szTheory/crosswake/pull/260",
+    "title": "fix(196): make spec and structure ratchets fail on empty evidence",
+    "state_at_open": "OPEN",
+    "base_ref": "main"
+  },
   "candidate": {
     "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/candidate.json",
     "identity": {
@@ -24,7 +32,15 @@
     "iterations": 3,
     "open_high": 0
   },
-  "in_scope_requirements": ["SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "ARCH-01", "ARCH-02", "ARCH-03"],
+  "in_scope_requirements": [
+    "SPEC-01",
+    "SPEC-02",
+    "SPEC-03",
+    "SPEC-05",
+    "ARCH-01",
+    "ARCH-02",
+    "ARCH-03"
+  ],
   "grammar_debt": "GR-06",
   "spec04": {
     "disposition": "moved_to_v29",
@@ -33,7 +49,9 @@
     "roster_count": 32,
     "roster_digest": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
   },
-  "moved": ["SPEC-04"],
+  "moved": [
+    "SPEC-04"
+  ],
   "external_findings": [],
   "protected_branch_bypass": false
 }
