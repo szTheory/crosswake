@@ -26,3 +26,22 @@ Iteration 1 read the library diff, the rescue and compile guards, and the first 
 ## Disposition
 
 No high or critical finding is open. R-01 and R-02 changed supported source, so the candidate identity was recomputed and the full candidate run follows the fixes.
+
+## Amendment A-1 (2026-10-29): delta review after the plan 16 halt
+
+This amendment is appended and the sections above are unchanged. The three-iteration cap above bounds the plan 15 review and fix loop, and the header line stays at 3 because the review reader refuses any other value and plan 16 may not edit it. This delta review is recorded as an amendment for that reason, not as a fourth iteration. It found no open item that needs a fix loop.
+
+Scope: the four supported-source and merge commits made after the halt: 45f402a1 (pinned-subject reader for shallow CI checkouts), 1dab312f (collection assertion ledger line numbers), 3eeb5881 with d527a525 (example host `bandit` 1.14.1 and its lock pin, from main through merge 4ebe37fe) and merge e1951cf8. The same lenses apply: spec correctness, scanner false greens, process and privacy, and SPEC-04 honesty. ASVS L1 applies, and no certification is claimed.
+
+Observed before review: the supported-source roster changed, so the 196-15 candidate identity changed and a fresh candidate run follows this amendment. The five guard blobs are byte-identical to the recorded measurements (absence d21926d4, compile 2aeb7546, rescue d12f05a9, dependencies d02f9429, grammar e0891db6).
+
+| ID | Severity | Status | Finding |
+|----|----------|--------|---------|
+| R-13 | info | closed | `Crosswake.Test.GitObjectAt.read!/3` requires a full 40-character pin, fetches only the one missing commit with `--depth=1`, and raises with git's own error when the commit or path is still unreadable. It never degrades to a skip, so a missing pinned commit fails the proof instead of shrinking it. Five controls cover present, shallow-fetched, unfetchable, missing path and malformed pin. |
+| R-14 | low | accepted | Two callers (rescue and dependency ratchet tests) fetch the same pinned commit. Both modules are `async: false`, so the fetches run serially and cannot contend for the shallow lock. A later `async: true` caller of the helper would need to serialize its fetch. |
+| R-15 | low | accepted | The five actual-main receipts stay pinned to main commit b8398c38 although origin/main is now 4ebe37fe. They are not re-measured: no guard blob or subject byte at the pinned commit changed, so each receipt is still a true measurement of that commit, and the promotion check compares guard blobs only. `measure-main.mjs verify-source` and `capture` now refuse with `main_ref_mismatch` because the pinned execution source names b8398c38. Re-pinning would need an edit to the tool, which plan 16 may not make, so this is recorded and not worked around. |
+| R-16 | info | closed | The ledger regeneration moved three display line numbers by one and nothing else. The bandit change is a lock and lock-pin edit with no new dependency, no production code and no wire change. The merge adds no supported file beyond those two. |
+
+### Amendment disposition
+
+No high or critical finding is open. SPEC-04 stays moved to v29.0 and no Muex process, baseline or attempt was run.
