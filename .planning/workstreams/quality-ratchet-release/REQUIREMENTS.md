@@ -41,7 +41,7 @@ Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobil
 - [ ] **SPEC-01** [P6]: `evidence_manifest_test.exs:98` and `phase139_threadline_cleanroom_test.exs:59` no longer pass by asserting nothing; Elixir, Swift and Kotlin vector-consuming tests assert vector count equals a pinned expectation and fail on a missing vector.
 - [ ] **SPEC-02** [M]: A delta-only guard in `script/check_absence_is_not_success.exs` fails on new collection assertions without a non-empty check, `for`-over-glob without cardinality, and literal `assert true`, each with a negative control; the known sites are fixed in the same change.
 - [ ] **SPEC-03** [P6]: Boundary specs exist for `Journal.scope_ref!/1` (15/16/128/129 chars, newline injection, input never echoed) and `SafeObservation.new/1` (measurement 0, 1_000_000, 1_000_001; adversarial strings in every field never survive).
-- [ ] **SPEC-04** [M]: A Muex pilot covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract`; the wrapper fails if zero mutants are generated; baseline scores, runtime and survivor classification (keyed by file + mutator + normalized text) are recorded with an adopt/drop decision; no Muex dep is committed.
+- [ ] **SPEC-04** [M]: A Muex pilot covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract`; the wrapper fails if zero mutants are generated; baseline scores, runtime and survivor classification (keyed by file + mutator + normalized text) are recorded with an adopt/drop decision; no Muex dep is committed. *(Moved intact to v29.0 on 2026-10-27 under the Phase 196 overrun cut order; both attempts preserved.)*
 - [ ] **SPEC-05** [P5]: The finite route-policy option product is enumerated exhaustively against a hand-written verdict table; compiler error assertions pin `{key, route_id}` pairs; `Compiler.validation_key/1` never returns `nil` for a compiler error.
 
 ### Architecture (ARCH)
@@ -72,6 +72,7 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 |---|---|---|
 | Twin-06 run on `main`, twin identity debt, receipt head binding | Would go stale after v28 churn; needs a fresh user decision | v30.0 |
 | Android toolchain bump, emulator lane, ktlint, host-command seam parity, Android twin | Needs the parity ledger first | v29.0 |
+| SPEC-04 Muex pilot (full criteria; both v28 attempts preserved) | Phase 196 overrun cut order; uncapped baseline exceeded the 30-minute appetite | v29.0 |
 | `stream_data` property tests, weekly Muex lane, PIT, Muter | The pilot decides first | LATER |
 | Mix task renames, Hex package split, doctor split, `phase_N` renames | Breaking or large | v31.0 / LATER |
 | README rewrite, first-route guide, doctor coverage bijection | v28 only removes false claims | v31.0 |
@@ -103,7 +104,7 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | SPEC-01 | Phase 196 | Pending |
 | SPEC-02 | Phase 196 | Pending |
 | SPEC-03 | Phase 196 | Pending |
-| SPEC-04 | Phase 196 | Pending |
+| SPEC-04 | v29.0 | Moved (criteria intact) |
 | SPEC-05 | Phase 196 | Pending |
 | ARCH-01 | Phase 196 | Pending |
 | ARCH-02 | Phase 196 | Pending |
@@ -116,8 +117,8 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | AND-03 | Phase 198 | Pending |
 
 **Coverage:**
-- v28.0 requirements: 30 total
-- Mapped to phases: 30 (194: 7, 195: 8, 196: 8, 197: 3, 198: 3, 199: 1)
+- v28.0 requirements: 29 in scope (30 defined; SPEC-04 moved to v29.0 on 2026-10-27)
+- Mapped to phases: 29 (194: 7, 195: 8, 196: 7, 197: 3, 198: 3, 199: 1)
 - Unmapped: 0
 
 ---

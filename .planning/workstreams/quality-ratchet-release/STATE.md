@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 14
-status: blocked
-stopped_at: 196-14 terminal full-baseline timeout; SPEC-04 pending
-last_updated: "2026-10-27"
-state_head: a4aab342ebebc785e1705e6b3501d496bdfb5664
+status: ready_to_execute
+stopped_at: 196-15..17 replanned and checked; execute 196-15 next
+last_updated: "2026-10-28T11:45:45.382Z"
+state_head: 90a809ce43adec4fb2b04ae38e658854317c9d9c
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 47
   completed_plans: 43
   percent: 91
-current_phase: 196
 current_phase_name: Spec and structure ratchet
+current_phase: 196
 last_activity_desc: Full baseline timed out without report; restored compile and236 tests passed
 ---
 
@@ -25,7 +25,7 @@ Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active p
 
 ## Exact Next Action
 
-No execution command is eligible. Plans196-15 through196-17 are blocked;do not rerun the terminal baseline or reset its clock. Reopening condition:explicit recorded roadmap disposition for pending SPEC-04 under D-03/D-24. Proposed but unapplied:move SPEC-04 to v29 preserving full criteria and both attempts. No automatic deferral,adopt/drop or new attempt is authorized by this failure. Read196-14-SUMMARY.md and196-EVIDENCE/muex-baseline/result.json before resolving.
+`/gsd-execute-phase 196 --ws quality-ratchet-release`: execute 196-15, then 196-16, then 196-17. 196-01..13 are complete. 196-14 is retired and not executed to completion, because SPEC-04 moved intact to v29.0 on 2026-10-27 (D-03/D-24). The replan of 196-15..17 passed the plan checker after guided fixes: 0 blockers, and the last two warnings were closed inline. 196-15 Task 1 must first bind the replan commit as the reviewed source amendment before any `measure-main` capture. Do not rerun the Muex baseline, reset its clock or start a new pilot attempt. 196-17 needs a fresh one-use `allow` for the main merge, bound to the displayed head H and base.
 
 ## Carried debt
 
@@ -34,5 +34,11 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 ## Session
 
 **Last session:**2026-10-27
-**Stopped at:**196-14 halted;no eligible command pending explicit SPEC-04 disposition
+**Stopped at:**196-15..17 replanned;execute 196-15 next
 **Resume file:**.planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-14-SUMMARY.md
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 196 edited: edited fields: requirements, success_criteria — SPEC-04 moved intact to v29.0 (overrun cut order, D-03/D-24); both attempts preserved

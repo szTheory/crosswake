@@ -27,7 +27,7 @@
 - **A red base hides regressions.** Phase 195 makes `main` and the release PR green before the ratchet (196), docs (197) and Android (198) phases add checks.
 - **Every irreversible step has its own `allow`.** Merges to `main`, the release-PR merge, each Hex/Maven/iOS publish, each tag and each remote branch delete need a fresh one-use `allow` bound to the displayed attempt. No `--admin`, no force-push or hand edit to the release-please branch, never close release PR #236, never retry an uncertain delivery.
 - **No new check is merge-blocking before its findings on `main` are measured.** Guards are delta-only; report-mode checks stay advisory for one cycle.
-- **Overrun cut order.** If Phase 196 overruns, move SPEC-04 (Muex pilot) and then ARCH-03 (dependency ratchet) to v29 through a recorded roadmap change; do not shrink their success criteria in place.
+- **Overrun cut order.** If Phase 196 overruns, move SPEC-04 (Muex pilot) and then ARCH-03 (dependency ratchet) to v29 through a recorded roadmap change; do not shrink their success criteria in place. SPEC-04 move applied 2026-10-27; ARCH-03 stays in v28.
 - **No twin run in v28.** twin-05 still attests `a53fbef`; the twin-06 decision is asked at v30 entry.
 - Never name, infer or search for the real first adopter; synthetic profiles stay generic.
 
@@ -160,14 +160,15 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
 
 **Goal**: The offline, policy and bridge specs that Android and later parity work consume cannot pass by asserting nothing, and the module structure has ratchets that fail on regressions.
 **Depends on**: Phase 195 (green base)
-**Requirements**: SPEC-01, SPEC-02, SPEC-03, SPEC-04, SPEC-05, ARCH-01, ARCH-02, ARCH-03
+**Requirements**: SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03
+**Moved**: SPEC-04 (Muex pilot) moved intact to v29.0 on 2026-10-27 under the overrun cut order (D-03/D-24). Its acceptance criteria are unchanged and both pilot attempts, the 5/5 accepted controls and all `muex-*` evidence stay preserved in 196-EVIDENCE and 196-13/196-14 summaries. ARCH-03 stays in v28.
 **Success Criteria** (what must be TRUE):
   1. `evidence_manifest_test.exs` and `phase139_threadline_cleanroom_test.exs` no longer pass vacuously, and the Elixir, Swift and Kotlin vector-consuming tests each assert vector count equals a pinned expectation and fail when a vector file is removed; the delta-only guard in `script/check_absence_is_not_success.exs` fails on new non-empty-less collection assertions, `for`-over-glob without cardinality and literal `assert true`, each with a negative control, with the known sites fixed in the same change.
   2. Boundary specs pass for `Journal.scope_ref!/1` (15/16/128/129 chars, newline injection, input never echoed) and `SafeObservation.new/1` (measurement 0, 1_000_000, 1_000_001; adversarial strings in every field never survive); the finite route-policy option product is enumerated exhaustively against a hand-written verdict table, compiler error assertions pin `{key, route_id}` pairs, and `Compiler.validation_key/1` never returns `nil` for a compiler error.
-  3. A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
+  3. [Moved to v29.0 with SPEC-04; not a v28 gate] A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 40 tasks; sequential waves 1–17 in one main checkout. Plans01–12 complete; plans13–17 remain pending.
+**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13 complete; 196-14 retired (SPEC-04 moved to v29.0); plans15–17 pending.
 
 Plans:
 **Wave 1**
@@ -210,16 +211,16 @@ Plans:
 - [x] 196-13-PLAN.md — Completed: separately frozen official no-tce attempt; real useful report, actual-schema adapter and5/5 known-kill/survive pairs; restored236 clean tests; attempt1 retained; aggregate timer continues
 
 **Wave 14** *(blocked on Wave 13 completion)*
-- [ ] 196-14-PLAN.md — Wave 14: Complete five-file baseline and honest adopt/drop decision
+- [ ] 196-14-PLAN.md — Retired, not executed to completion: SPEC-04 moved to v29.0; halted terminal baseline, attempts 1+2, 5/5 controls and muex-* evidence preserved (see 196-14-SUMMARY.md)
 
-**Wave 15** *(blocked on Wave 14 completion)*
-- [ ] 196-15-PLAN.md — Wave 15: Promote measured recurring guards and verify final candidate
+**Wave 15** *(ready; Wave 13 complete, Wave 14 retired)*
+- [ ] 196-15-PLAN.md — Wave 15: Bind the recorded SPEC-04 move (moved_to_v29) and byte-unchanged Muex evidence through a reviewed replan source amendment, promote measured recurring guards and verify the final candidate for SPEC-01/02/03/05, ARCH-01/02/03 and GR-06
 
 **Wave 16** *(blocked on Wave 15 completion)*
-- [ ] 196-16-PLAN.md — Wave 16: Prepare one exact-head PR and observe its CI
+- [ ] 196-16-PLAN.md — Wave 16: Prepare one exact-head PR stating the SPEC-04 move and observe its CI (PR head separate from synthetic merge)
 
 **Wave 17** *(blocked on Wave 16 completion)*
-- [ ] 196-17-PLAN.md — Wave 17: Fresh one-use main merge and actual-main phase proof
+- [ ] 196-17-PLAN.md — Wave 17: Fresh one-use main merge (auto-delete verified off) and actual-main phase proof for the seven requirements plus GR-06, SPEC-04 recorded moved_to_v29; landed evidence on its own docs/196-landed-evidence PR
 
 **Research**: Complete bounded research and pattern map (196-RESEARCH.md, 196-PATTERNS.md); no product fixes or full pilot are claimed. Guard findings on actual main, repaired cycle baseline and complete five-file pilot remain execution gates.
 **Carried from Phase 195 gap review**: GR-06 (derived-secret guard grammar: local/declare/readonly, +=, read and printf -v, GITHUB_ENV and GITHUB_OUTPUT writes, several assignments or a use on the assignment line) in test/js/ci_secret_masking.test.mjs; see 195-REVIEW-DISPOSITION.md.
@@ -273,7 +274,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 13/17 | In progress; plan14 next under live aggregate budget | - |
+| 196. Spec and structure ratchet | 13/17 | In progress; SPEC-04 moved to v29.0, 196-14 retired; 196-15..17 replanned, execute 196-15 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -313,4 +314,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:13/17 complete;196-14 halted. The uncapped five-file baseline reached its conserved aggregate deadline:SIGKILL,timedOut,true,no report or output. Exact source/test restoration,forced compilation and236 tests,0 failures passed;aggregate1805831.652125001ms includes5831.652125001ms mandatory-cleanup overrun. SPEC-04 remains pending;no scores,survivor ledger or adopt/drop is claimed. Both attempts and5/5 accepted controls remain preserved. No execution command is eligible;196-15 through196-17 are blocked. Reopening requires an explicit recorded SPEC-04 roadmap disposition under D-03/D-24;proposed v29 move remains unapplied. Do not reset the clock,retry or automatically defer. Read196-14-SUMMARY.md and196-EVIDENCE/muex-baseline/result.json. All eight Phase196 requirements and GR-06 remain pending. WINDOWS46/47 record this halt;earlier debt/review flags remain. Collection default stays report-only;required CI/promotion pending. Original cleanroom debt stays with197;adopter lane parked. No external delivery or approval transfer.
+Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:13/17 complete;196-14 halted and retired (not executed to completion). SPEC-04 moved intact to v29.0 on 2026-10-27 by recorded roadmap change under D-03/D-24; full criteria, both attempts, 5/5 accepted controls and 196-EVIDENCE/muex-* preserved. No retry, clock reset or new attempt. Seven Phase196 requirements (SPEC-01/02/03/05, ARCH-01/02/03) and GR-06 remain pending. 196-15 through 196-17 replanned and checked 2026-10-28. Next: `/gsd-execute-phase 196 --ws quality-ratchet-release` (196-15 first). WINDOWS46/47 record the halt;earlier debt/review flags remain. Collection default stays report-only;required CI/promotion pending. Original cleanroom debt stays with197;adopter lane parked. No external delivery or approval transfer.
