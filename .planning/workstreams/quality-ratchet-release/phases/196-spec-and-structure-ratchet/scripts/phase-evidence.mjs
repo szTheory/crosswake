@@ -526,10 +526,11 @@ const CANDIDATE_REGISTRY = [
   // The producer is credited only when its manifest is fresh (written during this child's run).
   STAGE("browser-proof", "node", { timeout: 1_800_000, env: { GITHUB_ACTIONS: "true" }, envFromRepo: "crosswake_version", expect: { manifest_fresh: true } }),
   STAGE("ios-package-proof", "plain", { timeout: 3_600_000 }),
-  { id: "ios-package-counts", req: [], kind: "swift", route: "plain", command: "swift", args: ["test"], cwd: "packages/crosswake-shell-core-ios", timeout: 1_800_000, expect: { minTests: 1, failures: 0, excluded: 0, skipped: 0 } },
+  { id: "ios-package-counts", req: [], kind: "swift", route: "plain", command: "swift", args: ["test"], cwd: "packages/crosswake-shell-core-ios", timeout: 1_800_000, expect: { tests: 89, failures: 0, excluded: 0, skipped: 2 } },
   STAGE("android-package-proof", "jdk", { timeout: 3_600_000 }),
-  { id: "android-package-counts", req: [], kind: "gradle-xml", route: "jdk", command: "./gradlew", args: ["--no-daemon", "cleanTest", "testDebugUnitTest"], cwd: ANDROID_PACKAGE, timeout: 1_800_000,
-    env: { CROSSWAKE_ANDROID_CONNECTED_TESTS: "0" }, expect: { minTests: 1, failures: 0, excluded: 0, skipped: 0 } },
+  { id: "android-package-counts", req: [], kind: "gradle-xml", route: "jdk", command: "./gradlew", args: ["--no-daemon", "cleanTestDebugUnitTest", "testDebugUnitTest"], cwd: ANDROID_PACKAGE, timeout: 1_800_000,
+    // Gradle reports an unchanged test task UP-TO-DATE and executes nothing; the clean rule forces execution and fresh XML.
+    env: { CROSSWAKE_ANDROID_CONNECTED_TESTS: "0" }, expect: { tests: 12, failures: 0, excluded: 0, skipped: 0 } },
   { id: "node-tests", req: [], kind: "node-test", route: "plain", command: "node", args: ["--test", `@glob:${REGISTRY_NODE_TEST_FILES}`], cwd: ".", expect: { tests: 344, failures: 0, excluded: 0 } },
   { id: "format-explicit", req: [], kind: "format", route: "plain", command: "mix", args: ["format", "--check-formatted", "@changed-elixir"], cwd: ".", expect: { minFiles: 1 } },
   // SPEC-01 enabled lanes: the real producer's manifest, then the manifest test with the path set (11 tests, 0 excluded).
@@ -547,11 +548,11 @@ const CANDIDATE_REGISTRY = [
     args: ["run", "--no-start", "-e", "IO.puts(Crosswake.Bridge.ProtocolVersion.version())"], expect: { lastLine: "1.1.0" } },
   VEC("elixir", "plain", { tests: 4, failures: 0, loaded: 15, completed: 9, restored: true }),
   VEC("swift-request", "plain", { tests: 4, failures: 0, loaded: 15, completed: 14, restored: true }),
-  VEC("swift-reply", "plain", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
-  VEC("swift-metadata", "plain", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
-  VEC("swift-topology", "plain", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
-  VEC("kotlin-request", "jdk", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
-  VEC("kotlin-other", "jdk", { minTests: 1, failures: 0, minOwners: 1, restored: true }),
+  VEC("swift-reply", "plain", { tests: 4, failures: 0, minOwners: 1, restored: true }),
+  VEC("swift-metadata", "plain", { tests: 9, failures: 0, minOwners: 1, restored: true }),
+  VEC("swift-topology", "plain", { tests: 5, failures: 0, minOwners: 1, restored: true }),
+  VEC("kotlin-request", "jdk", { tests: 4, failures: 0, minOwners: 1, restored: true }),
+  VEC("kotlin-other", "jdk", { tests: 8, failures: 0, minOwners: 1, restored: true }),
   { id: "absence-enforce", req: ["SPEC-02"], kind: "script", route: "plain", command: "elixir", args: ["script/check_absence_is_not_success.exs", "--collections-mode", "enforce"], cwd: ".", expect: { enforce: true, delta0: true, minOk: 2 } },
   MIXTEST("absence-test", ["test/crosswake/proof/absence_is_not_success_test.exs"], ["SPEC-02"], { tests: 59, failures: 0, excluded: 0 }),
   MIXTEST("journal", ["test/crosswake/offline/journal_test.exs"], ["SPEC-03"], { tests: 4, failures: 0, excluded: 0 }),
@@ -1224,7 +1225,8 @@ async function selfTestCandidate(root) {
   assert.equal(judgeChild(manifest, { ...good, counts: { ...good.counts, tests: 0 } }).reason, "test_count_mismatch");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 0 } }).reason, "test_count_mismatch");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 3 } }).reason, "test_count_mismatch");
-  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "vector-swift-reply"), { ...good, counts: { ...good.counts, tests: 0, restored: true, owners: 1 } }).reason, "zero_or_low_executed");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "vector-swift-reply"), { ...good, counts: { ...good.counts, tests: 0, restored: true, owners: 1 } }).reason, "test_count_mismatch");
+  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "root-core-suite"), { ...good, counts: { ...good.counts, tests: 0 } }).reason, "zero_or_low_executed");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "node-tests"), { ...good, counts: { ...good.counts, tests: 0 } }).reason, "test_count_mismatch");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, status: 2 }).reason, "child_exit_nonzero");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "journal"), { ...good, counts: { ...good.counts, tests: 5, failures: 1 } }).reason, "child_failures");
@@ -1241,8 +1243,13 @@ async function selfTestCandidate(root) {
   assert.equal(judgeChild(coreSuite, { ...good, counts: { ...good.counts, tests: 3000, excluded: 400 } }).reason, "excluded_above_pin");
   assert.equal(judgeChild(coreSuite, { ...good, counts: { ...good.counts, tests: 5 } }).reason, "zero_or_low_executed");
   const ios = REGISTRY.find((e) => e.id === "ios-package-counts");
-  assert.equal(judgeChild(ios, { ...good, counts: { tests: 89, failures: 0, excluded: 0, skipped: 2, summaries: 1 } }).reason, ios.expect.skipped === 2 ? undefined : "skipped_above_pin");
-  assert.equal(judgeChild(REGISTRY.find((e) => e.id === "android-package-counts"), { ...good, counts: { tests: 0, failures: 0, excluded: 0, skipped: 0, summaries: 1 } }).status, "fail");
+  assert.equal(judgeChild(ios, { ...good, counts: { tests: 89, failures: 0, excluded: 0, skipped: 2, summaries: 1 } }).status, "pass");
+  assert.equal(judgeChild(ios, { ...good, counts: { tests: 89, failures: 0, excluded: 0, skipped: 5, summaries: 1 } }).reason, "skipped_above_pin");
+  assert.equal(judgeChild(ios, { ...good, counts: { tests: 0, failures: 0, excluded: 0, skipped: 0, summaries: 1 } }).reason, "test_count_mismatch");
+  const android = REGISTRY.find((e) => e.id === "android-package-counts");
+  assert.equal(judgeChild(android, { ...good, counts: { tests: 12, failures: 0, excluded: 0, skipped: 0, summaries: 4 } }).status, "pass");
+  assert.equal(judgeChild(android, { ...good, counts: { tests: 0, failures: 0, excluded: 0, skipped: 0, summaries: 0 } }).reason, "no_summary");
+  assert.equal(android.args.includes("cleanTestDebugUnitTest"), true);
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "wire-version"), { status: 0, groupGone: true, lastLine: "1.0.0" }).reason, "wire_version_mismatch");
   assert.equal(judgeChild(REGISTRY.find((e) => e.id === "wire-version"), { status: 0, groupGone: true, lastLine: "1.1.0" }).status, "pass");
   // judgeCandidate: omitted child, failing child, missing mapping, preflight-blocked FAIL.

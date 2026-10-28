@@ -1,10 +1,10 @@
 # Phase 196 internal review of the final source
 
-Iterations: 2
+Iterations: 3
 
 Scope: the supported-source diff against origin/main (library, guard scripts, tests, native conformance tests), the phase-owned tools `measure-main.mjs` and `phase-evidence.mjs`, the recorded replan identity, and the evidence the candidate writes. Review lenses: spec correctness, policy and projection authority, scanner false greens, rescue containment, process, cleanup and privacy, and SPEC-04 disposition honesty. ASVS L1 applies: an open high or critical finding blocks delivery. No claim of ASVS certification.
 
-Iteration 1 read the library diff, the rescue and compile guards, and the first full root run. Iteration 2 re-read the two fixed paths and the regenerated ledger after the fixes, then re-ran the focused controls.
+Iteration 1 read the library diff, the rescue and compile guards, and the first full root run. Iteration 2 re-read the two fixed paths and the regenerated ledger after the fixes, then re-ran the focused controls. Iteration 3 followed the first full candidate run, in which the browser proof failed, and re-read the verifier for checks that could be green while executing nothing.
 
 ## Findings
 
@@ -15,9 +15,11 @@ Iteration 1 read the library diff, the rescue and compile guards, and the first 
 | R-03 | low | accepted | Other `^...$` identifier patterns outside the offline boundary (manifest route and tab ids, navigation transition ids, proof-lane configuration and evidence ids) share the trailing-line-end acceptance class. They are outside the SPEC-03 offline boundary, so they are recorded as a deferred item and not widened here. |
 | R-04 | low | accepted | The rescue guard accepts `--mode report` and `--mode enforce` but exits 1 on any finding in both modes. The strict direction is the safe one and produces no false green; the inert flag is noted for a later cleanup. |
 | R-05 | low | accepted | `RouteGate` keeps a blanket rescue around third-party companion adapters as one of the two reviewed exception records. Any adapter exception becomes a deny, so it fails closed, but the exception class is not surfaced in the diagnostic. |
-| R-06 | low | accepted | Repository facade stages expose no test counts, only exit status and the `PASS <stage>` marker. They are credited as gates only; every requirement maps to counted edge children. Generated-contract coverage is not claimed, because the stage output does not show a nonempty contract set; only `git diff --check` coverage is recorded. |
+| R-06 | low | fixed | Repository facade stages expose no test counts, only exit status and the `PASS <stage>` marker. The candidate now also runs the full core suite, the Swift package suite and the Android package suite directly and reads their own counts, and credits the browser producer only when its manifest was written during the run. Every requirement still maps to counted edge children. Generated-contract coverage is not claimed, because the stage output does not show a nonempty contract set; only `git diff --check` coverage is recorded. |
 | R-07 | low | accepted | `Policy.Compiler` raises `ArgumentError` for a structured validation error whose key is missing or not an atom. The raise is explicit and loud, not silent, and `Route.new/1` only returns NimbleOptions validation errors with atom keys, so the branch is unreachable today. |
 | R-08 | low | accepted | The live gate adapters for pr-open, ready, merge and landed are exercised only on isolated inputs until plans 16 and 17 run them. A defect found there costs a fixing commit and a fresh candidate run, as recorded in the plan. |
+| R-11 | high | fixed | The browser proof (route-tour producer) failed at load: `route_tour.spec.ts` read a literal `@version` from `lib/crosswake/bridge/contract.ex`, which now delegates to `Crosswake.Bridge.ProtocolVersion`. The spec reads the single owner file instead, the stage passes again and the enabled manifest test runs 11 tests with 0 excluded (commit 2f612d05). |
+| R-12 | medium | fixed | Gradle reports an unchanged test task UP-TO-DATE and executes nothing, so the stock Android package stage can pass without running a test. The candidate counts the Android suite through `cleanTestDebugUnitTest testDebugUnitTest` and reads fresh JUnit XML only (12 tests, 0 failures), so a cached or stale result is never credited. |
 | R-09 | info | closed | The process, cleanup and privacy lenses found no gap: every child runs in its own process group with a deadline and a verified group kill, evidence stores hashes and counts only, each evidence file is privacy-scanned before it is written, and the node and JDK routes touch only the child environment. |
 | R-10 | info | closed | SPEC-04 stays moved to v29.0; the disposition is derived from committed objects, all 32 preserved Muex paths are byte-identical to the anchor, and no verdict field exists for it anywhere in the evidence. |
 
