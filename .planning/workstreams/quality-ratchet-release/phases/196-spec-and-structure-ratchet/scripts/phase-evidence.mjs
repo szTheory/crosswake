@@ -440,11 +440,17 @@ async function jdkRoute() {
 // ---------------------------------------------------------------- candidate: process-result adapters
 // Counts come from the child's own summary output, never from a caller-authored value.
 function parseExUnit(output) {
-  const total = { tests: 0, failures: 0, excluded: 0, skipped: 0, summaries: 0 };
-  for (const m of output.matchAll(/(?:(\d+) doctests?, )?(\d+) tests?, (\d+) failures?(?:, (\d+) excluded)?(?:, (\d+) skipped)?/g)) {
+  // Each tail counter is read independently so the order of "excluded" and "skipped" cannot hide an exclusion.
+  const total = { tests: 0, failures: 0, excluded: 0, skipped: 0, invalid: 0, summaries: 0 };
+  for (const m of output.matchAll(/^(?:(\d+) doctests?, )?(\d+) tests?, (\d+) failures?([^\n]*)$/gm)) {
+    const tail = m[4];
     total.tests += Number(m[2]) + Number(m[1] ?? 0); total.failures += Number(m[3]);
-    total.excluded += Number(m[4] ?? 0); total.skipped += Number(m[5] ?? 0); total.summaries += 1;
+    total.excluded += Number(/(\d+) excluded/.exec(tail)?.[1] ?? 0);
+    total.skipped += Number(/(\d+) skipped/.exec(tail)?.[1] ?? 0);
+    total.invalid += Number(/(\d+) invalid/.exec(tail)?.[1] ?? 0);
+    total.summaries += 1;
   }
+  total.failures += total.invalid;
   return total;
 }
 function parseNodeTest(output) {
@@ -679,7 +685,7 @@ async function runRegistry(root, registry, { progress = true, only = null } = {}
   for (const key of ["node", "jdk"]) if (cache[key]) { const r = await cache[key]; routesUsed[key] = r.blocked ? { route: r.route, blocked: r.blocked } : { route: r.route, ...(r.node ? { node: r.node, npm: r.npm } : { java_major: r.java_major }) }; }
   return { children, routes: routesUsed };
 }
-async function candidate(root, { observe = false } = {}) {
+async function candidate(root, { observe = false, only = null } = {}) {
   need(git(root, ["branch", "--show-current"]) === BRANCH, "wrong_branch");
   need(supportedTreeClean(root), "dirty_supported_code");
   const identity = candidateIdentity(root, "HEAD");
@@ -688,10 +694,12 @@ async function candidate(root, { observe = false } = {}) {
   const review = observe && reviewText === null ? null : reviewState(reviewText);
   need(observe || review.open_high === 0, "review_high_open");
   git(root, ["fetch", "origin", "main"]);
-  const run = await runRegistry(root, REGISTRY);
+  need(only === null || observe, "only_requires_observe");
+  const run = await runRegistry(root, REGISTRY, { only });
   need(identityEqual(candidateIdentity(root, "HEAD"), identity), "candidate_identity_moved");
   need(same(checkDisposition(loadInputs(root, "HEAD")), disp), "disposition_moved");
-  const judged = judgeCandidate(REGISTRY, run.children);
+  // A subset observation (calibration only) is never judged, never written and never a verdict.
+  const judged = only ? { verdict: "observed_subset", failing: run.children.filter((c) => c.status !== "pass").map((c) => ({ id: c.id, status: c.status, reason: c.reason })), requirement_map: {} } : judgeCandidate(REGISTRY, run.children);
   const wire = run.children.find((c) => c.id === "wire-version");
   const record = {
     schema_version: 1, purpose: "phase196_candidate", head_sha: ref40(root, "HEAD"), main_sha: ref40(root, "origin/main"),
@@ -1127,6 +1135,10 @@ async function selfTestCandidate(root) {
   assert.deepEqual([exunit.tests, exunit.failures, exunit.excluded], [59, 0, 0]);
   assert.equal(parseExUnit("Finished in 0.1 seconds\n11 tests, 0 failures, 1 excluded\n").excluded, 1);
   assert.equal(parseExUnit("nothing summarised").summaries, 0);
+  assert.equal(parseExUnit("12 tests, 0 failures, 2 skipped, 3 excluded\n").excluded, 3);
+  assert.equal(parseExUnit("12 tests, 0 failures, 3 excluded, 2 skipped\n").skipped, 2);
+  assert.equal(parseExUnit("3 doctests, 12 tests, 0 failures\n").tests, 15);
+  assert.equal(parseExUnit("12 tests, 0 failures, 1 invalid\n").failures, 1);
   const scratch = mkdtempSync(path.join(tmpdir(), "cw196-cand-"));
   try {
     const file = path.join(scratch, "tiny.test.mjs");
@@ -1441,8 +1453,8 @@ async function main() {
     need(Object.keys(opts).length === 0, "invalid_arguments");
     console.log(JSON.stringify(checkPromotion(gatherPromotion(root)), null, 2));
   } else if (mode === "candidate") {
-    need(Object.keys(opts).every((key) => key === "observe"), "invalid_arguments");
-    await candidate(root, { observe: opts.observe === "yes" });
+    need(Object.keys(opts).every((key) => ["observe", "only"].includes(key)), "invalid_arguments");
+    await candidate(root, { observe: opts.observe === "yes", only: opts.only ? opts.only.split(",") : null });
   } else if (mode === "gate") {
     need(Object.keys(opts).every((key) => ["stage", "poll", "execute", "state"].includes(key)), "invalid_arguments");
     console.log(JSON.stringify(await runGate(root, opts)));
