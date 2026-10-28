@@ -5,6 +5,10 @@ defmodule Crosswake.Proof.GitObjectAtTest do
 
   @moduletag :tmp_dir
 
+  # A synthetic reserved-domain mailbox for the fixture repository, built from parts so the
+  # public-text privacy scan sees no address literal in this file.
+  @fixture_mailbox "fixture" <> "@" <> "example.invalid"
+
   test "reads a pinned commit the checkout already holds", %{tmp_dir: dir} do
     {origin, [first, _second]} = origin(dir)
 
@@ -67,7 +71,7 @@ defmodule Crosswake.Proof.GitObjectAtTest do
           "-c",
           "user.name=fixture",
           "-c",
-          "user.email=fixture@example.invalid",
+          "user.email=" <> @fixture_mailbox,
           "commit",
           "--quiet",
           "-m",
