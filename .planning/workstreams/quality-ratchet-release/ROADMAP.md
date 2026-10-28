@@ -168,7 +168,7 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. [Moved to v29.0 with SPEC-04; not a v28 gate] A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13 complete; 196-14 retired (SPEC-04 moved to v29.0); plans15–17 pending.
+**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13 and 15 complete; 196-14 retired (SPEC-04 moved to v29.0); plans16–17 pending.
 
 Plans:
 **Wave 1**
@@ -214,7 +214,7 @@ Plans:
 - [ ] 196-14-PLAN.md — Retired, not executed to completion: SPEC-04 moved to v29.0; halted terminal baseline, attempts 1+2, 5/5 controls and muex-* evidence preserved (see 196-14-SUMMARY.md)
 
 **Wave 15** *(ready; Wave 13 complete, Wave 14 retired)*
-- [ ] 196-15-PLAN.md — Wave 15: Bind the recorded SPEC-04 move (moved_to_v29) and byte-unchanged Muex evidence through a reviewed replan source amendment, promote measured recurring guards and verify the final candidate for SPEC-01/02/03/05, ARCH-01/02/03 and GR-06
+- [x] 196-15-PLAN.md — Wave 15: Bind the recorded SPEC-04 move (moved_to_v29) and byte-unchanged Muex evidence through a reviewed replan source amendment, promote measured recurring guards and verify the final candidate for SPEC-01/02/03/05, ARCH-01/02/03 and GR-06
 
 **Wave 16** *(blocked on Wave 15 completion)*
 - [ ] 196-16-PLAN.md — Wave 16: Prepare one exact-head PR stating the SPEC-04 move and observe its CI (PR head separate from synthetic merge)
@@ -274,7 +274,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 13/17 | In progress; SPEC-04 moved to v29.0, 196-14 retired; 196-15..17 replanned, execute 196-15 next | - |
+| 196. Spec and structure ratchet | 14/17 | In progress; SPEC-04 moved to v29.0, 196-14 retired; 196-15 executed (candidate 40/40, review closed), execute 196-16 next | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -314,4 +314,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:13/17 complete;196-14 halted and retired (not executed to completion). SPEC-04 moved intact to v29.0 on 2026-10-27 by recorded roadmap change under D-03/D-24; full criteria, both attempts, 5/5 accepted controls and 196-EVIDENCE/muex-* preserved. No retry, clock reset or new attempt. Seven Phase196 requirements (SPEC-01/02/03/05, ARCH-01/02/03) and GR-06 remain pending. 196-15 through 196-17 replanned and checked 2026-10-28. Next: `/gsd-execute-phase 196 --ws quality-ratchet-release` (196-15 first). WINDOWS46/47 record the halt;earlier debt/review flags remain. Collection default stays report-only;required CI/promotion pending. Original cleanroom debt stays with197;adopter lane parked. No external delivery or approval transfer.
+Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:14/17 complete (196-15 executed: candidate passed 40/40, review closed);196-14 halted and retired (not executed to completion). SPEC-04 moved intact to v29.0 on 2026-10-27 by recorded roadmap change under D-03/D-24; full criteria, both attempts, 5/5 accepted controls and 196-EVIDENCE/muex-* preserved. No retry, clock reset or new attempt. Seven Phase196 requirements (SPEC-01/02/03/05, ARCH-01/02/03) and GR-06 remain pending. 196-15 through 196-17 replanned and checked 2026-10-28. Next: `/gsd-execute-phase 196 --ws quality-ratchet-release` (196-16 next). WINDOWS46/47 record the halt;earlier debt/review flags remain. Collection default is now enforce, recaptured on actual main before use; the ratchet tests already run in required root-proof and no new required job was added. Original cleanroom debt stays with197;adopter lane parked. No external delivery or approval transfer.
