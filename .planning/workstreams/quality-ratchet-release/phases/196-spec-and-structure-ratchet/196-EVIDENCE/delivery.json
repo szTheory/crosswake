@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "purpose": "phase196_delivery",
+  "plan": "196-16",
+  "branch": "fix/spec-structure-ratchet",
+  "base": {
+    "ref": "main",
+    "sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97"
+  },
+  "reviewed_head": "6fa356a62c03edb82b7598bbfbb9bb1679c8f5a4",
+  "candidate": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/candidate.json",
+    "identity": {
+      "source_roster_sha256": "685bcd499f549e1476c4695caf5ecfc31a8d8785ef154a57b94f3cb296a36a3f",
+      "source_count": 1374,
+      "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
+      "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
+      "preserved_roster_sha256": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+    }
+  },
+  "review": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-REVIEW.md",
+    "sha256": "77f1d4f46d5fca197b7ca7e1461f71f12d285af2218ecc63ea953658f648df6f",
+    "iterations": 3,
+    "open_high": 0
+  },
+  "in_scope_requirements": ["SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "ARCH-01", "ARCH-02", "ARCH-03"],
+  "grammar_debt": "GR-06",
+  "spec04": {
+    "disposition": "moved_to_v29",
+    "receiver": "v29.0",
+    "anchor_commit": "90a809ce43adec4fb2b04ae38e658854317c9d9c",
+    "roster_count": 32,
+    "roster_digest": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+  },
+  "moved": ["SPEC-04"],
+  "external_findings": [],
+  "protected_branch_bypass": false
+}
