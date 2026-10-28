@@ -7,7 +7,7 @@
   "resourceSha256": "3b64c8d81e1ca086494a1910aa5fb2d05d7a2d263b3d72f229f319d22e0064c0",
   "owner": "test/crosswake/bridge/bridge_behavioral_vector_test.exs",
   "ownerSha256": "4f84721eeeccebb50abc3f3e87e3b92161f048fb9b2089252cc0c5ba605c314e",
-  "helperSha256": "dfd3305762544b77172f9f643050c582f8347f2d6f72f6a8e5477c2b55ac0973",
+  "helperSha256": "cba824642680d6fc690070c6048e4d2a8c25bfef11041f29ca48b77dd223f54c",
   "before": [
     {
       "command": "mix",
@@ -17,8 +17,8 @@
       ],
       "cwd": ".",
       "exit": 0,
-      "durationMs": 756,
-      "outputSha256": "95bc9a1467019daa90620bdcebec954cb04ee48e230f6d0c980f02e3ad3af71f",
+      "durationMs": 437,
+      "outputSha256": "11bedfa579c06c7684cb745378ce73e8b3b7098dfc177e1cc83628a3e757326a",
       "tests": {
         "discovered": 1,
         "skipped": 0,
@@ -40,8 +40,8 @@
           ],
           "cwd": ".",
           "exit": 1,
-          "durationMs": 502,
-          "outputSha256": "59133f804ee0e0209ccd7b943804328613cf9ce3781023b0a36d1a2ad6ae11e5"
+          "durationMs": 407,
+          "outputSha256": "118294a9be02ed5f8c1c14405b87a208ee510bb94e8fea16703640f247c0f0e9"
         }
       ]
     },
@@ -58,8 +58,8 @@
           ],
           "cwd": ".",
           "exit": 2,
-          "durationMs": 543,
-          "outputSha256": "d4339a134868e892e816b89de0972e85f3c6a03861938e4ca2c0b4ed7596efba",
+          "durationMs": 485,
+          "outputSha256": "b32cdbc805b821a49c573216cd48cd88f4ee36e2608e2555bf42e55b23f71c2c",
           "tests": {
             "discovered": 1,
             "skipped": 0,
@@ -81,8 +81,8 @@
           ],
           "cwd": ".",
           "exit": 2,
-          "durationMs": 446,
-          "outputSha256": "67b6b599090d65c2ab528d59aa455c94234f72a1746dbe285cf9207fef82b449",
+          "durationMs": 479,
+          "outputSha256": "b283e96b229821799e0d1f86eea8d2c83f3910907774cb70a4a3fe2d3ba3a08a",
           "tests": {
             "discovered": 1,
             "skipped": 0,
@@ -104,8 +104,8 @@
           ],
           "cwd": ".",
           "exit": 2,
-          "durationMs": 493,
-          "outputSha256": "42a36a8d47ee156bf5c12e727de815bc2539a7472016135dd03191e7cc197f0c",
+          "durationMs": 449,
+          "outputSha256": "2d769bae9b83ac1b80fd41ee94cf74d16f971a7d278cffe7d71a20d54f8ea24f",
           "tests": {
             "discovered": 1,
             "skipped": 0,
@@ -126,8 +126,8 @@
         ],
         "cwd": ".",
         "exit": 0,
-        "durationMs": 508,
-        "outputSha256": "5ce24be0f53c5a681c411a3554d8d2588b246200dfa2268160cfde687c00517e",
+        "durationMs": 466,
+        "outputSha256": "152f3c0bc45259965efcd5c80a7e54cb7a9a016d507d125262a004f6bff06d92",
         "tests": {
           "discovered": 1,
           "skipped": 0,
@@ -136,5 +136,5 @@
       }
     ]
   },
-  "durationMs": 3252
+  "durationMs": 2726
 }
