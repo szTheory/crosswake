@@ -49,6 +49,13 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
       assert output =~ "delta=0"
     end
 
+    test "the collections mode defaults to enforce on the repository" do
+      {output, code} = run_argv(["--root", @repo_root])
+      assert code == 0, output
+      assert output =~ "mode=enforce"
+      assert output =~ "delta=0"
+    end
+
     for {label, prefix, body, category} <- [
           {"wrong collection", "",
            "items = load(); other = load(); assert other != []; assert Enum.all?(items, &valid?/1)",
@@ -594,7 +601,16 @@ defmodule Crosswake.Proof.AbsenceIsNotSuccessTest do
           ]
       )
 
-  defp run(root, extra_argv), do: run_argv(["--root", Path.expand(root) | extra_argv])
+  # The collections default is enforce. These synthetic fixtures exercise the legacy mutation-control
+  # and citation checks, so they pin report mode unless a test chooses its own mode.
+  defp run(root, extra_argv) do
+    extra_argv =
+      if "--collections-mode" in extra_argv,
+        do: extra_argv,
+        else: ["--collections-mode", "report" | extra_argv]
+
+    run_argv(["--root", Path.expand(root) | extra_argv])
+  end
 
   defp run_argv(argv) do
     System.cmd("elixir", [@script | argv], stderr_to_stdout: true, cd: @repo_root)
