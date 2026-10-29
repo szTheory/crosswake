@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -1358,6 +1358,67 @@ async function selfTestMerge(root) {
   assert.ok(Date.now() - started < DEADLINE_MS, "merge scope exceeded its deadline");
   return { scope: "merge", ms: Date.now() - started };
 }
+// Isolation controls (fix-forward for the 2026-10-29 actual-main refusal): a child that rewrites a tracked evidence
+// file must not disturb the main checkout, per-child results survive any refusal, and the linked worktree is always removed.
+function landedFixture() {
+  const f = fixtureRepo();
+  f.put(".gitignore", "_build/\n"); f.g("add", ".gitignore");
+  mkdirSync(path.join(f.root, ".planning/ev"), { recursive: true });
+  f.put(".planning/ev/x-vectors.json", `${JSON.stringify({ d: 1 })}\n`); f.g("add", ".planning/ev/x-vectors.json");
+  f.g("commit", "-q", "-m", "evidence receipt");
+  mkdirSync(path.join(f.root, "_build"), { recursive: true }); f.put("_build/cache.txt", "warm\n");
+  const rewrite = "require('fs').writeFileSync('.planning/ev/x-vectors.json', JSON.stringify({ d: Date.now() }) + '\\n');" +
+    "console.log(require('fs').existsSync('_build/cache.txt') ? 'warm' : 'cold');";
+  const child = (id, code, lastLine) => ({ id, req: [], kind: "version", route: "plain", command: process.execPath, args: ["-e", code], cwd: ".", expect: { lastLine } });
+  return { ...f, rewrite, child, mergeSha: ref40(f.root, "HEAD") };
+}
+async function landedIsolationControls() {
+  const f = landedFixture();
+  try {
+    const gitDir = path.resolve(f.root, git(f.root, ["rev-parse", "--git-common-dir"]));
+    const wt = path.join(gitDir, "crosswake-196-landed");
+    const receipt = () => readFileSync(path.join(f.root, ".planning/ev/x-vectors.json"), "utf8");
+    const worktrees = () => git(f.root, ["worktree", "list", "--porcelain"]).split("\n").filter((l) => l.startsWith("worktree ")).length;
+    const ledger = () => JSON.parse(readFileSync(path.join(gitDir, "crosswake-196-landed-children.json"), "utf8"));
+    const before = { inventory: inventoryHash(f.root), receipt: receipt(), branch: git(f.root, ["branch", "--show-current"]), head: ref40(f.root, "HEAD") };
+    // The old in-place procedure: detach in the main checkout, run a receipt-rewriting child, switch back. The edit follows the checkout.
+    f.g("switch", "-q", "--detach", f.mergeSha);
+    await runChild(f.root, process.execPath, ["-e", f.rewrite], { timeout: 5_000 });
+    f.g("switch", "-q", "main");
+    assert.notEqual(inventoryHash(f.root), before.inventory, "the in-place procedure is the defect: it leaves the receipt rewritten");
+    f.g("checkout", "--", ".planning/ev/x-vectors.json");
+    assert.equal(inventoryHash(f.root), before.inventory);
+    // Isolated run: the child rewrites its own receipt, the main checkout is untouched, results persist, the worktree is gone.
+    const ok = await runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("rewrite", f.rewrite, "warm")], progress: false });
+    assert.equal(ok.children.length, 1); assert.equal(ok.children[0].status, "pass");
+    assert.equal(inventoryHash(f.root), before.inventory, "a landed run must leave the main inventory unchanged");
+    assert.equal(receipt(), before.receipt); assert.equal(git(f.root, ["branch", "--show-current"]), before.branch); assert.equal(ref40(f.root, "HEAD"), before.head);
+    assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1);
+    assert.equal(ledger().children.length, 1); assert.equal(ledger().phase, "complete"); assert.equal(ledger().cleanup, "removed");
+    assert.ok(Array.isArray(ledger().warmed) && ledger().warmed.includes("_build"), "ignored caches are cloned into the worktree");
+    // A failing child is judged, kept in the ledger, and the run continues to the next child.
+    const failing = await runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("bad", "process.exit(3)", "x"), f.child("after", f.rewrite, "warm")], progress: false });
+    assert.deepEqual(failing.children.map((c) => `${c.id}:${c.status}`), ["bad:fail", "after:pass"]);
+    assert.deepEqual(ledger().children.map((c) => `${c.id}:${c.status}`), ["bad:fail", "after:pass"]);
+    assert.equal(existsSync(wt), false); assert.equal(inventoryHash(f.root), before.inventory);
+    // A refusal after the first child still leaves that child on disk, and cleanup runs.
+    await assert.rejects(runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("one", f.rewrite, "warm")], progress: false,
+      afterChild: (children) => { need(children.length < 1, "landed_probe_refusal"); } }), { code: "landed_probe_refusal" });
+    assert.deepEqual(ledger().children.map((c) => c.id), ["one"]); assert.equal(ledger().refusal, "landed_probe_refusal");
+    assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1); assert.equal(inventoryHash(f.root), before.inventory);
+    // A refusal before any child (identity or roster check) is recorded and cleaned up too.
+    await assert.rejects(runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("never", f.rewrite, "warm")], progress: false,
+      prepare: () => { throw new Refusal("roster_digest_changed"); } }), { code: "roster_digest_changed" });
+    assert.deepEqual(ledger().children, []); assert.equal(ledger().refusal, "roster_digest_changed");
+    assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1);
+    // A stale worktree directory from a killed run is replaced, not trusted, and earlier ledgers are rotated, never overwritten.
+    f.g("worktree", "add", "-q", "--detach", wt, f.mergeSha); writeFileSync(path.join(wt, "stale.txt"), "stale\n");
+    const again = await runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("fresh", f.rewrite, "warm")], progress: false });
+    assert.equal(again.children[0].status, "pass"); assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1);
+    assert.ok(readdirSync(gitDir).filter((name) => /^crosswake-196-landed-children\..+\.json$/.test(name)).length >= 3, "earlier ledgers are rotated");
+    assert.equal(inventoryHash(f.root), before.inventory);
+  } finally { f.cleanup(); }
+}
 async function selfTestLanded(root) {
   const started = Date.now();
   const f = fixtureRepo();
@@ -1403,6 +1464,7 @@ async function selfTestLanded(root) {
   assert.equal(reconcileMarker({ marker: { status: "consuming", head: "h" }, remote: { merged: true, mergedHead: "other" } }), "unconsumed_uncertain");
   assert.throws(() => scanClaims(JSON.stringify({ spec04: { disposition: "moved_to_v29" }, note: "SPEC-04 is complete." }), "json"), { code: "spec04_prose_claim" });
   assert.throws(() => scanClaims("The pilot passed.", "markdown"), { code: "spec04_prose_claim" });
+  await landedIsolationControls();
   await realChildControls();
   assert.ok(Date.now() - started < DEADLINE_MS, "landed scope exceeded its deadline");
   return { scope: "landed", ms: Date.now() - started };
