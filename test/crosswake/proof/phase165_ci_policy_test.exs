@@ -190,7 +190,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert workflow =~
              "group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}"
 
-    assert workflow =~ "cancel-in-progress: false"
+    assert workflow =~ "cancel-in-progress: ${{ github.event_name == 'pull_request' }}"
     assert workflow =~ "fetch-depth: 0"
     assert workflow =~ "git cat-file -e \"$base_sha^{commit}\""
     assert workflow =~ "git cat-file -e \"$merge_sha^{commit}\""

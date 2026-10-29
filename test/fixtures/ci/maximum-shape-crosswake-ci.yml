@@ -149,30 +149,12 @@ jobs:
     steps:
       - run: "true"
     name: phase23-commerce-proof
-  phase34-commerce-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase34-commerce-proof
   phase41-gating-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - run: "true"
     name: phase41-gating-proof
-  phase43-rulestead-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase43-rulestead-proof
-  phase45-rindle-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase45-rindle-proof
   phase48-provider-adapter-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -326,10 +308,7 @@ jobs:
       - phase18-elixir-android-proof
       - phase18-ios-proof
       - phase23-commerce-proof
-      - phase34-commerce-proof
       - phase41-gating-proof
-      - phase43-rulestead-proof
-      - phase45-rindle-proof
       - phase48-provider-adapter-proof
       - phase5-proof
       - phase52-operator-proof

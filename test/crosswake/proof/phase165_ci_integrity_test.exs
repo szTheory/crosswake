@@ -96,8 +96,9 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert hex_page =~ "env:\n      MIX_ENV: dev"
     assert hex_page =~ "mix-env: dev"
 
-    assert hex_page =~
-             "name: Run library test suite (hermetic)\n        env:\n          MIX_ENV: test"
+    # The full library suite runs once per PR in phase130-core-hermetic-proof;
+    # this lane keeps only the package, docs, and adoption-scan steps.
+    refute hex_page =~ "mix test"
 
     assert hex_page =~ "name: Build docs (smoke)"
     assert hex_page =~ "mix docs"
@@ -296,9 +297,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           {"phase132-companion-engine-absent-proof", "phase132-companion-engine-absent-proof",
            "crosswake_rindle"},
           {"phase23-commerce-proof", "phase23-commerce-proof",
-           "phase23_commerce_support_proof_test.exs"},
-          {"phase34-commerce-proof", "phase34-commerce-proof",
-           "mix test --exclude requires_example_host"}
+           "phase23_commerce_support_proof_test.exs"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
@@ -346,7 +345,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == []
-    assert length(proof_ids) == 46
+    assert length(proof_ids) == 43
     assert length(compatibility_ids) == 0
 
     for id <- [
@@ -458,10 +457,6 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     for {job, command} <- [
           {"phase41-gating-proof", "script/verify_repository.sh --stage warnings-proof"},
-          {"phase43-rulestead-proof",
-           "mix test --exclude requires_example_host --exclude advisory_only"},
-          {"phase45-rindle-proof",
-           "mix test --exclude requires_example_host --exclude advisory_only"},
           {"phase48-provider-adapter-proof", "phase48_provider_adapter_proof_test.exs"}
         ] do
       body = job_body(workflow, job)
@@ -571,14 +566,15 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   # Retired in Phase 195 (REL-04): Cancel Obsolete controller removed; not executed.
 
   @tag :cancellation_controller
-  test "ordinary PR concurrency remains repository-and-PR scoped and non-cancelling" do
+  test "ordinary PR concurrency remains repository-and-PR scoped and cancels superseded runs" do
     workflow = File.read!(@crosswake_ci)
 
     assert workflow =~
              "group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}"
 
-    assert workflow =~ "cancel-in-progress: false"
-    refute workflow =~ "cancel-in-progress: true"
+    # Superseded pull request runs are cancelled; a new push reports on its own head.
+    assert workflow =~ "cancel-in-progress: ${{ github.event_name == 'pull_request' }}"
+    refute workflow =~ "cancel-in-progress: false"
   end
 
   @tag :runner_placement
