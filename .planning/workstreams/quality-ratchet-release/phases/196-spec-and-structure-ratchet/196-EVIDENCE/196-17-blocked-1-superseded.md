@@ -1,4 +1,8 @@
----
+# Phase 196 Plan 17: blocked after the first merge (history)
+
+Superseded on 2026-10-29: the fix landed as PR 264 (merge commit `51a1885c`) and the actual-main landed proof then passed 40 of 40 children. See `196-17-SUMMARY.md`. This file is kept as history and is no longer the plan's state. The original frontmatter is kept below as plain text, and the text after it is unchanged.
+
+```yaml
 phase: 196-spec-and-structure-ratchet
 plan: "17"
 subsystem: delivery
@@ -15,7 +19,7 @@ requirements-completed: []
 actuals:
   tasks: 3
 merge_commit: 88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be
----
+```
 
 # Phase 196 Plan 17: Main merge and actual-main proof (blocked after merge)
 
