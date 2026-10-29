@@ -1,4 +1,8 @@
-# Phase 196 Plan 16: Blocked at exact-head CI
+# Phase 196 Plan 16: halt 1, superseded (history)
+
+Superseded on 2026-10-29: the reopening condition was met and plan 16 completed. See `196-16-SUMMARY.md`. This file is kept as history and is no longer the plan's state. The text below is unchanged.
+
+# Blocked at exact-head CI (original record)
 
 Status: halted at a designed stop. Task 1 is done. Task 2 did not reach a ready PR, and no summary was written.
 

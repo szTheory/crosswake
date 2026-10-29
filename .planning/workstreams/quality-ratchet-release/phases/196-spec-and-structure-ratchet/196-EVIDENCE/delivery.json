@@ -71,5 +71,22 @@
       ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/candidate-amendment-1-failed-run-1.json",
       ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/candidate-amendment-1-failed-run-2.json"
     ]
+  },
+  "ready": {
+    "pr_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+    "base_sha": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+    "ci_run_id": 40791204733,
+    "ci_workflow": "Crosswake CI",
+    "ci_event": "pull_request",
+    "ci_conclusion": "success",
+    "check_runs": 49,
+    "check_runs_head_sha_equal_to_pr_head": true,
+    "github_synthetic_merge_sha": "09222d0a57a4d25c7b49d110ea6dfd764b149277",
+    "synthetic_is_not_head_proof": true,
+    "gate_stage": "ready",
+    "gate_result": "pass",
+    "polls": 36,
+    "recorded_after_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+    "note": "Recorded in a local commit after the push; the PR head stays bb291f01."
   }
 }
