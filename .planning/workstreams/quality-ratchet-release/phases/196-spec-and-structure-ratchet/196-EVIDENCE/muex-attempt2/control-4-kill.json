@@ -1,0 +1,35 @@
+{
+  "mutations": [
+    {
+      "error": "killed by:\n  1) test the tracer round trip (CTRL-01, D-17, D-18, D-36) attach + push dispatches exactly one crosswake:bridge event with a well-formed Contract.Request map (Crosswake.Bridge.PushTest)\n     test/crosswake/bridge/push_test.exs:116\n     Assertion with == failed\n     code:  assert envelope[\"protocol\"] == Contract.protocol()\n     left:  \"crosswake.bridge\"\n     right: nil\n     stacktrace:\n       test/crosswake/bridge/push_test.exs:122: (test)\n\n--max-failures reached, aborting test suite\nFinished in 1.6 seconds (0.2s async, 1.3s sync)\n60 tests, 1 failure",
+      "status": "killed",
+      "description": "ReturnValue: replace return value of protocol with nil",
+      "location": {
+        "line": 103,
+        "file": "lib/crosswake/bridge/contract.ex"
+      },
+      "patch": {
+        "after": "def protocol do\n  nil\nend",
+        "before": "def protocol do\n  @protocol\nend"
+      },
+      "duration_ms": 3569,
+      "test_files": [
+        "test/crosswake/bridge/push_test.exs",
+        "test/crosswake/bridge/contract_test.exs",
+        "test/crosswake/bridge/bridge_behavioral_vector_test.exs"
+      ],
+      "mutator": "Muex.Mutator.ReturnValue"
+    }
+  ],
+  "summary": {
+    "timeout": 0,
+    "invalid": 0,
+    "killed": 1,
+    "total": 1,
+    "equivalent": 0,
+    "survived": 0,
+    "no_coverage": 0,
+    "mutation_score_high": 100.0,
+    "mutation_score_low": 100.0
+  }
+}

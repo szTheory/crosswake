@@ -1,0 +1,35 @@
+{
+  "mutations": [
+    {
+      "error": "killed by:\n  1) test replay serialization preserves the exact sensitive opaque scope (Crosswake.Offline.ReplayTest)\n     test/crosswake/offline/replay_test.exs:62\n     ** (FunctionClauseError) no function clause matching in Crosswake.Offline.Replay.request_for_entry/1\n\n     The following arguments were given to Crosswake.Offline.Replay.request_for_entry/1:\n\n         # 1\n         nil\n\n     Attempted function clauses (showing 1 out of 1):\n\n         def request_for_entry(-%Crosswake.Offline.Journal.Entry{} = entry-)",
+      "status": "killed",
+      "description": "ReturnValue: replace return value of new_entry with nil",
+      "location": {
+        "line": 57,
+        "file": "lib/crosswake/offline/journal.ex"
+      },
+      "patch": {
+        "after": "def new_entry(attrs) when is_list(attrs) do\n  scope_ref = attrs |> Keyword.get(:scope_ref) |> scope_ref!()\n  nil\nend",
+        "before": "def new_entry(attrs) when is_list(attrs) do\n  scope_ref = attrs |> Keyword.get(:scope_ref) |> scope_ref!()\n\n  struct!(Entry, %{\n    id: Keyword.fetch!(attrs, :id),\n    scope_ref: scope_ref,\n    route_id: Keyword.fetch!(attrs, :route_id),\n    sync_seam: Keyword.fetch!(attrs, :sync_seam),\n    operation: Keyword.fetch!(attrs, :operation),\n    payload: Keyword.get(attrs, :payload, %{}),\n    client_mutation_id: Keyword.fetch!(attrs, :client_mutation_id),\n    idempotency_key: Keyword.fetch!(attrs, :idempotency_key),\n    base_checkpoint: Keyword.fetch!(attrs, :base_checkpoint),\n    committed_at:\n      Keyword.get_lazy(attrs, :committed_at, fn ->\n        DateTime.utc_now() |> DateTime.truncate(:second)\n      end),\n    status: Keyword.get(attrs, :status, :queued)\n  })\nend"
+      },
+      "duration_ms": 2142,
+      "test_files": [
+        "test/crosswake/offline/runtime_test.exs",
+        "test/crosswake/offline/replay_test.exs",
+        "test/crosswake/offline/journal_test.exs"
+      ],
+      "mutator": "Muex.Mutator.ReturnValue"
+    }
+  ],
+  "summary": {
+    "timeout": 0,
+    "invalid": 0,
+    "killed": 1,
+    "total": 1,
+    "equivalent": 0,
+    "survived": 0,
+    "no_coverage": 0,
+    "mutation_score_high": 100.0,
+    "mutation_score_low": 100.0
+  }
+}

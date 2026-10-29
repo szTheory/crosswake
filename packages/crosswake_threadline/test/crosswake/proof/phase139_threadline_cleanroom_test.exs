@@ -43,21 +43,66 @@ defmodule Crosswake.Proof.Phase139ThreadlineCleanroomTest do
   # Canary 2: Plug.Threadline shipped (optional-dep guard: Plug.Conn must be loaded)
   # ---------------------------------------------------------------------------
 
+  @tag :threadline_plug
   test "Crosswake.Plug.Threadline.init/1 ships with the correct header_name default" do
-    if Code.ensure_loaded?(Plug.Conn) do
-      opts = Crosswake.Plug.Threadline.init([])
+    assert Code.ensure_loaded?(Plug.Conn), "threadline_plug: dependency_required"
+    assert Code.ensure_loaded?(Crosswake.Plug.Threadline), "threadline_plug: module_required"
+    opts = Crosswake.Plug.Threadline.init([])
+    assert is_list(opts), "threadline_plug: options_required"
 
-      assert is_list(opts),
-             "Plug.Threadline.init/1 must return a keyword list — module did not ship in tarball"
+    assert opts[:header_name] == "x-crosswake-thread-id",
+           "threadline_plug: default_header_required"
+  end
 
-      assert opts[:header_name] == "x-crosswake-thread-id",
-             "Plug.Threadline.init/1 must default header_name to 'x-crosswake-thread-id'; " <>
-               "got #{inspect(opts[:header_name])}"
-    else
-      # Plug.Conn not loaded in this env — skip rather than fail (optional dep guard).
-      # The phase92_server_propagation_closeout_test.exs covers Plug.Threadline behavior.
-      assert true, "Plug.Conn not loaded — Plug.Threadline is optional, skipping canary"
-    end
+  @tag :optional_plug_control
+  test "optional Plug subprocess lanes distinguish excluded, missing and real proof" do
+    {disabled, disabled_exit} = plug_consumer(nil, false)
+    assert disabled_exit == 0, "threadline_plug: disabled consumer failed"
+    assert disabled =~ "2 excluded", "threadline_plug: disabled canary was not excluded"
+    assert disabled =~ "3 tests, 0 failures", "threadline_plug: shipment canaries did not execute"
+
+    {missing, missing_exit} = plug_consumer("1", true)
+    assert missing_exit != 0, "threadline_plug: missing enabled dependency passed"
+
+    assert missing =~ "threadline_plug: dependency_required",
+           "threadline_plug: missing diagnostic"
+
+    assert missing =~ "4 tests, 1 failure", "threadline_plug: required canaries did not execute"
+
+    {enabled, enabled_exit} = plug_consumer("1", false)
+    assert enabled_exit == 0, "threadline_plug: real enabled consumer failed"
+    assert enabled =~ "4 tests, 0 failures", "threadline_plug: real canary did not execute"
+    assert enabled =~ "1 excluded", "threadline_plug: unexpected exclusion count"
+    IO.puts("optional_plug_control: disabled exit #{disabled_exit} executed 3 excluded 2")
+
+    IO.puts(
+      "optional_plug_control: missing exit #{missing_exit} executed 4 failures 1 excluded 1"
+    )
+
+    IO.puts("optional_plug_control: enabled exit #{enabled_exit} executed 4 excluded 1")
+  end
+
+  defp plug_consumer(request, remove_plug?) do
+    paths =
+      :code.get_path()
+      |> Enum.reject(fn path ->
+        remove_plug? and Path.basename(Path.dirname(to_string(path))) == "plug"
+      end)
+      |> Enum.flat_map(fn path -> ["-pa", to_string(path)] end)
+
+    script = """
+    Mix.start()
+    Code.require_file("mix.exs")
+    Code.require_file("test/test_helper.exs")
+    ExUnit.configure(exclude: ExUnit.configuration()[:exclude] ++ [optional_plug_control: true])
+    if #{remove_plug?} and Code.ensure_loaded?(Plug.Conn), do: raise("threadline_plug: isolation_failed")
+    Code.require_file("test/crosswake/proof/phase139_threadline_cleanroom_test.exs")
+    """
+
+    System.cmd(System.find_executable("elixir"), ["--erl", "+S 2:2"] ++ paths ++ ["-e", script],
+      env: [{"MIX_INCLUDE_THREADLINE_PLUG", request}],
+      stderr_to_stdout: true
+    )
   end
 
   # ---------------------------------------------------------------------------

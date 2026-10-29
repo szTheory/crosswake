@@ -17,9 +17,12 @@ class ActivationConformanceTest {
     fun loadVectors() {
         // Version-anchor to the committed vectors file per D-01.
         // A bridge protocol version bump regenerates this file, flowing through here.
-        val text = javaClass.getResourceAsStream("/bridge_contract_vectors.json")!!
-            .bufferedReader().readText()
+        val stream = javaClass.getResourceAsStream("/bridge_contract_vectors.json")
+            ?: throw AssertionError("CW-VECTOR-MISSING bridge_contract_vectors.json")
+        val text = stream.bufferedReader().use { it.readText() }
         val json = JSONObject(text)
+        // This reader uses metadata; JSON verdict evaluations are not applicable.
+        assertEquals("CW-VECTOR-LOADED expected 15", 15, json.getJSONArray("vectors").length())
         bridgeProtocolVersion = json.getString("bridge_protocol_version")
         nativeRuntimeVersion = json.getString("native_runtime_version")
     }

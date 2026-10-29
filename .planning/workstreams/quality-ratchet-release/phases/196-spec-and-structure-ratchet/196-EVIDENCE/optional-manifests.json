@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "plan": "196-02",
+  "source": {
+    "manifest": "examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json",
+    "producer_commit": "af9a7da5454211ffe60ca8803faac5e73c4880c4",
+    "routes": 33,
+    "captured": 20,
+    "artifacts": 20,
+    "sha256": "19c6ed9e5511c5ddb5b1af57872734a6556b6cb8be1fe4ef08c56696dc0b45dc",
+    "files": {
+      "test/crosswake/guides/evidence_manifest_test.exs": "2472790e5e9892ffabc2a76c374c666874db1b301be87d5e3632bcd317bb9244",
+      "test/test_helper.exs": "81372ee19239423e84440dc5122167dfe439cf5d058f6aec59f4a48f7ed5061d",
+      "examples/phoenix_host/e2e/route_tour.spec.ts": "ff81992148e1cff046b048b41430b065dd9b71823ace0dcf8f280e6148828e9d",
+      "examples/phoenix_host/e2e/support/evidence_manifest.ts": "8c6df7a47da6dd11a55ab7606d408caa22aedb50921bb9c4dae2845525b78934",
+      "packages/crosswake_threadline/test/crosswake/proof/phase139_threadline_cleanroom_test.exs": "c6cc9c0d9d9791c9d06a172589e0b990d1d8492ed4572e96f9777a1bb365bf8f",
+      "packages/crosswake_threadline/test/test_helper.exs": "cdf8fa6f5ee0964363d2161c69329c64ee9e1092ba8dcb5eea116b6d898537c3",
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/tdd-manifest-red.json": "f4aea0fd733f0242b5084f12504e98648794a9be9a97e6687c7a03e23b628414",
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/tdd-plug-red.json": "2128f98ebe44c5f3449642b756128eb4875cf9ef2cbefc8113a2d2a45427c170"
+    }
+  },
+  "producer": {
+    "command": "ERL_FLAGS='+S 2:2' npm test -- e2e/route_tour.spec.ts --project=chromium --grep='proves LiveView' --reporter=line",
+    "cwd": "examples/phoenix_host",
+    "exit": 0,
+    "executed": 1,
+    "failures": 0,
+    "duration_ms": 3600,
+    "kind": "existing real Playwright route-tour producer"
+  },
+  "root": {
+    "command": "mix test test/crosswake/guides/evidence_manifest_test.exs",
+    "disabled": {
+      "exit": 0,
+      "executed": 10,
+      "failures": 0,
+      "excluded": 1
+    },
+    "enabled": {
+      "exit": 0,
+      "executed": 11,
+      "failures": 0,
+      "excluded": 0,
+      "environment": "CROSSWAKE_EVIDENCE_MANIFEST_PATH=examples/phoenix_host/playwright-artifacts/route-tour/evidence-manifest.json"
+    },
+    "controls": [
+      {
+        "control": "empty-path",
+        "exit": 2
+      },
+      {
+        "control": "missing-path",
+        "exit": 2
+      },
+      {
+        "control": "empty-file",
+        "exit": 2
+      },
+      {
+        "control": "malformed",
+        "exit": 2
+      },
+      {
+        "control": "wrong-root",
+        "exit": 2
+      },
+      {
+        "control": "wrong-manifest",
+        "exit": 2
+      },
+      {
+        "control": "wrong-version",
+        "exit": 2
+      },
+      {
+        "control": "zero-routes",
+        "exit": 2
+      },
+      {
+        "control": "wrong-route",
+        "exit": 2
+      },
+      {
+        "control": "zero-captures",
+        "exit": 2
+      },
+      {
+        "control": "zero-artifacts",
+        "exit": 2
+      },
+      {
+        "control": "missing-artifact",
+        "exit": 2
+      },
+      {
+        "control": "disabled",
+        "exit": 0
+      }
+    ],
+    "diagnostics": "Closed reason labels; synthetic input and artifact-root leakage assertions pass."
+  },
+  "threadline": {
+    "command": "mix cmd --cd packages/crosswake_threadline mix test test/crosswake/proof/phase139_threadline_cleanroom_test.exs",
+    "disabled": {
+      "exit": 0,
+      "executed": 4,
+      "failures": 0,
+      "excluded": 1
+    },
+    "enabled": {
+      "exit": 0,
+      "executed": 5,
+      "failures": 0,
+      "excluded": 0,
+      "environment": "MIX_INCLUDE_THREADLINE_PLUG=1"
+    },
+    "controls": [
+      {
+        "control": "disabled",
+        "exit": 0,
+        "executed": 3,
+        "failures": 0,
+        "excluded": 2
+      },
+      {
+        "control": "missing",
+        "exit": 2,
+        "executed": 4,
+        "failures": 1,
+        "excluded": 1
+      },
+      {
+        "control": "enabled",
+        "exit": 0,
+        "executed": 4,
+        "failures": 0,
+        "excluded": 1
+      }
+    ],
+    "missing_dependency_isolation": "Plug ebin omitted from real subprocess code paths; ensure_loaded? proves it unavailable before the actual consumer runs. Installed dependencies are unchanged."
+  },
+  "red_evidence": {
+    "format": "native Node TAP assertions over actual ExUnit process exits",
+    "manifest": "RED_EVIDENCE_OK",
+    "plug": "RED_EVIDENCE_OK"
+  }
+}

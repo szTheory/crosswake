@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "plan": "196-08",
+  "base_commit": "1697d1df7c773faf99489a438a2395a90c545975",
+  "diagnostic_red": {
+    "command": "mix test test/crosswake/policy/compiler_test.exs",
+    "exit_code": 2,
+    "tests": 9,
+    "failures": 2,
+    "target_assertions_executed": true,
+    "semantic_assessment": "Grouped unknown keys collapsed to runtime; invalid sync had nil key; invalid-first input shifted duplicate and semantic source metadata. Both target assertions failed, with no load or fixture failures.",
+    "raw_output_retained": false
+  },
+  "diagnostic_green": {
+    "command": "mix test test/crosswake/policy/compiler_test.exs",
+    "exit_code": 0,
+    "tests": 9,
+    "failures": 0,
+    "real_dependency": "NimbleOptions 1.1.1 installed source and actual Route.new errors",
+    "structured_cases": 7,
+    "provenance_inputs": 4,
+    "provenance_diagnostics": 5
+  },
+  "finite_product": {
+    "command": "mix test test/crosswake/policy/finite_product_test.exs test/crosswake/policy/route_test.exs",
+    "exit_code": 0,
+    "tests": 19,
+    "failures": 0,
+    "dimensions": [3, 3, 2, 3, 2],
+    "runtime_offline_literal_cells": 9,
+    "semantic": {"input": 108, "unique": 108, "completed": 108},
+    "staged_compiler": {"input": 108, "unique": 108, "completed": 108},
+    "comparison": "exact sorted key and route_id pairs",
+    "expectation_source": "independent literal nine-cell table and handwritten entry/security/sync rules",
+    "route_malformed_error_cases": 8,
+    "non_list_boundary_cases": 5,
+    "nil_identifier_normalization_preserved": true,
+    "missing_identifier_remains_rejected": true,
+    "new_and_new_bang_checked_separately": true
+  },
+  "controls": [
+    {
+      "id": "allowed_to_denied",
+      "file": "lib/crosswake/policy/validator.ex",
+      "mutation": "add a live_view/unavailable offline denial before the fallback clause",
+      "source_before_sha256": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849",
+      "source_mutated_sha256": "56763995912dab85478b5b18f15b0dddb232eecce747b8ab3a73ed803cfa27dd",
+      "source_restored_sha256": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849",
+      "command": "mix test test/crosswake/policy/finite_product_test.exs",
+      "red_exit_code": 2, "red_tests": 2, "red_failures": 2,
+      "target_test": "108 unique normalized semantic cases match the independent aggregate oracle",
+      "expected_red_reason": "allowed cell acquires an unexpected offline diagnostic",
+      "target_assertion_failed": true, "mutation_changed_bytes": true,
+      "restored_exact_bytes": true, "restored_recompiled_exit_code": 0,
+      "elapsed_seconds": 1.109
+    },
+    {
+      "id": "denied_to_allowed",
+      "file": "lib/crosswake/policy/validator.ex",
+      "mutation": "disable the live_view/local_first denial with a false guard",
+      "source_before_sha256": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849",
+      "source_mutated_sha256": "4cda0a382bbc876d41fd5f923201a4f142d161a4be0b28443ce0113aa7e92676",
+      "source_restored_sha256": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849",
+      "command": "mix test test/crosswake/policy/finite_product_test.exs",
+      "red_exit_code": 2, "red_tests": 2, "red_failures": 2,
+      "target_test": "108 unique normalized semantic cases match the independent aggregate oracle",
+      "expected_red_reason": "denied local-first cell loses the required offline diagnostic",
+      "target_assertion_failed": true, "mutation_changed_bytes": true,
+      "restored_exact_bytes": true, "restored_recompiled_exit_code": 0,
+      "elapsed_seconds": 1.027
+    },
+    {
+      "id": "required_security_removed",
+      "file": "lib/crosswake/policy/validator.ex",
+      "mutation": "disable the required-security branch with false and",
+      "source_before_sha256": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849",
+      "source_mutated_sha256": "2373159db7512c1aab1885b79d53bb35c6450372f3d0fc76b3b59a8050da3279",
+      "source_restored_sha256": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849",
+      "command": "mix test test/crosswake/policy/finite_product_test.exs",
+      "red_exit_code": 2, "red_tests": 2, "red_failures": 2,
+      "target_test": "108 unique normalized semantic cases match the independent aggregate oracle",
+      "expected_red_reason": "security-required case loses the security diagnostic",
+      "target_assertion_failed": true, "mutation_changed_bytes": true,
+      "restored_exact_bytes": true, "restored_recompiled_exit_code": 0,
+      "elapsed_seconds": 1.037
+    },
+    {
+      "id": "diagnostic_key_corrupted",
+      "file": "lib/crosswake/policy/compiler.ex",
+      "mutation": "replace validation_key(error) at diagnostic construction with a corrupt atom",
+      "source_before_sha256": "c74d89ca28174b0fc881f537fe2e9ab1ea9d3093d2df88774485f1ccc07787aa",
+      "source_mutated_sha256": "0858ba04ceeb8a17e4a3a7a8e83ccd0b59c488154146924e833ebe2cde2c842c",
+      "source_restored_sha256": "c74d89ca28174b0fc881f537fe2e9ab1ea9d3093d2df88774485f1ccc07787aa",
+      "command": "mix test test/crosswake/policy/compiler_test.exs",
+      "red_exit_code": 2, "red_tests": 9, "red_failures": 2,
+      "target_test": "structured dependency keys stay atomic, split grouped unknowns, and keep missing identity",
+      "expected_red_reason": "grouped unknown option keys differ from the exact required atom pairs",
+      "target_assertion_failed": true, "mutation_changed_bytes": true,
+      "restored_exact_bytes": true, "restored_recompiled_exit_code": 0,
+      "elapsed_seconds": 1.106
+    },
+    {
+      "id": "source_attribution_corrupted",
+      "file": "lib/crosswake/policy/compiler.ex",
+      "mutation": "replace every successful Validator source with the first original source",
+      "source_before_sha256": "c74d89ca28174b0fc881f537fe2e9ab1ea9d3093d2df88774485f1ccc07787aa",
+      "source_mutated_sha256": "8af8b9969cd7fd90a99f34125f37281c72cb406a629448d23ab36a1b6b985836",
+      "source_restored_sha256": "c74d89ca28174b0fc881f537fe2e9ab1ea9d3093d2df88774485f1ccc07787aa",
+      "command": "mix test test/crosswake/policy/compiler_test.exs",
+      "red_exit_code": 2, "red_tests": 9, "red_failures": 1,
+      "target_test": "invalid-first normalization preserves duplicate and semantic source provenance",
+      "expected_red_reason": "semantic diagnostic source tuple differs from its original input",
+      "target_assertion_failed": true, "mutation_changed_bytes": true,
+      "restored_exact_bytes": true, "restored_recompiled_exit_code": 0,
+      "elapsed_seconds": 1.194
+    }
+  ],
+  "control_protocol": {
+    "runner": "sequential Python subprocess calls to actual mix test; exact-byte replacement and restoration in finally",
+    "required_failure_checks": ["exit 2", "nonzero ExUnit failure count", "named target assertion failed", "exact diagnostic-pair fragment present", "no compilation error"],
+    "initial_probe": "Allowed-cell mutation failed both oracle tests; custom assertion text hid pair differences. Removed the custom text, restored and recompiled, then reran all five controls with exact pair evidence.",
+    "raw_failure_reports_retained": false,
+    "copied_expected_report_used": false,
+    "all_five_controls_discriminated": true,
+    "final_test_revision_rerun": {"controls": 5, "red_exit_codes": [2, 2, 2, 2, 2], "failures": [2, 2, 2, 2, 1], "restored_exit_codes": [0, 0, 0, 0, 0], "all_exact_bytes_restored": true}
+  },
+  "final_positive": {
+    "command": "mix test test/crosswake/policy/finite_product_test.exs test/crosswake/policy/compiler_test.exs test/crosswake/policy/route_test.exs",
+    "exit_code": 0, "tests": 28, "failures": 0,
+    "format_check_exit_code": 0,
+    "source_sha256": {
+      "lib/crosswake/policy/compiler.ex": "c74d89ca28174b0fc881f537fe2e9ab1ea9d3093d2df88774485f1ccc07787aa",
+      "lib/crosswake/policy/validator.ex": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849",
+      "test/crosswake/policy/compiler_test.exs": "da99792b8592fdc89628603569ffa0828f7cce3109c4ea418cab423b64026024",
+      "test/crosswake/policy/finite_product_test.exs": "c5603f37588389340425d935d2bbea3acf7e26c653d43014fd13ea350a950061",
+      "test/crosswake/policy/route_test.exs": "76c95e443dd71e12565f3e2261aece1844d670936bbe42a65aee0436e7233aa2"
+    }
+  },
+  "absence_ratchet": {
+    "command": "elixir script/check_absence_is_not_success.exs --collections-mode enforce",
+    "exit_code": 0, "files": 312, "findings": 84, "delta": 0,
+    "new_test_finding_fixed": "Added explicit nonempty errors assertion before the all-atomic predicate; existing baseline unchanged."
+  }
+}

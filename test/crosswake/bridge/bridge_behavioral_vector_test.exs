@@ -78,13 +78,17 @@ defmodule Crosswake.Bridge.BridgeVectorBehavioralTest do
 
   test "each vector's expected_outcome and expected_denial_reason match real bridge_findings/2 result" do
     vectors = @vectors["vectors"]
+    # Reviewed request corpus: 15 loaded; six native-only cases leave nine Elixir evaluations.
+    # Intentional corpus changes must update both independent expectations explicitly.
+    assert length(vectors) == 15, "CW-VECTOR-LOADED expected 15"
+    assert length(Enum.uniq_by(vectors, & &1["id"])) == 15, "CW-VECTOR-IDS expected unique IDs"
 
-    for vector <- vectors do
-      id = vector["id"]
+    completed_ids =
+      for vector <- vectors, vector["native_only"] != true do
+        id = vector["id"]
 
-      # Skip vectors that target native-only semantics (session vs request check, not request vs manifest).
-      # These vectors are exercised by the native (Swift/Kotlin) conformance test suites instead.
-      unless vector["native_only"] == true do
+        # Skip vectors that target native-only semantics (session vs request check, not request vs manifest).
+        # These vectors are exercised by the native (Swift/Kotlin) conformance test suites instead.
         request_override = vector["request_override"] || %{}
         session_override = vector["session_override"] || %{}
         expected_outcome = vector["expected_outcome"]
@@ -112,8 +116,12 @@ defmodule Crosswake.Bridge.BridgeVectorBehavioralTest do
           assert actual_reason == expected_denial_reason,
                  "Vector #{id}: expected_denial_reason=#{inspect(expected_denial_reason)} but got #{inspect(actual_reason)}. Findings: #{inspect(findings)}"
         end
+
+        id
       end
-    end
+
+    assert length(completed_ids) == 9, "CW-VECTOR-COMPLETED expected 9"
+    assert length(Enum.uniq(completed_ids)) == 9, "CW-VECTOR-COMPLETED-IDS expected unique IDs"
   end
 
   # ---------------------------------------------------------------------------

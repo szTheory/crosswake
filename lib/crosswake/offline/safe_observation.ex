@@ -92,7 +92,7 @@ defmodule Crosswake.Offline.SafeObservation do
   end
 
   defp route(value) when is_binary(value) do
-    if value =~ ~r/^route-[0-9a-f]{16}$/,
+    if value =~ ~r/\Aroute-[0-9a-f]{16}\z/,
       do: :ok,
       else: error("CW-SAFE-OBSERVATION-ROUTE", :route_id)
   end

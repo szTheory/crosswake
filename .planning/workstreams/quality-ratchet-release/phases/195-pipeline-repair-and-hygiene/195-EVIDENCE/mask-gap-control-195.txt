@@ -1,0 +1,24 @@
+green: task1 rc 0 pass 15 fail 0
+control: task1 mask removed rc 1
+control: task1 leaked message present yes
+control: task1 restored clean yes
+log-scan: control1 seed hits 0
+green: task2 rc 0 pass 46 fail 0
+green: repository_verification rc 0
+perf: blank_lines ms 0
+perf: whitespace_lines ms 0
+perf: keyword_no_separator ms 2
+perf: unterminated_quote ms 1
+perf: userinfo_no_at ms 1
+perf: jwt_segments ms 5
+control: final mask removed rc 1
+control: final gap leaked 24 of 24
+control: final restored clean yes
+log-scan: control3 seed hits 0
+control: pre-fix masker rc 1 fail 25
+control: pre-fix restored clean yes
+log-scan: prefix seed hits 0
+green: final js suite rc 0 pass 186 fail 0
+guard: tail_masking_gap class delta_only_blocking findings_on_branch 0 control_rc 1
+privacy: sources rc 0 files 2 head 7db34f2
+branch: fix/secret-mask-quoted-shapes head 7db34f20345d61370ca975e3d7222dfa94c61b4e commits 6

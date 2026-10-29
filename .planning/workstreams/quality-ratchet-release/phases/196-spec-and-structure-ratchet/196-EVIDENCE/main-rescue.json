@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "guard": "rescue",
+  "candidate_sha": "4437ac1c11b4125021a21468a6592ddb9678d6a9",
+  "main_ref": "origin/main",
+  "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
+  "guard_blob": "d12f05a9e406bc66a9b2b5f92294f8ccd8640a7f",
+  "guard_sha256": "02761ec435e06008f73d0e9b4736377f654eb95f3285b9e48cbbeb5e96370a62",
+  "tools": [
+    {
+      "path": "script/check_rescue_boundaries.exs",
+      "origin": "candidate",
+      "blob": "d12f05a9e406bc66a9b2b5f92294f8ccd8640a7f",
+      "sha256": "02761ec435e06008f73d0e9b4736377f654eb95f3285b9e48cbbeb5e96370a62"
+    },
+    {
+      "path": "script/fixtures/rescue_boundary_exceptions.exs",
+      "origin": "candidate",
+      "blob": "0872c8db399f4c8e34ed383a40f2f688103dfd9e",
+      "sha256": "2c9cafb4a4734a5d2b8a5da534d9168fe6df0f55c433a90f32fec7a3edba2df0"
+    }
+  ],
+  "subject_count": 41,
+  "subjects": [
+    {
+      "path": "lib/crosswake/bridge.ex",
+      "sha256": "d8e6b6da758219491c88821c4b264fdba55c83107661ae83a083fee7b084a8ec"
+    },
+    {
+      "path": "lib/crosswake/bridge/catalog_guard.ex",
+      "sha256": "145abe59a5181bec1fbc6f194414c24c7a3c09f2a0d1f789e091cb86c6a2b555"
+    },
+    {
+      "path": "lib/crosswake/bridge/commands/app_info.ex",
+      "sha256": "6ca58a1f9fcbc9184c60981effb616f31e515a754a66a8daaae0580e7b6af8cc"
+    },
+    {
+      "path": "lib/crosswake/bridge/commands/file_picker.ex",
+      "sha256": "de368f2cff2ad6bb31391adab5a02ac24e1989a9f42fe58a1f62b97d89e72114"
+    },
+    {
+      "path": "lib/crosswake/bridge/commands/haptics.ex",
+      "sha256": "981041ce70e7bc30ba0e3d1deb906aa9d8e08b8f8e9a476d6ee61f323d1d9635"
+    },
+    {
+      "path": "lib/crosswake/bridge/commands/notification_token.ex",
+      "sha256": "29d7978005fea6ecaaea00c760c2a9333e3bae38f2077570a58b9ab3dc5c443b"
+    },
+    {
+      "path": "lib/crosswake/bridge/commands/permissions_status.ex",
+      "sha256": "c2b05abe82881610dffd47be88d70e1475c988819f2b0bccd3cde60a2ac1254d"
+    },
+    {
+      "path": "lib/crosswake/bridge/commands/share.ex",
+      "sha256": "d5ce460c80fa7e3a5f0a723446c48ace804af7cada6729ed685f3fe3c952e611"
+    },
+    {
+      "path": "lib/crosswake/bridge/contract.ex",
+      "sha256": "2744e346c5c5acb0b7ac82f4a147a64f1ca5a7d666ca0608d74a655e50ab29fc"
+    },
+    {
+      "path": "lib/crosswake/bridge/denial.ex",
+      "sha256": "b6f8d0ed8970e7e5e85015176d95e2312331dd46c06c15c2ec2166bf569fb462"
+    },
+    {
+      "path": "lib/crosswake/bridge/registry.ex",
+      "sha256": "0a3fe4507e84b2eda759bb3ee0a52490a17378ba0e2e5a3215f9eb2de22f1765"
+    },
+    {
+      "path": "lib/crosswake/bridge/reply.ex",
+      "sha256": "5e59847348eed966cb097b84509fc8c75afa1ab4fbc16b2520a94fbaecf0c290"
+    },
+    {
+      "path": "lib/crosswake/compatibility/compatibility.ex",
+      "sha256": "7deb76fe1315e83eaa6646ccc491999708091c35cd8818ab972558e07bd9ce19"
+    },
+    {
+      "path": "lib/crosswake/compatibility/route_gate.ex",
+      "sha256": "7fb7f73323581853a91cc5a83b318ffdc483ffea16a5cb7d568b27df112d85de"
+    },
+    {
+      "path": "lib/crosswake/manifest/builder.ex",
+      "sha256": "c4cc54f0c77746160007bb38487890c1977f51656735536333ede74c23d0ee40"
+    },
+    {
+      "path": "lib/crosswake/manifest/manifest.ex",
+      "sha256": "4ae4ea772fc705b536f361660250f1ce192405b451334b3e2991dc4051855c6e"
+    },
+    {
+      "path": "lib/crosswake/manifest/serializer.ex",
+      "sha256": "5a154df3e1716d76e769252f73d70dffaf9f30051c9f2e849e689a439a7f10cf"
+    },
+    {
+      "path": "lib/crosswake/manifest/types.ex",
+      "sha256": "3fc392d36d463bcf7c70cd798785984b98a65b72c6e3b6597265713f67ecb467"
+    },
+    {
+      "path": "lib/crosswake/manifest/validator.ex",
+      "sha256": "ea99c94fa30e7a2c454ea15d35561c34b77f3cd380201abf9685e7377417148f"
+    },
+    {
+      "path": "lib/crosswake/offline/content_pack.ex",
+      "sha256": "7d60777abdb03a24b214522d7ef24a769f1241d1c61faf6b43df834e059b99a5"
+    },
+    {
+      "path": "lib/crosswake/offline/contracts.ex",
+      "sha256": "af95eb036f59631654d882e8f50581754a0ddba84b17d8fb0b4a333bdfeb6085"
+    },
+    {
+      "path": "lib/crosswake/offline/journal.ex",
+      "sha256": "48b89872653886c64cf6ac882dc9804be32fdc2f50f363ba54c795ce6c841bff"
+    },
+    {
+      "path": "lib/crosswake/offline/replay.ex",
+      "sha256": "f6a10c23eac5161742ddea1090e78e03abd1da6451c5f8966ce295987e5955e9"
+    },
+    {
+      "path": "lib/crosswake/offline/runtime.ex",
+      "sha256": "4df567db3fa69e09a1cd02b6987a955566bc2600e17535cd514ab1b5769f5482"
+    },
+    {
+      "path": "lib/crosswake/offline/safe_observation.ex",
+      "sha256": "fd75dc3b3feae161affaf48aada67c8151edaeec6ba5cd9662621ac507904387"
+    },
+    {
+      "path": "lib/crosswake/offline/status.ex",
+      "sha256": "a3f255414ef070ee36932abd17904ea547ffa0bc62a253544cbc8b472bbe9128"
+    },
+    {
+      "path": "lib/crosswake/offline/telemetry.ex",
+      "sha256": "43f96c78e1391b76e67cd2cf4bc056fe26df67db45870920a17ad95cd4848d9b"
+    },
+    {
+      "path": "lib/crosswake/policy.ex",
+      "sha256": "f070b591413ff4f074300efc2c0cc2cb5ea628bf3e6f31ac2fb05a8b43b8b1a6"
+    },
+    {
+      "path": "lib/crosswake/policy/compiler.ex",
+      "sha256": "244459c2d44ab0b4b6ce383c6143a2a3ea21eb146530132d18957a5c4d1d0740"
+    },
+    {
+      "path": "lib/crosswake/policy/corridor_profiles.ex",
+      "sha256": "2a8ceec6afcb8edc6acd12c1d65a6d39e7f8cbe37bc76d2eb6f59da7c7377e62"
+    },
+    {
+      "path": "lib/crosswake/policy/defaults.ex",
+      "sha256": "f628f20e0c5f7f24446323a0dc98cbc3f005b92b3d57a61a362d5dd9b808cea4"
+    },
+    {
+      "path": "lib/crosswake/policy/diagnostic.ex",
+      "sha256": "07d2e164f3666c80efd53257c4427e1bc23e31d2e1f1f7bfe9e49d49b823e314"
+    },
+    {
+      "path": "lib/crosswake/policy/error.ex",
+      "sha256": "660107da32c4edcb77691e67a0f51bdb744cd1a62f78728639d92cac76c73ae3"
+    },
+    {
+      "path": "lib/crosswake/policy/merge.ex",
+      "sha256": "ea8682ede26789e336231a93b9341aba605c17c4bce5b2ac8c3946bdff666b95"
+    },
+    {
+      "path": "lib/crosswake/policy/route.ex",
+      "sha256": "164ce24fe98cd5f47b132c2d538e5c7ac9b1e4b7596ffaf8b43432eafd024d0f"
+    },
+    {
+      "path": "lib/crosswake/policy/router_metadata.ex",
+      "sha256": "cb302f672b4963967aba6dd29729d569f7ccdfb33de2e0c8999a3a323dc26a27"
+    },
+    {
+      "path": "lib/crosswake/policy/schema.ex",
+      "sha256": "b369f9695f6cfdac474257bcda88214348f30a1d98cd9a553e4b099bff81970d"
+    },
+    {
+      "path": "lib/crosswake/policy/validator.ex",
+      "sha256": "cfd5a07c6e42f646d2556f54570c6fa3d5f3e3d92b606c35f5a9c28c34be5849"
+    },
+    {
+      "path": "lib/crosswake/policy/warning.ex",
+      "sha256": "c792a845b1b81ad8d5e5b3e501a702d569420c534c2674e4b0d3b3a4a9f5aa00"
+    },
+    {
+      "path": "lib/crosswake/router.ex",
+      "sha256": "9218601157c4cef244358820633842e4f2143ef0d5c1f9439c439e1e89911f0e"
+    },
+    {
+      "path": "lib/crosswake/router/scope_defaults.ex",
+      "sha256": "78c42194a50962037aafa0e822f59ce4826377ac94fbbb92c6f1e38bca41240b"
+    }
+  ],
+  "subject_sha256": "336c86b283b6f47397d7265b19046b46af229dcbab9b6296bcc112d8e7acf7d9",
+  "command": [
+    "elixir",
+    "script/check_rescue_boundaries.exs",
+    "--mode",
+    "report",
+    "--root",
+    "<actual-main>"
+  ],
+  "process_exit": 1,
+  "stdout_sha256": "e418b5405a58962d19b9ede3aacb564ed57ac40c4159366024c91cf5fd64d9cf",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "counts": {
+    "exceptions": 0,
+    "files": 41,
+    "rescues": 9
+  },
+  "findings": [
+    {
+      "category": "broad_rescue",
+      "count": 1,
+      "file": "lib/crosswake/bridge.ex"
+    },
+    {
+      "category": "broad_rescue",
+      "count": 1,
+      "file": "lib/crosswake/bridge.ex"
+    },
+    {
+      "category": "broad_rescue",
+      "count": 1,
+      "file": "lib/crosswake/bridge.ex"
+    },
+    {
+      "category": "broad_rescue",
+      "count": 1,
+      "file": "lib/crosswake/compatibility/route_gate.ex"
+    },
+    {
+      "category": "broad_rescue",
+      "count": 1,
+      "file": "lib/crosswake/compatibility/route_gate.ex"
+    },
+    {
+      "category": "rescue_exception_mismatch",
+      "count": 1,
+      "file": "lib/crosswake/compatibility/route_gate.ex"
+    },
+    {
+      "category": "rescue_exception_mismatch",
+      "count": 1,
+      "file": "lib/crosswake/compatibility/route_gate.ex"
+    }
+  ],
+  "restoration": {
+    "branch": "fix/spec-structure-ratchet",
+    "head": "4437ac1c11b4125021a21468a6592ddb9678d6a9",
+    "index_sha256": "0865f179fb8773f6637108d907d495aaab7e786bf68b4f362618d316c974b75d",
+    "tracked_count": 6158,
+    "tracked_sha256": "17cb3d16330646f5ee4a87b86bc7f22f7057a2f604e4a3e6fd0682aeea80975f",
+    "untracked_count": 0,
+    "untracked_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "privacy_before": {
+    "exit": 0,
+    "files": 160
+  },
+  "privacy_after": {
+    "exit": 0,
+    "files": 160
+  },
+  "duration_ms": 5163
+}

@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-10-27T12:43:28.806Z",
+  "workstream": "quality-ratchet-release",
+  "phase": "196",
+  "phase_name": "spec-and-structure-ratchet",
+  "phase_dir": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "ready_to_plan",
+  "completed_tasks": [
+    {
+      "id": "195",
+      "name": "Pipeline repair and hygiene:21/21,passed8/8",
+      "status": "done"
+    },
+    {
+      "id": "196-discuss",
+      "name": "Spec and structure ratchet context: 27 decisions, comparison log, three read-only researchers",
+      "status": "done"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": "196-plan",
+      "name": "Research and plan Spec and structure ratchet from 196-CONTEXT.md",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [],
+  "async_jobs": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {
+      "decision": "Re-run red example-host job once without a change",
+      "rationale": "user choice; cause of exit 2 unobservable; attempt 2 green",
+      "phase": "195"
+    },
+    {
+      "decision": "PR #257 merge allow bound to head 12281b8; merged by user as 7621c0ce",
+      "rationale": "agent merge refused by classifier",
+      "phase": "195"
+    },
+    {
+      "decision": "GR-06 deferred to Phase 196",
+      "rationale": "census 0 secret-referencing lines in all seven unparsed forms; user accept",
+      "phase": "195"
+    },
+    {
+      "decision": "Linear-time floor 40 -> 250 ms",
+      "rationale": "shared runner measured 51-95 ms on linear inputs; quadratic still takes seconds",
+      "phase": "195"
+    },
+    {
+      "decision": "Reopen only REL-03 in REQUIREMENTS.md",
+      "rationale": "other seven phase requirements verified unchanged",
+      "phase": "195"
+    },
+    {
+      "decision": "PR259 merged at reviewed24baafa3 as b8398c38; automatic branch deletion completed",
+      "rationale": "Separate current one-use allows consumed once; actual readbacks and main proof retained",
+      "phase": "195"
+    },
+    {
+      "decision": "All phase196 recommendations selected under explicit user delegation after role-based research and adversarial review",
+      "rationale": "No committed tooling dependency; exact outcomes retained; actual pilot remains unmeasured",
+      "phase": "196"
+    }
+  ],
+  "uncommitted_files": [
+    ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push-195.txt",
+    ".planning/workstreams/quality-ratchet-release/phases/195-pipeline-repair-and-hygiene/195-EVIDENCE/privacy-push2-195.txt"
+  ],
+  "next_action": "$gsd-plan-phase 196 --ws quality-ratchet-release",
+  "context_notes": "Last completed195; active196 context complete, ready to plan. Actual pilot and implementation not run. Both prior delivery permissions consumed. No new irreversible operation authorized."
+}

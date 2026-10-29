@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "guard": "grammar",
+  "candidate_sha": "83132b299af01b1b8887c1a3dd109abddcfea7a1",
+  "main_ref": "origin/main",
+  "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
+  "guard_blob": "e0891db68e92ef58b81c842b1460d622fcc84f04",
+  "guard_sha256": "cbd0b96674af82191515343aa0bf92d089912c9b0789d0cbaa55368f04a4d191",
+  "tools": [
+    {
+      "path": "test/js/ci_secret_masking.test.mjs",
+      "origin": "candidate",
+      "blob": "e0891db68e92ef58b81c842b1460d622fcc84f04",
+      "sha256": "cbd0b96674af82191515343aa0bf92d089912c9b0789d0cbaa55368f04a4d191"
+    },
+    {
+      "path": "script/verify_repository.mjs",
+      "origin": "main",
+      "blob": "b9a8bba556037d7e78138649e517975e0c823565",
+      "sha256": "71ffe799b85606e25fa88d1065544eabd0ed76665db44a73d3586c9169698c81"
+    }
+  ],
+  "subject_count": 28,
+  "subjects": [
+    {
+      "path": ".github/workflows/clean-room-proof-rehearsal.yml",
+      "sha256": "2128c3a6fbd78cbc44d27025e34e3ed446cb5f35ef1cda61b4a37947715dcb8a"
+    },
+    {
+      "path": ".github/workflows/crosswake-ci.yml",
+      "sha256": "823b446987ebfd770941f043726679c9e96dff20c04c86cba46eb2b07ecdd490"
+    },
+    {
+      "path": ".github/workflows/exact-public-proof.yml",
+      "sha256": "f232cf5bed26f857e5ab015eb0fe33ac0a22e33fc1dfdb87e78e37343b175d0c"
+    },
+    {
+      "path": ".github/workflows/hex-publish.yml",
+      "sha256": "11cbbbdf46c85f400b28ebc2e2694d5d0b3fad4400604ea017c8674becec87c8"
+    },
+    {
+      "path": ".github/workflows/ios-mirror-backfill.yml",
+      "sha256": "7173e6a83e557c2e8cbab23d286435eecdb3e3538157b8fad55e09f0c6c36725"
+    },
+    {
+      "path": ".github/workflows/ios-tag-recovery.yml",
+      "sha256": "8f350c6ea2c87dd5fd00a47995ca3f37bc7b15d6a91ef633a8ba1647a4bd3a71"
+    },
+    {
+      "path": ".github/workflows/maven-publish-fire-drill.yml",
+      "sha256": "e26152088427fc31956b95b1614c65a900ca7ad7bf5a11176a5f0b9e02cd2caa"
+    },
+    {
+      "path": ".github/workflows/native-collateral-advisory.yml",
+      "sha256": "57abe2efeeca370364e7801559425149099a1fd8897b0200fd77750802a6cf80"
+    },
+    {
+      "path": ".github/workflows/phase130-proof.yml",
+      "sha256": "cfff7ae4e0548942a13729e0d400ead1c2dde9f73cbad50442985f124cf00e0e"
+    },
+    {
+      "path": ".github/workflows/phase132-proof.yml",
+      "sha256": "1164e0b529790a3f1e84aa092906a487b085e90ed0876e49c9b85230b66a03d6"
+    },
+    {
+      "path": ".github/workflows/phase23-proof.yml",
+      "sha256": "5f7bd3a4aa46642640e1a8e670ca7f2df6677aff841ada7b467ed1a1d48bf692"
+    },
+    {
+      "path": ".github/workflows/phase34-proof.yml",
+      "sha256": "30a0b2001f0b65d682716119e70549dd80d3776a3bad45164b1b5da956ec3adf"
+    },
+    {
+      "path": ".github/workflows/phase43-proof.yml",
+      "sha256": "60a6e1ed3c8a1b1a96e4303b117b53f5ce70b6226bac1b09ae8a152606f3165c"
+    },
+    {
+      "path": ".github/workflows/phase45-proof.yml",
+      "sha256": "888d1d861bb50e8d69dc18cea7a9f0d686815dd138e7c5b471707dad13022c43"
+    },
+    {
+      "path": ".github/workflows/phase48-proof.yml",
+      "sha256": "61734f71d82c022bd52aac4ba93349f45e6824bc93db9b4cf8e29abfa3ecc218"
+    },
+    {
+      "path": ".github/workflows/phase52-proof.yml",
+      "sha256": "bda6b02e5fad04ae332dcfedc0d8968e30db412a7dcf9e1b704ad0b50932521c"
+    },
+    {
+      "path": ".github/workflows/phase58-proof.yml",
+      "sha256": "758a889f5677abe4ba68fca66d904eb41e75319c627e08f4adb340e72a0c3185"
+    },
+    {
+      "path": ".github/workflows/phase68-proof.yml",
+      "sha256": "b7e3feb3669a470651c0cb8d293edb46c41807600a020c465dfc6f5e43ac44e5"
+    },
+    {
+      "path": ".github/workflows/phase70-proof.yml",
+      "sha256": "fc364360722bd4174a54767bb61589ec41ad5a2029cdce9c877d8391c30a60ac"
+    },
+    {
+      "path": ".github/workflows/phase71-proof.yml",
+      "sha256": "6d5060f7ad7e7f2d5cfed2a91639685f2a43b6bdd6a8a0c71eb26ab9ac0a2967"
+    },
+    {
+      "path": ".github/workflows/phase73-proof.yml",
+      "sha256": "a9f52ca9fe8e4e416c926167d54ae9771dcc202d2b575ab4344d5dc84698e970"
+    },
+    {
+      "path": ".github/workflows/phase74-proof.yml",
+      "sha256": "2fffd1793b432690e11f7e9fbca5404356e34b560bf1c61ef05deec70eb27830"
+    },
+    {
+      "path": ".github/workflows/phase96-proof-advisory.yml",
+      "sha256": "201a0111652f783a97ef7d6e20a36e18f4ca02292a87b35ab9cd7957969d6d38"
+    },
+    {
+      "path": ".github/workflows/release-please.yml",
+      "sha256": "7f67e3aedbccc1e80a9bbbaefabc64f7a9957d574b16e22d3ddda4d566b5c728"
+    },
+    {
+      "path": ".github/workflows/required-checks-audit.yml",
+      "sha256": "1efbacf131a618a3548600066aa3962f17478f1755140bb2684784705db8f6f5"
+    },
+    {
+      "path": ".github/workflows/see-it-run-collateral.yml",
+      "sha256": "d26ac2b336de227e749262ced247f8a21a420a67f3d3efa0e68f69ee29532978"
+    },
+    {
+      "path": ".github/workflows/see-it-run-native.yml",
+      "sha256": "e00e9084298bbe00ca2af2efe54b83f5ce526e6dd2389e8965fd245140af17bd"
+    },
+    {
+      "path": ".github/workflows/weekly-canary.yml",
+      "sha256": "c2c46ac486ac46da7076db485e4b44dfde4885303d0369455d4cfd8b62c64460"
+    }
+  ],
+  "subject_sha256": "485513a50e4699d18fd2fd34773b775ee30d5383e6ffe99710e38b96fedf64b5",
+  "command": [
+    "node",
+    "test/js/ci_secret_masking.test.mjs",
+    "--phase196-census-root",
+    "<actual-main>"
+  ],
+  "process_exit": 0,
+  "stdout_sha256": "8ea192c5565eb5e570331f3dff325355e3e5b1e1025cbe6935b254ad3870ce9a",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "counts": {
+    "files": 28,
+    "workflows": 28,
+    "references": 97,
+    "candidates": 13,
+    "supported": 13,
+    "denied": 0,
+    "unknown": 0,
+    "findings": 0
+  },
+  "findings": [],
+  "restoration": {
+    "branch": "fix/spec-structure-ratchet",
+    "head": "83132b299af01b1b8887c1a3dd109abddcfea7a1",
+    "index_sha256": "7fc961649ed7e1a567622bda1be4efb580618229e4cb63cd4a0d58d4777f4895",
+    "tracked_count": 6168,
+    "tracked_sha256": "bb6fd3955728f12adf04f0861a4b6d9d4fc837a44708897a6fbd5c5c4a66a729",
+    "untracked_count": 0,
+    "untracked_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "privacy_before": {
+    "exit": 0,
+    "files": 171
+  },
+  "privacy_after": {
+    "exit": 0,
+    "files": 171
+  },
+  "duration_ms": 4011
+}

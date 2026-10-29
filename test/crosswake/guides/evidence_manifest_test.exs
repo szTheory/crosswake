@@ -92,16 +92,185 @@ defmodule Crosswake.Guides.EvidenceManifestTest do
     end)
   end
 
+  @tag :generated_manifest
   test "generated route-tour manifest is valid when a manifest path is provided" do
-    case System.get_env("CROSSWAKE_EVIDENCE_MANIFEST_PATH") do
-      nil ->
-        assert true
+    case generated_manifest(System.get_env("CROSSWAKE_EVIDENCE_MANIFEST_PATH")) do
+      {:ok, counts} ->
+        IO.puts(
+          "generated_manifest: verified routes #{counts.routes} captured #{counts.captured} artifacts #{counts.artifacts}"
+        )
 
-      manifest_path ->
-        manifest = read_manifest!(manifest_path)
-
-        assert validate_manifest(manifest, Path.dirname(manifest_path)) == :ok
+      {:error, reason} ->
+        flunk("generated_manifest: #{reason}")
     end
+  end
+
+  @tag :optional_manifest_control
+  test "unrequested generated proof is excluded while committed proof executes" do
+    {output, exit} = manifest_consumer(nil)
+    assert exit == 0, "optional manifest: disabled consumer failed"
+    assert output =~ "3 excluded", "optional manifest: disabled proof was not excluded"
+    assert output =~ "0 failures", "optional manifest: committed proof failed"
+    IO.puts("optional_manifest_control: disabled exit #{exit}")
+  end
+
+  @tag :optional_manifest_control
+  test "requested invalid manifests fail in the actual subprocess consumer" do
+    root = Path.join(System.tmp_dir!(), "manifest-controls-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(root)
+    on_exit(fn -> File.rm_rf!(root) end)
+    manifest = read_manifest!(@example_manifest)
+    captured = Enum.find(manifest["routes"], &(&1["status"] == "captured"))
+
+    controls = [
+      {"empty-path", "", "path_required"},
+      {"missing-path", nil, "file_required"},
+      {"empty-file", "", "json_required"},
+      {"malformed", "sensitive-probe-value", "json_required"},
+      {"wrong-root", "[]", "root_required"},
+      {"wrong-manifest", Jason.encode!(%{"sensitive-probe-value" => true}), "invalid_manifest"},
+      {"wrong-version",
+       Jason.encode!(%{manifest | "crosswake_version" => "sensitive-probe-value"}),
+       "invalid_manifest"},
+      {"zero-routes", Jason.encode!(%{manifest | "routes" => []}), "routes_required"},
+      {"wrong-route", Jason.encode!(%{manifest | "routes" => [false]}), "invalid_manifest"},
+      {"zero-captures",
+       Jason.encode!(%{
+         manifest
+         | "routes" => Enum.reject(manifest["routes"], &(&1["status"] == "captured"))
+       }), "captures_required"},
+      {"zero-artifacts",
+       Jason.encode!(%{manifest | "routes" => [%{captured | "artifacts" => []}]}),
+       "artifacts_required"},
+      {"missing-artifact", Jason.encode!(%{manifest | "routes" => [captured]}),
+       "artifact_required"}
+    ]
+
+    for {label, contents, diagnostic} <- controls do
+      path = if label == "empty-path", do: "", else: Path.join(root, label <> ".json")
+      if contents && path != "", do: File.write!(path, contents)
+      {output, exit} = manifest_consumer(path)
+      assert exit != 0, "optional manifest: #{label} did not fail its assertion"
+
+      assert output =~ "generated_manifest: #{diagnostic}",
+             "optional manifest: #{label} diagnostic missing"
+
+      refute output =~ "sensitive-probe-value", "optional manifest: input leaked"
+      refute output =~ root, "optional manifest: artifact path leaked"
+      IO.puts("optional_manifest_control: #{label} exit #{exit}")
+    end
+  end
+
+  defp generated_manifest(path) when not is_binary(path) or path == "",
+    do: {:error, :path_required}
+
+  defp generated_manifest(path) do
+    with {:file, {:ok, content}} <- {:file, File.read(path)},
+         {:json, {:ok, manifest}} <- {:json, Jason.decode(content)} do
+      generated_manifest_content(manifest, Path.dirname(path))
+    else
+      {:file, _} -> {:error, :file_required}
+      {:json, _} -> {:error, :json_required}
+    end
+  end
+
+  defp generated_manifest_content(manifest, _root) when not is_map(manifest),
+    do: {:error, :root_required}
+
+  defp generated_manifest_content(manifest, root) do
+    routes = manifest["routes"]
+
+    cond do
+      not Enum.all?(
+        @root_required_fields -- ["routes"],
+        &(is_binary(manifest[&1]) and manifest[&1] != "")
+      ) or
+        manifest["schema_version"] != "1.0.0" or manifest["crosswake_version"] != @current_version ->
+        {:error, :invalid_manifest}
+
+      not is_list(routes) or routes == [] ->
+        {:error, :routes_required}
+
+      not Enum.all?(routes, &generated_route_shape?/1) ->
+        {:error, :invalid_manifest}
+
+      true ->
+        generated_capture_result(manifest, root)
+    end
+  end
+
+  defp generated_route_shape?(route) when is_map(route) do
+    Enum.all?(@route_required_fields, &Map.has_key?(route, &1)) and
+      Enum.all?(
+        ~w(route_id runtime_owner platform_runtime command source_job captured_at proof_class support_label capability_posture package_owner retention_label status),
+        &is_binary(route[&1])
+      ) and
+      (is_nil(route["coordinate_mode"]) or is_binary(route["coordinate_mode"])) and
+      is_list(route["known_limitations"]) and
+      Enum.all?(route["known_limitations"], &is_binary/1) and
+      is_list(route["artifacts"]) and Enum.all?(route["artifacts"], &is_binary/1)
+  end
+
+  defp generated_route_shape?(_), do: false
+
+  defp generated_capture_result(manifest, root) do
+    captured = Enum.filter(manifest["routes"], &(&1["status"] == "captured"))
+    artifacts = Enum.flat_map(captured, & &1["artifacts"])
+
+    cond do
+      captured == [] ->
+        {:error, :captures_required}
+
+      Enum.any?(captured, &(&1["artifacts"] == [])) ->
+        {:error, :artifacts_required}
+
+      not Enum.all?(artifacts, &generated_artifact?(&1, root)) ->
+        {:error, :artifact_required}
+
+      validate_manifest(manifest, root) != :ok ->
+        {:error, :invalid_manifest}
+
+      true ->
+        {:ok,
+         %{
+           routes: length(manifest["routes"]),
+           captured: length(captured),
+           artifacts: length(artifacts)
+         }}
+    end
+  end
+
+  defp generated_artifact?(relative, root) do
+    path = Path.expand(relative, root)
+    inside_root = String.starts_with?(path, Path.expand(root) <> "/")
+
+    inside_root and Path.type(relative) == :relative and
+      case File.lstat(path) do
+        {:ok, %{type: :regular, size: size}} -> size > 0
+        _ -> false
+      end
+  end
+
+  defp manifest_consumer(path) do
+    paths = Enum.flat_map(:code.get_path(), fn path -> ["-pa", to_string(path)] end)
+
+    script = """
+    case System.argv() do
+      [] -> System.delete_env("CROSSWAKE_EVIDENCE_MANIFEST_PATH")
+      [path] -> System.put_env("CROSSWAKE_EVIDENCE_MANIFEST_PATH", path)
+    end
+    Application.load(:crosswake)
+    Code.require_file("test/test_helper.exs")
+    ExUnit.configure(exclude: ExUnit.configuration()[:exclude] ++ [optional_manifest_control: true])
+    Code.require_file("test/crosswake/guides/evidence_manifest_test.exs")
+    """
+
+    System.cmd(
+      System.find_executable("elixir"),
+      ["--erl", "+S 2:2"] ++
+        paths ++ ["-e", script, "--"] ++ if(is_nil(path), do: [], else: [path]),
+      stderr_to_stdout: true
+    )
   end
 
   test "allowed labels are literal capability-map and proof-posture vocabulary" do

@@ -20,7 +20,7 @@ the promotion trigger is the entry condition. Plan and phase counts are approxim
 
 | ID | Outcome | Horizon | Effort | adr | Promotion trigger |
 |---|---|---|---|---|---|
-| v29.0 Android Proof | Toolchain bump with templates in one PR; ktlint advisory; emulator advisory lane; P1 offline-study journey on emulator; manifest host-command seam read (additive, versioned); weekly hygiene workflow. ~5 phases. | next | L | amends (Android disposition in Upgrade Impact) | v28 closed; Android JVM proof green; user says yes. Outward: moves matrix cells for P7. |
+| v29.0 Android Proof | Toolchain bump with templates in one PR; ktlint advisory; emulator advisory lane; P1 offline-study journey on emulator; manifest host-command seam read (additive, versioned); weekly hygiene workflow; carries SPEC-04 Muex pilot from v28 (full criteria, both attempts preserved). ~5 phases. | next | L | amends (Android disposition in Upgrade Impact) | v28 closed; Android JVM proof green; user says yes. Outward: moves matrix cells for P7. |
 | v30.0 Twin and Host Trust | Twin identity debt closed; receipt binds head and tree; twin run on main; host-run webview conformance; first Hostile Host rows; iOS brownfield leg of the clean-room run. ~5 phases. | next | L | none | v29 closed; user approves the twin run (macOS time). Outward: device-class blind spots. |
 | v31.0 Newcomer Path | README top third for evaluators; one-page first-route guide; doctor-to-troubleshooting bijection; DSL tiering doc; maintainer tasks hidden; clean-room as a CI lane after two clean runs. ~4 phases. | next | M-L | none | v30 clean-room green twice; newcomer measures recorded. Outward: raises P1 grade. |
 

@@ -665,49 +665,83 @@ defmodule Crosswake.Bridge do
   # (`phase_66_generator_drift_findings/3`, D-37).
   defp router_location(socket, route_id) do
     with router when not is_nil(router) <- Map.get(socket, :router),
-         true <- find_router_route(router, route_id) != nil do
-      file = router_source_file(router)
-      {file, best_effort_line_suffix(file, route_id)}
+         {:ok, _route} <- find_router_route(router, route_id) do
+      file =
+        case router_source_file(router) do
+          {:ok, source} -> source
+          {:error, _reason} -> "(unknown file)"
+        end
+
+      suffix =
+        case best_effort_line_suffix(file, route_id) do
+          {:ok, hint} -> hint
+          {:error, _reason} -> ""
+        end
+
+      {file, suffix}
     else
       _ -> {"(router location unavailable — pass a mounted socket with a resolvable router)", ""}
     end
   end
 
   defp find_router_route(router, route_id) do
-    router
-    |> Phoenix.Router.routes()
-    |> Enum.find(fn route ->
-      case RouterMetadata.fetch(route.metadata) do
-        {:ok, %{id: ^route_id}} -> true
-        _other -> false
-      end
-    end)
+    route =
+      router
+      |> Phoenix.Router.routes()
+      |> Enum.find(fn route ->
+        case RouterMetadata.fetch(route.metadata) do
+          {:ok, %{id: ^route_id}} -> true
+          _other -> false
+        end
+      end)
+
+    if route, do: {:ok, route}, else: {:error, :route_unavailable}
   rescue
-    _ -> nil
+    _error in [
+      UndefinedFunctionError,
+      ArgumentError,
+      FunctionClauseError,
+      KeyError,
+      BadMapError,
+      Protocol.UndefinedError
+    ] ->
+      {:error, :reflection_unavailable}
   end
 
   defp router_source_file(router) do
     case router.module_info(:compile)[:source] do
-      nil -> "(unknown file)"
-      source -> to_string(source)
+      nil -> {:error, :source_unavailable}
+      source -> {:ok, to_string(source)}
     end
   rescue
-    _ -> "(unknown file)"
+    _error in [
+      UndefinedFunctionError,
+      ArgumentError,
+      FunctionClauseError,
+      Protocol.UndefinedError
+    ] ->
+      {:error, :source_unavailable}
   end
 
   defp best_effort_line_suffix(file, route_id) do
     needle = "id: #{inspect(route_id)}"
 
-    file
-    |> File.read!()
-    |> String.split("\n")
-    |> Enum.find_index(&String.contains?(&1, needle))
-    |> case do
-      nil -> ""
-      index -> ":#{index + 1}"
+    case File.read(file) do
+      {:ok, source} ->
+        if String.valid?(source) do
+          case source |> String.split("\n") |> Enum.find_index(&String.contains?(&1, needle)) do
+            nil -> {:error, :line_unavailable}
+            index -> {:ok, ":#{index + 1}"}
+          end
+        else
+          {:error, :source_invalid}
+        end
+
+      {:error, _reason} ->
+        {:error, :source_unreadable}
     end
   rescue
-    _ -> ""
+    _error in [ArgumentError, FunctionClauseError] -> {:error, :line_unavailable}
   end
 
   # ---------------------------------------------------------------------------

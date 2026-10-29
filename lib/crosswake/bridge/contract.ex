@@ -7,7 +7,7 @@ defmodule Crosswake.Bridge.Contract do
   alias Crosswake.Manifest.Types
 
   @protocol "crosswake.bridge"
-  @version "1.1.0"
+  @version Crosswake.Bridge.ProtocolVersion.version()
   @commands ~w(
     app.info.get
     haptics.impact
@@ -103,7 +103,7 @@ defmodule Crosswake.Bridge.Contract do
   def protocol, do: @protocol
 
   @spec version() :: String.t()
-  def version, do: @version
+  defdelegate version(), to: Crosswake.Bridge.ProtocolVersion
 
   @spec commands() :: [String.t()]
   def commands, do: @commands

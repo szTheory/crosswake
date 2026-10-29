@@ -11,12 +11,14 @@ final class ActivationConformanceTests: XCTestCase {
 
     private var bridgeProtocolVersion: String!
 
-    override func setUp() {
-        super.setUp()
-        let url = Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json")!
-        let data = try! Data(contentsOf: url)
-        let json = try! JSONSerialization.jsonObject(with: data) as! [String: Any]
-        bridgeProtocolVersion = (json["bridge_protocol_version"] as? String)!
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
+                                "CW-VECTOR-MISSING bridge_contract_vectors.json")
+        let corpus = try JSONDecoder().decode(BridgeVectorsFile.self, from: Data(contentsOf: url))
+        // Metadata reader only: the scenarios below are authored inline, not JSON verdicts.
+        _ = try XCTUnwrap(corpus.vectors.count == 15 ? true : nil, "CW-VECTOR-LOADED expected 15")
+        bridgeProtocolVersion = corpus.bridgeProtocolVersion
     }
 
     // MARK: - Helpers

@@ -1,0 +1,1701 @@
+{
+  "schema_version": 1,
+  "guard": "absence",
+  "candidate_sha": "206ee4b2f45b390fddffff2bfae4cd8145ca3336",
+  "main_ref": "origin/main",
+  "main_sha": "b8398c38e7d92c8bb99dcbc87fdb2370a47e6e97",
+  "guard_blob": "d21926d4fcaeab04005739244a72858185e61dee",
+  "guard_sha256": "7ec61b2f1369115f05d972af704c152af099a7de6b2367bfb6c582557b1eed69",
+  "tools": [
+    {
+      "path": "script/check_absence_is_not_success.exs",
+      "origin": "candidate",
+      "blob": "d21926d4fcaeab04005739244a72858185e61dee",
+      "sha256": "7ec61b2f1369115f05d972af704c152af099a7de6b2367bfb6c582557b1eed69"
+    },
+    {
+      "path": "script/absence_collection_ast.exs",
+      "origin": "candidate",
+      "blob": "436a0e5a4b79dc6329fe1024895ef966c619e3bf",
+      "sha256": "8bf7976323593b1c6c93704b6d066da376e903bde0c603f32c5f4f5e3da3a1d4"
+    },
+    {
+      "path": "script/fixtures/absence_collection_baseline.exs",
+      "origin": "candidate",
+      "blob": "aaba49c5517487dae992c3d1f06accd7614743d1",
+      "sha256": "1ead5e6e7d72275bb2ad81af9ff1aca1c7add72a85e4c2365cd4d811d9438a8f"
+    }
+  ],
+  "subject_count": 359,
+  "subjects": [
+    {
+      "path": ".planning/milestones/v14.0-phases/121-canonical-contract-source/deferred-items.md",
+      "sha256": "953be62a130b86bef5b823a5dec4a533044823ce0fc4c53f4e23eb3ca97bfe8b"
+    },
+    {
+      "path": ".planning/milestones/v16.0-phases/132-generalization-proof-rindle-compat-matrix/deferred-items.md",
+      "sha256": "2409390523b3d7d56f73cdd207480f25c6eba3b8765c39f4e4e133d58583869c"
+    },
+    {
+      "path": ".planning/milestones/v16.0-phases/134-shell-lifecycle-native-uat-promotion/deferred-items.md",
+      "sha256": "790b712da0e19d3c2ded5bc4be982da2eafaa287ed2c8ea6bd730eb49fd1ba45"
+    },
+    {
+      "path": ".planning/milestones/v19.0-phases/149-saas-admin-showcase/deferred-items.md",
+      "sha256": "4833014f01560b4201335e388748916fe0d7c334c3a7a260c22c1a61f0a73f9d"
+    },
+    {
+      "path": ".planning/milestones/v19.0-phases/151-subscription-learning-showcase/deferred-items.md",
+      "sha256": "5c0a90af8f249ff8e964f3dc44a288c3eda91025a5c55354f95bb4f1582727a6"
+    },
+    {
+      "path": ".planning/milestones/v20.0-phases/154-the-control-contract-seam/deferred-items.md",
+      "sha256": "1e22d2a6ce49ee5e687cbe796b28f4239ef0e32a129d2a5b6f47207d3692368a"
+    },
+    {
+      "path": ".planning/milestones/v3.2-phases/23-commerce-support-and-proof-closure/deferred-items.md",
+      "sha256": "90bbb8975ee2eb0780917e0ff913a2c93744a3c234c2b84d3e09132c6779b9b0"
+    },
+    {
+      "path": ".planning/seeds/SEED-001-example-app-stress-profiles.md",
+      "sha256": "0f3ebaf56951aac601f3ad3d425b24dd58e4b6eaf9e88b80eaf464f203c5b2db"
+    },
+    {
+      "path": ".planning/seeds/SEED-002-phoenix-first-native-capabilities-and-commerce.md",
+      "sha256": "362d99569c97c495e228b28029605bc7bcbfb4df7e40830c9215f247b0417fb5"
+    },
+    {
+      "path": ".planning/seeds/SEED-003-ios-mirror-push-token.md",
+      "sha256": "2f43e83d81fc5220e69ac9e8176969c8bb248ccaf7dc291f944420b44e53a8c2"
+    },
+    {
+      "path": ".planning/seeds/SEED-004-cleanroom-proof-harness.md",
+      "sha256": "faad3a4d7180850a153369a3e534cd5448e1fde65772345a8f8f6c2edd566990"
+    },
+    {
+      "path": ".planning/seeds/SEED-005-themable-web-control-equivalents.md",
+      "sha256": "e035a1652bd853ff6808cec3dbf0645515d540098ca691413edc604c7175cb2b"
+    },
+    {
+      "path": ".planning/seeds/SEED-006-native-navigation-shell.md",
+      "sha256": "95997867f8b531e3562ee131db603fb40e6bccc429c28e1a75f3f74182f561b6"
+    },
+    {
+      "path": ".planning/seeds/SEED-007-ci-cd-performance.md",
+      "sha256": "fd03c601b307284f6b41d659e5b84f6fe441c2aa2cafcd2a823d72efbe79c826"
+    },
+    {
+      "path": ".planning/seeds/SEED-008-native-denial-vocabulary.md",
+      "sha256": "99ee402a12116e7d56d01b2523f2ef7d7c311f33985c836237033ec937916a4d"
+    },
+    {
+      "path": ".planning/seeds/SEED-009-sigra-hosted-session-interop-release.md",
+      "sha256": "9ac55df60b569ace3d1ba4bb25f57382dcd9801e559bfae25d845f0fe7c30b5a"
+    },
+    {
+      "path": ".planning/seeds/SEED-010-reference-host-presentation-and-smoke-ergonomics.md",
+      "sha256": "6ed6cadb2cdaf7c979013c8a67dbb4ac59a42ff133d889ae1a1bded813e84d4a"
+    },
+    {
+      "path": ".planning/seeds/SEED-011-alpha-reference-host-integration.md",
+      "sha256": "20c607958adcb6518cffaaedc60209b8a344cd7a27b73ab3c73493af0e0f468e"
+    },
+    {
+      "path": ".planning/seeds/SEED-012-post-0-2-1-repository-operational-hygiene-closeout.md",
+      "sha256": "bff2e4cea41c760047fb5fa0f2312076d394c67631603a40fb1f3be6b1cfe06f"
+    },
+    {
+      "path": ".planning/seeds/SEED-013-adopter-device-proof-lane-reachability.md",
+      "sha256": "423c96e2737887d1827f254c01e73855237e6b035784e0b845d3997ae3b2350d"
+    },
+    {
+      "path": ".planning/seeds/SEED-014-proof-lane-and-doctor-fidelity.md",
+      "sha256": "cd6e10cb6abff7265743385820efb3f7bc3088bd40470789a9b4e5e964a86a8e"
+    },
+    {
+      "path": ".planning/seeds/SEED-015-sso-cold-boot-cross-origin-loses-native-layer.md",
+      "sha256": "1d136b401ea455382c0eb94c2c8ec14275682f9b55b73a536a59244554a033f4"
+    },
+    {
+      "path": ".planning/seeds/SEED-016-host-webview-conformance-contract.md",
+      "sha256": "613859958ef8936ad67deb56d8055056612fb5315321584d3d18b4fcf2e55b75"
+    },
+    {
+      "path": ".planning/seeds/SEED-017-release-graph-version-generalization.md",
+      "sha256": "741ed577744c5c3d22ccdebdb540bfed629eaeec7ca08b4974e2ebaa8b416c35"
+    },
+    {
+      "path": ".planning/seeds/SEED-018-vacuous-collection-assertions.md",
+      "sha256": "2d2c051f4e509614f95912ee66a2b4dd141e09b1413ca3701ae96883a82825d6"
+    },
+    {
+      "path": ".planning/seeds/SEED-019-phase-close-without-verification-is-out-of-scope.md",
+      "sha256": "f7da43274c68dca8c50ba310cc8123ace6d173b72f7153b6219076015af03358"
+    },
+    {
+      "path": ".planning/seeds/SEED-020-compat-matrix-current-version-unchecked.md",
+      "sha256": "cb3ada2e093969e49e32008acaa66e66ce1799a2a968df200f17265ec762fa1d"
+    },
+    {
+      "path": ".planning/seeds/SEED-021-verification-fingerprint-stales-on-successor-edits.md",
+      "sha256": "c6b1ee07c7ef9c0d15f2419335e214ddcf4bbdedb1b6f7273af05002abdcb610"
+    },
+    {
+      "path": ".planning/seeds/SEED-022-sha-pin-provenance-audit.md",
+      "sha256": "3903cdeff754ef2bd157a9caced7c4eb980053462e3b23b3833ad6b5d347cc85"
+    },
+    {
+      "path": ".planning/seeds/SEED-023-extend-scope-cardinality-gate.md",
+      "sha256": "260ad0706785fe067558174bf4794caa3f0c8e403f5fa8e6d9d3feee07118595"
+    },
+    {
+      "path": ".planning/seeds/SEED-024-phase-190-review-residue.md",
+      "sha256": "11bbeb3d75da069e6420bf2bc669ba8ba38944f656109fc5dfb2fd50c6a4acb5"
+    },
+    {
+      "path": ".planning/seeds/SEED-025-phase-192-review-residue.md",
+      "sha256": "267391236a6246d87edf3a2d2ec339a0391a70bd180bc8db8c175c3240c4ab59"
+    },
+    {
+      "path": ".planning/todos/TODO-001-phoenix-host-pre-existing-test-failures.md",
+      "sha256": "e11304d288f37b923dc1a4e429add9473ed54e76da6e601a5c6f5db86a6abadf"
+    },
+    {
+      "path": ".planning/todos/TODO-002-first-b2c-adopter-route-inputs.md",
+      "sha256": "8908f05c3d722332a4220b239e9031e649daf5221a710733c7da64472d71bb5b"
+    },
+    {
+      "path": ".planning/todos/TODO-003-generated-ios-test-targets-unsignable.md",
+      "sha256": "3bdf2ffd8bc2c0fc47daecbe72f726693fde1100e82642e854d8c748de4f3bcf"
+    },
+    {
+      "path": ".planning/todos/TODO-004-stale-install-manifest-namespace-not-self-healed.md",
+      "sha256": "511e08be87d0cc27c07808fe6c7f3fae56c36935349a2d48441cdee2d65a0dbf"
+    },
+    {
+      "path": ".planning/todos/TODO-005-adopter-identity-in-published-artifacts.md",
+      "sha256": "98506962b8ff896212818bab29c05e1d02b6bcb3a1939cbd6d5f9e3d47748787"
+    },
+    {
+      "path": ".planning/todos/TODO-006-generated-shell-ships-unreachable-invalid-origin.md",
+      "sha256": "3aef9064fe56e82454c180f7bc06d0a7624e0edc81ad13c1b3935c953e403905"
+    },
+    {
+      "path": ".planning/todos/TODO-007-gen-shell-bundle-identifier-and-team-id.md",
+      "sha256": "947abe5455303e2d1467aa045425205a8e0bd21e6658786201c7e5d29d01a91b"
+    },
+    {
+      "path": ".planning/todos/TODO-008-generated-shell-letterboxes-no-launch-screen.md",
+      "sha256": "2df3fe86b215996b9ebbd2b7daf5d91b4110431cdc1d1304a08bab7af4eba2eb"
+    },
+    {
+      "path": ".planning/todos/TODO-009-release-graph-welded-to-0-2-1.md",
+      "sha256": "58b89483ca5b0d113540e8708dcdb1d9cae059def0a858a9e6ce41d4b306ba57"
+    },
+    {
+      "path": ".planning/todos/TODO-010-rindle-unpublished-blocks-exact-public-proof.md",
+      "sha256": "e8d6e1557f9a56684d294a5049e5103b1851bb5a7024d55542655b03f4d23320"
+    },
+    {
+      "path": ".planning/todos/TODO-011-companion-cleanroom-lane-has-never-been-green.md",
+      "sha256": "cb717feb19632c5d9bf981f4c5034af333a6c2e23745d2ff671e8991b511a474"
+    },
+    {
+      "path": ".planning/todos/TODO-012-exact-public-proof-assumes-a-linked-six-package-release.md",
+      "sha256": "f26c4dee382c93bc84f5c5a3f837e5a5ca88ee552f19a51b6e1a663a83ef8a12"
+    },
+    {
+      "path": ".planning/workstreams/first-b2c-adopter-readiness/phases/158-adoption-reset-and-route-map/deferred-items.md",
+      "sha256": "b475d77d080df73a6108b3062816af64849bbc34d7efa8455359c45da3b9ada6"
+    },
+    {
+      "path": ".planning/workstreams/first-b2c-adopter-readiness/phases/160-scoped-replay-and-auth-safety/deferred-items.md",
+      "sha256": "463549c9157df71d83ad91f9626346b191c60fe29a7362534fe4d938343db16f"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-phases/169-diagnostic-legibility/deferred-items.md",
+      "sha256": "5d8c621ae3be92c96492298fb902ee6a32db70ea94c09fb6f4c1595cb7929549"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/milestones/v23.0-phases/174-clean-room-host-realism-adopter-fidelity/deferred-items.md",
+      "sha256": "e56934677c5f1d48c4107f66eaf72673b8be4444b955539cd2ce4caed46da4e5"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/companions/chimeway/contracts_test.exs",
+      "sha256": "54f461ac3aaccd563427128c5f5d6b69e13c1639481118be16cbfc34afa6c0bf"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/companions/chimeway/denial_codes_test.exs",
+      "sha256": "5dba57c428bc964e5cecce1ac09b282b4bbd81784205409344e5c35fb8f86946"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/companions/chimeway/redaction_test.exs",
+      "sha256": "a15fa8b8b6bfcbe7dd0f3307a1a64612bcb630421b7d59357961f94e342bf391"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/companions/chimeway/resolver_test.exs",
+      "sha256": "522dab8bd2b9a91ae80b423c177f2efbac591a668090fe5c42bc896dac0624ec"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/companions/chimeway/telemetry_test.exs",
+      "sha256": "ffc31c5aaf4ada8c711f69909e68e07dc046bd7a3f364053f9ebe0313a6486a0"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/companions/chimeway_test.exs",
+      "sha256": "273e5b1549a6fb5386cc77a626262e31cd18fb9d3c082bc1a0de14d80e86a9f3"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/proof/phase138_chimeway_cleanroom_test.exs",
+      "sha256": "3abfc03a7b751b1625cf3b487f68a1695a921f597ed26436d48310ca6d0074c5"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/proof/phase59_chimeway_contract_test.exs",
+      "sha256": "cca10f43e33b79bb200d18865e66f6fd72cd0ba4371fc3b7cad2cc53ee002a5b"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/crosswake/proof/phase71_notification_workflow_proof_test.exs",
+      "sha256": "ff6206761ce8be8f1b733412454d1486b2ffa33e4f186723e31e3c8e5dbcd7e5"
+    },
+    {
+      "path": "packages/crosswake_chimeway/test/test_helper.exs",
+      "sha256": "202b8d6e10c5856526ea73c2032207e1a6687e3dd2dded2f0b4731cd59605a5f"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/crosswake/companions/rindle/contracts_test.exs",
+      "sha256": "ac16e72413798a53abd9302616cd28643324db0fb4a2bc2da85266ba0c73a3e9"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/crosswake/companions/rindle/reconciliation_test.exs",
+      "sha256": "26093905b15c988608bc372c244bac5324754cc7d039f6fc3c1e220f3a8803b1"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/crosswake/proof/phase45_rindle_advisory_test.exs",
+      "sha256": "be9c2d12908d40718981456d32b433120dbaacc0ad3cda014642c44feb3966ce"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/crosswake/proof/phase45_rindle_companion_test.exs",
+      "sha256": "515bb92b51fb40e8aa76f8386d765ad038f5a3ab8870451ac8a70a9b90f49cd2"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/crosswake/proof/phase45_rindle_live_test.exs",
+      "sha256": "637151223520a874611f3706e4d10fa9d4cbde1efba1dd4a698e592014669eeb"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/crosswake/proof/phase45_rindle_mock_media_test.exs",
+      "sha256": "9a8740c16cad1f2f427a83c0fe5562512c0b9edd1e85d296c870ed28c0addf7d"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/crosswake/proof/phase72_media_evidence_workflow_proof_test.exs",
+      "sha256": "83c1225dbd1b41a55b806b56cc5fd138facf0cbe3e86868d89483a0b2974dc4b"
+    },
+    {
+      "path": "packages/crosswake_rindle/test/test_helper.exs",
+      "sha256": "e34c71a4e2d71c604dd858d5b547f03013af0c62c48dbd573a0447520001930c"
+    },
+    {
+      "path": "packages/crosswake_rulestead/test/crosswake/proof/phase42_rulestead_companion_test.exs",
+      "sha256": "3f30c757690b385fe2facbb2d5d717a79873de03046093cd9c94f3d157956dec"
+    },
+    {
+      "path": "packages/crosswake_rulestead/test/crosswake/proof/phase43_rulestead_advisory_test.exs",
+      "sha256": "cebfbd34f84e2fcb1b966023108d2308ccfa4b4f4a704da631ae4b0712c7f7e6"
+    },
+    {
+      "path": "packages/crosswake_rulestead/test/test_helper.exs",
+      "sha256": "fdbb48b27e51e20eba91d910c46b975bfdc158233486a01b85defa492fef31b5"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/companions/sigra/contracts_test.exs",
+      "sha256": "98905b682ba5da165c19bdf33f3c2d70ae5d012a1e0c45ab917819ab1eec4614"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/companions/sigra/handoff_test.exs",
+      "sha256": "8c2b42a29d8ca6df89e3341417a5d09fb3824dd719620ffe85ba069cd7898f85"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/companions/sigra/step_up_test.exs",
+      "sha256": "19eaf1b3896a8781481076029218bcdab883a3b95aa77b3354b49da018896042"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/companions/sigra/telemetry_test.exs",
+      "sha256": "90df1d32a8f3e7d8a4dea77f6ab3d24d42c600ff673acc3a0b5b656e17adf985"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/compatibility/b2c_personal_scope_test.exs",
+      "sha256": "eae0dce2fbac74bf1ff558f20f1db748e80f156d166245386b9ca01ad8b17ab3"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/compatibility/route_gate_test.exs",
+      "sha256": "ad5eb9f9191b644bc191b59f32479e768b44ad1c5e26ebbc66a5fc3333b75d72"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/doctor/publish_readiness_test.exs",
+      "sha256": "24e725e095e64b581bcab9b27c01e45e00153f76799b6d962cd07ec0b72a3055"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/operator_inspection/operator_inspection_test.exs",
+      "sha256": "8de83405d01664026084ee6d000edd889c683fb63bfbf1eaf3fe6b45cfdd1186"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase137_sigra_cleanroom_test.exs",
+      "sha256": "b6005601b680c1f8d6caf99b25f0794f4e2592efe9bb3e50c5c184221773b098"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase46_sigra_auth_contract_test.exs",
+      "sha256": "f3a8d94de91c7c9fc4ded8bce3b916d4a6d3fa0c5ce7e003891f9a44e151ac78"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase47_companion_arc_test.exs",
+      "sha256": "dc0dddd38624dc37b16ea967199cd6aad12d6754ee382b3914f643daf53242dd"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase54_sigra_session_authority_test.exs",
+      "sha256": "18f1a1733c356c69908bab4e60f3992d33bdc658ed52ede085c074be1176adb5"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase54_sigra_support_truth_test.exs",
+      "sha256": "b0f0cf832db126031a901be9da87f8ad8f4a24ccb11c2a890aeee8d8644d99c2"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase55_session_handoff_tickets_test.exs",
+      "sha256": "5abd6d4ee27053afcbb30022862ed3c66ef064c155a3322218127fdebd3678cc"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase56_step_up_ceremony_test.exs",
+      "sha256": "15be2e9d4ffb5d4c9c9ce8e20924ab917940c8e9f282f8b2cb201c8f9810d080"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase57_auth_return_boundaries_test.exs",
+      "sha256": "44b04fb4ccc17aeccc3001bfeaaf7435694f956f41ba5b308c3f5478a22981c2"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase58_auth_diagnostics_closeout_test.exs",
+      "sha256": "f4e544283c552c9f0c4ea091ae5d20a5c68b45aaedb57656fbf4b08c77afabd5"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/crosswake/proof/phase73_auth_sensitive_admin_workflow_proof_test.exs",
+      "sha256": "ec070ee398ac656265787f3c4b21a362902fc66b1b213fa14320f93ebca06b57"
+    },
+    {
+      "path": "packages/crosswake_sigra/test/test_helper.exs",
+      "sha256": "202b8d6e10c5856526ea73c2032207e1a6687e3dd2dded2f0b4731cd59605a5f"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/audit/ledger_test.exs",
+      "sha256": "71368b3a669515a8312a018f32614b1ca2f93b04e7d2500c24645e8d32201254"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/live/threadline_test.exs",
+      "sha256": "8d1f25b1774952ff2b77b0d1b26c305e53c293d1279523d48b5bdd707cd81b6c"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/plug/threadline_test.exs",
+      "sha256": "256a611718001279f9c83f87bb5026f0750a92b6151bce18cc445b3496b1f977"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/proof/phase139_threadline_cleanroom_test.exs",
+      "sha256": "a60d42f6d931acb373e824c4a23f4249ed6a97d10c46890b6c37e9cc912363f8"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/proof/phase91_threadline_contract_closeout_test.exs",
+      "sha256": "9ad2e7753d209aefecc588855a8c56e2309bd91df7a4af43f626aa109ead1c1d"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/proof/phase92_server_propagation_closeout_test.exs",
+      "sha256": "5a151d678aa8eddbef9ff6e07d76071ef873514ea8d4228c3502dbcb6b85602e"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/proof/phase96_threadline_docs_contract_test.exs",
+      "sha256": "0e85be47d503ce0334435e26486ce8df118a344fd4b0e425820a3e21bfe5fb61"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/threadline/id_test.exs",
+      "sha256": "64dc42d2b2e99b155148129476c613ac812deb89fc3849fa5328aa190c64fa94"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/crosswake/threadline/telemetry_test.exs",
+      "sha256": "b2c7b7db691ec89a43ccea27353dc0be7d2c2be91497317f4e2140781a2117d8"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/mix/tasks/crosswake.gen.audit_test.exs",
+      "sha256": "71e9e757bbc7c18a0e3b89b4f9906e65ab907fa44dbe9d0bb900f8a4a668f97a"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/mix/tasks/crosswake.threadline_test.exs",
+      "sha256": "8ce1cfd09faf3597b22a90fcc425445cd2579e8c36b3fdfad0cd13dc8ceb7020"
+    },
+    {
+      "path": "packages/crosswake_threadline/test/test_helper.exs",
+      "sha256": "202b8d6e10c5856526ea73c2032207e1a6687e3dd2dded2f0b4731cd59605a5f"
+    },
+    {
+      "path": "test/crosswake/adoption/navigation_topology_test.exs",
+      "sha256": "593717ad11efc4c179efffb2c53e8b1856b43de4a771516d7b51c049d0c14e83"
+    },
+    {
+      "path": "test/crosswake/adoption/route_inventory_test.exs",
+      "sha256": "fe88f886655ff496ece8be1575e3f1bf1f9574480be5fdac7fe28313a32a6edd"
+    },
+    {
+      "path": "test/crosswake/bearings_report_test.exs",
+      "sha256": "9a39aef6f69347db82cbf8c89f418b3db8102ddbd02bf52fcb26210f32856354"
+    },
+    {
+      "path": "test/crosswake/bridge/bridge_behavioral_vector_test.exs",
+      "sha256": "ba9f4c8af8b3834b242a7a955296d0547d2a084dc0fe5871be18956fd20f5dc4"
+    },
+    {
+      "path": "test/crosswake/bridge/catalog_guard_test.exs",
+      "sha256": "6525dda1d45ba6e3329a36b85acc53dd03aeebc109e2af62c427af6bac2f199c"
+    },
+    {
+      "path": "test/crosswake/bridge/contract_test.exs",
+      "sha256": "9464d93136520fe56954ed00c5a0867668d4e57b07da53d5eff91ce6c092d30d"
+    },
+    {
+      "path": "test/crosswake/bridge/push_test.exs",
+      "sha256": "a0eaf01c93ee85dc26a2f135d4fa4774ee522e7c715b315cec16174b1f0d9e37"
+    },
+    {
+      "path": "test/crosswake/bridge/registry_test.exs",
+      "sha256": "d48f0ea2c5c9aa567f649f04523e3a69d73829d9ddcd03a853a494b54c08f173"
+    },
+    {
+      "path": "test/crosswake/capability_map/capability_map_test.exs",
+      "sha256": "069466a39a564c5477d0a6a21c28fe3569c25a6a41854fd1c3a027d45e9b6956"
+    },
+    {
+      "path": "test/crosswake/capability_map/renderer_test.exs",
+      "sha256": "03cdb5a022b254804944bfa5c4baa576b45eafb9b26994794e243003ee162d36"
+    },
+    {
+      "path": "test/crosswake/commerce/contracts_test.exs",
+      "sha256": "a68d38e98a4e64b81f326a2fb0f21a28aceca0c7229bec40dae708ac79be3c3c"
+    },
+    {
+      "path": "test/crosswake/commerce/provider_evidence_test.exs",
+      "sha256": "5e19991f8e57305cdb805f90e4d235553d0826e3fa6dc1958ceee07493884cdc"
+    },
+    {
+      "path": "test/crosswake/commerce/reconciliation_test.exs",
+      "sha256": "021e482d1d1cab00a5054fb9cb021e60966a111cd621cc5753b64d7b7c23e037"
+    },
+    {
+      "path": "test/crosswake/companions/play_billing_test.exs",
+      "sha256": "500d3d27d2d62d182ca604151059ff8661ecc3bca31ba199ceee644c8dbc3d54"
+    },
+    {
+      "path": "test/crosswake/companions/store_kit_test.exs",
+      "sha256": "8eb824349c520474e2165691a5164da98461db228988bc63c801d9ee678851b5"
+    },
+    {
+      "path": "test/crosswake/compatibility/compatibility_test.exs",
+      "sha256": "420ceca438a3714a980e4f4f134ee92a17b549a5093e15e212132f74a124a658"
+    },
+    {
+      "path": "test/crosswake/component_tier_guard_test.exs",
+      "sha256": "add617194926e1bddd89213f79aac3768fd57ed960d793b3ff68f1236e875302"
+    },
+    {
+      "path": "test/crosswake/contract/contract_drift_test.exs",
+      "sha256": "d697fcdc07338845a405810b28c1121d887678f35b523ce4e6b3ac6c9898f574"
+    },
+    {
+      "path": "test/crosswake/doctor/doctor_fidelity_test.exs",
+      "sha256": "890caf81b408cafcf834e947136c3baf223b5c52a3b75bfe9da9961384f0ea01"
+    },
+    {
+      "path": "test/crosswake/doctor/doctor_host_commands_test.exs",
+      "sha256": "c62f6ceb6a85e95163733f13dedac81e4ff9f8447ba06ef8f3c7623597788e41"
+    },
+    {
+      "path": "test/crosswake/doctor/doctor_origin_mode_test.exs",
+      "sha256": "45bc901d43262276759b0dfc482fd22cb326436f3a1bd49fcb32866352d7e9a5"
+    },
+    {
+      "path": "test/crosswake/doctor/doctor_test.exs",
+      "sha256": "ad9558cc7d474935e8835427c9a7274cb57078c54f139b4e9d92c4a4e2f25377"
+    },
+    {
+      "path": "test/crosswake/doctor/doctor_threadline_test.exs",
+      "sha256": "7840a595a5ff5740767165dc84ecc0e890d6abf4c3cca4b8e973e2a1795cdac9"
+    },
+    {
+      "path": "test/crosswake/doctor/formatter_test.exs",
+      "sha256": "fbfc8d66c28f47a11233c78182e8eb53450af6cd4f1a56c0d7b2bca2896c3189"
+    },
+    {
+      "path": "test/crosswake/guides/adopter_profiles_test.exs",
+      "sha256": "4416c575ef6fd9713090f23be1d5974dff63015956089d5ba8a8728af6c63e64"
+    },
+    {
+      "path": "test/crosswake/guides/architecture_code_walkthrough_test.exs",
+      "sha256": "44f4c42f41660bba2f6f381f19d807f6c8cf8eba0db92af33c062291ac2def51"
+    },
+    {
+      "path": "test/crosswake/guides/capabilities_test.exs",
+      "sha256": "596f80547485410dd7039b1cc6b7adcaccf025f1432738fc36d9524bee45b4f4"
+    },
+    {
+      "path": "test/crosswake/guides/capability_claims_test.exs",
+      "sha256": "bc136a9851140277fccc8cbf2a8c8af2847340181857b0dca7e304bd0160cc77"
+    },
+    {
+      "path": "test/crosswake/guides/capture_collateral_test.exs",
+      "sha256": "a4448a25a90e3ebbb6884ec5439a1f83a926aa3fb270b569a35cb182acdfc132"
+    },
+    {
+      "path": "test/crosswake/guides/collateral_table_test.exs",
+      "sha256": "b3f7b5cbc74ef910e176f359213f3f29a33ac1ea0db47c5bd602442fdebfcad2"
+    },
+    {
+      "path": "test/crosswake/guides/commerce_test.exs",
+      "sha256": "b97ee3e6e7482497a80e7d5fff669aef219d3fe91b9f76228fb96a691b383fd8"
+    },
+    {
+      "path": "test/crosswake/guides/companions_test.exs",
+      "sha256": "6c8e3706a2eb5cbe408dd4b5b6a8a2a905d28cb1e7cc221970e99875459adde3"
+    },
+    {
+      "path": "test/crosswake/guides/compatibility_test.exs",
+      "sha256": "1b4103fb0a6cd3804cb7371a3ba08dba0937488f1e44c22acdd04ae15985b46b"
+    },
+    {
+      "path": "test/crosswake/guides/evidence_manifest_test.exs",
+      "sha256": "07e8fc7230c7d42ef1978776cfca2de47de4c03a60451460f2ead7b772a0a042"
+    },
+    {
+      "path": "test/crosswake/guides/host_command_seam_guide_test.exs",
+      "sha256": "6ecd0e6fad952d6a7524ba4f4f66e852a4097c035933a18e52d7502544cfd4b4"
+    },
+    {
+      "path": "test/crosswake/guides/loopback_origin_guide_test.exs",
+      "sha256": "73592d8b73c6757b9adc19c7db475b353f7c9477584482993194cdfa2069409f"
+    },
+    {
+      "path": "test/crosswake/guides/native_dev_wiring_test.exs",
+      "sha256": "01f9fd48363e93582a9057aefed396ef4a27bc8ef2951a6467c752e8d0e73410"
+    },
+    {
+      "path": "test/crosswake/guides/native_evidence_drift_test.exs",
+      "sha256": "949713b874595f12fee18b31d9faa6695ce4a39e6b66f3c38d018f33c6a61e7c"
+    },
+    {
+      "path": "test/crosswake/guides/native_shell_upgrade_test.exs",
+      "sha256": "e4456fde78f710b6eda06b9011fe8775c2d5d7eb2b05983d34d081da6a20a6d3"
+    },
+    {
+      "path": "test/crosswake/guides/port_registry_test.exs",
+      "sha256": "b74e335afe3feef2859ad2a13fe6208e90da77e4f115745acec7c0ec9e211727"
+    },
+    {
+      "path": "test/crosswake/guides/quick_start_adoption_drift_test.exs",
+      "sha256": "a310f9ad38ab0b22b2b1d43d8e5391b4909c7b70c7a171d90cc9220e8231c38f"
+    },
+    {
+      "path": "test/crosswake/guides/readme_see_it_run_test.exs",
+      "sha256": "f8516e972070235f15cb7ea189aa5349d42fd272c443d4779cb06f9005be27ee"
+    },
+    {
+      "path": "test/crosswake/guides/release_boundaries_test.exs",
+      "sha256": "fe197a1f3c1761256a70d05a1133c741c4163e6f4976128072d60d438d08560b"
+    },
+    {
+      "path": "test/crosswake/guides/route_policy_test.exs",
+      "sha256": "8b93e98aae1e535b181ad271ed96d2ac3fc76b9eb623e409bf2fdf26b2717271"
+    },
+    {
+      "path": "test/crosswake/guides/see_it_run_banner_test.exs",
+      "sha256": "e5328d74830b7305cb8284f017e508574f2aad90b0ca7cb45dce944244678e5a"
+    },
+    {
+      "path": "test/crosswake/guides/see_it_run_collateral_test.exs",
+      "sha256": "9a57feb6f9ccfee62744d6e9c1a94c92d657121783e814993c722f4d16f03f2d"
+    },
+    {
+      "path": "test/crosswake/guides/see_it_run_test.exs",
+      "sha256": "cea5dca816d2cff733824ac938f92021c6360794f0c1814a8fa9703e762164fb"
+    },
+    {
+      "path": "test/crosswake/guides/troubleshooting_test.exs",
+      "sha256": "768ebddd918ef53419e975ef1913601fc20774440a5fb38391f982a60780f6d8"
+    },
+    {
+      "path": "test/crosswake/guides/user_flows_test.exs",
+      "sha256": "056cd97107fd12d67c215b004cf69e999648bd626ab01861c4a28380fa30345d"
+    },
+    {
+      "path": "test/crosswake/guides/web_to_mobile_migration_test.exs",
+      "sha256": "31a66a83b4c87bf413619c873ffdd8dacc9726b2a67fb57c6be6b183cd905912"
+    },
+    {
+      "path": "test/crosswake/hex_page_test.exs",
+      "sha256": "1ccfd432152dcc0e3219bf20b5afa0b03768269776ec6cf5bc8279e3f34e40b7"
+    },
+    {
+      "path": "test/crosswake/manifest/builder_test.exs",
+      "sha256": "9879345c1619daa876a1b7486bd5f67681ae7abd0ac4ccaedab364ec17d8f3a0"
+    },
+    {
+      "path": "test/crosswake/manifest/host_command_seam_fixture_test.exs",
+      "sha256": "35a09193d41db1fddb517a26a921aa1daaec94c1bedebf437a8f870e7131bd2a"
+    },
+    {
+      "path": "test/crosswake/manifest/host_commands_test.exs",
+      "sha256": "0647fd8dfa7ea34f4d1f03ddce2408b4ed48d65120a0d7da8ccefbfc758f3fda"
+    },
+    {
+      "path": "test/crosswake/manifest/manifest_test.exs",
+      "sha256": "848e073c5c53c28a3fae49c7061e5968997c546b9ca8cbf089f1d1e058347ce9"
+    },
+    {
+      "path": "test/crosswake/manifest/types_phase64_test.exs",
+      "sha256": "e65ec9a1bb432bead57d3442206b4ed38ecf3f8dec7311b56f8820ca55aa5ed4"
+    },
+    {
+      "path": "test/crosswake/manifest/validator_test.exs",
+      "sha256": "60d0fa0af89afe2ec0197180a8858d3e71b8f116eebb3876e8bbc47529b399aa"
+    },
+    {
+      "path": "test/crosswake/native_escape/contract_test.exs",
+      "sha256": "b57afe187c42dfc235914222109293eeaae322248e9d6364f0d736f8b3d4f8ff"
+    },
+    {
+      "path": "test/crosswake/navigation_transition_test.exs",
+      "sha256": "79afc681a4f60447b5c76b74ea66cd8b23d54a07d0e9ee3e998c41989a71cea3"
+    },
+    {
+      "path": "test/crosswake/offline/content_pack_test.exs",
+      "sha256": "5af8add5cfea070bec58933bbd17d357c3f15a19a717a1c009607bb7489d0adc"
+    },
+    {
+      "path": "test/crosswake/offline/contracts_test.exs",
+      "sha256": "8c47e35577af627cd62b5bfed0e7b2e732b1919de9e94b0a0560fa31925a8e00"
+    },
+    {
+      "path": "test/crosswake/offline/journal_test.exs",
+      "sha256": "463e07790ca96e7e6f4090f1e959792fb122e074dacfe0d219fda78d9b8ef015"
+    },
+    {
+      "path": "test/crosswake/offline/proof_lane_test.exs",
+      "sha256": "16feb5bbe32fbcaf418c31f2aec8f79e7e729f3f3868198ccc142f87db59901d"
+    },
+    {
+      "path": "test/crosswake/offline/replay_test.exs",
+      "sha256": "31eb349ff88adb3bbe19cdb2c6e0fdb3a8fe66f459807279fef735c9ff504b7c"
+    },
+    {
+      "path": "test/crosswake/offline/runtime_test.exs",
+      "sha256": "9c869dc50aaf4b69c8111737b9d107c7223b2c0d845cd606f38b72ccbc177954"
+    },
+    {
+      "path": "test/crosswake/offline/safe_observation_test.exs",
+      "sha256": "f95b70c21dcb4ee9ab7f474ca8eb87b23188f8c11be997b3c7ceb169dfe9d2c2"
+    },
+    {
+      "path": "test/crosswake/offline/status_test.exs",
+      "sha256": "8afc56f61bc81e675d9fd34830b90d8057e82712eb10e5ea0fde591203f6746c"
+    },
+    {
+      "path": "test/crosswake/offline/telemetry_test.exs",
+      "sha256": "6128cd1d250353f9f876b59bfd2e257aacbb1db272c9979d5a51af328770ed3c"
+    },
+    {
+      "path": "test/crosswake/operator_inspection/formatter_test.exs",
+      "sha256": "ddf0c2670da6bf9bca1d27686e4eda29e8cec08f7cd76983363cfcb86fef2fe5"
+    },
+    {
+      "path": "test/crosswake/operator_inspection/json_formatter_test.exs",
+      "sha256": "4bba81c300991ac2cbfec480fff7a6afe548fb8043f64ea5f4549a6432e39df4"
+    },
+    {
+      "path": "test/crosswake/operator_inspection_host_commands_test.exs",
+      "sha256": "f14510f024afdb7ba9776d93b4f1e840f842a6c2654bf1170706709976628541"
+    },
+    {
+      "path": "test/crosswake/packs/contracts_test.exs",
+      "sha256": "db5590982f98b9688ceeade2cd896e5132ea2313616ffdd20b461e1362d1fd3a"
+    },
+    {
+      "path": "test/crosswake/packs/runtime_test.exs",
+      "sha256": "274769f6fb89d06ea73d335ddef24c75a1593b0fc227f04eb2d24d055722cce4"
+    },
+    {
+      "path": "test/crosswake/planning/agents_contract_test.exs",
+      "sha256": "1c6feb8244a20d293c9686f6f2605056c2151625329a55dfd86c40552b442ba7"
+    },
+    {
+      "path": "test/crosswake/planning/closeout_ci_parity_test.exs",
+      "sha256": "77616a3f44e2e197530207e99df9d9be6127ab3c997b384fecc8b257c5db9b6f"
+    },
+    {
+      "path": "test/crosswake/planning/closeout_verifier_test.exs",
+      "sha256": "163374122d29be1a5af4c0d8aa4b38ee2865c847e69a27a3455e54166eda9cb9"
+    },
+    {
+      "path": "test/crosswake/planning/doc_truth_test.exs",
+      "sha256": "2fafde0857acf7eb2643893ba692bcc348b9adc38b63a4af21ce00601ae20ae2"
+    },
+    {
+      "path": "test/crosswake/planning/first_adopter_context_test.exs",
+      "sha256": "58b77537ab96db0f4271385d833fd3937aef4817b2a5f96768a20c933e1ab19f"
+    },
+    {
+      "path": "test/crosswake/planning/milestone_arc_closeout_parity_test.exs",
+      "sha256": "355dc04dba7dfa32c1e335003df8b8abf614684fa7c2c62576278f12e82b26c7"
+    },
+    {
+      "path": "test/crosswake/planning/milestone_transition_reset_test.exs",
+      "sha256": "cbfb84bf2540e344e806384d51117f8eda6cc7011478aeb54b534814c2be6d1d"
+    },
+    {
+      "path": "test/crosswake/planning/paths_test.exs",
+      "sha256": "ee2fc3cb4ea3ec9d38796929bad69574b7f97793ded97e47a642de73b1737c09"
+    },
+    {
+      "path": "test/crosswake/planning/release_please_config_test.exs",
+      "sha256": "37b69a327b9d13b94d8bd85c0b520e6e1f964ef9e85729d9ff9bb6c928313418"
+    },
+    {
+      "path": "test/crosswake/planning/summary_frontmatter_test.exs",
+      "sha256": "404cf42a62166129a4de7744bc6aabe90b4f428b04c1c0a5f366d6a8f52a6d95"
+    },
+    {
+      "path": "test/crosswake/policy/compile_error_test.exs",
+      "sha256": "7decaff79eb51ab50c1f219619399d926f9de19183d215ffaa4f0af3fe3732c7"
+    },
+    {
+      "path": "test/crosswake/policy/compiler_test.exs",
+      "sha256": "36d8bb8e5449610a2fe7431a1aecc55186bb64fc276223a11e68df33a9c0d78e"
+    },
+    {
+      "path": "test/crosswake/policy/corridor_profiles_test.exs",
+      "sha256": "040fd516867cd7c4aad0219c049ca9d86c2b8e3065a649cd8ba7bf3a54c32e87"
+    },
+    {
+      "path": "test/crosswake/policy/host_commands_test.exs",
+      "sha256": "a08403188d77f8a922924f640f973bade77fcd75f8bb498f16ff45b47d413342"
+    },
+    {
+      "path": "test/crosswake/policy/route_test.exs",
+      "sha256": "cd54fdae7e50879015d09330e343f8d2d6253a7238c7a199144613cf9855a873"
+    },
+    {
+      "path": "test/crosswake/policy/schema_test.exs",
+      "sha256": "1588ccfd9902c2efb526a0b59c146be2fb3f2d59b39807af2b3e703434791528"
+    },
+    {
+      "path": "test/crosswake/policy/warning_test.exs",
+      "sha256": "4b3e3743b4243bc613b475d81dd858296fc869bb2cd7e144e8eb8181e5c18548"
+    },
+    {
+      "path": "test/crosswake/proof/absence_is_not_success_test.exs",
+      "sha256": "a41d202d178c9aca2b82aba62dac6f793b9193b816affec977eced2095cdd533"
+    },
+    {
+      "path": "test/crosswake/proof/adopter_profile_contract_test.exs",
+      "sha256": "a48022298c19d842c34072504f7b7497028907b0c4745158ecdab1bb719d9633"
+    },
+    {
+      "path": "test/crosswake/proof/ci_recurring_lanes_test.exs",
+      "sha256": "b11b86844cfb836229a67ef4e7a023421ea50da41b22578d7a2559df9a696695"
+    },
+    {
+      "path": "test/crosswake/proof/ios_rehearsal_script_test.exs",
+      "sha256": "91abd229624ca18865c2d5e3d32f0eaa59801a8bef84a7b708c1cb9520747127"
+    },
+    {
+      "path": "test/crosswake/proof/phase129_companion_contract_freeze_test.exs",
+      "sha256": "0fe2f93ccc33c9f9e14162519d04f6440b64060e4bf1e5bcad5df7af8dee1f52"
+    },
+    {
+      "path": "test/crosswake/proof/phase130_extraction_guards_test.exs",
+      "sha256": "1059b9189d07418f78f05366d65c1c47614bbb50686a55990156e0af34bcb898"
+    },
+    {
+      "path": "test/crosswake/proof/phase130_fail_closed_contract_test.exs",
+      "sha256": "276a4fd1ca7fe38cb99610f27311df13b3d5d04c1fcdd099443ec893039d7f19"
+    },
+    {
+      "path": "test/crosswake/proof/phase132_compat_matrix_drift_test.exs",
+      "sha256": "4d4fa93b5458a0995c1f8118f3ed094744759fb1d64cf5e6a4f5cd86dfa6f0c4"
+    },
+    {
+      "path": "test/crosswake/proof/phase133_telemetry_contract_test.exs",
+      "sha256": "dfe3fcb4bc628cafa8f728b2784a845b7bcdb6fdf0393f59040fe9379d979370"
+    },
+    {
+      "path": "test/crosswake/proof/phase134_native_gate_blocking_proof_test.exs",
+      "sha256": "5b7fd7d75e0119244c3f111ea1ab937e6654139f3952d002f4a1ef0f282dae7e"
+    },
+    {
+      "path": "test/crosswake/proof/phase134_template_version_drift_test.exs",
+      "sha256": "3df29611cfc909e6196df9677e18ebafe2d934dd46273b3a7f51ac4923b0a546"
+    },
+    {
+      "path": "test/crosswake/proof/phase135_ci_ops_proof_test.exs",
+      "sha256": "1d09bbb7fba3082a7b19e516d4ebaaddbbb50f9ee27eda32af15048ea6eb52d0"
+    },
+    {
+      "path": "test/crosswake/proof/phase136_decouple_proof_test.exs",
+      "sha256": "545102c9b820b8c22d34104bf9996f37acba32b23c511e65578ac4227228cb2a"
+    },
+    {
+      "path": "test/crosswake/proof/phase142_release_integrity_test.exs",
+      "sha256": "5a5ae1efb0d8effd119a61f2e8f861b3e88d19609350c71b6357a5116184c980"
+    },
+    {
+      "path": "test/crosswake/proof/phase145_ios_backfill_script_test.exs",
+      "sha256": "dfdc2cce2b1808d5e79bc0df875549aff04eddc885f2e13e3988e45842d09f19"
+    },
+    {
+      "path": "test/crosswake/proof/phase153_1_cache_integrity_test.exs",
+      "sha256": "9675d51d7376c2de1d49d8503d40dbeeca9e487845ed0c659a1aa298c39c4c4a"
+    },
+    {
+      "path": "test/crosswake/proof/phase153_1_gate_integrity_test.exs",
+      "sha256": "e00724a8e0117b0c5cff52d75b3d97109b661dcaf80f3b092627516d6f0fad7b"
+    },
+    {
+      "path": "test/crosswake/proof/phase153_ios_mirror_unblock_test.exs",
+      "sha256": "d8085adafe4f8e4b5c959b6899032269d15a217af29b6134475bc8b3b50a124b"
+    },
+    {
+      "path": "test/crosswake/proof/phase154_advisory_actionability_test.exs",
+      "sha256": "2fa596119441fa04d7bc91b4ced48b2b126bc8ba4d133268aeaf3cc56d0f904f"
+    },
+    {
+      "path": "test/crosswake/proof/phase154_catalog_guard_test.exs",
+      "sha256": "159248a8c80ea1bcff214e2e0ca0401ed54f8aecbc91949d715b7cf62884a97a"
+    },
+    {
+      "path": "test/crosswake/proof/phase154_recipe_followable_test.exs",
+      "sha256": "6f4b670a7ad7a00de9e8b11d5b8b5fe9407696643b893c3f16d01094e60ac24f"
+    },
+    {
+      "path": "test/crosswake/proof/phase155_native_controls_template_drift_test.exs",
+      "sha256": "493fc2d304f4ae10334295bb333f68762fd08d08f6e6eb739b8998b53132799e"
+    },
+    {
+      "path": "test/crosswake/proof/phase160_scoped_replay_privacy_test.exs",
+      "sha256": "ec850f3585cb1cdd6353a065644a9e2e2143fe24e48c4ee346a7b1cd25217e79"
+    },
+    {
+      "path": "test/crosswake/proof/phase161_1_navigation_gate_integrity_test.exs",
+      "sha256": "1735938f410b403c35032387e72f490380d4e66f196f0557da83268d9d5f1213"
+    },
+    {
+      "path": "test/crosswake/proof/phase164_dependency_security_and_gate_authority_test.exs",
+      "sha256": "4a2fab804e8446045e2b829be04c798043fe2bac3fba61ec5f5426b5b4299187"
+    },
+    {
+      "path": "test/crosswake/proof/phase164_example_host_isolation_test.exs",
+      "sha256": "4ccb8d23ff03f4f2c8dee9a5a30d8344b76a0b44dcf52f81b222cea02a03b6cd"
+    },
+    {
+      "path": "test/crosswake/proof/phase164_exunit_ownership_test.exs",
+      "sha256": "922bd36a2fa16fa154d5d708b0d941e1c5d0e90b990d22da8af44e34f0a351e1"
+    },
+    {
+      "path": "test/crosswake/proof/phase165_ci_integrity_test.exs",
+      "sha256": "41991d3b005077fd11d534fec7a14d306e8639c765d21feae3d99249cd98db66"
+    },
+    {
+      "path": "test/crosswake/proof/phase165_ci_policy_test.exs",
+      "sha256": "0419afa8d6f0b1f8f6f9e026e2eb1105bbf7ce624a627509d1957357af71fe7c"
+    },
+    {
+      "path": "test/crosswake/proof/phase165_evidence_test.exs",
+      "sha256": "268cd555189e8a66b445ebd2f442824d0dacd2cc7a05d4906c85aeb9c14b196f"
+    },
+    {
+      "path": "test/crosswake/proof/phase166_repository_quality_test.exs",
+      "sha256": "647a05df47f596976c2b8b0f0f46b81498cfc127d8f6434d415a435d455dd7c1"
+    },
+    {
+      "path": "test/crosswake/proof/phase168_version_truth_test.exs",
+      "sha256": "64e4a79e9f28abb1b88e477f630c533ca7d328b719f3e4aad4ca7d2d059df60b"
+    },
+    {
+      "path": "test/crosswake/proof/phase169_check_name_uniqueness_test.exs",
+      "sha256": "32a96b05b88a5770b55b88e408130ddbbf8f21ff1ac5125a0ea35fbcf8d4571a"
+    },
+    {
+      "path": "test/crosswake/proof/phase169_diagnostic_legibility_test.exs",
+      "sha256": "e20ed6793e41ebe052d68efefe9d90336f3c332d7804335cd32b4bde3632ce51"
+    },
+    {
+      "path": "test/crosswake/proof/phase169_exit_contract_guard_test.exs",
+      "sha256": "7ee1552a233c4b12f3eb1101589ba98951f88868b5ecd97b3f3065cac37ec2ba"
+    },
+    {
+      "path": "test/crosswake/proof/phase170_guard_expression_match_test.exs",
+      "sha256": "c56a3fc11bba66740bcbe1c418171f998f418d58ea5fa230b9a5df3ed18bc024"
+    },
+    {
+      "path": "test/crosswake/proof/phase170_vacuity_taxonomy_convention_test.exs",
+      "sha256": "61dcd9670e74ef54a17d6dfb0363a1ab4a5562d665ce51272134cdafa0aa962a"
+    },
+    {
+      "path": "test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs",
+      "sha256": "647684f115f942d82a87c9725d07e2bf3a44df8612f470d7431d2c513383b300"
+    },
+    {
+      "path": "test/crosswake/proof/phase171_approved_version_output_test.exs",
+      "sha256": "706f601da525e2328c36a1c57463c26a467b52b114adb57c9cc8d917c7d2da6b"
+    },
+    {
+      "path": "test/crosswake/proof/phase171_no_bare_version_literal_test.exs",
+      "sha256": "0de448c9ca0e4a768ca778bccff8ec888e4453771b7f5f571129e0492c077c6e"
+    },
+    {
+      "path": "test/crosswake/proof/phase172_per_package_ref_test.exs",
+      "sha256": "79bf577b88a6fd721a4a19f66623d902116e6d9cd780e200a88ad7c74317c50f"
+    },
+    {
+      "path": "test/crosswake/proof/phase173_recovery_proof_convergence_test.exs",
+      "sha256": "f1fa97258e5a2d947fd34bcad772451af6993c166c932e09e01aac04d7e9656e"
+    },
+    {
+      "path": "test/crosswake/proof/phase174_cleanroom_host_realism_test.exs",
+      "sha256": "650ab4b9343c993218d57b07d1a7b9b68995fd10f2526543c47d044b088d344d"
+    },
+    {
+      "path": "test/crosswake/proof/phase174_cleanroom_lane_parity_test.exs",
+      "sha256": "3f9a04784a2453fc213a4b6c1ad45da6d8c75a10bf4591e3a5c247b0462d6ea6"
+    },
+    {
+      "path": "test/crosswake/proof/phase174_companion_findings_test.exs",
+      "sha256": "0017ff354d2148ed7c108f0c9808bd2a4ce2609759ebd7954e61f5387b2300bb"
+    },
+    {
+      "path": "test/crosswake/proof/phase174_manifest_contract_immutability_test.exs",
+      "sha256": "c4e345b0991f7ce2541acd8023e4d905cd758eabb52751441b30449e2f1f4592"
+    },
+    {
+      "path": "test/crosswake/proof/phase174_matrix_installer_contract_test.exs",
+      "sha256": "4b55eab661d5df34cc13e6a468e72d5dcdfe92262ec2abe426b61304cebfed1e"
+    },
+    {
+      "path": "test/crosswake/proof/phase175_linked_authorization_test.exs",
+      "sha256": "d4cb3e45d42371b2b2549ba02f299b566ff1973474333d03a1e9701262a12a6a"
+    },
+    {
+      "path": "test/crosswake/proof/phase175_receipt_artifact_roster_test.exs",
+      "sha256": "389eb873078ff81d0003a9e0555723067bdfeda40c49d662d4759fa7ad9a210f"
+    },
+    {
+      "path": "test/crosswake/proof/phase175_rel17_publish_paths_test.exs",
+      "sha256": "6ee7786640c296909c58a34032d0d2f2fcaf88ca124a15ca54405da70804ce99"
+    },
+    {
+      "path": "test/crosswake/proof/phase175_rel17_recovery_paths_test.exs",
+      "sha256": "2b48862a9729c0667ceaafc0ca9ad5e51ac38c9fc278354ff1f94b038146c355"
+    },
+    {
+      "path": "test/crosswake/proof/phase175_rel17_wiring_test.exs",
+      "sha256": "9dccf6509d96bf5527f03f656ab376e16d25cf6667ea43233449ddd0f3380520"
+    },
+    {
+      "path": "test/crosswake/proof/phase175_release_recovery_test.exs",
+      "sha256": "ac526354db64335df38721a492ce6b601cee542d09ac80dfa99b372a5333b785"
+    },
+    {
+      "path": "test/crosswake/proof/phase175_runbook_ancestry_test.exs",
+      "sha256": "c6b9b20227925d7b3ddc2d4f9ab1fdf4f82c6796bb39956639fbac88a5788dcf"
+    },
+    {
+      "path": "test/crosswake/proof/phase180_twin_feasibility_test.exs",
+      "sha256": "c80640342ed6a2d92494d8d458a282c9b002f43e31aab6186c8db74fae530788"
+    },
+    {
+      "path": "test/crosswake/proof/phase18_bounded_family_lane_test.exs",
+      "sha256": "0af51001fe513d0ca704e553fe305e5d7f2883f85dd3c6e7aff6216d71ff1bfd"
+    },
+    {
+      "path": "test/crosswake/proof/phase18_deep_link_activation_lane_test.exs",
+      "sha256": "80231a40bea8bbc1b975727fb8079dee5111122f6685f826c8c1f9341c89b04f"
+    },
+    {
+      "path": "test/crosswake/proof/phase21_reconciliation_example_test.exs",
+      "sha256": "edcf88c5270773733e9f37c0fd03db51b7982ab88cbeb257264f89e851447896"
+    },
+    {
+      "path": "test/crosswake/proof/phase23_commerce_support_proof_test.exs",
+      "sha256": "5f7559e5adb30088c70886a8516bc3ac62a81ce3cf1250547bad1e1877d24b95"
+    },
+    {
+      "path": "test/crosswake/proof/phase33_commerce_corridor_routes_test.exs",
+      "sha256": "6d7da816d12a45fffef0710e1076dcd70ee23fa82e311d33c348e6d8ddf8a69c"
+    },
+    {
+      "path": "test/crosswake/proof/phase34_mock_storefront_test.exs",
+      "sha256": "d9ffe33f4e2bef3aef402d18056b2321ee3588cb7e9fbe5d7b197b118f594395"
+    },
+    {
+      "path": "test/crosswake/proof/phase34_paywall_corridor_proof_test.exs",
+      "sha256": "1a456d24782bf96aae6fbcc0b399569a6252dc72d852aa475ed0f1799220c9e5"
+    },
+    {
+      "path": "test/crosswake/proof/phase35_paywall_live_test.exs",
+      "sha256": "70e5b6b8d042a5c67c1765780e648e492f6689d42abfa0790c60382cb0605d0a"
+    },
+    {
+      "path": "test/crosswake/proof/phase38_companion_contract_test.exs",
+      "sha256": "ccdda8742724154a031725be5dbf11098d004a460a0a6a4baf60a92362916d56"
+    },
+    {
+      "path": "test/crosswake/proof/phase39_route_policy_gating_test.exs",
+      "sha256": "a61a406de7b9a19cccea16bd9ef4324bbb39f2d47c396e2b30f43b18aebdf037"
+    },
+    {
+      "path": "test/crosswake/proof/phase40_gate_evaluation_test.exs",
+      "sha256": "dd85115d25a5f466aad6d87c73a7d7b12352d252e6f9a891a5f7df40a1710de9"
+    },
+    {
+      "path": "test/crosswake/proof/phase41_gating_doctor_test.exs",
+      "sha256": "7ad85577f1d771547e38a9602986a48bdd417df521852007dbb6889ece7676f6"
+    },
+    {
+      "path": "test/crosswake/proof/phase42_rulestead_companion_test.exs",
+      "sha256": "de5e4a8069109bed475cbc4e79159e83426bf3edc4391e48ca1dfb9ccb3ac421"
+    },
+    {
+      "path": "test/crosswake/proof/phase43_rulestead_advisory_test.exs",
+      "sha256": "4113e0a55713f34687d5252465559ba9b7a3bd1bd9c9daa35fd86d5c91746bc9"
+    },
+    {
+      "path": "test/crosswake/proof/phase48_provider_adapter_proof_test.exs",
+      "sha256": "7cadaba744a7c036ff53719724a9425d242856348a7653ca90fb7adc91644828"
+    },
+    {
+      "path": "test/crosswake/proof/phase52_operator_truth_test.exs",
+      "sha256": "45a7f214f26b373d5fefd4d071c8ebc130dd6bd04385a160dd9244198882917a"
+    },
+    {
+      "path": "test/crosswake/proof/phase55_session_handoff_tickets_test.exs",
+      "sha256": "01e747d8188f5f0d313dfdf8dc0c26a59060c7be623e085eb27e9e68fba03a77"
+    },
+    {
+      "path": "test/crosswake/proof/phase56_step_up_ceremony_test.exs",
+      "sha256": "74d32d4a06239a19eb955da39ad252e0af5fe4634d28135b8d67cf5826a706f9"
+    },
+    {
+      "path": "test/crosswake/proof/phase59_chimeway_support_truth_test.exs",
+      "sha256": "8c7cf23bce78cdf7d1ca755a6900965edda8e97b34216c567d0520d892d9e732"
+    },
+    {
+      "path": "test/crosswake/proof/phase5_proof_lane_test.exs",
+      "sha256": "4db064c4a034110eab13fe3cc5c22d3c7b9e6d7aae0b08f14f79f3b77407f78b"
+    },
+    {
+      "path": "test/crosswake/proof/phase60_chimeway_registry_test.exs",
+      "sha256": "50446875f38ad3ad20d868b71f5522f98024a95a2b193fe9606dec25662f3418"
+    },
+    {
+      "path": "test/crosswake/proof/phase63_advisory_proof_test.exs",
+      "sha256": "1d7355401253d3c13a55bbd456a247538c85312367c38171247bda8cd99ce287"
+    },
+    {
+      "path": "test/crosswake/proof/phase63_notification_seam_proof_test.exs",
+      "sha256": "245f24b4252d804f67e51f313fd737ba5f14e9cac13746ba11cb281ee4d6d4f2"
+    },
+    {
+      "path": "test/crosswake/proof/phase64_runtime_line_policy_test.exs",
+      "sha256": "e488b8403ce7a3ed508923018499fc5af6e415aa601cec49bfa1757fc1d510d0"
+    },
+    {
+      "path": "test/crosswake/proof/phase65_diagnostic_export_seam_test.exs",
+      "sha256": "3c8d7aeb661ceb8488a443561766badc0bd02c07a3b1c1bfd07be61b09a65e9e"
+    },
+    {
+      "path": "test/crosswake/proof/phase68_android_uat_test.exs",
+      "sha256": "0982e47f5c45445dad8001ec07cf1d02cc0abd0ee1f79aaf177f426f003de24b"
+    },
+    {
+      "path": "test/crosswake/proof/phase69_docs_contract_parity_test.exs",
+      "sha256": "daff78155c1aa39e5399e47280159756c5b24d0a98852c77f94a4227b15f2ac8"
+    },
+    {
+      "path": "test/crosswake/proof/phase70_subscription_saas_commerce_proof_test.exs",
+      "sha256": "f6d7a6d1165f309834ccbd3f347da063f5732cf83b7d6df1ff6a98b7ef85876b"
+    },
+    {
+      "path": "test/crosswake/proof/phase74_offline_draft_recovery_proof_test.exs",
+      "sha256": "80f1e4e2e8938154fcef129f3548a11351db97d584a9c97ee1abb736236ad090"
+    },
+    {
+      "path": "test/crosswake/proof/phase7_saas_lane_test.exs",
+      "sha256": "713ba4a44bbe1df35c9f0ce3ddf5f10cdbdee19842119505f0a0ce055696d2b5"
+    },
+    {
+      "path": "test/crosswake/proof/phase8_selective_native_lane_test.exs",
+      "sha256": "2acba9f718660117ff7fad3f54159cbd7c5dd012d6053ec9ae6b679dff5ca7ee"
+    },
+    {
+      "path": "test/crosswake/proof/phase9_local_first_lane_test.exs",
+      "sha256": "7bed3dbe18bc3f4cabab2dfdb5b8b2bb7ee8353f89f2016dc17daeeb3dcb33b5"
+    },
+    {
+      "path": "test/crosswake/proof_lane/config_test.exs",
+      "sha256": "35fe24e85533c52d69d8bce586a191b3316adb80fa701c5a4e63549d9c4f6d54"
+    },
+    {
+      "path": "test/crosswake/proof_lane/evidence_test.exs",
+      "sha256": "ecd8088a1c2fccd9405390857f67480fe345d2593f2956b53107320f1d22c53b"
+    },
+    {
+      "path": "test/crosswake/proof_lane/ios_verifier_test.exs",
+      "sha256": "aa34adeb216868de71877698eb58c8591113a70d75d43b720cb4db8c2e6594a6"
+    },
+    {
+      "path": "test/crosswake/proof_lane/loopback_origin_harness_test.exs",
+      "sha256": "16bcea004e2861db981cd9d3cf64d39bf8eb94946972c60341436d1c7fd268fe"
+    },
+    {
+      "path": "test/crosswake/proof_lane/navigation_shell_advisory_test.exs",
+      "sha256": "00b618eb7d5c20a0dcfdf5da543a14ad96dfb6163fdcb5a22eeb6703fa755163"
+    },
+    {
+      "path": "test/crosswake/proof_lane/physical_iphone_evidence_transaction_test.exs",
+      "sha256": "d9045796e230d562ef50d72938e3ab0fe4e654bc0cddca9e98df1cdd73c13e9c"
+    },
+    {
+      "path": "test/crosswake/proof_lane/physical_iphone_preflight_test.exs",
+      "sha256": "0ed2b3b088c3b235ddb30adac297b6e4750a21b025096223e3fcfea5e09885f0"
+    },
+    {
+      "path": "test/crosswake/proof_lane/physical_iphone_report_contract_script_test.exs",
+      "sha256": "2eb23be6b9f3db5215108a17be34e84cc3acb5d24353d3c40f69ce754aa1b650"
+    },
+    {
+      "path": "test/crosswake/proof_lane/provenance_test.exs",
+      "sha256": "54b8f64b0e01728b5a57cae1f0b8040cd927e63f7cd9fc7ce00644835c250264"
+    },
+    {
+      "path": "test/crosswake/proof_lane/recovery_edges_test.exs",
+      "sha256": "51303736b159f275af95425b335237064c94f76cc3f6a93ff05ae3d7fda05177"
+    },
+    {
+      "path": "test/crosswake/proof_lane/template_contract_test.exs",
+      "sha256": "df4d2be0c0fc7119ab2fc5257185201d40c31d804fbb897d93db6c65c63342be"
+    },
+    {
+      "path": "test/crosswake/proof_lane/twin_fault_boundary_test.exs",
+      "sha256": "5edb131ca17bdc03999ae8f2dce844b35fccfb6121a5e5017d7d603ac2b33de9"
+    },
+    {
+      "path": "test/crosswake/proof_lane/twin_journey_test.exs",
+      "sha256": "e543b7379038207be0fe65b1af1b04dfd4fc1bfd1ac43f96e8ca084a72c99a5d"
+    },
+    {
+      "path": "test/crosswake/proof_lane/twin_producers_test.exs",
+      "sha256": "52a4c38f7af5cf8bdcf42c91de4f26e593bafafbec09217b502643329c2ede7d"
+    },
+    {
+      "path": "test/crosswake/proof_lane/twin_receipt_test.exs",
+      "sha256": "ac3778e97411ca2fb7413dfb5b0c88e1e2e7d0bc70bd3240bd02255728637f22"
+    },
+    {
+      "path": "test/crosswake/proof_lane/twin_runtime_check_test.exs",
+      "sha256": "b30f0f03dc168bd6122afa26a133abf65626d9ada89a5a65984b14789705c866"
+    },
+    {
+      "path": "test/crosswake/proof_lane/twin_source_probe_test.exs",
+      "sha256": "9ad64130d99ce2379559a510f0db03e1859dc110fa14348ad997db864e52398b"
+    },
+    {
+      "path": "test/crosswake/release/published_cleanroom_test.exs",
+      "sha256": "85c84c709ee9fa9663af825200a470bcc6a6d28428c7bac943fc1197e3cf4019"
+    },
+    {
+      "path": "test/crosswake/release_candidate/artifact_test.exs",
+      "sha256": "afff156a0c7823e43eaf7c9a9630c0dbf895a512f9adb911c1ccf4ec73a04dcf"
+    },
+    {
+      "path": "test/crosswake/release_candidate/cleanroom_test.exs",
+      "sha256": "123891bf77ebda5f3704f1903569dd5f72f8a50e352831e0a6a3bbb15b46a2d1"
+    },
+    {
+      "path": "test/crosswake/release_candidate/companion_attestation_test.exs",
+      "sha256": "2873abb4ff2e47fe80df718504051f2bb741d03e93bf711e7d499b9554b0baf1"
+    },
+    {
+      "path": "test/crosswake/release_candidate/companion_receipt_test.exs",
+      "sha256": "50c9e4fbaa19d8642d347132cb4d3052bc5ec38ba41c03eab62bda0c08f23be4"
+    },
+    {
+      "path": "test/crosswake/release_candidate/coordinate_test.exs",
+      "sha256": "af99fc26ada0f03649b4584823fc696c9c0278b4d9e4891e827a388ed6ea2f5c"
+    },
+    {
+      "path": "test/crosswake/release_candidate/evidence_gate_test.exs",
+      "sha256": "ffb927b112bc4bca43ce77f311bf53bc8bac3f326627821c80ca25623cb8d981"
+    },
+    {
+      "path": "test/crosswake/release_candidate/evidence_live_test.exs",
+      "sha256": "e077f3bffb069acb19d8b21705faeb61e35afe35d8d3952cf5938a13f7d86a31"
+    },
+    {
+      "path": "test/crosswake/release_candidate/identity_test.exs",
+      "sha256": "dbed1074e52170a961f24972c8afce385911f118cde0b0b87bc9f1e77ff0b1bb"
+    },
+    {
+      "path": "test/crosswake/release_candidate/mirror_test.exs",
+      "sha256": "291bcfc02078a044d32a3a0c260289f076ad07474ffb1c031525ac5bebd2ca95"
+    },
+    {
+      "path": "test/crosswake/release_candidate/package_source_ref_test.exs",
+      "sha256": "3223acffd7f5f855b78887ae19b6a5fb4c6d7d8723bbf0e2b711f4cf04b2a66a"
+    },
+    {
+      "path": "test/crosswake/release_candidate/policy_read_test.exs",
+      "sha256": "c672ed88957290e934a0298cfff33459fbdded047420f7fa440a7136c11ba022"
+    },
+    {
+      "path": "test/crosswake/release_candidate/publication_record_test.exs",
+      "sha256": "89bae732df1549e646608e5ee6f6390f7d10ea306291d6132d4933b514942492"
+    },
+    {
+      "path": "test/crosswake/release_candidate/receipt_test.exs",
+      "sha256": "589f17fe4684b27ac29d02d2e8f595225fff7a524f5b509ba3f58d64b39669e2"
+    },
+    {
+      "path": "test/crosswake/release_candidate/release_ledger_test.exs",
+      "sha256": "363b158065eecfbee59e10e4f8957d4bf94765a3caba4ad01c239579391715f9"
+    },
+    {
+      "path": "test/crosswake/release_candidate/workflow_test.exs",
+      "sha256": "0add1bb39836c4b98eeeb4f846b753a7c1126aa0c42f211a783b7f823eb2aeeb"
+    },
+    {
+      "path": "test/crosswake/repository_root_allowlist_test.exs",
+      "sha256": "52c551091c4c18fe4db4d20926b2192152f72fe14488183cc1075a89448266d5"
+    },
+    {
+      "path": "test/crosswake/router_defaults_test.exs",
+      "sha256": "f2e159f40beeb0cd62703e1975beb437d2f7e3d35c6fb5cb127800c7a1dfc0cd"
+    },
+    {
+      "path": "test/crosswake/router_host_commands_test.exs",
+      "sha256": "0a6027327c05dd44c47d232694586e47deab3f240b62d84c741a3a16cbeb9e5f"
+    },
+    {
+      "path": "test/crosswake/router_test.exs",
+      "sha256": "96b3bae607919d08169b3f0bca9c261e45ce45f188d57c0aaed0943b242202c0"
+    },
+    {
+      "path": "test/crosswake/shell/activation_test.exs",
+      "sha256": "373efb811029690a498953777b423f08f2745a3a39eebe412a077367ccdf76ca"
+    },
+    {
+      "path": "test/crosswake/shell/denial_test.exs",
+      "sha256": "30bf27e780263b01f4b0055150e254d1c78418635f8aec455446a1d73666b2e3"
+    },
+    {
+      "path": "test/crosswake/shell/diagnostic_export_test.exs",
+      "sha256": "e737a803f5f3e6cbc4c142c12a5a2662b24e0e2268e5037e528f4ad365d21e65"
+    },
+    {
+      "path": "test/crosswake/shell/host_command_seam_swift_constant_test.exs",
+      "sha256": "ce10a31bc12fa15f30b7eb8e6eaa2566e77ec63ffb168c80aa038e66818dba88"
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_config_test.exs",
+      "sha256": "87d460d857c95d877dbb1e552d719e03f7b0cd2edb9f136a4133ec55b14c039f"
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_generation_host_commands_test.exs",
+      "sha256": "7adf48f4a8d40c7d1daeba9f31fc3d0324904f0dffdb27936b9481a55c8f5985"
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_migration_graph_test.exs",
+      "sha256": "dc142abd79da6007dc7b496060f0c2c3bb74a6a57d5c16f30b2baa55465c690f"
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_migration_security_test.exs",
+      "sha256": "dc6e13804cac2dc1865b7aaf0642e5e5dcef8c9a9f7611def722118b7e075df2"
+    },
+    {
+      "path": "test/crosswake/shell/ios_host_origin_mode_test.exs",
+      "sha256": "ba2a79bd3f7e47d4c89aebb175f6c26491fd154a9d52436d7ae90d8873ba29ec"
+    },
+    {
+      "path": "test/crosswake/shell/managed_outputs_test.exs",
+      "sha256": "f75cbd147ed74f0ecb9256e4f798432abffae27ffb6e5cd972a7678d54251fe5"
+    },
+    {
+      "path": "test/crosswake/shell/path_redaction_test.exs",
+      "sha256": "dbda7887a44d42ea2f5ef18d0930d23b6962d43461b044359cb5f9a76cb12877"
+    },
+    {
+      "path": "test/crosswake/shell/shell_package_test.exs",
+      "sha256": "5c04d0c1386e9d43b9f99e567d260369a0a419f48b5bf04e0c451b03c218e66f"
+    },
+    {
+      "path": "test/crosswake/support_matrix/renderer_test.exs",
+      "sha256": "74d07169fa792627dc3827206e65f39a8fb9f52e482bca7ba75cd4529ff0dbc1"
+    },
+    {
+      "path": "test/crosswake/support_matrix/support_matrix_test.exs",
+      "sha256": "8050d167fff0494d074dc3e74ee321c0a626ebaa4388208be2719b93ad1aa4ab"
+    },
+    {
+      "path": "test/crosswake/support_matrix_test.exs",
+      "sha256": "483824b7ef71313de166b53871825afabc74dc8a61ae1db0d14791491c29cf03"
+    },
+    {
+      "path": "test/crosswake/sync/event_log_test.exs",
+      "sha256": "9b873ac00998e42ea7576776ee9f82e2c53c3d261b3fd3afab64354da6c33c1e"
+    },
+    {
+      "path": "test/crosswake/telemetry_test.exs",
+      "sha256": "6e563ad32510ca9d25101e337a1b13b084480557527d01c3f80f9d3104ea7950"
+    },
+    {
+      "path": "test/crosswake/test_support/version_stamp_test.exs",
+      "sha256": "b004057f2de718860a3e564acb6d776eecd51972ad95cb096ee153bf6caa9853"
+    },
+    {
+      "path": "test/crosswake/transfer/contracts_test.exs",
+      "sha256": "8ab6d0bfe6ae1609aa2c320ccef3f0727628bbc44b20f068cd1c66e3ee020ebd"
+    },
+    {
+      "path": "test/mix/tasks/closeout_verify_test.exs",
+      "sha256": "10af86721343abd46cd4de3aa37a5a11c1c5d5d7053db531a402cfe91b1fbbb0"
+    },
+    {
+      "path": "test/mix/tasks/crosswake.docs.sync_test.exs",
+      "sha256": "8616cb3ca6e52b729d32e49eb7570d310f177ea4676ed49246f5e5fd2521804d"
+    },
+    {
+      "path": "test/mix/tasks/crosswake.gen.native_controls_ui_test.exs",
+      "sha256": "04b16d70c7a287f752c9a7de0fc8d0551464f7f59c6bbf6c7d4d8aad905b1a49"
+    },
+    {
+      "path": "test/mix/tasks/crosswake.gen.offline_ui_test.exs",
+      "sha256": "26dbce39d186d5f59133189e62638a9cda14368f5a05a511f08633aaca11ddb9"
+    },
+    {
+      "path": "test/mix/tasks/crosswake.gen.sync_test.exs",
+      "sha256": "0589da99a6e29a6e4e3fa72e61fd0387609f5b85de8752f86b42bd9c981527e0"
+    },
+    {
+      "path": "test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs",
+      "sha256": "cd33fd6ef50082ae1b8ca3d55370366d1d4c34d2ecceb6e616160e1add859b73"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_adoption_context_scan_test.exs",
+      "sha256": "01076caca9cdb9ca7bdce1f39ec53253df09bdd0c0d8df773ab5a84cd6abef2c"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_doctor_router_test.exs",
+      "sha256": "98464028e18cf6ffee398b8f0b381a7c3b038b428cf9b0f4758336095d340367"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_doctor_test.exs",
+      "sha256": "5b83d667a30565ca77b91928dc1f9f49e00d98ccbd4026bb20b54278ea65dbc3"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_bridge_hook_test.exs",
+      "sha256": "156bb7e85449123f7c3662f097991c438c45118f5fac78fa3b3b41df59774ef5"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_proof_lane_test.exs",
+      "sha256": "3844dc9962ed810f263fd8bac680377b0bbafc7d7b09ef888412bbf5e728501a"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_shell_diff_test.exs",
+      "sha256": "40266828e4396cfa1678d61bc2003d70f1b2adabf5e88b0a8937675bc319911b"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_shell_host_commands_test.exs",
+      "sha256": "23044a5b0a159388d245530e70de8cb85a60eb9a22d61b0dd6c3afbe9bf5580b"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_shell_host_test.exs",
+      "sha256": "365c138966292df80929e4b9b2a8b78640671ccf05e39736a4d852c3282a4ecb"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_shell_origin_mode_test.exs",
+      "sha256": "c2fc49c1be5e000537bf66de61237e7413bf35cd5a88e94fe1f55f31abd359c4"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_shell_stamp_test.exs",
+      "sha256": "3a5f4470a09084627cd166a6b0622e1f7aa44aaaf844b8ae9b75ed17c04cc3ff"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_gen_shell_test.exs",
+      "sha256": "9fe961a74ec3f7be25661c9003d3be35f6e19810bf5c621a2b949e9fe3fd885b"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_inspect_test.exs",
+      "sha256": "9f40483cdf84f4a34a5102deb0d550d0d6f9437da2f7d5537ac2d058fd1b550c"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_install_test.exs",
+      "sha256": "563b86ebdf1f0fc8472c7e9ed28a1bc9b1ed86af54075586b3461e9c361af7d4"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_proof_lane_twin_preflight_test.exs",
+      "sha256": "9978e0e9f87e0ebb1ff04f74e2b81618c549fa4ae2c90ed826a2403a06b8e1a9"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_proof_lane_verify_navigation_shell_test.exs",
+      "sha256": "a6885eb98af98dc7a80ab823d61d2867aa5dbeb2ff89e8a5bd3d16e39d332802"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_proof_lane_verify_twin_test.exs",
+      "sha256": "07d92ee296d22e5643959f9b03fac4514ece6fd8d62f3f9f073d64515e1fb47d"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_release_candidate_test.exs",
+      "sha256": "987012342b0658f94a4d6214fd7e9de0a2ee1e90a8763a00fced4debcd86a1b1"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_release_status_test.exs",
+      "sha256": "2bc488f1787b6b331f775e4300b7eb4ec650887f816c64a201ec62ba443dafb3"
+    },
+    {
+      "path": "test/mix/tasks/crosswake_shell_status_test.exs",
+      "sha256": "d4b7d4d7ded1ae1fe8e7c83d50c39d89a8367ec2a098c1564ef32a63538f40e6"
+    },
+    {
+      "path": "test/test_helper.exs",
+      "sha256": "e7a335bd7adeaeb5370dfd4ca5f36da28b3b1847808b4361597746a3af1aef7d"
+    }
+  ],
+  "subject_sha256": "03ce5533f4f95a869c5ce7e7f0048e1f2a60420e12d459b162d4da43797b85df",
+  "command": [
+    "elixir",
+    "script/check_absence_is_not_success.exs",
+    "--collections-mode",
+    "report",
+    "--root",
+    "<actual-main>"
+  ],
+  "process_exit": 0,
+  "stdout_sha256": "4d90533a2220a49d79463c975cc1bd54a9740de71097a14682d0b5208899a64d",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "counts": {
+    "collections": 89,
+    "files": 359,
+    "findings": 89,
+    "projects": 6
+  },
+  "findings": [
+    {
+      "category": "unsafe_collection",
+      "count": 2,
+      "file": "packages/crosswake_chimeway/test/crosswake/companions/chimeway/contracts_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "packages/crosswake_sigra/test/crosswake/proof/phase54_sigra_session_authority_test.exs"
+    },
+    {
+      "category": "literal_true",
+      "count": 1,
+      "file": "packages/crosswake_threadline/test/crosswake/proof/phase139_threadline_cleanroom_test.exs"
+    },
+    {
+      "category": "glob_without_count",
+      "count": 1,
+      "file": "test/crosswake/bearings_report_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/bridge/push_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 13,
+      "file": "test/crosswake/doctor/doctor_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 6,
+      "file": "test/crosswake/doctor/doctor_threadline_test.exs"
+    },
+    {
+      "category": "literal_true",
+      "count": 1,
+      "file": "test/crosswake/guides/evidence_manifest_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 4,
+      "file": "test/crosswake/guides/evidence_manifest_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/guides/release_boundaries_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/manifest/builder_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/manifest/manifest_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 7,
+      "file": "test/crosswake/manifest/validator_test.exs"
+    },
+    {
+      "category": "glob_without_count",
+      "count": 1,
+      "file": "test/crosswake/planning/first_adopter_context_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 2,
+      "file": "test/crosswake/planning/first_adopter_context_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/policy/compiler_test.exs"
+    },
+    {
+      "category": "glob_without_count",
+      "count": 1,
+      "file": "test/crosswake/proof/phase132_compat_matrix_drift_test.exs"
+    },
+    {
+      "category": "glob_without_count",
+      "count": 2,
+      "file": "test/crosswake/proof/phase165_ci_integrity_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 3,
+      "file": "test/crosswake/proof/phase165_ci_integrity_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof/phase165_ci_policy_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 2,
+      "file": "test/crosswake/proof/phase166_repository_quality_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 2,
+      "file": "test/crosswake/proof/phase169_diagnostic_legibility_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof/phase172_per_package_ref_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof/phase180_twin_feasibility_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof/phase64_runtime_line_policy_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof/phase65_diagnostic_export_seam_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof/phase7_saas_lane_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof_lane/navigation_shell_advisory_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/proof_lane/twin_fault_boundary_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 2,
+      "file": "test/crosswake/proof_lane/twin_producers_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 5,
+      "file": "test/crosswake/release_candidate/cleanroom_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/crosswake/release_candidate/coordinate_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 3,
+      "file": "test/crosswake/release_candidate/mirror_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 2,
+      "file": "test/crosswake/shell/diagnostic_export_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 3,
+      "file": "test/crosswake/support_matrix/support_matrix_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 2,
+      "file": "test/mix/tasks/crosswake.proof_lane.physical_iphone_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 4,
+      "file": "test/mix/tasks/crosswake_gen_proof_lane_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 1,
+      "file": "test/mix/tasks/crosswake_proof_lane_verify_twin_test.exs"
+    },
+    {
+      "category": "unsafe_collection",
+      "count": 4,
+      "file": "test/mix/tasks/crosswake_release_status_test.exs"
+    }
+  ],
+  "restoration": {
+    "branch": "fix/spec-structure-ratchet",
+    "head": "206ee4b2f45b390fddffff2bfae4cd8145ca3336",
+    "index_sha256": "e55cbeabcf7fbe14f99a1014d00aa771d652504a9f5afcc329c55db2bac2ba0b",
+    "tracked_count": 6205,
+    "tracked_sha256": "fa9ea17d9e58ae70107f896178009896f9b23d25bcdb46e115dedb382b724117",
+    "untracked_count": 0,
+    "untracked_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "privacy_before": {
+    "exit": 0,
+    "files": 209
+  },
+  "privacy_after": {
+    "exit": 0,
+    "files": 209
+  },
+  "duration_ms": 10679
+}

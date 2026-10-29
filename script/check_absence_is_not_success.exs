@@ -19,6 +19,8 @@
 # waived guard is worth less than no guard, because it also teaches people that
 # red is negotiable.
 
+Code.require_file("absence_collection_ast.exs", __DIR__)
+
 defmodule Crosswake.AbsenceIsNotSuccess do
   @moduledoc false
 
@@ -96,8 +98,87 @@ defmodule Crosswake.AbsenceIsNotSuccess do
         |> Enum.sort()
 
       findings = mutation_controls(test_files, root) ++ stale_citations(planning, root)
-      report(findings, results, test_files)
+      legacy = report(findings, results, test_files)
+      collections = collections(root, opts, results)
+      max(legacy, collections)
     end
+  end
+
+  defp collections(root, opts, results) do
+    alias Crosswake.AbsenceCollectionAST, as: AST
+    {files, findings} = AST.scan(root, opts)
+
+    baseline_path =
+      Keyword.get(
+        opts,
+        :collections_baseline,
+        Path.join(__DIR__, "fixtures/absence_collection_baseline.exs")
+      )
+
+    baseline =
+      try do
+        {entries, _bindings} = Code.eval_file(baseline_path)
+        if is_list(entries), do: entries, else: raise("invalid baseline")
+      rescue
+        _ -> :invalid
+      end
+
+    {valid, changes} =
+      if baseline == :invalid, do: {false, []}, else: AST.delta(findings, baseline)
+
+    Enum.each(findings, fn finding ->
+      IO.puts(
+        "[crosswake] collection #{finding.category} count=#{finding.count} file=#{finding.file} context=#{finding.context} expression=#{finding.expression}"
+      )
+    end)
+
+    Enum.each(changes, fn {kind, id, actual, expected} ->
+      IO.puts(
+        "[crosswake] collection #{kind} #{id.category} file=#{id.file} context=#{id.context} count=#{actual} baseline=#{expected}"
+      )
+    end)
+
+    unless valid, do: IO.puts("[crosswake] collection invalid_baseline")
+    planning = results |> Enum.reject(&(&1.label == "test-files")) |> Enum.flat_map(& &1.actual)
+
+    scanned =
+      (files ++ planning) |> Enum.map(&Path.relative_to(&1, root)) |> Enum.uniq() |> Enum.sort()
+
+    closed =
+      findings
+      |> Enum.group_by(&{&1.file, &1.category})
+      |> Enum.sort()
+      |> Enum.map(fn {{file, category}, entries} ->
+        %{file: file, category: category, count: Enum.sum(Enum.map(entries, & &1.count))}
+      end)
+
+    receipt = %{
+      schema_version: 1,
+      guard: "absence",
+      scanned_files: scanned,
+      counts: %{
+        files: length(scanned),
+        projects: 6,
+        collections: Enum.sum(Enum.map(findings, & &1.count)),
+        findings: length(findings)
+      },
+      findings: closed
+    }
+
+    IO.puts("PHASE196_REPORT " <> AST.json(receipt))
+    mode = Keyword.get(opts, :collections_mode, "enforce")
+
+    IO.puts(
+      "[crosswake] collections mode=#{mode} files=#{length(files)} findings=#{length(findings)} delta=#{length(changes)}"
+    )
+
+    analysis_failed =
+      Enum.any?(
+        findings,
+        &(&1.category in ["read_error", "parse_error", "scope_empty", "scope_mismatch"])
+      )
+
+    if not valid or analysis_failed or (mode == "enforce" and changes != []), do: 1, else: 0
   end
 
   defp report([], results, test_files) do
@@ -215,8 +296,15 @@ defmodule Crosswake.AbsenceIsNotSuccess do
   end
 
   defp mutation_findings(path, root) do
-    path
-    |> File.read!()
+    # Collection analysis owns the closed read_error finding. Never allow a
+    # legacy read! stacktrace to bypass that fail-closed, sanitized verdict.
+    source =
+      case File.read(path) do
+        {:ok, bytes} -> bytes
+        {:error, _} -> ""
+      end
+
+    source
     |> strip_heredocs()
     |> function_blocks()
     # Only SHARED helpers. An inline `mutated = String.replace(...)` in a test
@@ -456,7 +544,14 @@ usage_fail = fn message ->
 end
 
 {opts, rest, invalid} =
-  OptionParser.parse(System.argv(), strict: [root: :string, min_test_files: :integer])
+  OptionParser.parse(System.argv(),
+    strict: [
+      root: :string,
+      min_test_files: :integer,
+      collections_mode: :string,
+      collections_baseline: :string
+    ]
+  )
 
 if invalid != [] do
   {flag, _} = hd(invalid)
@@ -470,9 +565,13 @@ if rest != [] do
 end
 
 root = Keyword.get(opts, :root) || File.cwd!()
+
+unless Keyword.get(opts, :collections_mode, "enforce") in ["report", "enforce"],
+  do: usage_fail.("invalid collections mode")
+
 expanded = Path.expand(root)
 
 unless File.exists?(expanded), do: usage_fail.("root does not exist: #{expanded}")
 unless File.dir?(expanded), do: usage_fail.("root is not a directory: #{expanded}")
 
-System.halt(Crosswake.AbsenceIsNotSuccess.run(expanded, Keyword.take(opts, [:min_test_files])))
+System.halt(Crosswake.AbsenceIsNotSuccess.run(expanded, opts))

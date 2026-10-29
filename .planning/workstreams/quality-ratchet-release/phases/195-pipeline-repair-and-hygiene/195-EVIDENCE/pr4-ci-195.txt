@@ -1,0 +1,7 @@
+pr4: number 256
+pr4: head 7db34f20345d61370ca975e3d7222dfa94c61b4e
+pr4: crosswake_ci success on head 7db34f2
+pr4: run 40404553426 event pull_request (reports head sha; GitHub also tests a synthetic merge commit of the head into main)
+repo: delete_branch_on_merge true
+pr4: note pull_request runs also test a synthetic merge commit; the result above is for the head
+pr4: remote_tags_before 114

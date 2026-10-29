@@ -29,21 +29,25 @@ defmodule Crosswake.Policy.Compiler do
 
     warnings = build_warnings(unmanaged_routes, source_module, opts)
 
-    {compiled_routes, errors} =
+    {compiled_pairs, errors} =
       Enum.reduce(managed_routes, {[], []}, fn route, {compiled, compile_errors} ->
         case normalize_route(route) do
-          {:ok, compiled_route} -> {[compiled_route | compiled], compile_errors}
-          {:error, error} -> {compiled, [error | compile_errors]}
+          {:ok, compiled_route} ->
+            {[{compiled_route, route} | compiled], compile_errors}
+
+          {:error, error} ->
+            {compiled, Enum.reverse(normalization_errors(route, error), compile_errors)}
         end
       end)
 
-    compiled_routes = Enum.reverse(compiled_routes)
+    compiled_pairs = Enum.reverse(compiled_pairs)
+    {compiled_routes, compiled_sources} = Enum.unzip(compiled_pairs)
 
     errors =
       errors
       |> Enum.reverse()
-      |> Kernel.++(duplicate_id_errors(compiled_routes, managed_routes))
-      |> Kernel.++(Validator.validate(compiled_routes, managed_routes, host_commands: registry))
+      |> Kernel.++(duplicate_id_errors(compiled_pairs))
+      |> Kernel.++(Validator.validate(compiled_routes, compiled_sources, host_commands: registry))
 
     case errors do
       [] ->
@@ -90,33 +94,36 @@ defmodule Crosswake.Policy.Compiler do
   defp normalize_route(route) do
     crosswake_options = route |> route_metadata() |> Map.fetch!(:crosswake)
 
-    case Route.new(crosswake_options) do
-      {:ok, compiled_route} ->
-        {:ok, compiled_route}
-
-      {:error, error} ->
-        {:error,
-         error_details(route,
-           key: validation_key(Exception.message(error)),
-           message: validation_message(error),
-           hint: validation_hint(error)
-         )}
-    end
+    Route.new(crosswake_options)
   end
 
-  defp duplicate_id_errors(compiled_routes, managed_routes) do
-    compiled_routes
-    |> Enum.with_index()
-    |> Enum.group_by(fn {route, _index} -> route.id end)
+  # NimbleOptions 1.1.1 groups unknown option keys in one real ValidationError.
+  # Keep its message but emit one atom-keyed policy diagnostic per option.
+  defp normalization_errors(route, %NimbleOptions.ValidationError{key: keys} = error)
+       when is_list(keys) and keys != [] do
+    Enum.flat_map(keys, &normalization_errors(route, %{error | key: &1}))
+  end
+
+  defp normalization_errors(route, %NimbleOptions.ValidationError{} = error) do
+    [
+      error_details(route,
+        key: validation_key(error),
+        message: validation_message(error),
+        hint: validation_hint(error)
+      )
+    ]
+  end
+
+  defp duplicate_id_errors(compiled_pairs) do
+    compiled_pairs
+    |> Enum.group_by(fn {route, _source} -> route.id end)
     |> Enum.flat_map(fn
       {_id, [_single]} ->
         []
 
       {id, duplicates} ->
         duplicates
-        |> Enum.map(fn {_route, index} ->
-          managed_route = Enum.at(managed_routes, index)
-
+        |> Enum.map(fn {_route, managed_route} ->
           error_details(managed_route,
             key: :id,
             route_id: id,
@@ -172,16 +179,11 @@ defmodule Crosswake.Policy.Compiler do
     end
   end
 
-  defp validation_key(message) do
-    cond do
-      String.contains?(message, ":runtime") -> :runtime
-      String.contains?(message, ":offline") -> :offline
-      String.contains?(message, ":entry") -> :entry
-      String.contains?(message, ":id") -> :id
-      String.contains?(message, "commerce") -> :commerce
-      true -> nil
-    end
-  end
+  defp validation_key(%NimbleOptions.ValidationError{key: key})
+       when is_atom(key) and not is_nil(key), do: key
+
+  defp validation_key(%NimbleOptions.ValidationError{}),
+    do: raise(ArgumentError, "unsupported structured route validation key")
 
   defp error_details(route, attrs) do
     route_id =

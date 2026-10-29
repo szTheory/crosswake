@@ -1,0 +1,38 @@
+red: base origin/main ff63e5d
+red: task1 rc 1 fail 3
+red: task1 failing gap shape aws_key_double_quoted is masked
+red: task1 failing gap shape aws_key_single_quoted is masked
+red: task1 failing gap shapes from a spawned child never reach the root-proof tail
+log-scan: red1 seed hits 0
+red: task1 commit b568bb0
+red: task2 rc 1 fail 23
+red: task2 failing gap shape password_multiword_quoted is masked
+red: task2 failing gap shape json_password_multiword is masked
+red: task2 failing gap shape elixir_map_arrow is masked
+red: task2 failing gap shape elixir_keyword_multiword is masked
+red: task2 failing gap shape secret_key_base is masked
+red: task2 failing gap shape escaped_quote_value is masked
+red: task2 failing gap shape unterminated_quote_value is masked
+red: task2 failing gap shape cookie_midline_curl is masked
+red: task2 failing gap shape set_cookie_curl_verbose is masked
+red: task2 failing gap shape digest_authorization is masked
+red: task2 failing gap shape url_userinfo is masked
+red: task2 failing gap shape jwt is masked
+red: task2 failing gap shape aws_access_key_id is masked
+red: task2 failing gap shapes from a spawned child never reach the root-proof tail
+red: task2 failing prose round-trips unchanged: token expired for user
+red: task2 failing prose round-trips unchanged: password mismatch for account
+red: task2 failing prose round-trips unchanged: secret not found in vault
+red: task2 failing prose round-trips unchanged: authorization failed for request
+red: task2 failing prose round-trips unchanged:   1) test token refresh rejects expired password (Crosswake.AuthTest)
+red: task2 failing prose round-trips unchanged: code: assert token == "expected-value"
+red: task2 failing prose round-trips unchanged: bearer_line_end
+red: task2 failing linear time: blank_lines
+red: task2 failing linear time: whitespace_lines
+log-scan: red2 seed hits 0
+red: task2 commit 99ce22d
+red: task3 rc 1 fail 2
+red: task3 failing derivedSecretViolations rejects a prefix-collision mask
+red: task3 failing derivedSecretViolations ignores a commented-out mask
+log-scan: red3 seed hits 0
+red: task3 commit 49a3280

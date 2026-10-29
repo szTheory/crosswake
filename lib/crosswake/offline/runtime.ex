@@ -73,7 +73,7 @@ defmodule Crosswake.Offline.Runtime do
           }
   end
 
-  @scope_ref_pattern ~r/^v[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}$/
+  @scope_ref_pattern ~r/\Av[1-9][0-9]*\.[A-Za-z0-9_-]{16,128}\z/
 
   @spec cached_hydration(Contracts.CacheRoute.t()) :: CachedHydration.t()
   def cached_hydration(%Contracts.CacheRoute{} = contract) do

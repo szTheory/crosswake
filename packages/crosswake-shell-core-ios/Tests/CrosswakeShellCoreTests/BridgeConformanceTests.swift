@@ -124,11 +124,14 @@ final class BridgeConformanceTests: XCTestCase {
 
     private var vectorsFile: BridgeVectorsFile!
 
-    override func setUp() {
-        super.setUp()
-        let url = Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json")!
-        let data = try! Data(contentsOf: url)
-        vectorsFile = try! JSONDecoder().decode(BridgeVectorsFile.self, from: data)
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        let url = try XCTUnwrap(
+            Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
+            "CW-VECTOR-MISSING bridge_contract_vectors.json"
+        )
+        let data = try Data(contentsOf: url)
+        vectorsFile = try JSONDecoder().decode(BridgeVectorsFile.self, from: data)
     }
 
     // MARK: - Helpers
@@ -212,6 +215,12 @@ final class BridgeConformanceTests: XCTestCase {
         // All version values come from the loaded vectors file (D-10).
         let bridgeVersion = vectorsFile.bridgeProtocolVersion
 
+        // Reviewed request corpus: 15 loaded; one Elixir-only case leaves 14 native evaluations.
+        // Intentional corpus changes update these independent expectations explicitly.
+        XCTAssertEqual(vectorsFile.vectors.count, 15, "CW-VECTOR-LOADED expected 15")
+        XCTAssertEqual(Set(vectorsFile.vectors.map(\.id)).count, 15, "CW-VECTOR-IDS expected unique IDs")
+        var completedIDs: [String] = []
+
         for vector in vectorsFile.vectors {
             // Skip elixir_only vectors: they test Elixir-manifest direction semantics (target vs manifest)
             // which is the opposite of native (session-provides vs request-demands). vec-009 covers the
@@ -242,7 +251,10 @@ final class BridgeConformanceTests: XCTestCase {
                 XCTAssertEqual(reply?.denial?.denial.reason, expectedReason,
                                "[\(vector.id)] denial reason: expected \(expectedReason), got \(reply?.denial?.denial.reason ?? "nil")")
             }
+            completedIDs.append(vector.id)
         }
+        XCTAssertEqual(completedIDs.count, 14, "CW-VECTOR-COMPLETED expected 14")
+        XCTAssertEqual(Set(completedIDs).count, 14, "CW-VECTOR-COMPLETED-IDS expected unique IDs")
     }
 
     // MARK: - Delegate escape-hatch tests

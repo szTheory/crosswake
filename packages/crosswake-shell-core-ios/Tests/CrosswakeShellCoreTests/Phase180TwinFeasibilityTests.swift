@@ -8,6 +8,17 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
 
     private let command = "host.study.audio.play"
     private let origin = "https://study.crosswake.test"
+    private var metadataBridgeVersion: String!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
+                                "CW-VECTOR-MISSING bridge_contract_vectors.json")
+        let corpus = try JSONDecoder().decode(BridgeVectorsFile.self, from: Data(contentsOf: url))
+        // This owner reads metadata; its inline/exported scenarios are not corpus verdicts.
+        _ = try XCTUnwrap(corpus.vectors.count == 15 ? true : nil, "CW-VECTOR-LOADED expected 15")
+        metadataBridgeVersion = corpus.bridgeProtocolVersion
+    }
 
     // MARK: - Helpers
 
@@ -50,9 +61,7 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
     }
 
     private func bridgeVersion() -> String {
-        let url = Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json")!
-        let json = try! JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
-        return json["bridge_protocol_version"] as! String
+        metadataBridgeVersion
     }
 
     private func coordinator(

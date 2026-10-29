@@ -1,0 +1,490 @@
+{
+  "schema": "crosswake-muex-process/1",
+  "attempt": "2754c27c-8f5b-4088-92d6-109d599f1ff5",
+  "status": "terminal-incomplete",
+  "requirement": "SPEC-04 pending",
+  "commands": [
+    {
+      "label": "registry",
+      "command": "curl",
+      "args": [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "20",
+        "https://hex.pm/api/packages/muex/releases/0.12.0"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 138.81170899999995,
+      "outputSha256": "b481b8ce2a4c789be50a0042968a811121a8e4d3549f2c5fd953f522ebf0b84a"
+    },
+    {
+      "label": "package-download",
+      "command": "curl",
+      "args": [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "30",
+        "-o",
+        "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/muex.tar",
+        "https://repo.hex.pm/tarballs/muex-0.12.0.tar"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 186.76604199999997,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "source-config",
+      "command": "curl",
+      "args": [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "20",
+        "https://raw.githubusercontent.com/Oeditus/muex/v0.12.0/lib/muex/config.ex"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 91.63329199999998,
+      "outputSha256": "a7049e01df4ebedf6377a857acade86554f4565aaf7aa2e313f23cd536d27302"
+    },
+    {
+      "label": "source-reporter",
+      "command": "curl",
+      "args": [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "20",
+        "https://raw.githubusercontent.com/Oeditus/muex/v0.12.0/lib/muex/reporter/json.ex"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 87.58162500000003,
+      "outputSha256": "eff24b3ddc2d01f8ed2356e660467d376206302c46dd5fa879b2d3eba0495c43"
+    },
+    {
+      "label": "source-runner",
+      "command": "curl",
+      "args": [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "20",
+        "https://raw.githubusercontent.com/Oeditus/muex/v0.12.0/lib/muex/test_runner/port.ex"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 82.04075,
+      "outputSha256": "ac1e03e4bcca2e60d4fd0a00a0fbab9db8a2e26dee12218dd9270cb32958c154"
+    },
+    {
+      "label": "source-task",
+      "command": "curl",
+      "args": [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "20",
+        "https://raw.githubusercontent.com/Oeditus/muex/v0.12.0/lib/mix/tasks/muex.ex"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 229.27437499999996,
+      "outputSha256": "1e976d017783e3548894283ef600f4f55ee7675f2a6e6ac08b0fc497bd2edc5d"
+    },
+    {
+      "label": "source-project",
+      "command": "curl",
+      "args": [
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "20",
+        "https://raw.githubusercontent.com/Oeditus/muex/v0.12.0/mix.exs"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 231.0402909999998,
+      "outputSha256": "7a235023b42a3e9e8c73c9e03864d977237679e36d567bd0245b73b9c654786e"
+    },
+    {
+      "label": "install-hex",
+      "command": "mix",
+      "args": [
+        "local.hex",
+        "--force"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 1391.41,
+      "outputSha256": "1aa166b578d4962dc97a160286843b89ba65b55ed01b967870baa018a2ce0bff"
+    },
+    {
+      "label": "install-archive",
+      "command": "mix",
+      "args": [
+        "archive.install",
+        "hex",
+        "muex",
+        "0.12.0",
+        "--force"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 1929.7698749999995,
+      "outputSha256": "0d8d3fed1a30dfcddddaccb7937896595b32bbe89d40e8479264b623ae0174d2"
+    },
+    {
+      "label": "archive-list",
+      "command": "mix",
+      "args": [
+        "archive"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 315.7440000000006,
+      "outputSha256": "1a4f8a45ee4b0a57971452c1cfdbad492a4c8fc96490a26f9e33b561c3745616"
+    },
+    {
+      "label": "archive-bootstrap",
+      "command": "mix",
+      "args": [
+        "muex",
+        "--files",
+        "lib/crosswake/offline/safe_observation.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/report.json"
+      ],
+      "exit": 1,
+      "timedOut": false,
+      "durationMs": 68011.774,
+      "outputSha256": "4251f79ce065f30eaae1de1d0724ab4c44fa2785fb0fb51ed19ad8608c919a6b"
+    },
+    {
+      "label": "restore-compile",
+      "command": "mix",
+      "args": [
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 2091.3013749999955,
+      "outputSha256": "f8569a16a15a1cd88e1173a4d72122d3b4de31131d765eee37fb497cd3224d33"
+    },
+    {
+      "label": "restore-tests",
+      "command": "mix",
+      "args": [
+        "test",
+        "test/crosswake/offline",
+        "test/crosswake/policy",
+        "test/crosswake/bridge"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 2069.629958000005,
+      "outputSha256": "b27c3704ac70636c61550de042bfa7bc5fc267fb74f61627b165dc36bac6787b"
+    },
+    {
+      "label": "fallback-package-extract",
+      "command": "tar",
+      "args": [
+        "xf",
+        "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/muex.tar",
+        "-C",
+        "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 5.559750000000001,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "fallback-source-extract",
+      "command": "tar",
+      "args": [
+        "xzf",
+        "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/contents.tar.gz",
+        "-C",
+        "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 8.767333999999998,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "fallback-deps",
+      "command": "mix",
+      "args": [
+        "deps.get",
+        "--only",
+        "prod"
+      ],
+      "exit": 126,
+      "timedOut": false,
+      "durationMs": 13.325000000000003,
+      "outputSha256": "5bf03ccfd1884a481b3cb0e44091a1aa58cef55f7c1483ad2aee041e9703c9d5"
+    },
+    {
+      "label": "restore-compile",
+      "command": "mix",
+      "args": [
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 2308.724,
+      "outputSha256": "f8569a16a15a1cd88e1173a4d72122d3b4de31131d765eee37fb497cd3224d33"
+    },
+    {
+      "label": "restore-tests",
+      "command": "mix",
+      "args": [
+        "test",
+        "test/crosswake/offline",
+        "test/crosswake/policy",
+        "test/crosswake/bridge"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 2176.314625,
+      "outputSha256": "7ca9a3b62bdeb4031e84deae2df1d3340db9a9a191ce81fb1eef3bdb6831587d"
+    },
+    {
+      "label": "fallback-deps-resolved-toolchain",
+      "command": "mix",
+      "args": [
+        "deps.get",
+        "--only",
+        "prod"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 666.748458,
+      "outputSha256": "98749cf6bc3875adf112ab99b8563ab12c7e2c959a475b83f11f8dadaa42581e"
+    },
+    {
+      "label": "fallback-build",
+      "command": "mix",
+      "args": [
+        "escript.build"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 1794.394959,
+      "outputSha256": "3c177ef5118cafe591ecbb46860fe146de22929534aae35fc661803040884d7e"
+    },
+    {
+      "label": "escript-bootstrap",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/offline/safe_observation.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/report.json"
+      ],
+      "exit": 1,
+      "timedOut": false,
+      "durationMs": 284.30162500000006,
+      "outputSha256": "4a5f5f2a9ece59ef558a9fca0569f828b3afce695630b2b945511f878fc860a8"
+    },
+    {
+      "label": "restore-compile",
+      "command": "mix",
+      "args": [
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 1910.7299999999996,
+      "outputSha256": "f8569a16a15a1cd88e1173a4d72122d3b4de31131d765eee37fb497cd3224d33"
+    },
+    {
+      "label": "restore-tests",
+      "command": "mix",
+      "args": [
+        "test",
+        "test/crosswake/offline",
+        "test/crosswake/policy",
+        "test/crosswake/bridge"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 2047.0809579999996,
+      "outputSha256": "e946358c334f4415b12262948601faab1d1071b8e06987625d22c69fac3a45ff"
+    },
+    {
+      "label": "escript-toolchain-launch",
+      "command": "/private/tmp/cw196-muex-5d982af5-ac93-484d-bdd9-b9bf29207d99/source/muex",
+      "args": [
+        "--files",
+        "lib/crosswake/offline/safe_observation.ex",
+        "--test-paths",
+        "test/crosswake/offline,test/crosswake/policy,test/crosswake/bridge",
+        "--no-filter",
+        "--no-optimize",
+        "--concurrency",
+        "1",
+        "--timeout",
+        "10000",
+        "--fail-at",
+        "0",
+        "--format",
+        "json",
+        "--output",
+        ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/muex-bootstrap/report.json"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 82387.51941699999,
+      "outputSha256": "992f91113846bdb764a75cee473bc51a9f3d8d1fffdedb0465917f9c11f5bdcf"
+    },
+    {
+      "label": "restore-compile",
+      "command": "mix",
+      "args": [
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 2148.329958000002,
+      "outputSha256": "f8569a16a15a1cd88e1173a4d72122d3b4de31131d765eee37fb497cd3224d33"
+    },
+    {
+      "label": "restore-tests",
+      "command": "mix",
+      "args": [
+        "test",
+        "test/crosswake/offline",
+        "test/crosswake/policy",
+        "test/crosswake/bridge"
+      ],
+      "exit": 0,
+      "timedOut": false,
+      "durationMs": 2104.1958339999983,
+      "outputSha256": "e639a8d5ec9b9b317db6912a2eb7759b7e7265ee49f799a890dee3a51e2b5945"
+    }
+  ],
+  "restored": true,
+  "packageChecksumVerified": true,
+  "sourceChecksums": {
+    "lib/muex/config.ex": "a7049e01df4ebedf6377a857acade86554f4565aaf7aa2e313f23cd536d27302",
+    "lib/muex/reporter/json.ex": "eff24b3ddc2d01f8ed2356e660467d376206302c46dd5fa879b2d3eba0495c43",
+    "lib/muex/test_runner/port.ex": "ac1e03e4bcca2e60d4fd0a00a0fbab9db8a2e26dee12218dd9270cb32958c154",
+    "lib/mix/tasks/muex.ex": "1e976d017783e3548894283ef600f4f55ee7675f2a6e6ac08b0fc497bd2edc5d",
+    "mix.exs": "7a235023b42a3e9e8c73c9e03864d977237679e36d567bd0245b73b9c654786e"
+  },
+  "reportStartedAtMs": 1793121744709,
+  "cleanTests": true,
+  "elapsedMs": 340269.58370900154,
+  "remainingMs": 1459730.4162909985,
+  "fallbackUsed": true,
+  "archiveFailure": {
+    "label": "archive-json-dependency-unavailable",
+    "exit": 1,
+    "restored": true,
+    "cleanTests": true
+  },
+  "buildEnvironmentReconciled": {
+    "commandNeverStarted": true,
+    "packageInstallNeverStarted": true,
+    "toolchain": "repository .tool-versions",
+    "observedExit": 126
+  },
+  "escriptSha256": "f99c30672230236f1a6e2cf09d9bfce5a9a353737e7e1c210569bd2e6fb25756",
+  "launchEnvironmentReconciled": {
+    "mutationNeverStarted": true,
+    "observedExit": 1,
+    "reason": "upstream MixBootstrap requires real Elixir bin parent; asdf shim has no sibling lib",
+    "version": "Erlang/OTP 27 [erts-15.2.3] [source] [64-bit] [smp:18:18] [ds:18:18:10] [async-threads:1] [jit]\n\nMix 1.19.5 (compiled with Erlang/OTP 27)"
+  },
+  "reason": "no-useful-outcome",
+  "reportSha256": "9f8aa1262c5c3e809bf98ecc11fbb4912fb23aaf3c39dc4c0113a6a590ba7e29",
+  "summary": {
+    "timeout": 0,
+    "invalid": 50,
+    "killed": 0,
+    "total": 331,
+    "equivalent": 281,
+    "survived": 0,
+    "no_coverage": 0,
+    "mutation_score_high": 0,
+    "mutation_score_low": 0
+  },
+  "reconciliation": {
+    "reportSchemaOwner": "Muex.Reporter.Json@0.12.0",
+    "unchangedGenuineReport": true,
+    "countsConserved": true,
+    "invalidCompileErrors": 50,
+    "recordsJudgedByTests": 0,
+    "comparisonMutantsLabeledEquivalent": 5,
+    "sourceChecksums": {
+      "tce.ex": "10d851092c16876faf779041d07dea7ff564c996ae87d131793ae33cfd796f8d",
+      "worker_pool.ex": "8e1eb9e28aee62a38d33d6b696d588510a729c54027ff91e4caab34485739904",
+      "compiler.ex": "1cb8f8ad8052ade01c64bd2ead50e703199b5e1be49268ea0c44faaf87c9748c"
+    },
+    "rootCause": "Upstream TCE fingerprints the first compiled module; SafeObservation has nested Error emitted before its outer module. The genuine report labels changed outer comparisons equivalent. Compilation-invalid mutants account for the remainder.",
+    "rootCauseEvidence": "Pinned source compile_renamed [{module,binary}|_] plus read-only benign Code.compile_string module order [Outer.Inner,Outer] and five real Comparison records; no new mutation invocation.",
+    "knownKillSurvivePairsCompleted": 0,
+    "requiredPairs": 5,
+    "fixtureCreated": false,
+    "task1": "failed-useful-outcome-gate",
+    "task2": "blocked-by-task1",
+    "dependent19614": "blocked",
+    "sourceAndTestsDigestRestored": true,
+    "projectMixFilesUnchanged": true,
+    "cleanPositiveTests": [
+      {
+        "tests": 236,
+        "failures": 0
+      }
+    ],
+    "nextEligibleExecutionCommand": null,
+    "supportedUnexecutedOption": "--no-tce (Muex.Config.resolve_tce/1); --no-optimize does not disable TCE",
+    "reopenCondition": "Explicitly approved new frozen attempt using official --no-tce, or an approved scoped roadmap move; never reuse this terminal attempt or silently change its flags/appetite."
+  }
+}

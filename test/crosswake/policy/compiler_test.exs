@@ -5,6 +5,76 @@ defmodule Crosswake.Policy.CompilerTest do
   alias Crosswake.Policy.Route
   alias Crosswake.TestSupport.RouterFixtures.ManagedRouter
 
+  test "structured dependency keys stay atomic, split grouped unknowns, and keep missing identity" do
+    cases = [
+      {[id: "unknown", runtime: :live_view, unknown_a: true, unknown_b: true],
+       [{:unknown_a, "unknown"}, {:unknown_b, "unknown"}]},
+      {[id: "sync", runtime: :live_view, sync: 42], [{:sync, "sync"}]},
+      {[runtime: :live_view], [{:id, nil}]},
+      {[id: "runtime"], [{:runtime, "runtime"}]},
+      {[id: "offline", runtime: :live_view, offline: :invalid], [{:offline, "offline"}]},
+      {[id: "entry", runtime: :live_view, entry: :invalid], [{:entry, "entry"}]},
+      {[id: "security", runtime: :live_view, security: :invalid], [{:security, "security"}]}
+    ]
+
+    for {options, expected} <- cases do
+      assert {:error, %NimbleOptions.ValidationError{key: dependency_key}} = Route.new(options)
+
+      assert is_atom(dependency_key) or
+               (is_list(dependency_key) and dependency_key != [] and
+                  Enum.all?(dependency_key, &is_atom/1))
+
+      assert {:error, %{errors: errors}} =
+               Compiler.compile([route("/synthetic", crosswake: options)])
+
+      assert errors != []
+      assert Enum.sort(Enum.map(errors, &{&1.key, &1.route_id})) == Enum.sort(expected)
+      assert Enum.all?(errors, &(is_atom(&1.key) and not is_nil(&1.key)))
+    end
+  end
+
+  test "invalid-first normalization preserves duplicate and semantic source provenance" do
+    inputs = [
+      provenance_route(1, id: "invalid", runtime: :live_view, sync: 42),
+      provenance_route(2, id: "shared", runtime: :live_view),
+      provenance_route(3, id: "shared", runtime: :native_screen, offline: :local_first),
+      provenance_route(4,
+        id: "last",
+        runtime: :live_view,
+        offline: :local_first,
+        security: :standard
+      )
+    ]
+
+    assert {:error, %{errors: errors}} = Compiler.compile(inputs)
+
+    expected = [
+      {:sync, "invalid", source_identity(Enum.at(inputs, 0))},
+      {:id, "shared", source_identity(Enum.at(inputs, 1))},
+      {:id, "shared", source_identity(Enum.at(inputs, 2))},
+      {:security, "shared", source_identity(Enum.at(inputs, 2))},
+      {:offline, "last", source_identity(Enum.at(inputs, 3))}
+    ]
+
+    assert Enum.sort(Enum.map(errors, &{&1.key, &1.route_id, source_identity(&1)})) ==
+             Enum.sort(expected)
+  end
+
+  defp provenance_route(index, options) do
+    route("/synthetic/#{index}",
+      helper: "synthetic_#{index}",
+      verb: Enum.at([:get, :post, :put, :delete], index - 1),
+      crosswake: options
+    )
+    |> Map.put(:source, %{file: "synthetic_#{index}.ex", line: 10 + index})
+  end
+
+  defp source_identity(%{source: source} = route),
+    do: {route.path, route.helper, route.verb, source.file, source.line}
+
+  defp source_identity(error),
+    do: {error.path, error.helper, error.verb, error.file, error.line}
+
   test "valid routes across all three public runtimes compile into normalized policy output" do
     assert {:ok, %{routes: routes, warnings: []}} = Compiler.compile(ManagedRouter)
 

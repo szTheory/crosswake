@@ -1,0 +1,34 @@
+{
+  "mutations": [
+    {
+      "error": "killed by:\n  1) test emits only the SafeObservation telemetry projection (Crosswake.Offline.TelemetryTest)\n     test/crosswake/offline/telemetry_test.exs:30\n     match (=) failed\n     code:  assert {:ok, observation} =\n              SafeObservation.new(%{\n                route_id: \"route-0123456789abcdef\",\n                runtime: :offline_island,\n                lifecycle: :replayed,\n                outcome: :accepted,\n                denial: :none,\n                measurements: %{event_count: 1},\n                configuration: :configured,",
+      "status": "killed",
+      "description": "ReturnValue: replace return value of new with nil",
+      "location": {
+        "line": 29,
+        "file": "lib/crosswake/offline/safe_observation.ex"
+      },
+      "patch": {
+        "after": "def new(attrs) when is_map(attrs) and not is_struct(attrs) do\n  nil\nend",
+        "before": "def new(attrs) when is_map(attrs) and not is_struct(attrs) do\n  with :ok <- exact_atom_keys(attrs),\n       :ok <- route(attrs.route_id),\n       :ok <- enum(attrs.runtime, @runtimes, :runtime),\n       :ok <- enum(attrs.lifecycle, @lifecycles, :lifecycle),\n       :ok <- enum(attrs.outcome, @outcomes, :outcome),\n       :ok <- enum(attrs.denial, @denials, :denial),\n       :ok <- measurements(attrs.measurements),\n       :ok <- readiness(attrs.configuration, :configuration),\n       :ok <- readiness(attrs.adapter_readiness, :adapter_readiness) do\n    {:ok, struct!(__MODULE__, attrs)}\n  end\nend"
+      },
+      "duration_ms": 1973,
+      "test_files": [
+        "test/crosswake/offline/telemetry_test.exs",
+        "test/crosswake/offline/safe_observation_test.exs"
+      ],
+      "mutator": "Muex.Mutator.ReturnValue"
+    }
+  ],
+  "summary": {
+    "timeout": 0,
+    "invalid": 0,
+    "killed": 1,
+    "total": 1,
+    "equivalent": 0,
+    "survived": 0,
+    "no_coverage": 0,
+    "mutation_score_high": 100.0,
+    "mutation_score_low": 100.0
+  }
+}

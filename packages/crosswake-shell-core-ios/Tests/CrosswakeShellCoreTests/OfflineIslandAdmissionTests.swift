@@ -9,11 +9,14 @@ final class OfflineIslandAdmissionTests: XCTestCase {
     private let runtimeHint = "The bounded shell opens live_view and offline_island routes only. Use a declared native capture route or update the shell."
     private var bridgeVersion: String!
 
-    override func setUp() {
-        super.setUp()
-        let url = Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json")!
-        let json = try! JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
-        bridgeVersion = (json["bridge_protocol_version"] as? String)!
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
+                                "CW-VECTOR-MISSING bridge_contract_vectors.json")
+        let corpus = try JSONDecoder().decode(BridgeVectorsFile.self, from: Data(contentsOf: url))
+        // Metadata availability/cardinality; behavioral scenarios below remain inline.
+        _ = try XCTUnwrap(corpus.vectors.count == 15 ? true : nil, "CW-VECTOR-LOADED expected 15")
+        bridgeVersion = corpus.bridgeProtocolVersion
     }
 
     private func manifest(runtime: String, entry: String = "internal_only", packs: [String] = [], origins: [String]? = nil, active: Bool = true) -> ShellManifest {
