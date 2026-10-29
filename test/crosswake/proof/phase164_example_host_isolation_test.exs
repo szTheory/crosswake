@@ -182,13 +182,14 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     refute source =~ "--max-cases"
   end
 
-  test "the bounded evidence command owns all six seed and execution-class runs" do
+  test "the bounded evidence command owns the tagged seed matrix and one complete run" do
     script = Path.join(@repo_root, "script/check_example_host_isolation.sh")
     source = File.read!(script)
     stat = File.stat!(script)
 
     assert Bitwise.band(stat.mode, 0o111) != 0
     assert source =~ ~s(seeds="17 101 1009")
+    assert source =~ ~s(complete_seed="${seeds%% *}")
     assert source =~ ~s(mix test --only requires_example_host --seed "$seed")
     assert source =~ ~s(CROSSWAKE_INCLUDE_EXAMPLE_HOST=1 mix test --seed "$seed")
     assert source =~ "MIX_ENV=dev mix deps.get"
@@ -199,6 +200,12 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
 
     assert source =~
              ~r/MIX_ENV=dev mix deps\.get\s+MIX_ENV=dev mix compile\s+\)\s+\(\s+export TMPDIR="\$\{OWNED_TMP_DIR\}"\s+cd "\$\{ROOT_DIR\}"\s+MIX_ENV=test mix compile\s+\)\s+if \[ "\$\{mode\}" != "--matrix-only" \]/s
+
+    # Every seed runs the tagged class; the complete class runs exactly once.
+    assert source =~
+             ~r/for seed in \$\{seeds\}; do\s+run_class "\$\{seed\}" "tagged"\s+done\s+run_class "\$\{complete_seed\}" "complete"/s
+
+    assert length(Regex.scan(~r/run_class "\$\{[a-z_]+\}" "complete"/, source)) == 1
 
     refute source =~ "--max-cases"
 
@@ -221,6 +228,7 @@ defmodule Crosswake.Proof.Phase164ExampleHostIsolationTest do
     assert leaf =~ "MIX_ENV: dev"
     assert leaf =~ "MIX_ENV: test"
     assert leaf =~ "script/check_example_host_isolation.sh --matrix-only"
+    assert leaf =~ "./.github/actions/setup-elixir-cache"
     refute leaf =~ "--max-cases"
     refute leaf =~ ~r/\b20 test files\b/
     refute leaf =~ ~r/\b51 tests\b/

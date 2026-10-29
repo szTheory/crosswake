@@ -96,8 +96,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert hex_page =~ "env:\n      MIX_ENV: dev"
     assert hex_page =~ "mix-env: dev"
 
-    assert hex_page =~
-             "name: Run library test suite (hermetic)\n        env:\n          MIX_ENV: test"
+    # the suite runs once, in phase130-core-hermetic-proof
+    refute hex_page =~ "mix test"
 
     assert hex_page =~ "name: Build docs (smoke)"
     assert hex_page =~ "mix docs"
@@ -295,10 +295,8 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
            "phase132_compat_matrix_drift_test.exs"},
           {"phase132-companion-engine-absent-proof", "phase132-companion-engine-absent-proof",
            "crosswake_rindle"},
-          {"phase23-commerce-proof", "phase23-commerce-proof",
-           "phase23_commerce_support_proof_test.exs"},
-          {"phase34-commerce-proof", "phase34-commerce-proof",
-           "mix test --exclude requires_example_host"}
+          {"small-hermetic-proofs", "small-hermetic-proofs",
+           "phase23_commerce_support_proof_test.exs"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{display_name}"
@@ -346,15 +344,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == []
-    assert length(proof_ids) == 46
+    assert length(proof_ids) == 35
     assert length(compatibility_ids) == 0
 
-    for id <- [
-          "phase71-notification-workflow-proof",
-          "phase73-auth-sensitive-admin-workflow-proof",
-          "phase74-offline-draft-recovery-proof",
-          "phase75-closeout-gate"
-        ] do
+    for id <- ["small-hermetic-proofs"] do
       row = Enum.find(manifest["proof_leaves"], &(&1["leaf_id"] == id))
       assert row["irrelevance_reason"] == "all_changed_paths_allowlisted"
       assert is_binary(row["remediation_command"])
@@ -439,7 +432,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
           "e2e-proof",
           "ios-package-unit",
           "phase10-proof",
-          "phase23-commerce-proof",
+          "small-hermetic-proofs",
           "route-tour-proof"
         ] do
       assert job_body(workflow, job) =~ "classification == 'full_proof'", job
@@ -458,11 +451,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     for {job, command} <- [
           {"phase41-gating-proof", "script/verify_repository.sh --stage warnings-proof"},
-          {"phase43-rulestead-proof",
-           "mix test --exclude requires_example_host --exclude advisory_only"},
-          {"phase45-rindle-proof",
-           "mix test --exclude requires_example_host --exclude advisory_only"},
-          {"phase48-provider-adapter-proof", "phase48_provider_adapter_proof_test.exs"}
+          {"small-hermetic-proofs", "phase48_provider_adapter_proof_test.exs"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{job}"
@@ -490,11 +479,11 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute File.exists?(".github/workflows/phase69-proof.yml")
 
     for {job, command} <- [
-          {"phase52-operator-proof", "phase52_operator_truth_test.exs"},
+          {"small-hermetic-proofs", "phase52_operator_truth_test.exs"},
           {"phase58-auth-closeout-proof", "mix closeout.verify --security-only"},
-          {"phase69-closeout-proof",
+          {"small-hermetic-proofs",
            "mix closeout.verify --cwd . --closeout-path .planning/milestones/v4.0-CLOSEOUT.md"},
-          {"phase70-subscription-saas-proof", "phase70_subscription_saas_commerce_proof_test.exs"}
+          {"small-hermetic-proofs", "phase70_subscription_saas_commerce_proof_test.exs"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{job}"
@@ -532,12 +521,10 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     refute File.exists?(List.last(@plan07_sources))
 
     for {job, command} <- [
-          {"phase71-notification-workflow-proof", "phase71_notification_workflow_proof_test.exs"},
-          {"phase73-auth-sensitive-admin-workflow-proof",
-           "phase73_auth_sensitive_admin_workflow_proof_test.exs"},
-          {"phase74-offline-draft-recovery-proof",
-           "phase74_offline_draft_recovery_proof_test.exs"},
-          {"phase75-closeout-gate", "mix closeout.verify"}
+          {"small-hermetic-proofs", "phase71_notification_workflow_proof_test.exs"},
+          {"small-hermetic-proofs", "phase73_auth_sensitive_admin_workflow_proof_test.exs"},
+          {"small-hermetic-proofs", "phase74_offline_draft_recovery_proof_test.exs"},
+          {"small-hermetic-proofs", "mix closeout.verify"}
         ] do
       body = job_body(workflow, job)
       assert body =~ "name: #{job}"
@@ -571,14 +558,15 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   # Retired in Phase 195 (REL-04): Cancel Obsolete controller removed; not executed.
 
   @tag :cancellation_controller
-  test "ordinary PR concurrency remains repository-and-PR scoped and non-cancelling" do
+  test "ordinary PR concurrency remains repository-and-PR scoped and cancels superseded runs" do
     workflow = File.read!(@crosswake_ci)
 
     assert workflow =~
              "group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}"
 
-    assert workflow =~ "cancel-in-progress: false"
-    refute workflow =~ "cancel-in-progress: true"
+    # Superseded pull request runs are cancelled; a new push reports on its own head.
+    assert workflow =~ "cancel-in-progress: ${{ github.event_name == 'pull_request' }}"
+    refute workflow =~ "cancel-in-progress: false"
   end
 
   @tag :runner_placement

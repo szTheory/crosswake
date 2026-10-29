@@ -183,8 +183,8 @@ defmodule Crosswake.Proof.Phase169CheckNameUniquenessTest do
     assert status == 0,
            "expected the real tree to be clean under the widened scan, got #{status}:\n#{out}"
 
-    assert length(lines) > 100,
-           "expected more than 100 emitted records (an empty inventory must never pass this " <>
+    assert length(lines) > 90,
+           "expected more than 90 emitted records (an empty inventory must never pass this " <>
              "assertion vacuously), got #{length(lines)}"
 
     refute out =~ "duplicate-producer/duplicate-display-name"

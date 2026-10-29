@@ -147,7 +147,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert documentation["family"] == "documentation_contracts"
     assert documentation["irrelevance_reason"] == nil
     assert documentation["remediation_command"] =~ "mix crosswake.adoption_context.scan"
-    assert length(executable) == 45
+    assert length(executable) == 34
 
     assert Enum.all?(executable, fn leaf ->
              leaf["irrelevance_reason"] in [
@@ -190,7 +190,7 @@ defmodule Crosswake.Proof.Phase165CiPolicyTest do
     assert workflow =~
              "group: crosswake-ci-${{ github.repository }}-pr-${{ github.event.pull_request.number }}"
 
-    assert workflow =~ "cancel-in-progress: false"
+    assert workflow =~ "cancel-in-progress: ${{ github.event_name == 'pull_request' }}"
     assert workflow =~ "fetch-depth: 0"
     assert workflow =~ "git cat-file -e \"$base_sha^{commit}\""
     assert workflow =~ "git cat-file -e \"$merge_sha^{commit}\""

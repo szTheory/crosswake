@@ -110,7 +110,7 @@ for await (const chunk of process.stdin) input += chunk;
 const row = JSON.parse(input);
 const fastestMs = (text) => {
   let best = Infinity;
-  for (let i = 0; i < 3; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
     const started = performance.now();
     maskSecretShapes(text);
     best = Math.min(best, performance.now() - started);
@@ -121,7 +121,11 @@ const proseUnit = "ordinary diagnostic prose ";
 const prose = proseUnit.repeat(Math.ceil(row.input.length / proseUnit.length)).slice(0, row.input.length);
 const baselineMs = fastestMs(prose);
 const measuredMs = fastestMs(row.input);
-const boundMs = Math.max(250, 10 * baselineMs);
+// Linear-time guard measured against the plain-prose baseline taken in this same process, so a slow
+// or noisy shared runner scales both sides together. A small floor only protects against a
+// sub-millisecond baseline; the ceiling stays below the 2000 ms child timeout so catastrophic
+// backtracking (seconds at this length) always fails.
+const boundMs = Math.min(1500, Math.max(50, 40 * baselineMs));
 process.stdout.write(JSON.stringify({ label: row.label, length: row.input.length, measuredMs, baselineMs, boundMs }));
 if (measuredMs > boundMs) process.exitCode = 2;
 `;

@@ -71,6 +71,8 @@ is active.
   automated.
 - Promote checks into CI only when they protect a recurring contract with stable, actionable
   feedback; keep one-time reconciliation commands in phase evidence.
+- After CI runs on a PR, check `script/ci_cost_report.sh` against its recorded baseline and flag new
+  duplicated full-suite runs or uncached jobs. It is advisory, never a merge gate.
 - Update requirements, roadmap, state, ADRs, capability/support truth, and guide renderings together
   when a decision changes. Keep settled code-local truth in git and fast-changing adopter execution
   in the codename-only Linear issue drafts.
