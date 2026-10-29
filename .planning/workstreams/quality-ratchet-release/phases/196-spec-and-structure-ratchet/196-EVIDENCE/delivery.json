@@ -257,6 +257,33 @@
     "decision": "allow",
     "at": "2026-10-29T09:47:41Z",
     "note": "One-use allow bound to PR 264 at head H on displayed base. Recorded locally after the merge, never pushed. Consumed is recorded only on the evidence branch.",
-    "merge_commit": "51a1885cfd50c9dc159a2591204da69510a2ffc4"
+    "merge_commit": "51a1885cfd50c9dc159a2591204da69510a2ffc4",
+    "consumed_at": "2026-10-29T09:44:23Z",
+    "approval_ref": "refs/crosswake/196-17-approval, local only, never pushed; the PR 260 record is preserved on refs/crosswake/196-17-approval-pr260"
+  },
+  "reconciliation": {
+    "merge_commit": "51a1885cfd50c9dc159a2591204da69510a2ffc4",
+    "merge_parents": [
+      "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+      "24fde71db5ac121d73c201913251a6f53e4d860d"
+    ],
+    "merged_at": "2026-10-29T09:44:23Z",
+    "base_drift_at_write": false,
+    "landed_as_displayed": true,
+    "merge_call": "one guarded merge-commit call with --match-head-commit on the approved head, made by the orchestrator under the user's one-use allow; read back from the remote afterward",
+    "head_branch_still_on_remote": true,
+    "auto_delete_setting_after_merge": false,
+    "branch_deletion": "none",
+    "landed_proof_verdict": "pass",
+    "landed_proof_children": 40,
+    "landed_proof_started_at": "2026-10-29T09:48:10Z",
+    "landed_proof_ended_at": "2026-10-29T10:54:01Z",
+    "landed_proof_record": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/landed.json"
+  },
+  "evidence": {
+    "branch": "docs/196-landed-evidence-2",
+    "created_from": "51a1885cfd50c9dc159a2591204da69510a2ffc4",
+    "branch_name_note": "The landed mode created the local name docs/196-landed-evidence. That name already exists on the remote from the first attempt (its PR 263 is merged), so the new branch was renamed before any push. The first local branch was renamed docs/196-landed-evidence-attempt1. No remote branch was deleted or force-updated.",
+    "merge_of_this_pr": "needs its own later one-use allow; not requested here"
   }
 }
