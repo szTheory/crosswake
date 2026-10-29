@@ -4,15 +4,15 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: Not started
 status: ready_to_plan
-stopped_at: Phase 196 complete, ready to plan Phase 197
-last_updated: "2026-10-29T13:27:20.353Z"
-state_head: 45d195e5446859bec5a64533f34c4ab3c353a3f4
+stopped_at: Phase 197 context gathered
+last_updated: "2026-10-29T15:38:06.251Z"
+state_head: 5a4aae32035b1d92ffbc0e48228d664e61fab183
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 3
   total_plans: 47
   completed_plans: 47
-  percent: 100
+  percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
@@ -24,7 +24,7 @@ Current Plan: Not started. Last completed phase: 196 (Spec and structure ratchet
 
 ## Exact Next Action
 
-`/gsd-discuss-phase 197 --ws quality-ratchet-release` (no 197 CONTEXT.md exists yet). The Phase 196 verification commits (196-UAT.md, 196-SECURITY.md, 196-VERIFICATION.md and this transition) sit on branch `docs/196-uat`; they land through their own PR with Crosswake CI green on the head, and merging to main needs a fresh one-use allow.
+`/gsd-plan-phase 197 --ws quality-ratchet-release` (197-CONTEXT.md locked 2026-10-29, D-01..D-25). The Phase 196 verification commits and the 197 context commit sit on branch `docs/196-uat`; they land through their own PR with Crosswake CI green on the head, and merging to main needs a fresh one-use allow.
 
 ## Carried debt
 
@@ -32,9 +32,9 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-10-29T13:40:00.000Z
-**Stopped at:** Phase 196 complete, ready to plan Phase 197
-**Resume file:** None
+**Last session:** 2026-10-29T15:38:06.026Z
+**Stopped at:** Phase 197 context gathered
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/197-public-docs-truth/197-CONTEXT.md
 
 ## Accumulated Context
 
