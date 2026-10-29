@@ -96,8 +96,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert hex_page =~ "env:\n      MIX_ENV: dev"
     assert hex_page =~ "mix-env: dev"
 
-    # The full library suite runs once per PR in phase130-core-hermetic-proof;
-    # this lane keeps only the package, docs, and adoption-scan steps.
+    # the suite runs once, in phase130-core-hermetic-proof
     refute hex_page =~ "mix test"
 
     assert hex_page =~ "name: Build docs (smoke)"
