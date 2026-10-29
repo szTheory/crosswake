@@ -13,6 +13,18 @@ requirement declares a compatible-core floor, not a lockstep pin. See
 `guides/companion_compatibility.md` in the core repo for the cross-package
 compatibility matrix.
 
+## [0.1.1](https://github.com/szTheory/crosswake/compare/crosswake_threadline-v0.1.0...crosswake_threadline-v0.1.1) (2026-10-29)
+
+
+### Features
+
+* **196-02:** require real Plug proof when explicitly enabled ([d6f5528](https://github.com/szTheory/crosswake/commit/d6f552877523fb2710b94128caff8c70f3e28558))
+
+
+### Bug Fixes
+
+* **196:** make spec and structure ratchets fail on empty evidence ([88c8bdd](https://github.com/szTheory/crosswake/commit/88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be))
+
 ## [0.1.0](https://github.com/szTheory/crosswake/compare/crosswake_threadline-v0.1.0...crosswake_threadline-v0.1.0) (2026-07-04)
 
 
