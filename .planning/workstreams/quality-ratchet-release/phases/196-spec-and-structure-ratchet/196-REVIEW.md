@@ -46,3 +46,25 @@ Observed before review: the supported-source roster changed, so the 196-15 candi
 ### Amendment disposition
 
 No high or critical finding is open. SPEC-04 stays moved to v29.0 and no Muex process, baseline or attempt was run.
+
+## Amendment A-2 (2026-10-29): delta review after the blocked actual-main landed proof
+
+This amendment is appended and the sections above are unchanged. The header line stays at 3 for the same reason as in A-1: the review reader refuses any other value. This is a delta review of one tool change, recorded as an amendment, not a fourth iteration.
+
+Scope: the changes to `phase-evidence.mjs` on `fix/196-landed-restoration` (commits 3bb0bc4b, 15acfb0e and 93203b08). `measure-main.mjs`, `vector-controls.mjs`, `196-VALIDATION.md` and all supported source other than that tool are unchanged. The observed failure came from the actual-main landed run of 2026-10-29 (01:53Z to 03:11Z, merge commit 88c8bdd8): the vector children rewrote four tracked receipts under `196-EVIDENCE`, the whole-tree inventory check then refused with `landed_restoration_failed` after 78 minutes, and no per-child result was kept.
+
+| ID | Severity | Status | Finding |
+|----|----------|--------|---------|
+| R-18 | medium | fixed | `landed()` detached the main checkout onto the merge commit and ran the 40 children there. Four vector children rewrite tracked receipts, those edits followed the switch back to the branch, and the whole-tree equality check refused. The registry now runs in a linked worktree of the merge commit at `<git dir>/crosswake-196-landed`, created by `git worktree add --detach` and removed in a `finally` block. The main checkout is never switched or written. The restoration check (head, branch and whole-tree inventory) stays in place as an asserted invariant. Controls: the in-place procedure is reproduced and shown to change the inventory, then an isolated run with a receipt-rewriting child leaves the main inventory, branch and head unchanged. |
+| R-19 | medium | fixed | Nothing was persisted before the restoration check, so a refusal discarded every child outcome. `runLandedRegistry` now writes a ledger to the git dir (`crosswake-196-landed-children.json`) after every child and on any refusal. An earlier ledger is rotated to a dated name, never overwritten. Controls cover a failing child (judged and kept, the run continues), a refusal after the first child, and a refusal before any child. |
+| R-20 | low | fixed | Cleanup on failure: the worktree is removed and pruned in `finally`, a stale directory from a killed run is replaced, and a removal that fails is reported and recorded in the ledger. Controls assert the directory and the registered worktree are gone after success, a failed child and both refusal shapes. |
+| R-21 | info | closed | Linked-worktree behaviour was observed on real children before the candidate run. A first calibration showed that a cloned SwiftPM `.build` is refused (its module cache records the absolute build path), so build output is never cloned and every build starts cold. Only path-independent fetched inputs (`deps`, `node_modules`, `local.properties`) are cloned, and a clone failure refuses with `landed_cache_warm_failed`. After that change, calibration ran 19 distinct children in the worktree and all 19 were judged pass: format, warnings, repository cleanliness, example host (1651 s), core suite (2920 tests), browser proof, node tests, Swift package counts (89), Android package counts (12), manifest lane (11), wire contract (19), and the Elixir, Kotlin request and Swift request vector children, plus the absence and compile checks. The main checkout stayed clean. |
+| R-22 | low | accepted | The landed tool still reads its attempt (PR, head, base, approval marker) from the single local ref `refs/crosswake/196-17-approval`, which names PR 260. A landed proof for the merge of this fix needs its own recorded attempt and approval record created at that later decision. The tool change here does not create or alter one. |
+| R-23 | low | accepted | The landed worktree builds everything cold, so the landed run is slower than a candidate run on a warm checkout. Each child keeps its own deadline, and the longest observed child (example host, 1651 s) is far inside its 3600 s limit. |
+| R-24 | info | closed | The candidate may now run on `fix/196-landed-restoration` as well as `fix/spec-structure-ratchet`, because the tool is part of the candidate identity and this branch carries the change. No other gate or branch check changed. |
+
+### Amendment disposition
+
+No high or critical finding is open. The tool change alters the candidate identity, so a fresh 40-child candidate run on the new identity follows this amendment. The five actual-main receipts are untouched and the Muex baseline is not rerun.
+
+SPEC-04 stays moved to v29.0 and no Muex process, baseline or attempt was run.
