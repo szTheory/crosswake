@@ -1507,6 +1507,23 @@ async function landedIsolationControls() {
     assert.equal(inventoryHash(f.root), before.inventory);
   } finally { f.cleanup(); }
 }
+// The explicit-format child must stay non-empty after the work lands: once the merge commit is on main, a diff against
+// origin/main is empty by construction, so the changed Elixir files are read against the recorded base instead.
+function formatScopeControls() {
+  const f = fixtureRepo();
+  try {
+    const base = ref40(f.root, "HEAD");
+    f.g("switch", "-q", "-c", "feature"); f.put("x.ex", "defmodule X do\nend\n"); f.put("y.exs", ":ok\n"); f.put("note.txt", "n\n");
+    f.g("add", "x.ex", "y.exs", "note.txt"); f.g("commit", "-q", "-m", "feature");
+    f.g("switch", "-q", "main"); f.g("merge", "-q", "--no-ff", "-m", "merge feature", "feature");
+    f.g("update-ref", "refs/remotes/origin/main", ref40(f.root, "HEAD"));
+    assert.equal(git(f.root, ["diff", "--name-only", "origin/main", "HEAD"]), "", "after the merge the diff against origin/main is empty");
+    const args = expandArgs(f.root, ["format", "--check-formatted", "@changed-elixir"], base);
+    assert.deepEqual(args, ["format", "--check-formatted", "x.ex", "y.exs"]);
+    assert.deepEqual(expandArgs(f.root, ["format", "--check-formatted", "@changed-elixir"], ref40(f.root, "HEAD")), ["format", "--check-formatted"]);
+    assert.match(FORMAT_BASE, /^[0-9a-f]{40}$/);
+  } finally { f.cleanup(); }
+}
 async function selfTestLanded(root) {
   const started = Date.now();
   const f = fixtureRepo();
@@ -1552,6 +1569,7 @@ async function selfTestLanded(root) {
   assert.equal(reconcileMarker({ marker: { status: "consuming", head: "h" }, remote: { merged: true, mergedHead: "other" } }), "unconsumed_uncertain");
   assert.throws(() => scanClaims(JSON.stringify({ spec04: { disposition: "moved_to_v29" }, note: "SPEC-04 is complete." }), "json"), { code: "spec04_prose_claim" });
   assert.throws(() => scanClaims("The pilot passed.", "markdown"), { code: "spec04_prose_claim" });
+  formatScopeControls();
   await landedIsolationControls();
   await realChildControls();
   assert.ok(Date.now() - started < DEADLINE_MS, "landed scope exceeded its deadline");
