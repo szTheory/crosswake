@@ -168,7 +168,7 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. [Moved to v29.0 with SPEC-04; not a v28 gate] A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13, 15, 16 and 17 complete; 196-14 retired (SPEC-04 moved to v29.0). Plan17 merged PR 260 (88c8bdd8), fixed the landed tool by PR 264 (51a1885c), and the actual-main landed proof then passed 40 of 40 children with no base drift. The evidence PR (265) awaits its own allow; phase verification is then eligible.
+**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13, 15, 16 and 17 complete; 196-14 retired (SPEC-04 moved to v29.0). Plan17 merged PR 260 (88c8bdd8), fixed the landed tool by PR 264 (51a1885c), and the actual-main landed proof then passed 40 of 40 children with no base drift. The evidence PR (266) awaits its own allow; phase verification is then eligible.
 
 Plans:
 **Wave 1**
@@ -274,7 +274,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 17/17 | Executed; SPEC-04 moved to v29.0, 196-14 retired; actual-main landed proof passed 40 of 40 (merge 51a1885c, no base drift); evidence PR 265 awaits a one-use allow, then verify-work | - |
+| 196. Spec and structure ratchet | 17/17 | Executed; SPEC-04 moved to v29.0, 196-14 retired; actual-main landed proof passed 40 of 40 (merge 51a1885c, no base drift); evidence PR 266 awaits a one-use allow, then verify-work | - |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
@@ -314,4 +314,4 @@ Plans:
 
 ## Exact Next Action
 
-Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:17/17 plans executed (196-14 retired, not executed to completion). PR 260 merged as 88c8bdd8; its landed proof failed (landed_restoration_failed); PR 264 (51a1885c) fixed the landed tool and the actual-main landed proof then passed 40 of 40 children with no base drift (landed.json on evidence branch docs/196-landed-evidence-2). SPEC-04 moved intact to v29.0 (moved_to_v29, roster digest 44019928). Seven Phase196 requirements (SPEC-01/02/03/05, ARCH-01/02/03) and GR-06 remain pending phase verification. Next: merge the evidence PR (265, needs a fresh one-use allow), then `/gsd-verify-work 196 --ws quality-ratchet-release`. No external delivery or approval transfer.
+Last completed phase:195 (21/21 plans;passed8/8 on actual main b8398c38). Active phase196:17/17 plans executed (196-14 retired, not executed to completion). PR 260 merged as 88c8bdd8; its landed proof failed (landed_restoration_failed); PR 264 (51a1885c) fixed the landed tool and the actual-main landed proof then passed 40 of 40 children with no base drift (landed.json on evidence branch docs/196-landed-evidence-2). SPEC-04 moved intact to v29.0 (moved_to_v29, roster digest 44019928). Seven Phase196 requirements (SPEC-01/02/03/05, ARCH-01/02/03) and GR-06 remain pending phase verification. Next: merge the evidence PR (266, needs a fresh one-use allow), then `/gsd-verify-work 196 --ws quality-ratchet-release`. No external delivery or approval transfer.

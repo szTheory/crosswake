@@ -4,7 +4,7 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 17
 status: executing
-stopped_at: "196-17 complete: actual-main landed proof passed 40 of 40 on merge 51a1885c; evidence PR 265 awaiting a one-use allow to merge"
+stopped_at: "196-17 complete: actual-main landed proof passed 40 of 40 on merge 51a1885c; evidence PR 266 awaiting a one-use allow to merge"
 last_updated: "2026-10-29T11:30:00.000Z"
 state_head: bb291f019740a20e5ea0d0c388a7416adf85bd1f
 progress:
@@ -25,7 +25,7 @@ Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active p
 
 ## Exact Next Action
 
-Phase 196 is merged to main (PR 260, merge commit `88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be`; landed-tool fix PR 264, merge commit `51a1885cfd50c9dc159a2591204da69510a2ffc4`). The actual-main landed proof PASSED on `51a1885c`: 40 of 40 children, no base drift, candidate identity equal, SPEC-04 moved_to_v29 with roster digest 44019928. The first landed proof (on `88c8bdd8`) failed with `landed_restoration_failed`; that record is `196-EVIDENCE/196-17-blocked-1-superseded.md`. The post-merge evidence (landed.json, delivery.json reconciliation, 196-VERIFICATION-INPUTS.md, 196-17-SUMMARY.md) is on branch `docs/196-landed-evidence-2` as PR 265. Next: merge the evidence PR (needs a fresh one-use allow from the user), then `/gsd-verify-work 196 --ws quality-ratchet-release`. Nothing is complete: SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 stay pending phase verification; SPEC-04 stays moved to v29.0.
+Phase 196 is merged to main (PR 260, merge commit `88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be`; landed-tool fix PR 264, merge commit `51a1885cfd50c9dc159a2591204da69510a2ffc4`). The actual-main landed proof PASSED on `51a1885c`: 40 of 40 children, no base drift, candidate identity equal, SPEC-04 moved_to_v29 with roster digest 44019928. The first landed proof (on `88c8bdd8`) failed with `landed_restoration_failed`; that record is `196-EVIDENCE/196-17-blocked-1-superseded.md`. The post-merge evidence (landed.json, delivery.json reconciliation, 196-VERIFICATION-INPUTS.md, 196-17-SUMMARY.md) is on branch `docs/196-landed-evidence-2` as PR 266. Next: merge the evidence PR (needs a fresh one-use allow from the user), then `/gsd-verify-work 196 --ws quality-ratchet-release`. Nothing is complete: SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 stay pending phase verification; SPEC-04 stays moved to v29.0.
 
 ## Carried debt
 

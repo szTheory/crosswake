@@ -284,6 +284,12 @@
     "branch": "docs/196-landed-evidence-2",
     "created_from": "51a1885cfd50c9dc159a2591204da69510a2ffc4",
     "branch_name_note": "The landed mode created the local name docs/196-landed-evidence. That name already exists on the remote from the first attempt (its PR 263 is merged), so the new branch was renamed before any push. The first local branch was renamed docs/196-landed-evidence-attempt1. No remote branch was deleted or force-updated.",
-    "merge_of_this_pr": "needs its own later one-use allow; not requested here"
+    "merge_of_this_pr": "needs its own later one-use allow; not requested here",
+    "pr": {
+      "number": 266,
+      "url": "https://github.com/szTheory/crosswake/pull/266",
+      "base_ref": "main",
+      "first_pushed_head": "5c17d85a9846d46cb4fa17eceb043c9d9e03c377"
+    }
   }
 }

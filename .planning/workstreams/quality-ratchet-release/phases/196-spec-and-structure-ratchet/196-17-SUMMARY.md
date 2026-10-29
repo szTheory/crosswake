@@ -85,7 +85,7 @@ Native claims stay at the JVM-hermetic and Swift-package ceiling, never device. 
 ## Known unknowns
 
 - The exact time of the user's allow for PR 264 is not held by this record; the merge time from GitHub (2026-10-29T09:44:23Z) is recorded.
-- The evidence PR number 265 was read as the next free number before opening and is confirmed in the checkpoint report.
+- The evidence PR is 266. The number 265 was read as the next free number before opening, but another PR took it first, so the references were corrected before CI finished.
 
 ## Stub and threat scan
 
