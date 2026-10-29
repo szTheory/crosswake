@@ -1,0 +1,813 @@
+{
+  "schema_version": 1,
+  "purpose": "phase196_candidate",
+  "head_sha": "6fc1b22b85e4ca127dd20e6cb616dc434362bcd0",
+  "main_sha": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+  "candidate_identity": {
+    "source_roster_sha256": "bc288cde60facd0139c792f9ea60234117bfb64a9c70d2e99e17a35081d891d0",
+    "source_count": 1376,
+    "phase_evidence_sha256": "bfe5d4159f48e8a17d79b1062a5d4e7e91ebd37e47dfcdc03a0caff09f7f29e6",
+    "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
+    "preserved_roster_sha256": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+  },
+  "spec04": {
+    "disposition": "moved_to_v29",
+    "receiver": "v29.0",
+    "anchor_commit": "90a809ce43adec4fb2b04ae38e658854317c9d9c",
+    "roster_count": 32,
+    "roster_digest": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+  },
+  "moved": [
+    "SPEC-04"
+  ],
+  "routes": {
+    "node": {
+      "route": "asdf",
+      "node": "v22.14.0",
+      "npm": "10.9.2"
+    },
+    "jdk": {
+      "route": "jdk17",
+      "java_major": 17
+    }
+  },
+  "wire_version": "1.1.0",
+  "native_claim_ceiling": "jvm_hermetic_and_swift_package_only_never_device",
+  "children": [
+    {
+      "id": "format-proof",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 761,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "964105efae3ad2f35fb73f718b009a7b4bedfa5fe8361d07b9f90901bb44dae7"
+    },
+    {
+      "id": "warnings-proof",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 608,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "b52eed9a3a17913af7d9ca0880b6faa34e32bed217f7c8dd67b9ea547b0ebda7"
+    },
+    {
+      "id": "repository-cleanliness",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 1261,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "d46df75cfdf3a1bc45a596953eb642b6fdb91a2758a10115e1cab6c9e2374f0e"
+    },
+    {
+      "id": "example-host-proof",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 1972435,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "6c7da4f0d3e4852162c7c691df686ae174485cf5b2a4bf9ff774159d5f51ae03"
+    },
+    {
+      "id": "root-proof",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 534425,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "aa34945525c0add264f56deb9dac9211e2f14bf50d1294e42542cef7f25009fe"
+    },
+    {
+      "id": "root-core-suite",
+      "req": [],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 512551,
+      "tests": 2920,
+      "failures": 0,
+      "excluded": 79,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "a8a3337026c1b5715e30b26a8228bda0062ccaf9058a3c8473d339ccdab9ae09"
+    },
+    {
+      "id": "browser-proof",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "asdf",
+      "status": "pass",
+      "exit": 0,
+      "ms": 19537,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "58d9cd93c92a3475bb2fb87ca779bc8d360b259fc60c954e1c9d2678e3d445cc"
+    },
+    {
+      "id": "ios-package-proof",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 891,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "d16953330937fcf26b4d1ca0bd096c9c889ea3ca32564583e9601138d7b0f8a2"
+    },
+    {
+      "id": "ios-package-counts",
+      "req": [],
+      "credit": "positive",
+      "kind": "swift",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 483,
+      "tests": 89,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 2,
+      "counted": true,
+      "output_sha256": "9b4d4b65782db26970b66aad6810d97a73291c1519771976e01e8a0c505ae45c"
+    },
+    {
+      "id": "android-package-proof",
+      "req": [],
+      "credit": "positive",
+      "kind": "stage",
+      "route": "jdk17",
+      "status": "pass",
+      "exit": 0,
+      "ms": 6270,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "714dd5a61b9ff1ff472b4bcdea401bacea26a4c37bf3d635db69d3473baf3cee"
+    },
+    {
+      "id": "android-package-counts",
+      "req": [],
+      "credit": "positive",
+      "kind": "gradle-xml",
+      "route": "jdk17",
+      "status": "pass",
+      "exit": 0,
+      "ms": 4139,
+      "tests": 12,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "9af0b973227e8008fe06d4c3cefc9c01f7c825234603130480a5a5cd48c77b4d"
+    },
+    {
+      "id": "node-tests",
+      "req": [],
+      "credit": "positive",
+      "kind": "node-test",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 19586,
+      "tests": 344,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "f4221a74371c1c1d05ec49aa8a64223f9c29763d43d058da8cc855b84234c12c"
+    },
+    {
+      "id": "format-explicit",
+      "req": [],
+      "credit": "positive",
+      "kind": "format",
+      "route": "plain",
+      "status": "fail",
+      "reason": "format_scope_empty",
+      "exit": 0,
+      "ms": 0,
+      "tests": null,
+      "failures": null,
+      "excluded": null,
+      "skipped": null,
+      "counted": false,
+      "output_sha256": null
+    },
+    {
+      "id": "manifest-lane",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "asdf",
+      "status": "pass",
+      "exit": 0,
+      "ms": 4227,
+      "tests": 11,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "ab0722e7043ef4fd89c1cea99a8d982d1eae9e965de49cc7432f29a067e703b0"
+    },
+    {
+      "id": "threadline-lane",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 1472,
+      "tests": 5,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "b81e0fefe94963f2b1b646213afae82e60c2292ac3c0ae4e9e6fb79e8cda3e4b"
+    },
+    {
+      "id": "manifest-lane-default",
+      "req": [],
+      "credit": "optional_skip_visible",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 4279,
+      "tests": 10,
+      "failures": 0,
+      "excluded": 1,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "6a078efde7b05d9a2c5e8356ccd5bc8300d5cb1f9f98f9b47edfcc7cfd8b2802"
+    },
+    {
+      "id": "threadline-lane-default",
+      "req": [],
+      "credit": "optional_skip_visible",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 1458,
+      "tests": 4,
+      "failures": 0,
+      "excluded": 1,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "33536613cf3ad0013480405eb81c6a17b822d1dd20c361b2508783c42133cb63"
+    },
+    {
+      "id": "wire-contract",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 407,
+      "tests": 19,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "1932ad0be907876e3ebe46f373e0f65d6b9bf531ae31c84694d826ce0419039e"
+    },
+    {
+      "id": "wire-version",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "version",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 343,
+      "tests": null,
+      "failures": null,
+      "excluded": null,
+      "skipped": null,
+      "output": "1.1.0",
+      "counted": true,
+      "output_sha256": "db8c7e8e787280eb20a297f6e3634e838b1e7f9740c37c19311d12675ab8dbc4"
+    },
+    {
+      "id": "vector-elixir",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "vector",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 2444,
+      "tests": 4,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "loaded": 15,
+      "completed": 9,
+      "owners": null,
+      "counted": true,
+      "output_sha256": "ff24e361536c4e00263bb12304131e65212073a09d7fc5839cc982c7b02673a6"
+    },
+    {
+      "id": "vector-swift-request",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "vector",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 90048,
+      "tests": 4,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "loaded": 15,
+      "completed": 14,
+      "owners": null,
+      "counted": true,
+      "output_sha256": "8f4acf9d089c6504ed4a20c8399bfb7d074f43f44c383bdf09282e28961b46e1"
+    },
+    {
+      "id": "vector-swift-reply",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "vector",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 93719,
+      "tests": 4,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "loaded": null,
+      "completed": null,
+      "owners": 1,
+      "counted": true,
+      "output_sha256": "2e7e8966a3b3afb0155e59ed0c3f0197b3fea119e3a2de32ff7c95467f6bd64a"
+    },
+    {
+      "id": "vector-swift-metadata",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "vector",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 231085,
+      "tests": 9,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "loaded": null,
+      "completed": null,
+      "owners": 3,
+      "counted": true,
+      "output_sha256": "3c226e99a7f0f646cc5a5a41991ea186045cb434ef8b6c619933752bd1dfd516"
+    },
+    {
+      "id": "vector-swift-topology",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "vector",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 100667,
+      "tests": 5,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "loaded": null,
+      "completed": null,
+      "owners": 1,
+      "counted": true,
+      "output_sha256": "27db5f7f70dff32c9306e74e0be2fc0747b9db460a575d6ad7610cbec819b756"
+    },
+    {
+      "id": "vector-kotlin-request",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "vector",
+      "route": "jdk17",
+      "status": "pass",
+      "exit": 0,
+      "ms": 8295,
+      "tests": 4,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "loaded": null,
+      "completed": null,
+      "owners": 1,
+      "counted": true,
+      "output_sha256": "0e1da3ca3e18deb64fbb09f9d0250d92c30bdd35209f118f96d7d9468869fe0d"
+    },
+    {
+      "id": "vector-kotlin-other",
+      "req": [
+        "SPEC-01"
+      ],
+      "credit": "positive",
+      "kind": "vector",
+      "route": "jdk17",
+      "status": "pass",
+      "exit": 0,
+      "ms": 15944,
+      "tests": 8,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "loaded": null,
+      "completed": null,
+      "owners": 2,
+      "counted": true,
+      "output_sha256": "3c949fc063e7f2f853ebdb6e60540afb4f66d411386f346f64786e3785e7bcf7"
+    },
+    {
+      "id": "absence-enforce",
+      "req": [
+        "SPEC-02"
+      ],
+      "credit": "positive",
+      "kind": "script",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 1287,
+      "tests": null,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "9c4a6319015756099e3a8fbc7604a18d1806e3048d177f6a757980002b924db4"
+    },
+    {
+      "id": "absence-test",
+      "req": [
+        "SPEC-02"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 27460,
+      "tests": 59,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "f2ba78d07bafe731d0dc3f5d6b54322e1660b33efb2c30edf0e1bb2f86154135"
+    },
+    {
+      "id": "journal",
+      "req": [
+        "SPEC-03"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 455,
+      "tests": 4,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "98b7cd6aeaef303a33b13362f7434b70fb3f6722c5d2c289bbafb1f2c7a849ae"
+    },
+    {
+      "id": "safe-observation",
+      "req": [
+        "SPEC-03"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 461,
+      "tests": 11,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "3f6265710d09ced9343b24a9c4003a522e40f00ff046f0104576aefb3a3e3395"
+    },
+    {
+      "id": "policy-compiler",
+      "req": [
+        "SPEC-05"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 424,
+      "tests": 9,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "37a774cb6e42fb4937ab932c7b3d488125a28126ab3b2d5cdb0551ff84fcaf6e"
+    },
+    {
+      "id": "policy-product-route",
+      "req": [
+        "SPEC-05"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 418,
+      "tests": 28,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "2fb0c71b1e3f78e01b6f4f0e5ca74084db04e0e548ad7f042b6a219f7b64fcac"
+    },
+    {
+      "id": "compile-force",
+      "req": [
+        "ARCH-01"
+      ],
+      "credit": "positive",
+      "kind": "compile",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 1610,
+      "tests": null,
+      "failures": null,
+      "excluded": null,
+      "skipped": null,
+      "compiled": 172,
+      "counted": true,
+      "output_sha256": "8b3495b00968a0bb9e7eefdc69c45666023f8426d6db9b3f833ae8681d018668"
+    },
+    {
+      "id": "xref-compile-connected",
+      "req": [
+        "ARCH-01"
+      ],
+      "credit": "positive",
+      "kind": "xref",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 338,
+      "tests": null,
+      "failures": null,
+      "excluded": null,
+      "skipped": null,
+      "counted": true,
+      "output_sha256": "415041a4f4c92b0d1147eaff7a03714865dba7b1567f859deddfc4471480051d"
+    },
+    {
+      "id": "compile-structure",
+      "req": [
+        "ARCH-01"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 40548,
+      "tests": 15,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "24999ac1b7157ec1d1b1aab3a4acd165707f7b222ecab90c4b7a13fb5c8dde24"
+    },
+    {
+      "id": "location-router",
+      "req": [
+        "ARCH-02"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 397,
+      "tests": 6,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "26ed6d047866638035cda0c0498da95e4b5fdbc28b700f512156c42a703de071"
+    },
+    {
+      "id": "compatibility",
+      "req": [
+        "ARCH-02"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 511,
+      "tests": 17,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "46d735ddd37131df5acbfd293d3f8d1d5ec16864a4b3b8e118f0f4b58ad7b735"
+    },
+    {
+      "id": "rescue-boundary",
+      "req": [
+        "ARCH-02"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 8577,
+      "tests": 30,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "bab80dc581022f0f91798ef34a8e24d23d20534f49b2e8a996da41d576bacae1"
+    },
+    {
+      "id": "runtime-dependencies",
+      "req": [
+        "ARCH-03"
+      ],
+      "credit": "positive",
+      "kind": "exunit",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 66987,
+      "tests": 25,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "e067d4f3af4506c605d8359cdd6d1672b93e525488561a73a407e149ce3287dd"
+    },
+    {
+      "id": "secret-masking",
+      "req": [
+        "SPEC-02",
+        "GR-06"
+      ],
+      "credit": "positive",
+      "kind": "node-test",
+      "route": "plain",
+      "status": "pass",
+      "exit": 0,
+      "ms": 20515,
+      "tests": 207,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "counted": true,
+      "output_sha256": "352627fcb65e4b9393ff1ab6f2c0c42ab5ea1a6e2013ee21a1e32ed84ece3de5"
+    }
+  ],
+  "requirement_map": {
+    "SPEC-01": [
+      "manifest-lane",
+      "threadline-lane",
+      "wire-contract",
+      "wire-version",
+      "vector-elixir",
+      "vector-swift-request",
+      "vector-swift-reply",
+      "vector-swift-metadata",
+      "vector-swift-topology",
+      "vector-kotlin-request",
+      "vector-kotlin-other"
+    ],
+    "SPEC-02": [
+      "absence-enforce",
+      "absence-test",
+      "secret-masking"
+    ],
+    "SPEC-03": [
+      "journal",
+      "safe-observation"
+    ],
+    "SPEC-05": [
+      "policy-compiler",
+      "policy-product-route"
+    ],
+    "ARCH-01": [
+      "compile-force",
+      "xref-compile-connected",
+      "compile-structure"
+    ],
+    "ARCH-02": [
+      "location-router",
+      "compatibility",
+      "rescue-boundary"
+    ],
+    "ARCH-03": [
+      "runtime-dependencies"
+    ],
+    "GR-06": [
+      "secret-masking"
+    ]
+  },
+  "failing": [
+    {
+      "id": "format-explicit",
+      "status": "fail",
+      "reason": "format_scope_empty"
+    }
+  ],
+  "review": {
+    "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-REVIEW.md",
+    "iterations": 3,
+    "findings": 24,
+    "open": 0,
+    "open_high": 0,
+    "sha256": "a990d00180921ef58a22280b02d1f9c707f07bcfbfc0dd4e29d744b5379f2cf7"
+  },
+  "verdict": "fail"
+}

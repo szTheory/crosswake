@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -638,6 +638,8 @@ function reviewState(text) {
 
 // ---------------------------------------------------------------- candidate: runner
 const BRANCH = "fix/spec-structure-ratchet";
+// The landed-restoration fix branch is a second place the candidate may run, because the tool is part of the candidate identity.
+const CANDIDATE_BRANCHES = [BRANCH, "fix/196-landed-restoration"];
 const PRIVACY = `.planning/workstreams/quality-ratchet-release/phases/193-cleanup-and-new-working-rules/scripts/privacy-193.sh`;
 const CANDIDATE = `${EVIDENCE}/candidate.json`;
 const REVIEW = `${PHASE}/196-REVIEW.md`;
@@ -655,10 +657,15 @@ function supportedTreeClean(root) {
   const untracked = git(root, ["ls-files", "--others", "--exclude-standard"]).split("\n").filter(Boolean);
   return [...changed, ...untracked].every((name) => name.startsWith(".planning/"));
 }
-function expandArgs(root, args) {
+// The main commit PR 260 was displayed against (the first parent of its merge commit). The explicit-format child reads
+// the Elixir files changed since it, not since origin/main: before the merge the two are the same commit, and after the
+// merge origin/main contains the work, so a diff against it is empty and the child would prove nothing (found when the
+// candidate rerun refused format_scope_empty on a branch with no Elixir change against the merged main).
+const FORMAT_BASE = "4ebe37fe893f8ef420379d1f27c83bca37c0ce33";
+function expandArgs(root, args, formatBase = FORMAT_BASE) {
   return args.flatMap((arg) => {
     if (arg === "@changed-elixir") {
-      const files = git(root, ["diff", "--name-only", "--diff-filter=ACMRT", "origin/main", "HEAD", "--", "*.ex", "*.exs"]).split("\n").filter(Boolean)
+      const files = git(root, ["diff", "--name-only", "--diff-filter=ACMRT", formatBase, "HEAD", "--", "*.ex", "*.exs"]).split("\n").filter(Boolean)
         .filter((name) => existsSync(path.join(root, name)));
       return files;
     }
@@ -706,7 +713,7 @@ async function runEntry(root, entry, routes) {
   result.counts = parser ? (entry.kind === "vector" ? parser(output, entry.mode) : entry.kind === "stage" ? parser(output, entry.stage) : parser(output)) : null;
   return result;
 }
-async function runRegistry(root, registry, { progress = true, only = null } = {}) {
+async function runRegistry(root, registry, { progress = true, only = null, afterChild = null } = {}) {
   const cache = {};
   const routes = { node: () => (cache.node ??= nodeRoute()), jdk: () => (cache.jdk ??= jdkRoute()) };
   const children = [];
@@ -730,6 +737,8 @@ async function runRegistry(root, registry, { progress = true, only = null } = {}
         counted: status === "pass" && (c.tests === null || c.tests === undefined || c.tests > 0),
         output_sha256: result.output_sha256 ?? null,
       });
+      // Called after every child so a caller can persist what exists before anything later can refuse.
+      if (afterChild) afterChild(children.slice(), entry);
     }
   } finally {
     for (const key of ["node"]) if (cache[key]) { const r = await cache[key]; if (r?.scratch) rmSync(r.scratch, { recursive: true, force: true }); }
@@ -739,7 +748,7 @@ async function runRegistry(root, registry, { progress = true, only = null } = {}
   return { children, routes: routesUsed };
 }
 async function candidate(root, { observe = false, only = null } = {}) {
-  need(git(root, ["branch", "--show-current"]) === BRANCH, "wrong_branch");
+  need(CANDIDATE_BRANCHES.includes(git(root, ["branch", "--show-current"])), "wrong_branch");
   need(supportedTreeClean(root), "dirty_supported_code");
   const identity = candidateIdentity(root, "HEAD");
   const disp = checkDisposition(loadInputs(root, "HEAD"));
@@ -1038,6 +1047,85 @@ function inventoryHash(root) {
     tracked: git(root, ["ls-files", "-z"]).split("\0").filter(Boolean).map((name) => [name, sha(worktree(root, name))]),
   }));
 }
+// ---- isolated landed run
+const LANDED_WORKTREE = "crosswake-196-landed";
+const LANDED_LEDGER = "crosswake-196-landed-children.json";
+// Only path-independent fetched inputs are cloned (copy-on-write where the volume supports it) into the worktree, so the
+// main checkout's copies are only read. Build outputs are never cloned: SwiftPM module caches record the absolute build
+// path and refuse a moved copy, and stale Gradle or Mix output could be credited by a child. Every build starts cold,
+// as it does in CI. A fetched input that is absent is not warmed; the child then fetches it or fails closed.
+const WARM_NAMES = new Set(["deps", "node_modules", "local.properties"]);
+function commonGitDir(root) { return path.resolve(root, git(root, ["rev-parse", "--git-common-dir"])); }
+// Per-child results persist to a file in the git dir after every child. Earlier ledgers are rotated, never overwritten.
+function landedLedger(root) {
+  const file = path.join(commonGitDir(root), LANDED_LEDGER);
+  let record = { schema_version: 1, purpose: "phase196_landed_children", children: [] };
+  return {
+    file,
+    start(patch) {
+      if (existsSync(file)) {
+        const stamp = (() => { try { return String(JSON.parse(readFileSync(file, "utf8")).started_at ?? "").replace(/[^0-9A-Za-z]/g, ""); } catch { return ""; } })();
+        let n = 0, target;
+        do { target = file.replace(/\.json$/, `.${stamp || "earlier"}${n ? `-${n}` : ""}.json`); n += 1; } while (existsSync(target));
+        renameSync(file, target);
+      }
+      record = { ...record, children: [], started_at: new Date().toISOString(), ...patch };
+      writeFileSync(file, `${JSON.stringify(record, null, 2)}\n`);
+    },
+    update(patch) { record = { ...record, ...patch }; writeFileSync(file, `${JSON.stringify(record, null, 2)}\n`); },
+  };
+}
+function warmCaches(root, wt) {
+  const listed = git(root, ["ls-files", "--others", "--ignored", "--exclude-standard", "--directory", "-z"], { timeout: 120_000 }).split("\0").filter(Boolean);
+  const warmed = [];
+  for (const entry of listed) {
+    const name = entry.replace(/\/$/, "");
+    if (!WARM_NAMES.has(path.posix.basename(name)) || name.startsWith(".planning/") || name.startsWith(".git/")) continue;
+    rel(name);
+    mkdirSync(path.dirname(path.join(wt, name)), { recursive: true });
+    const target = path.join(wt, name);
+    let result = sync(root, "cp", ["-cR", path.join(root, name), target], { timeout: 600_000 });
+    if (result.status !== 0) { rmSync(target, { recursive: true, force: true }); result = sync(root, "cp", ["-R", path.join(root, name), target], { timeout: 600_000 }); }
+    need(result.status === 0, "landed_cache_warm_failed", name);
+    warmed.push(name);
+  }
+  return warmed;
+}
+function removeLandedWorktree(root, wt) {
+  sync(root, "git", ["worktree", "remove", "--force", wt], { timeout: 300_000 });
+  if (existsSync(wt)) rmSync(wt, { recursive: true, force: true });
+  sync(root, "git", ["worktree", "prune"]);
+  return !existsSync(wt) && !git(root, ["worktree", "list", "--porcelain"]).split("\n").includes(`worktree ${wt}`);
+}
+async function runLandedRegistry(root, mergeSha, { registry, prepare = null, afterChild = null, ledger = landedLedger(root), progress = true } = {}) {
+  need(SHA40.test(mergeSha), "invalid_commit");
+  const wt = path.join(commonGitDir(root), LANDED_WORKTREE);
+  // A directory left by a killed run is ours (fixed name under the git dir), so it is replaced, never trusted.
+  if (existsSync(wt)) need(removeLandedWorktree(root, wt), "landed_worktree_stale");
+  ledger.start({ merge_commit: mergeSha, worktree: wt, phase: "created", warmed: [], registry_size: registry.length });
+  let run;
+  try {
+    git(root, ["worktree", "add", "--detach", wt, mergeSha], { timeout: 300_000 });
+    need(ref40(wt, "HEAD") === mergeSha && supportedTreeClean(wt), "landed_detach_failed");
+    if (prepare) prepare(wt);
+    const warmed = warmCaches(root, wt);
+    ledger.update({ phase: "running", warmed });
+    run = await runRegistry(wt, registry, { progress, afterChild: (children, entry) => {
+      ledger.update({ children });
+      if (afterChild) afterChild(children, entry);
+    } });
+    ledger.update({ children: run.children, routes: run.routes, phase: "complete" });
+  } catch (error) {
+    ledger.update({ phase: "refused", refusal: error instanceof Refusal ? error.code : "internal_error" });
+    throw error;
+  } finally {
+    let removed = false;
+    try { removed = removeLandedWorktree(root, wt); } catch { removed = false; }
+    ledger.update({ cleanup: removed ? "removed" : "failed" });
+    if (!removed) console.error(`phase-evidence: landed worktree not removed at ${wt}`);
+  }
+  return run;
+}
 async function landed(root) {
   need(supportedTreeClean(root), "dirty_supported_code");
   const original = { branch: git(root, ["branch", "--show-current"]), head: ref40(root, "HEAD") };
@@ -1056,21 +1144,25 @@ async function landed(root) {
   const mergeSha = pr.merge_commit_sha;
   need(SHA40.test(mergeSha ?? "") && child0(root, ["merge-base", "--is-ancestor", mergeSha, "origin/main"]), "merge_not_on_main");
   const judgement = judgeMergeCommit(readMergeCommit(root, mergeSha, attempt));
-  let run, disp, idMatches;
-  try {
-    git(root, ["switch", "--detach", mergeSha]);
-    need(ref40(root, "HEAD") === mergeSha && supportedTreeClean(root), "landed_detach_failed");
+  // The registry runs in an isolated linked worktree of the merge commit under the git dir. The main checkout is
+  // never switched or written, so the restoration checks below hold by construction and stay as asserted invariants.
+  let idMatches, disp;
+  const prepare = (wt) => {
     // The landed proof uses the committed tools at the merge commit, so identity is recomputed there.
-    const identity = candidateIdentity(root, "HEAD");
+    const identity = candidateIdentity(wt, "HEAD");
     idMatches = identityEqual(identity, candidateRecord.candidate_identity);
-    disp = checkDisposition(loadInputs(root, "HEAD"));
+    disp = checkDisposition(loadInputs(wt, "HEAD"));
     need(disp.spec04.roster_digest === candidateRecord.spec04.roster_digest, "roster_digest_changed");
-    run = await runRegistry(root, REGISTRY);
-  } finally {
-    // Restoration is verified before any evidence is written.
-    if (git(root, ["branch", "--show-current"]) === "") git(root, ["switch", original.branch]);
+  };
+  const ledger = landedLedger(root);
+  let run;
+  try {
+    run = await runLandedRegistry(root, mergeSha, { registry: REGISTRY, prepare, ledger });
+    need(ref40(root, "HEAD") === original.head && git(root, ["branch", "--show-current"]) === original.branch && inventoryHash(root) === before, "landed_restoration_failed");
+  } catch (error) {
+    ledger.update({ refusal: error instanceof Refusal ? error.code : "internal_error" });
+    throw error;
   }
-  need(ref40(root, "HEAD") === original.head && inventoryHash(root) === before, "landed_restoration_failed");
   const verdict = judgeCandidate(REGISTRY, run.children);
   const landedRecord = {
     schema_version: 1, purpose: "phase196_landed", merge_commit: mergeSha, merge_parents: readMergeCommit(root, mergeSha, attempt).parents,
@@ -1358,6 +1450,85 @@ async function selfTestMerge(root) {
   assert.ok(Date.now() - started < DEADLINE_MS, "merge scope exceeded its deadline");
   return { scope: "merge", ms: Date.now() - started };
 }
+// Isolation controls (fix-forward for the 2026-10-29 actual-main refusal): a child that rewrites a tracked evidence
+// file must not disturb the main checkout, per-child results survive any refusal, and the linked worktree is always removed.
+function landedFixture() {
+  const f = fixtureRepo();
+  f.put(".gitignore", "_build/\ndeps/\n"); f.g("add", ".gitignore");
+  mkdirSync(path.join(f.root, ".planning/ev"), { recursive: true });
+  f.put(".planning/ev/x-vectors.json", `${JSON.stringify({ d: 1 })}\n`); f.g("add", ".planning/ev/x-vectors.json");
+  f.g("commit", "-q", "-m", "evidence receipt");
+  mkdirSync(path.join(f.root, "_build"), { recursive: true }); f.put("_build/cache.txt", "stale build output\n");
+  mkdirSync(path.join(f.root, "deps"), { recursive: true }); f.put("deps/cache.txt", "fetched\n");
+  const rewrite = "require('fs').writeFileSync('.planning/ev/x-vectors.json', JSON.stringify({ d: Date.now() }) + '\\n');" +
+    "console.log(require('fs').existsSync('deps/cache.txt') && !require('fs').existsSync('_build/cache.txt') ? 'warm' : 'cold');";
+  const child = (id, code, lastLine) => ({ id, req: [], kind: "version", route: "plain", command: process.execPath, args: ["-e", code], cwd: ".", expect: { lastLine } });
+  return { ...f, rewrite, child, mergeSha: ref40(f.root, "HEAD") };
+}
+async function landedIsolationControls() {
+  const f = landedFixture();
+  try {
+    const gitDir = path.resolve(f.root, git(f.root, ["rev-parse", "--git-common-dir"]));
+    const wt = path.join(gitDir, "crosswake-196-landed");
+    const receipt = () => readFileSync(path.join(f.root, ".planning/ev/x-vectors.json"), "utf8");
+    const worktrees = () => git(f.root, ["worktree", "list", "--porcelain"]).split("\n").filter((l) => l.startsWith("worktree ")).length;
+    const ledger = () => JSON.parse(readFileSync(path.join(gitDir, "crosswake-196-landed-children.json"), "utf8"));
+    const before = { inventory: inventoryHash(f.root), receipt: receipt(), branch: git(f.root, ["branch", "--show-current"]), head: ref40(f.root, "HEAD") };
+    // The old in-place procedure: detach in the main checkout, run a receipt-rewriting child, switch back. The edit follows the checkout.
+    f.g("switch", "-q", "--detach", f.mergeSha);
+    await runChild(f.root, process.execPath, ["-e", f.rewrite], { timeout: 5_000 });
+    f.g("switch", "-q", "main");
+    assert.notEqual(inventoryHash(f.root), before.inventory, "the in-place procedure is the defect: it leaves the receipt rewritten");
+    f.g("checkout", "--", ".planning/ev/x-vectors.json");
+    assert.equal(inventoryHash(f.root), before.inventory);
+    // Isolated run: the child rewrites its own receipt, the main checkout is untouched, results persist, the worktree is gone.
+    const ok = await runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("rewrite", f.rewrite, "warm")], progress: false });
+    assert.equal(ok.children.length, 1); assert.equal(ok.children[0].status, "pass");
+    assert.equal(inventoryHash(f.root), before.inventory, "a landed run must leave the main inventory unchanged");
+    assert.equal(receipt(), before.receipt); assert.equal(git(f.root, ["branch", "--show-current"]), before.branch); assert.equal(ref40(f.root, "HEAD"), before.head);
+    assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1);
+    assert.equal(ledger().children.length, 1); assert.equal(ledger().phase, "complete"); assert.equal(ledger().cleanup, "removed");
+    assert.deepEqual(ledger().warmed, ["deps"], "fetched inputs are cloned into the worktree and build output never is");
+    // A failing child is judged, kept in the ledger, and the run continues to the next child.
+    const failing = await runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("bad", "process.exit(3)", "x"), f.child("after", f.rewrite, "warm")], progress: false });
+    assert.deepEqual(failing.children.map((c) => `${c.id}:${c.status}`), ["bad:fail", "after:pass"]);
+    assert.deepEqual(ledger().children.map((c) => `${c.id}:${c.status}`), ["bad:fail", "after:pass"]);
+    assert.equal(existsSync(wt), false); assert.equal(inventoryHash(f.root), before.inventory);
+    // A refusal after the first child still leaves that child on disk, and cleanup runs.
+    await assert.rejects(runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("one", f.rewrite, "warm")], progress: false,
+      afterChild: (children) => { need(children.length < 1, "landed_probe_refusal"); } }), { code: "landed_probe_refusal" });
+    assert.deepEqual(ledger().children.map((c) => c.id), ["one"]); assert.equal(ledger().refusal, "landed_probe_refusal");
+    assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1); assert.equal(inventoryHash(f.root), before.inventory);
+    // A refusal before any child (identity or roster check) is recorded and cleaned up too.
+    await assert.rejects(runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("never", f.rewrite, "warm")], progress: false,
+      prepare: () => { throw new Refusal("roster_digest_changed"); } }), { code: "roster_digest_changed" });
+    assert.deepEqual(ledger().children, []); assert.equal(ledger().refusal, "roster_digest_changed");
+    assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1);
+    // A stale worktree directory from a killed run is replaced, not trusted, and earlier ledgers are rotated, never overwritten.
+    f.g("worktree", "add", "-q", "--detach", wt, f.mergeSha); writeFileSync(path.join(wt, "stale.txt"), "stale\n");
+    const again = await runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("fresh", f.rewrite, "warm")], progress: false });
+    assert.equal(again.children[0].status, "pass"); assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1);
+    assert.ok(readdirSync(gitDir).filter((name) => /^crosswake-196-landed-children\..+\.json$/.test(name)).length >= 3, "earlier ledgers are rotated");
+    assert.equal(inventoryHash(f.root), before.inventory);
+  } finally { f.cleanup(); }
+}
+// The explicit-format child must stay non-empty after the work lands: once the merge commit is on main, a diff against
+// origin/main is empty by construction, so the changed Elixir files are read against the recorded base instead.
+function formatScopeControls() {
+  const f = fixtureRepo();
+  try {
+    const base = ref40(f.root, "HEAD");
+    f.g("switch", "-q", "-c", "feature"); f.put("x.ex", "defmodule X do\nend\n"); f.put("y.exs", ":ok\n"); f.put("note.txt", "n\n");
+    f.g("add", "x.ex", "y.exs", "note.txt"); f.g("commit", "-q", "-m", "feature");
+    f.g("switch", "-q", "main"); f.g("merge", "-q", "--no-ff", "-m", "merge feature", "feature");
+    f.g("update-ref", "refs/remotes/origin/main", ref40(f.root, "HEAD"));
+    assert.equal(git(f.root, ["diff", "--name-only", "origin/main", "HEAD"]), "", "after the merge the diff against origin/main is empty");
+    const args = expandArgs(f.root, ["format", "--check-formatted", "@changed-elixir"], base);
+    assert.deepEqual(args, ["format", "--check-formatted", "x.ex", "y.exs"]);
+    assert.deepEqual(expandArgs(f.root, ["format", "--check-formatted", "@changed-elixir"], ref40(f.root, "HEAD")), ["format", "--check-formatted"]);
+    assert.match(FORMAT_BASE, /^[0-9a-f]{40}$/);
+  } finally { f.cleanup(); }
+}
 async function selfTestLanded(root) {
   const started = Date.now();
   const f = fixtureRepo();
@@ -1403,6 +1574,8 @@ async function selfTestLanded(root) {
   assert.equal(reconcileMarker({ marker: { status: "consuming", head: "h" }, remote: { merged: true, mergedHead: "other" } }), "unconsumed_uncertain");
   assert.throws(() => scanClaims(JSON.stringify({ spec04: { disposition: "moved_to_v29" }, note: "SPEC-04 is complete." }), "json"), { code: "spec04_prose_claim" });
   assert.throws(() => scanClaims("The pilot passed.", "markdown"), { code: "spec04_prose_claim" });
+  formatScopeControls();
+  await landedIsolationControls();
   await realChildControls();
   assert.ok(Date.now() - started < DEADLINE_MS, "landed scope exceeded its deadline");
   return { scope: "landed", ms: Date.now() - started };
@@ -1558,4 +1731,4 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
     process.exitCode = 1;
   });
 }
-export { scanClaims, disposition, candidateIdentity, checkDisposition, checkPromotion, runChild, sha, Refusal };
+export { scanClaims, disposition, candidateIdentity, checkDisposition, checkPromotion, runChild, sha, Refusal, runLandedRegistry, REGISTRY };

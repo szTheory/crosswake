@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "purpose": "phase196_landed",
+  "verdict": "fail",
+  "produced_by": "executor failure record after the landed tool refused; not a tool success receipt",
+  "merge_commit": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+  "merge_parents": [
+    "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+    "bb291f019740a20e5ea0d0c388a7416adf85bd1f"
+  ],
+  "approved_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+  "displayed_base": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+  "landed_as_displayed": true,
+  "base_drift_at_write": false,
+  "candidate_identity_matches": true,
+  "candidate_identity_derived_at_merge_commit": {
+    "source_roster_sha256": "bc288cde60facd0139c792f9ea60234117bfb64a9c70d2e99e17a35081d891d0",
+    "source_count": 1376,
+    "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
+    "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
+    "preserved_roster_sha256": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+  },
+  "spec04": {
+    "disposition": "moved_to_v29",
+    "receiver": "v29.0",
+    "anchor_commit": "90a809ce43adec4fb2b04ae38e658854317c9d9c",
+    "roster_count": 32,
+    "roster_digest": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+  },
+  "moved": [
+    "SPEC-04"
+  ],
+  "routes": {
+    "node": {
+      "route": "asdf",
+      "node": "v22.14.0",
+      "npm": "10.9.2"
+    },
+    "jdk": {
+      "route": "jdk17",
+      "java_major": 17
+    }
+  },
+  "native_claim_ceiling": "jvm_hermetic_and_swift_package_only_never_device",
+  "failure": {
+    "cause": "landed_restoration_failed",
+    "observed": "The full registry run began all 40 children on a detached checkout of the merge commit, then the tool refused at its restoration check because four tracked vector evidence files had been rewritten by the vector children. The tool wrote no per-child results before refusing, so no landed child result is retained.",
+    "started_at": "2026-10-29T01:53:49Z",
+    "ended_at": "2026-10-29T03:11:54Z",
+    "children_started": 40,
+    "children_results_retained": false,
+    "rewritten_tracked_files": [
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/elixir-vectors.json",
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/kotlin-vectors.json",
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/swift-other-vectors.json",
+      ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/swift-request-vectors.json"
+    ],
+    "rewritten_file_sha256": {
+      "elixir-vectors.json": "ecede7c76d67f0f636faa91a1621bc0f2603da99c12adbbf3a665d470efc5eb9",
+      "kotlin-vectors.json": "072b101f7227ea18bd850d54ac38f1f1b67bd2ab80cf058b90c89093d985844d",
+      "swift-other-vectors.json": "4f9149e551ae67a2a93acb35034c572832d50e5a00b5c86136524fb7d9d36dc0",
+      "swift-request-vectors.json": "5fc7d5fbe07612368b89bc207ad36ab9d7282d5690082dbe39e11750fcec5c0e"
+    },
+    "rewritten_files_restored_to_committed_bytes": true,
+    "disposition_and_roster_checks": "passed in the same process before the registry ran (no refusal at that step)",
+    "rerun": "not repeated; the same children rewrite the same tracked files, so a rerun would refuse the same way"
+  },
+  "children": [],
+  "failing": [
+    "landed_restoration_failed"
+  ],
+  "requirements_pending_phase_verification": [
+    "SPEC-01",
+    "SPEC-02",
+    "SPEC-03",
+    "SPEC-05",
+    "ARCH-01",
+    "ARCH-02",
+    "ARCH-03",
+    "GR-06"
+  ],
+  "fix_forward": {
+    "branch": "fix/196-landed-restoration-tracked-evidence",
+    "from": "current origin/main",
+    "route": "normal PR, CI and a fresh one-use merge in a later run",
+    "main_reverted": false,
+    "merge_retried": false
+  }
+}
