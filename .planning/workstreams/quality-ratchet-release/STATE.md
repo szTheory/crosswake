@@ -4,7 +4,7 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 17
 status: executing
-stopped_at: "196-17 merged PR 260 as 88c8bdd8 (two parents, no base drift); actual-main landed proof refused landed_restoration_failed; blocked, fix-forward needed"
+stopped_at: "196-17 fix-forward on fix/196-landed-restoration: isolated landed worktree, fresh candidate passed 40 of 40; fix PR awaiting a one-use allow to merge"
 last_updated: "2026-10-29T03:30:00.000Z"
 state_head: bb291f019740a20e5ea0d0c388a7416adf85bd1f
 progress:
@@ -25,7 +25,7 @@ Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active p
 
 ## Exact Next Action
 
-Phase 196 is merged to main (PR 260, merge commit `88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be`, parents `4ebe37fe` and `bb291f01`) but is NOT verifiable: the actual-main landed proof refused `landed_restoration_failed` and retained no per-child result (see `196-17-BLOCKED.md`, `196-EVIDENCE/landed.json`). `/gsd-verify-work 196` is not eligible. Next: branch `fix/196-landed-restoration-tracked-evidence` from current origin/main so the landed proof runs its vector children without rewriting tracked evidence (the tool change needs a fresh candidate run, then the normal PR, CI and a fresh one-use merge), then rerun the landed proof. The evidence PR from `docs/196-landed-evidence` needs its own later one-use allow to merge. Nothing is complete: SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 stay pending phase verification; SPEC-04 stays moved to v29.0.
+Phase 196 is merged to main (PR 260, merge commit `88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be`) but is NOT verifiable until an actual-main landed proof passes. The first landed proof refused `landed_restoration_failed` and retained no per-child result (see `196-17-BLOCKED.md`). The fix is on branch `fix/196-landed-restoration` (carries evidence PR 263): the landed registry now runs in an isolated linked worktree of the merge commit, persists per-child results to a ledger in the git dir, and the explicit-format child reads changes since the recorded base. A fresh 40-child candidate passed on the new identity (`196-EVIDENCE/amendment-2-candidate-rerun.md`). Next: merge the fix PR (needs a fresh one-use allow from the user), then run the landed proof with the fixed tool. The landed proof for that merge needs its own recorded attempt and approval record (the tool still reads `refs/crosswake/196-17-approval`, which names PR 260), and its evidence PR needs its own later allow. `/gsd-verify-work 196` is not eligible until a landed proof passes. Nothing is complete: SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 stay pending phase verification; SPEC-04 stays moved to v29.0.
 
 ## Carried debt
 

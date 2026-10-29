@@ -68,3 +68,14 @@ Scope: the changes to `phase-evidence.mjs` on `fix/196-landed-restoration` (comm
 No high or critical finding is open. The tool change alters the candidate identity, so a fresh 40-child candidate run on the new identity follows this amendment. The five actual-main receipts are untouched and the Muex baseline is not rerun.
 
 SPEC-04 stays moved to v29.0 and no Muex process, baseline or attempt was run.
+
+### A-2 addendum (2026-10-29): findings from the first rerun and the isolated-run observation
+
+The table rows above stay as written. This addendum records two things found after the A-2 text was committed.
+
+| ID | Severity | Status | Finding |
+|----|----------|--------|---------|
+| R-25 | medium | fixed | The first rerun of the candidate on this branch failed one child of 40: `format-explicit` refused `format_scope_empty`. The child formats the Elixir files changed against `origin/main`, and `origin/main` now contains the merged work, so the branch had no Elixir change against it and the child would have proved nothing. A landed run at the merge commit would have refused the same way after the restoration defect was fixed. The scope is now the Elixir files changed since the recorded base (`4ebe37fe`, the main commit PR 260 was displayed against), which equals the old scope before the merge. A control builds a merged fixture where the diff against `origin/main` is empty and shows the recorded-base scope is not. The failed run is retained as `candidate-amendment-2-failed-run-1.json`. |
+| R-26 | info | closed | After the fixes, all 40 registry children ran in the isolated worktree at merge commit 88c8bdd8, which is contained in `origin/main`, using the fixed tool. All 40 were judged pass, the worktree was removed, and the main checkout stayed clean. This is an observation of the mechanism and not the landed proof: no approval record, evidence branch or landed receipt was involved. |
+
+No high or critical finding is open after the addendum.
