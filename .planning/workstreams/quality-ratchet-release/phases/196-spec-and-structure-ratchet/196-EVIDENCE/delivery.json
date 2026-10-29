@@ -62,6 +62,137 @@
       "candidate_source_roster_sha256": "685bcd499f549e1476c4695caf5ecfc31a8d8785ef154a57b94f3cb296a36a3f",
       "review_sha256": "77f1d4f46d5fca197b7ca7e1461f71f12d285af2218ecc63ea953658f648df6f",
       "note": "Superseded after the exact-head CI halt; the CI run on the first opened head was red. Kept for history."
+    },
+    {
+      "pr": 260,
+      "kind": "merge_attempt_with_failed_landed_proof",
+      "note": "The first merge attempt. Its landed proof refused landed_restoration_failed (see 196-17-BLOCKED history and the earlier landed.json in git). Its local approval record is preserved on refs/crosswake/196-17-approval-pr260, local only, never pushed.",
+      "approval_ref": "refs/crosswake/196-17-approval-pr260",
+      "ready": {
+        "pr_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+        "base_sha": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+        "ci_run_id": 40791204733,
+        "ci_workflow": "Crosswake CI",
+        "ci_event": "pull_request",
+        "ci_conclusion": "success",
+        "check_runs": 49,
+        "check_runs_head_sha_equal_to_pr_head": true,
+        "github_synthetic_merge_sha": "09222d0a57a4d25c7b49d110ea6dfd764b149277",
+        "synthetic_is_not_head_proof": true,
+        "gate_stage": "ready",
+        "gate_result": "pass",
+        "polls": 36,
+        "recorded_after_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+        "note": "Recorded in a local commit after the push; the PR head stays bb291f01."
+      },
+      "attempt": {
+        "scope": "merge_pr_to_main",
+        "pr": 260,
+        "head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+        "base": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+        "decision": "allow",
+        "consumed": false,
+        "at": "2026-10-29T01:41:43Z"
+      },
+      "attempt_context": {
+        "title": "fix(196): make spec and structure ratchets fail on empty evidence",
+        "url": "https://github.com/szTheory/crosswake/pull/260",
+        "merge_method": "merge_commit",
+        "merge_command": "gh pr merge 260 --merge --match-head-commit bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+        "branch_deletion": "none",
+        "repository_setting_change": "none",
+        "publish": "none",
+        "tag": "none",
+        "ci": {
+          "workflow": "Crosswake CI",
+          "run_id": 40791204733,
+          "event": "pull_request",
+          "conclusion": "success",
+          "check_runs": 49,
+          "check_runs_head_sha": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+          "ready_gate_rerun_at": "2026-10-29T01:41:43Z",
+          "ready_gate_result": "pass"
+        },
+        "github_synthetic_merge_sha": "09222d0a57a4d25c7b49d110ea6dfd764b149277",
+        "synthetic_is_not_head_proof": true,
+        "candidate_identity": {
+          "source_roster_sha256": "bc288cde60facd0139c792f9ea60234117bfb64a9c70d2e99e17a35081d891d0",
+          "source_count": 1376,
+          "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
+          "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
+          "preserved_roster_sha256": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+        },
+        "tools_unchanged": {
+          "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
+          "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf"
+        },
+        "attempt_rule": "The PR head must stay exactly the displayed head through allow, merge write and merge. No commit is pushed to the PR branch after display. Any head, base, CI or scope change invalidates the attempt and needs a fresh display and decision.",
+        "residual_risk": "GitHub cannot guard the base. If main advances between the final read and the merge call, the merge can land on a newer base; landed proof records base_drift_at_write and recovery is fix-forward with no revert.",
+        "evidence_plan": {
+          "branch": "docs/196-landed-evidence",
+          "created_from": "actual merge commit",
+          "pr_target": "main",
+          "merge_of_that_pr": "needs its own later one-use allow"
+        }
+      },
+      "auto_delete_observation": {
+        "setting": "delete_branch_on_merge",
+        "value": false,
+        "observed_at": "2026-10-29T01:41:43Z",
+        "source": "gh api repos/szTheory/crosswake --jq .delete_branch_on_merge",
+        "earlier_reading_this_attempt": true,
+        "earlier_reading_outcome": "read true on three reads before the change; plan 196-17 held with no mutation",
+        "setting_changed_during_this_attempt": true,
+        "changed_by": "explicit user decision, separate from and not part of the merge approval; applied by the orchestrator; read-back false",
+        "earlier_auto_delete_effect": {
+          "pr": 261,
+          "head_branch": "fix/bandit-advisory",
+          "merged_at": "2026-10-28T18:38:33Z",
+          "merge_commit": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+          "head_branch_on_remote_now": false
+        }
+      },
+      "approval": {
+        "status": "consumed",
+        "scope": "merge_pr_to_main",
+        "pr": 260,
+        "head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+        "base": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+        "decision": "allow",
+        "at": "2026-10-29T01:52:57Z",
+        "note": "One-use allow bound to this attempt. Recorded locally before the merge write; never pushed. Consumed is recorded only on the evidence branch.",
+        "merge_commit": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+        "consumed_at": "2026-10-29T01:53:27Z"
+      },
+      "reconciliation": {
+        "merge_commit": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+        "merge_parents": [
+          "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+          "bb291f019740a20e5ea0d0c388a7416adf85bd1f"
+        ],
+        "merged_at": "2026-10-29T01:53:27Z",
+        "base_drift_at_write": false,
+        "landed_as_displayed": true,
+        "merge_call": "gate merge with execute, one guarded merge-commit call, exit 0; read back from the remote after the call",
+        "head_branch_still_on_remote": true,
+        "auto_delete_setting_after_merge": false,
+        "branch_deletion": "none",
+        "approval_ref": "refs/crosswake/196-17-approval, local only, never pushed",
+        "landed_proof_verdict": "fail",
+        "landed_proof_cause": "landed_restoration_failed"
+      },
+      "evidence": {
+        "branch": "docs/196-landed-evidence",
+        "created_from": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+        "pr": {
+          "number": 263,
+          "url": "https://github.com/szTheory/crosswake/pull/263",
+          "base_ref": "main",
+          "first_pushed_head": "66726f482687f2bc280e182449cbead82ae993ec"
+        },
+        "merge_of_this_pr": "needs its own later one-use allow; not requested here",
+        "ci_note": "Observed on the final pushed head; the synthetic merge commit is reported separately in the plan summary."
+      }
     }
   ],
   "amendment": {
@@ -72,129 +203,93 @@
       ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/candidate-amendment-1-failed-run-2.json"
     ]
   },
-  "ready": {
-    "pr_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
-    "base_sha": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
-    "ci_run_id": 40791204733,
-    "ci_workflow": "Crosswake CI",
-    "ci_event": "pull_request",
-    "ci_conclusion": "success",
-    "check_runs": 49,
-    "check_runs_head_sha_equal_to_pr_head": true,
-    "github_synthetic_merge_sha": "09222d0a57a4d25c7b49d110ea6dfd764b149277",
-    "synthetic_is_not_head_proof": true,
-    "gate_stage": "ready",
-    "gate_result": "pass",
-    "polls": 36,
-    "recorded_after_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
-    "note": "Recorded in a local commit after the push; the PR head stays bb291f01."
-  },
   "attempt": {
     "scope": "merge_pr_to_main",
-    "pr": 260,
-    "head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
-    "base": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+    "pr": 264,
+    "head": "24fde71db5ac121d73c201913251a6f53e4d860d",
+    "base": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
     "decision": "allow",
     "consumed": false,
-    "at": "2026-10-29T01:41:43Z"
+    "at": "2026-10-29T09:47:41Z"
   },
   "attempt_context": {
-    "title": "fix(196): make spec and structure ratchets fail on empty evidence",
-    "url": "https://github.com/szTheory/crosswake/pull/260",
+    "title": "fix(196): run the landed proof in an isolated worktree",
+    "url": "https://github.com/szTheory/crosswake/pull/264",
     "merge_method": "merge_commit",
-    "merge_command": "gh pr merge 260 --merge --match-head-commit bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+    "merge_command": "gh pr merge 264 --merge --match-head-commit 24fde71db5ac121d73c201913251a6f53e4d860d",
     "branch_deletion": "none",
     "repository_setting_change": "none",
     "publish": "none",
     "tag": "none",
     "ci": {
       "workflow": "Crosswake CI",
-      "run_id": 40791204733,
+      "run_id": 40842819911,
       "event": "pull_request",
       "conclusion": "success",
       "check_runs": 49,
-      "check_runs_head_sha": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
-      "ready_gate_rerun_at": "2026-10-29T01:41:43Z",
-      "ready_gate_result": "pass"
+      "check_runs_success": 48,
+      "check_runs_skipped": 1,
+      "check_runs_head_sha": "24fde71db5ac121d73c201913251a6f53e4d860d"
     },
-    "github_synthetic_merge_sha": "09222d0a57a4d25c7b49d110ea6dfd764b149277",
-    "synthetic_is_not_head_proof": true,
     "candidate_identity": {
       "source_roster_sha256": "bc288cde60facd0139c792f9ea60234117bfb64a9c70d2e99e17a35081d891d0",
       "source_count": 1376,
-      "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
+      "phase_evidence_sha256": "8b8252685a35a449375d3a78568f08b98d8ad08c710a8da27eb030a3a983ca65",
       "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
       "preserved_roster_sha256": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
     },
-    "tools_unchanged": {
-      "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
-      "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf"
-    },
-    "attempt_rule": "The PR head must stay exactly the displayed head through allow, merge write and merge. No commit is pushed to the PR branch after display. Any head, base, CI or scope change invalidates the attempt and needs a fresh display and decision.",
-    "residual_risk": "GitHub cannot guard the base. If main advances between the final read and the merge call, the merge can land on a newer base; landed proof records base_drift_at_write and recovery is fix-forward with no revert.",
+    "candidate_record_head": "5fac5839ab6044593e387ddf340ab63347f79484",
+    "purpose": "Fix-forward for the landed proof defect: the landed mode now runs the registry in an isolated linked worktree. Its own landed proof is the proof of this merge.",
+    "record_timing": "The decision was a fresh one-use allow for exactly this attempt, given by the user and relayed by the orchestrator. The merge happened before this local approval record existed, so this record is NOT write-ahead. The recorder does not hold the allow time; the at field is the time this record was written.",
+    "merged_at": "2026-10-29T09:44:23Z",
+    "rotation": "The landed mode reads one fixed local ref. The PR 260 record was renamed, not deleted, to refs/crosswake/196-17-approval-pr260 and this record was created at refs/crosswake/196-17-approval with parent H. No tool edit.",
     "evidence_plan": {
-      "branch": "docs/196-landed-evidence",
-      "created_from": "actual merge commit",
-      "pr_target": "main",
-      "merge_of_that_pr": "needs its own later one-use allow"
-    }
-  },
-  "auto_delete_observation": {
-    "setting": "delete_branch_on_merge",
-    "value": false,
-    "observed_at": "2026-10-29T01:41:43Z",
-    "source": "gh api repos/szTheory/crosswake --jq .delete_branch_on_merge",
-    "earlier_reading_this_attempt": true,
-    "earlier_reading_outcome": "read true on three reads before the change; plan 196-17 held with no mutation",
-    "setting_changed_during_this_attempt": true,
-    "changed_by": "explicit user decision, separate from and not part of the merge approval; applied by the orchestrator; read-back false",
-    "earlier_auto_delete_effect": {
-      "pr": 261,
-      "head_branch": "fix/bandit-advisory",
-      "merged_at": "2026-10-28T18:38:33Z",
-      "merge_commit": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
-      "head_branch_on_remote_now": false
+      "branch": "docs/196-landed-evidence-2",
+      "note": "The landed mode creates docs/196-landed-evidence locally; that name exists on the remote from the first attempt, so the new branch is renamed before the push. The merge of the evidence PR needs its own later one-use allow."
     }
   },
   "approval": {
     "status": "consumed",
     "scope": "merge_pr_to_main",
-    "pr": 260,
-    "head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
-    "base": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+    "pr": 264,
+    "head": "24fde71db5ac121d73c201913251a6f53e4d860d",
+    "base": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
     "decision": "allow",
-    "at": "2026-10-29T01:52:57Z",
-    "note": "One-use allow bound to this attempt. Recorded locally before the merge write; never pushed. Consumed is recorded only on the evidence branch.",
-    "merge_commit": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
-    "consumed_at": "2026-10-29T01:53:27Z"
+    "at": "2026-10-29T09:47:41Z",
+    "note": "One-use allow bound to PR 264 at head H on displayed base. Recorded locally after the merge, never pushed. Consumed is recorded only on the evidence branch.",
+    "merge_commit": "51a1885cfd50c9dc159a2591204da69510a2ffc4",
+    "consumed_at": "2026-10-29T09:44:23Z",
+    "approval_ref": "refs/crosswake/196-17-approval, local only, never pushed; the PR 260 record is preserved on refs/crosswake/196-17-approval-pr260"
   },
   "reconciliation": {
-    "merge_commit": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+    "merge_commit": "51a1885cfd50c9dc159a2591204da69510a2ffc4",
     "merge_parents": [
-      "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
-      "bb291f019740a20e5ea0d0c388a7416adf85bd1f"
+      "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+      "24fde71db5ac121d73c201913251a6f53e4d860d"
     ],
-    "merged_at": "2026-10-29T01:53:27Z",
+    "merged_at": "2026-10-29T09:44:23Z",
     "base_drift_at_write": false,
     "landed_as_displayed": true,
-    "merge_call": "gate merge with execute, one guarded merge-commit call, exit 0; read back from the remote after the call",
+    "merge_call": "one guarded merge-commit call with --match-head-commit on the approved head, made by the orchestrator under the user's one-use allow; read back from the remote afterward",
     "head_branch_still_on_remote": true,
     "auto_delete_setting_after_merge": false,
     "branch_deletion": "none",
-    "approval_ref": "refs/crosswake/196-17-approval, local only, never pushed",
-    "landed_proof_verdict": "fail",
-    "landed_proof_cause": "landed_restoration_failed"
+    "landed_proof_verdict": "pass",
+    "landed_proof_children": 40,
+    "landed_proof_started_at": "2026-10-29T09:48:10Z",
+    "landed_proof_ended_at": "2026-10-29T10:54:01Z",
+    "landed_proof_record": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-EVIDENCE/landed.json"
   },
   "evidence": {
-    "branch": "docs/196-landed-evidence",
-    "created_from": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
-    "pr": {
-      "number": 263,
-      "url": "https://github.com/szTheory/crosswake/pull/263",
-      "base_ref": "main",
-      "first_pushed_head": "66726f482687f2bc280e182449cbead82ae993ec"
-    },
+    "branch": "docs/196-landed-evidence-2",
+    "created_from": "51a1885cfd50c9dc159a2591204da69510a2ffc4",
+    "branch_name_note": "The landed mode created the local name docs/196-landed-evidence. That name already exists on the remote from the first attempt (its PR 263 is merged), so the new branch was renamed before any push. The first local branch was renamed docs/196-landed-evidence-attempt1. No remote branch was deleted or force-updated.",
     "merge_of_this_pr": "needs its own later one-use allow; not requested here",
-    "ci_note": "Observed on the final pushed head; the synthetic merge commit is reported separately in the plan summary."
+    "pr": {
+      "number": 266,
+      "url": "https://github.com/szTheory/crosswake/pull/266",
+      "base_ref": "main",
+      "first_pushed_head": "5c17d85a9846d46cb4fa17eceb043c9d9e03c377"
+    }
   }
 }
