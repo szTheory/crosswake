@@ -38,17 +38,17 @@ Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobil
 
 ### Spec quality (SPEC)
 
-- [ ] **SPEC-01** [P6]: `evidence_manifest_test.exs:98` and `phase139_threadline_cleanroom_test.exs:59` no longer pass by asserting nothing; Elixir, Swift and Kotlin vector-consuming tests assert vector count equals a pinned expectation and fail on a missing vector.
-- [ ] **SPEC-02** [M]: A delta-only guard in `script/check_absence_is_not_success.exs` fails on new collection assertions without a non-empty check, `for`-over-glob without cardinality, and literal `assert true`, each with a negative control; the known sites are fixed in the same change.
-- [ ] **SPEC-03** [P6]: Boundary specs exist for `Journal.scope_ref!/1` (15/16/128/129 chars, newline injection, input never echoed) and `SafeObservation.new/1` (measurement 0, 1_000_000, 1_000_001; adversarial strings in every field never survive).
+- [x] **SPEC-01** [P6]: `evidence_manifest_test.exs:98` and `phase139_threadline_cleanroom_test.exs:59` no longer pass by asserting nothing; Elixir, Swift and Kotlin vector-consuming tests assert vector count equals a pinned expectation and fail on a missing vector.
+- [x] **SPEC-02** [M]: A delta-only guard in `script/check_absence_is_not_success.exs` fails on new collection assertions without a non-empty check, `for`-over-glob without cardinality, and literal `assert true`, each with a negative control; the known sites are fixed in the same change.
+- [x] **SPEC-03** [P6]: Boundary specs exist for `Journal.scope_ref!/1` (15/16/128/129 chars, newline injection, input never echoed) and `SafeObservation.new/1` (measurement 0, 1_000_000, 1_000_001; adversarial strings in every field never survive).
 - [ ] **SPEC-04** [M]: A Muex pilot covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract`; the wrapper fails if zero mutants are generated; baseline scores, runtime and survivor classification (keyed by file + mutator + normalized text) are recorded with an adopt/drop decision; no Muex dep is committed. *(Moved intact to v29.0 on 2026-10-27 under the Phase 196 overrun cut order; both attempts preserved.)*
-- [ ] **SPEC-05** [P5]: The finite route-policy option product is enumerated exhaustively against a hand-written verdict table; compiler error assertions pin `{key, route_id}` pairs; `Compiler.validation_key/1` never returns `nil` for a compiler error.
+- [x] **SPEC-05** [P5]: The finite route-policy option product is enumerated exhaustively against a hand-written verdict table; compiler error assertions pin `{key, route_id}` pairs; `Compiler.validation_key/1` never returns `nil` for a compiler error.
 
 ### Architecture (ARCH)
 
-- [ ] **ARCH-01** [M]: The `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` compile cycle is broken; a test fails on any compile-label xref cycle and on an all-cycles count above the committed baseline.
-- [ ] **ARCH-02** [P5]: The three bare `rescue _ ->` clauses in `bridge.ex` return explicit results; an AST test fails on bare rescue in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules.
-- [ ] **ARCH-03** [M]: A test compares each package's runtime direct deps to a committed list; adding a dep requires editing the list with a one-line justification.
+- [x] **ARCH-01** [M]: The `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` compile cycle is broken; a test fails on any compile-label xref cycle and on an all-cycles count above the committed baseline.
+- [x] **ARCH-02** [P5]: The three bare `rescue _ ->` clauses in `bridge.ex` return explicit results; an AST test fails on bare rescue in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules.
+- [x] **ARCH-03** [M]: A test compares each package's runtime direct deps to a committed list; adding a dep requires editing the list with a one-line justification.
 
 ### Public docs (DOCS)
 
@@ -101,14 +101,14 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | REL-07 | Phase 199 | Pending |
 | HYG-01 | Phase 195 | Complete |
 | HYG-02 | Phase 195 | Complete |
-| SPEC-01 | Phase 196 | Pending |
-| SPEC-02 | Phase 196 | Pending |
-| SPEC-03 | Phase 196 | Pending |
+| SPEC-01 | Phase 196 | Complete |
+| SPEC-02 | Phase 196 | Complete |
+| SPEC-03 | Phase 196 | Complete |
 | SPEC-04 | v29.0 | Moved (criteria intact) |
-| SPEC-05 | Phase 196 | Pending |
-| ARCH-01 | Phase 196 | Pending |
-| ARCH-02 | Phase 196 | Pending |
-| ARCH-03 | Phase 196 | Pending |
+| SPEC-05 | Phase 196 | Complete |
+| ARCH-01 | Phase 196 | Complete |
+| ARCH-02 | Phase 196 | Complete |
+| ARCH-03 | Phase 196 | Complete |
 | DOCS-01 | Phase 197 | Pending |
 | DOCS-02 | Phase 197 | Pending |
 | DOCS-03 | Phase 197 | Pending |

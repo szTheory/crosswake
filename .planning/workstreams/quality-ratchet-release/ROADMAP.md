@@ -16,7 +16,7 @@
 
 - [x] **Phase 194: Bearings reset and ADR amendments** - Rolling roadmap, bearings, personas, a short STATE and a bearings report land, and the ADR amendments (Android unfrozen for parity; synthetic-profile reversal gate) change every rule text together (completed 2026-10-25)
 - [x] **Phase 195: Pipeline repair and hygiene** - The release PR goes green with no hand edits, the PR queue and CI schedules are clean, secrets are masked, the repository root and branches are tidy, and one clean-room command runs against real published artifacts (completed 2026-10-27)
-- [ ] **Phase 196: Spec and structure ratchet** - Sensitive offline, policy and bridge specs can no longer pass empty, boundary and exhaustive policy specs exist, a Muex pilot decides adopt or drop, and compile-cycle, bare-rescue and dependency ratchets hold
+- [x] **Phase 196: Spec and structure ratchet** - Sensitive offline, policy and bridge specs can no longer pass empty, boundary and exhaustive policy specs exist, a Muex pilot decides adopt or drop, and compile-cycle, bare-rescue and dependency ratchets hold (completed 2026-10-29)
 - [ ] **Phase 197: Public docs truth** - The documented install path runs on a normal host, version and telemetry claims are true, "Android frozen" text is gone, and docs checks report counts
 - [ ] **Phase 198: Android foreign-host proof** - A generated parity ledger, a Kotlin test floor, and a fresh foreign Gradle project that resolves the published Maven coordinate and passes JVM tests on Linux CI
 - [ ] **Phase 199: Release 0.2.12** - One real release, core first, with a separate `allow` per merge, publish and tag, and a post-publish check that the iOS mirror tag equals the release version
@@ -168,7 +168,7 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. [Moved to v29.0 with SPEC-04; not a v28 gate] A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13, 15, 16 and 17 complete; 196-14 retired (SPEC-04 moved to v29.0). Plan17 merged PR 260 (88c8bdd8), fixed the landed tool by PR 264 (51a1885c), and the actual-main landed proof then passed 40 of 40 children with no base drift. The evidence PR (266) awaits its own allow; phase verification is then eligible.
+**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13, 15, 16 and 17 complete; 196-14 retired (SPEC-04 moved to v29.0). Plan17 merged PR 260 (88c8bdd8), fixed the landed tool by PR 264 (51a1885c), and the actual-main landed proof then passed 40 of 40 children with no base drift. The evidence PR (266) merged as 26aae156; phase verification passed 2026-10-29 (196-UAT.md 36/36, 196-SECURITY.md threats_open 0, 196-VERIFICATION.md 5/5).
 
 Plans:
 **Wave 1**
@@ -274,7 +274,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
-| 196. Spec and structure ratchet | 17/17 | Executed; SPEC-04 moved to v29.0, 196-14 retired; actual-main landed proof passed 40 of 40 (merge 51a1885c, no base drift); evidence PR 266 awaits a one-use allow, then verify-work | - |
+| 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 0/TBD | Not started | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |

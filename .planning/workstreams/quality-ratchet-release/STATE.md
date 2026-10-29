@@ -2,30 +2,29 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 17
-status: executing
-stopped_at: "196-17 complete: actual-main landed proof passed 40 of 40 on merge 51a1885c; evidence PR 266 awaiting a one-use allow to merge"
-last_updated: "2026-10-29T11:30:00.000Z"
-state_head: bb291f019740a20e5ea0d0c388a7416adf85bd1f
+current_plan: Not started
+status: ready_to_plan
+stopped_at: Phase 196 complete, ready to plan Phase 197
+last_updated: "2026-10-29T13:27:20.353Z"
+state_head: 45d195e5446859bec5a64533f34c4ab3c353a3f4
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 47
   completed_plans: 47
   percent: 100
-current_phase: 196
-current_phase_name: Spec and structure ratchet
-last_activity_desc: 196-17 landed proof passed 40 of 40 on merge 51a1885c (PR 264 fix of the landed tool; PR 260 landed as 88c8bdd8); evidence branch docs/196-landed-evidence-2; Phase 196 executed on main, verification pending the evidence PR merge
+current_phase: 197
+current_phase_name: Public docs truth
+last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
 ---
 
 ## Current Position
 
-Current Plan:17. Total Plans in Phase:17. Progress:[██████████]100%(47/47 plans).
-Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active phase196:17/17 plans executed (196-17 complete 2026-10-29: actual-main landed proof passed 40 of 40 on merge 51a1885c; see Exact Next Action; the 196-16 detail below is kept as written);196-14 retired, not executed to completion. 196-16 completed 2026-10-29: PR 260 is open on head `bb291f01` (base main `4ebe37fe`), Crosswake CI run 40791204733 concluded success on that exact head with all 49 check runs on it green, and `gate --stage pr-open` and `gate --stage ready` passed. GitHub's synthetic merge commit is `09222d0a` and is reported separately, not as head proof. The halt cause was fixed: the two ratchet tests now read their pinned main commit through `Crosswake.Test.GitObjectAt`, the example host `bandit` advisory was fixed on main (PR 261) and merged in, and a fresh 40-child candidate passed on the changed identity (roster bc288cde; both tools and the preserved roster digest unchanged), recorded as an amendment (`196-EVIDENCE/amendment-1-candidate-rerun.md`) with two retained failed runs. SPEC-04 stays moved to v29.0 (moved_to_v29, roster of 32 paths byte-identical). All seven in-scope requirements and GR-06 remain pending phase verification.
+Current Plan: Not started. Last completed phase: 196 (Spec and structure ratchet), 17/17 plans (196-14 retired, not executed to completion), completed 2026-10-29. It merged to main as PR 260 (`88c8bdd8`), the landed-tool fix PR 264 (`51a1885c`) and the evidence PR 266 (`26aae156`). The actual-main landed proof passed 40 of 40 on `51a1885c`. Phase verification on main `97ec5f7b`: 196-UAT.md 36/36 (zero-human, agent-run), 196-SECURITY.md 39/39 threats closed (threats_open 0, ASVS L1), 196-VERIFICATION.md passed 5/5, and the full core suite ran 2923 tests with 0 failures. SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 are complete; SPEC-04 is moved intact to v29.0. Active phase: 197 (Public docs truth), not started, no phase directory yet.
 
 ## Exact Next Action
 
-Phase 196 is merged to main (PR 260, merge commit `88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be`; landed-tool fix PR 264, merge commit `51a1885cfd50c9dc159a2591204da69510a2ffc4`). The actual-main landed proof PASSED on `51a1885c`: 40 of 40 children, no base drift, candidate identity equal, SPEC-04 moved_to_v29 with roster digest 44019928. The first landed proof (on `88c8bdd8`) failed with `landed_restoration_failed`; that record is `196-EVIDENCE/196-17-blocked-1-superseded.md`. The post-merge evidence (landed.json, delivery.json reconciliation, 196-VERIFICATION-INPUTS.md, 196-17-SUMMARY.md) is on branch `docs/196-landed-evidence-2` as PR 266. Next: merge the evidence PR (needs a fresh one-use allow from the user), then `/gsd-verify-work 196 --ws quality-ratchet-release`. Nothing is complete: SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 stay pending phase verification; SPEC-04 stays moved to v29.0.
+`/gsd-discuss-phase 197 --ws quality-ratchet-release` (no 197 CONTEXT.md exists yet). The Phase 196 verification commits (196-UAT.md, 196-SECURITY.md, 196-VERIFICATION.md and this transition) sit on branch `docs/196-uat`; they land through their own PR with Crosswake CI green on the head, and merging to main needs a fresh one-use allow.
 
 ## Carried debt
 
@@ -33,9 +32,9 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-10-29T11:30:00.000Z
-**Stopped at:** 196-17 complete; evidence PR open, awaiting merge allow
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-17-SUMMARY.md
+**Last session:** 2026-10-29T13:40:00.000Z
+**Stopped at:** Phase 196 complete, ready to plan Phase 197
+**Resume file:** None
 
 ## Accumulated Context
 
@@ -62,3 +61,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 ### Blockers
 
 None. The 196-16 halt is superseded (history in 196-EVIDENCE/196-16-halt-1-superseded.md).
+
+Carried concerns from Phase 196 verification (non-blocking):
+- [Phase 196] The grammar receipt (`main-grammar.json`, blob e0891db6) is stale on main since PR 265 commit 94d2d788 changed `test/js/ci_secret_masking.test.mjs` (timing bound only; 207/207 pass). The snapshot tools refuse at HEAD by design (`stale_measured_blob`, `main_ref_mismatch`); any later re-verification of promotion at HEAD needs a recapture or an amendment.
+- [Phase 196] Two candidate runs each failed one child with no observed cause (`example-host-proof`; `root-core-suite` 1 of 2920); the runner keeps only output hashes, so a recurring flake would stay undiagnosed.
+- [Phase 196] T-196-37 partial: `gateReady` does not rerun the SPEC-04 prose scan (medium, below block_on). `measure-main.mjs self-test` rewrites the tracked `196-EVIDENCE/measurement-controls.json` on each run. `MUEX-DECISION.md` still says the deferral is proposed; ROADMAP and REQUIREMENTS are authoritative. `196-VALIDATION.md` is still draft (the Nyquist audit was not completed).
