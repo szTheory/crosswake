@@ -26,7 +26,7 @@ The branch contains a few genuine library behavior fixes, so the title is a `fix
 
 ## Validation
 
-A 40-child candidate run on local head `d76d1507` (which contains main at `4ebe37fe`) produced a pass verdict: core suite 2920 tests, 0 failures; Swift package suite 89 tests, 0 failures; Android JVM package suite 12 tests, 0 failures; node suite 344 tests, 0 failures; the enabled manifest lane ran 11 tests and the enabled Threadline lane 5 tests with none excluded. An internal review ran three iterations plus a delta amendment with no open high or critical finding. Two earlier runs on the same bytes each failed one child (the example host stage, then the core suite) and both children passed when re-run alone; their records are retained in the phase evidence and the cause was not observed.
+A 40-child candidate run on local head `ffcba481` (which contains main at `4ebe37fe`) produced a pass verdict: core suite 2920 tests, 0 failures; Swift package suite 89 tests, 0 failures; Android JVM package suite 12 tests, 0 failures; node suite 344 tests, 0 failures; the enabled manifest lane ran 11 tests and the enabled Threadline lane 5 tests with none excluded. An internal review ran three iterations plus a delta amendment with no open high or critical finding. Two earlier runs on the previous bytes each failed one child (the example host stage, then the core suite) and both children passed when re-run alone; their records are retained in the phase evidence and the cause was not observed.
 
 Native proof is JVM-hermetic and Swift-package only. No emulator, device or feature-breadth claim is made.
 

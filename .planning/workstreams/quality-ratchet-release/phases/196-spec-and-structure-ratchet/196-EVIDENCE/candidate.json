@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "purpose": "phase196_candidate",
-  "head_sha": "d76d1507f17733460524e30f7d7be8fa1a72c20d",
+  "head_sha": "ffcba4813872ec7c5359cd3e4af7d3c8d152cd55",
   "main_sha": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
   "candidate_identity": {
-    "source_roster_sha256": "72e22d9916ccce3a79a73e5c8376d92a75a85751484ff7d9e66d70b53764235c",
+    "source_roster_sha256": "bc288cde60facd0139c792f9ea60234117bfb64a9c70d2e99e17a35081d891d0",
     "source_count": 1376,
     "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
     "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
@@ -42,7 +42,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1117,
+      "ms": 936,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -58,7 +58,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 790,
+      "ms": 762,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -74,7 +74,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1724,
+      "ms": 1602,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -90,7 +90,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1986323,
+      "ms": 1767435,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -106,7 +106,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 573562,
+      "ms": 560095,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -122,13 +122,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 567233,
+      "ms": 510917,
       "tests": 2920,
       "failures": 0,
       "excluded": 79,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "a45ac2aa71b1cc797de8c5174c47e8137f56bc847e7db70c6b06e9efd1c8ef1a"
+      "output_sha256": "730cadaf0bef627274394b9fac6855f6eac75e75ca8a532c94207e5f21a23a6a"
     },
     {
       "id": "browser-proof",
@@ -138,7 +138,7 @@
       "route": "asdf",
       "status": "pass",
       "exit": 0,
-      "ms": 20862,
+      "ms": 23003,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -154,7 +154,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 973,
+      "ms": 1101,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -170,13 +170,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 490,
+      "ms": 582,
       "tests": 89,
       "failures": 0,
       "excluded": 0,
       "skipped": 2,
       "counted": true,
-      "output_sha256": "6f494fbda57dceb5d3bb4a6a400d976bf546b92208a9c4a95439c388d284de78"
+      "output_sha256": "1998744c6a43c3e31a0ef51f41c11ce107902e99d923a671834a7c64734dfff6"
     },
     {
       "id": "android-package-proof",
@@ -186,7 +186,7 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 6352,
+      "ms": 7771,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -202,13 +202,13 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 4316,
+      "ms": 5311,
       "tests": 12,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "9af0b973227e8008fe06d4c3cefc9c01f7c825234603130480a5a5cd48c77b4d"
+      "output_sha256": "0ecea045eb6da323ffc8aea01a55e6c16bf261fd52ed50040bd8b92735a2f780"
     },
     {
       "id": "node-tests",
@@ -218,13 +218,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 19788,
+      "ms": 23304,
       "tests": 344,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "3ad54b03ab25ffa5db4c02beb73b99674bf52e12ef7e39f463aa068fa2e1544e"
+      "output_sha256": "fa53badb71b51e75ac4e8b7a7531e921c267471ec88d83429adf29cd3a3cfc91"
     },
     {
       "id": "format-explicit",
@@ -234,7 +234,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 304,
+      "ms": 366,
       "tests": null,
       "failures": null,
       "excluded": null,
@@ -252,13 +252,13 @@
       "route": "asdf",
       "status": "pass",
       "exit": 0,
-      "ms": 4204,
+      "ms": 5571,
       "tests": 11,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "b9eec305625fc144da6a7675e24430acda3aeffb95b9374a26dbc2bd5a829f57"
+      "output_sha256": "47e9d487d9011c9b81e8078db959f38997087b9e7e8034f8aa1c8361b400b1ab"
     },
     {
       "id": "threadline-lane",
@@ -270,13 +270,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1448,
+      "ms": 2021,
       "tests": 5,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "9faa3c4d260a346212b43a95eb2d24fe922da208e59d78194029c23dcfeb296e"
+      "output_sha256": "914c7d4e18b92f82f7f59526ab4d2b9cee1a93098fbec6ed834b4800f0d4236a"
     },
     {
       "id": "manifest-lane-default",
@@ -286,13 +286,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 4130,
+      "ms": 5822,
       "tests": 10,
       "failures": 0,
       "excluded": 1,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "8014bd976d3fa9728ba332bda01cd9a770daa1d9eb3f4007c3f7bc0781c29e82"
+      "output_sha256": "f231f055d02de04d6976d106a6c6bd10670be3b126625a851808149ca21f2fd3"
     },
     {
       "id": "threadline-lane-default",
@@ -302,13 +302,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1384,
+      "ms": 1907,
       "tests": 4,
       "failures": 0,
       "excluded": 1,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "eb90ee680af56c7d49207dbc3d46676dae11eab770c04b10fada94a1d259ab5b"
+      "output_sha256": "f0c4d2b5f26952f1c8e4f72f54187341eb86615e117ea7fae8a75202ddf63bc8"
     },
     {
       "id": "wire-contract",
@@ -320,13 +320,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 429,
+      "ms": 529,
       "tests": 19,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "0d5691b3bae9ea4791e925c0b74cbabb1dc433055394f973f5921319fe62c8e0"
+      "output_sha256": "19f69b2086d2d636a0e1218e97eb69918b784d1e4f0355f1c89f8e36e2c355e1"
     },
     {
       "id": "wire-version",
@@ -338,7 +338,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 333,
+      "ms": 469,
       "tests": null,
       "failures": null,
       "excluded": null,
@@ -357,7 +357,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 2445,
+      "ms": 3011,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -366,7 +366,7 @@
       "completed": 9,
       "owners": null,
       "counted": true,
-      "output_sha256": "50919d53994991d218a31d9e1309aa8f3bcedbdf8f9133c318726e1b77ec7509"
+      "output_sha256": "0fca85fbcdc38e3f878393d3fa053b2f17b1cb1b1065d5c036a806d6b8a249d4"
     },
     {
       "id": "vector-swift-request",
@@ -378,7 +378,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 90965,
+      "ms": 113000,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -387,7 +387,7 @@
       "completed": 14,
       "owners": null,
       "counted": true,
-      "output_sha256": "42668f9445525dee6f85238831a5ef3b19b8d4792256f07bd4b1dd77f1469ab3"
+      "output_sha256": "6040c55ba60ae0647d9e8ad18f9bedf9bc0eb9f3cc468b1c1f094843b72eb799"
     },
     {
       "id": "vector-swift-reply",
@@ -399,7 +399,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 100672,
+      "ms": 127025,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -408,7 +408,7 @@
       "completed": null,
       "owners": 1,
       "counted": true,
-      "output_sha256": "697f5ca3c6a5194f45ab136e84d7aa04054e4b9143e6f0d4eccae241e8c0225c"
+      "output_sha256": "14d94ec8a9ecf00f82c7dac971a88d6212a6665972ef997f4b7ff3c4891c23e7"
     },
     {
       "id": "vector-swift-metadata",
@@ -420,7 +420,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 257283,
+      "ms": 361919,
       "tests": 9,
       "failures": 0,
       "excluded": 0,
@@ -429,7 +429,7 @@
       "completed": null,
       "owners": 3,
       "counted": true,
-      "output_sha256": "015d77972e6cf041b6a13ca29e56e3549804fcaad95159345dea4bc29e01af6a"
+      "output_sha256": "db077a0bd1c03baa5bd4dd6c6a45444de4493a904c035a64ff45a9be803a4a00"
     },
     {
       "id": "vector-swift-topology",
@@ -441,7 +441,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 116387,
+      "ms": 286179,
       "tests": 5,
       "failures": 0,
       "excluded": 0,
@@ -450,7 +450,7 @@
       "completed": null,
       "owners": 1,
       "counted": true,
-      "output_sha256": "80791c787139d046b2805ca51adc24a45d25f78fe3d95ff0f315949fafee36dc"
+      "output_sha256": "6be5fbe7a6c42e3b570adecac51f471cce1d6a010bf1ef1c57a382708157bcc1"
     },
     {
       "id": "vector-kotlin-request",
@@ -462,7 +462,7 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 9460,
+      "ms": 26676,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
@@ -471,7 +471,7 @@
       "completed": null,
       "owners": 1,
       "counted": true,
-      "output_sha256": "f1ebb38224e00882f71a8d1053162daf821f0bd80f4d6c522a82d5b15eac57af"
+      "output_sha256": "a85b59e0f7702c2660555c85272117de560c647bef6b986dc8826904feab66d1"
     },
     {
       "id": "vector-kotlin-other",
@@ -483,7 +483,7 @@
       "route": "jdk17",
       "status": "pass",
       "exit": 0,
-      "ms": 17147,
+      "ms": 52994,
       "tests": 8,
       "failures": 0,
       "excluded": 0,
@@ -492,7 +492,7 @@
       "completed": null,
       "owners": 2,
       "counted": true,
-      "output_sha256": "f4ab82d23cd22358e770f64acb2bd7d04831ae3e1778c2d58341ecdfde0175a2"
+      "output_sha256": "1f612d9e619824a4303a9b9c587ef9830c74104d16af08612dbfe1f56e76d43e"
     },
     {
       "id": "absence-enforce",
@@ -504,7 +504,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 1476,
+      "ms": 4603,
       "tests": null,
       "failures": 0,
       "excluded": 0,
@@ -522,13 +522,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 30277,
+      "ms": 62626,
       "tests": 59,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "efb64053b9305c4ae34f8d745eb43adbcaeb4cfa4ceb308a86a4e52d9ba11f42"
+      "output_sha256": "66bd6085819221ecd03c48e26c7797748c10eaf18a95da90c98ba851b9c5c3a6"
     },
     {
       "id": "journal",
@@ -540,13 +540,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 616,
+      "ms": 727,
       "tests": 4,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "acf0ceddb71f68a75f010edbbb92c6f64ee26f9fe917bade46aa00485be90fb3"
+      "output_sha256": "6689230af4956718711328b8828715eaf24b5a501a4e447066f465af20cb7893"
     },
     {
       "id": "safe-observation",
@@ -558,13 +558,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 640,
+      "ms": 763,
       "tests": 11,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "17025894c4d9a864a53cba1ca1715bd100834f1e3f19ba536a098f208feb6ce6"
+      "output_sha256": "c0a0faf4b3b25c7ca265cfa0f3a28dcff979fe099973bd763953da8d13b4131b"
     },
     {
       "id": "policy-compiler",
@@ -576,13 +576,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 577,
+      "ms": 672,
       "tests": 9,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "f1680ce21e9a834ba1d4927b783cf416aeba58f74b2014869f3628961d613f1c"
+      "output_sha256": "fcc5f2eabb0c5ebc563aeaebbc410a978cf0bbedb3ff7cc654093caf49d667b9"
     },
     {
       "id": "policy-product-route",
@@ -594,13 +594,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 616,
+      "ms": 663,
       "tests": 28,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "37d36a5de244336050fc4984f5c0b33cc6d178d7f546c07080d60068fc4e11fc"
+      "output_sha256": "c2ec152d3dd7d0414e608c073a78c1b3214fc34afadd24e551e4ecb1f0f32c2e"
     },
     {
       "id": "compile-force",
@@ -612,7 +612,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 2732,
+      "ms": 2910,
       "tests": null,
       "failures": null,
       "excluded": null,
@@ -631,7 +631,7 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 447,
+      "ms": 538,
       "tests": null,
       "failures": null,
       "excluded": null,
@@ -649,13 +649,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 53756,
+      "ms": 61420,
       "tests": 15,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "90295d43abdf970e7eea36913ddfe6ef05fd02c605bf343351240faa4a8ef093"
+      "output_sha256": "2d724c209e60d96e2e4c20eb76ebdd90ab1e13f7e69dcb4bbe1eb6df179f3a89"
     },
     {
       "id": "location-router",
@@ -667,13 +667,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 445,
+      "ms": 763,
       "tests": 6,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "c760f619242c93798037d18cc2b8fc627a562ee0ca0ec67fae4b36b822e9b9d2"
+      "output_sha256": "4cf24622a783dbd9a0cb7b37d023f102e858782ed6c372fa872f5fab04686d6a"
     },
     {
       "id": "compatibility",
@@ -685,13 +685,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 590,
+      "ms": 891,
       "tests": 17,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "0e12485a6d0fa79462bc5ccfdd3c6c2262e7fd2453acb6f62a2d0361e867fed9"
+      "output_sha256": "39631feda2e3ee85b43a3c234713dd77acd5e62cbcb23ca0d0d2375b27e75c3a"
     },
     {
       "id": "rescue-boundary",
@@ -703,13 +703,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 9540,
+      "ms": 14282,
       "tests": 30,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "eb7f27432b37e6e085b9816178c848fb5564d04aacbc381db8a839657fec0a43"
+      "output_sha256": "2eba566163350f59e9894b1595e9089bd022f6a96dc6cce96359f83644171aa5"
     },
     {
       "id": "runtime-dependencies",
@@ -721,13 +721,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 64811,
+      "ms": 88929,
       "tests": 25,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "45c6528523027811fe8fcf12ef058848d4b8d440138198ac1898249cb502dbf5"
+      "output_sha256": "fe361e1932edb0ed62845ead1ddd15429a0aaebc61ef67208f19eb55e4ca30e0"
     },
     {
       "id": "secret-masking",
@@ -740,13 +740,13 @@
       "route": "plain",
       "status": "pass",
       "exit": 0,
-      "ms": 19575,
+      "ms": 21914,
       "tests": 207,
       "failures": 0,
       "excluded": 0,
       "skipped": 0,
       "counted": true,
-      "output_sha256": "0278b9f35e0ae1a0b139faabbb9e7d65e5f5a21cbe68a22f39cadbac831b8f59"
+      "output_sha256": "cc4439f9e94545e6ce1f066b847637760aa3b42bc22ef0767c39591467298255"
     }
   ],
   "requirement_map": {
@@ -797,10 +797,10 @@
   "review": {
     "path": ".planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-REVIEW.md",
     "iterations": 3,
-    "findings": 16,
+    "findings": 17,
     "open": 0,
     "open_high": 0,
-    "sha256": "e2495d531ad1a9de35d3016e39d17cbb39d223889abe9e57f44fff49b7d1a66d"
+    "sha256": "080f0cb59977799b35bebc619f31c4eb79e70ab7dd2944941ea475c5822a751c"
   },
   "verdict": "pass"
 }

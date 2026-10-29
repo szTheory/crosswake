@@ -17,7 +17,7 @@
       ],
       "cwd": "packages/crosswake-shell-core-ios",
       "exit": 0,
-      "durationMs": 464,
+      "durationMs": 536,
       "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
@@ -29,8 +29,8 @@
       ],
       "cwd": "packages/crosswake-shell-core-ios",
       "exit": 0,
-      "durationMs": 15808,
-      "outputSha256": "5769ecb6683e1eb7eb6589e895a3b9ed5513d0b44e105ef056268e88998b5349",
+      "durationMs": 17663,
+      "outputSha256": "a5054662d12c92b731963e0cb62f7242fd7ebf8d8bd7dab5564ba5a1fe29e92d",
       "tests": {
         "discovered": 3,
         "skipped": 0,
@@ -52,7 +52,7 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 0,
-          "durationMs": 407,
+          "durationMs": 428,
           "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         {
@@ -64,8 +64,8 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 1,
-          "durationMs": 14545,
-          "outputSha256": "ab7e86bbc66d00413e4cc76c646ebb5ecd46a88406d379731d2ff37d925ecb91",
+          "durationMs": 16686,
+          "outputSha256": "7636199ebf92f3afd7a6d1151ce92f5ca9aa4ca399b7e8a130c654f6d73f0ae7",
           "tests": {
             "discovered": 3,
             "skipped": 3,
@@ -87,7 +87,7 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 0,
-          "durationMs": 389,
+          "durationMs": 394,
           "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         {
@@ -99,8 +99,8 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 1,
-          "durationMs": 14514,
-          "outputSha256": "4e460a9ba778cc00d3bdb86d1841ede181efd9f16db712540a32f15248c259fa",
+          "durationMs": 18185,
+          "outputSha256": "19f857a8d8bf7109b0e0afa4249af21a0eadb02f4821a0afe0c73207830dae7c",
           "tests": {
             "discovered": 3,
             "skipped": 0,
@@ -122,7 +122,7 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 0,
-          "durationMs": 362,
+          "durationMs": 424,
           "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         {
@@ -134,8 +134,8 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 1,
-          "durationMs": 14271,
-          "outputSha256": "85790a1e0ed4e2f507f873738c3ffede1e49749f6a7a1304b2e838737a00adb5",
+          "durationMs": 20044,
+          "outputSha256": "4c732fdaa8d664a4df1b2087682343a7eb970cad490ecebf99a7f0e95b21f82f",
           "tests": {
             "discovered": 3,
             "skipped": 0,
@@ -157,7 +157,7 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 0,
-          "durationMs": 370,
+          "durationMs": 526,
           "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         {
@@ -169,8 +169,8 @@
           ],
           "cwd": "packages/crosswake-shell-core-ios",
           "exit": 1,
-          "durationMs": 14651,
-          "outputSha256": "224b1473f1a73c53b8255a48e06f0537656ce728f852de2e73bb53fe38054c81",
+          "durationMs": 19506,
+          "outputSha256": "01c971a4846b21699b1d7e9fff7afada795dadf0488e10c2d140429579c61afb",
           "tests": {
             "discovered": 3,
             "skipped": 0,
@@ -191,7 +191,7 @@
         ],
         "cwd": "packages/crosswake-shell-core-ios",
         "exit": 0,
-        "durationMs": 379,
+        "durationMs": 413,
         "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       {
@@ -203,8 +203,8 @@
         ],
         "cwd": "packages/crosswake-shell-core-ios",
         "exit": 0,
-        "durationMs": 14774,
-        "outputSha256": "188dae756a45cd74d779cb021dc6427e80d733aac7547bf51644a9e2059509b2",
+        "durationMs": 18156,
+        "outputSha256": "f0e4f21dbb4089053ef1e803e55a166bd136d30de79baa58ae630fea8e4b2509",
         "tests": {
           "discovered": 3,
           "skipped": 0,
@@ -213,5 +213,5 @@
       }
     ]
   },
-  "durationMs": 90938
+  "durationMs": 112968
 }

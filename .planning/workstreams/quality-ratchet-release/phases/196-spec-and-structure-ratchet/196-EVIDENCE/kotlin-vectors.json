@@ -35,9 +35,9 @@
                 "JAVA_HOME": "discovered-installed-jdk17"
               },
               "exit": 0,
-              "durationMs": 1861,
-              "outputSha256": "7de6e0640475bb2b05383c99ecb58e0b0370d90bd8fc77a31e723abd861784f8",
-              "reportSha256": "0e57bff71e903522fe15767c49bf160754ca6ca57ef561cab22949517bcb78a1",
+              "durationMs": 5410,
+              "outputSha256": "d2bb95f37fd819e2e94489270289e5392cc389a111a513a449d0e85b3c60d950",
+              "reportSha256": "813ce6cfa0a774ad147be6b47c59c23bb4a72f0136ff98eedd1b7fed6670e90d",
               "tests": {
                 "discovered": 3,
                 "skipped": 0,
@@ -66,9 +66,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1707,
-                  "outputSha256": "da8c511ea0dc773daf70b986b27c3df6ba36f28599f4ca92014eedbc18c5f865",
-                  "reportSha256": "ba2186b101cf512b696e0df3aa2a5016991a9d0e82d6b0a1217fbfb26e9c32ab",
+                  "durationMs": 3561,
+                  "outputSha256": "b65c6d9ddbec32713223d874ff3558f1c10d117dd8cc4b4f10f1a852aa63861f",
+                  "reportSha256": "5f2f1854161ae1cd556ec3ed23304ec795d1943ff3db6674a51ae5ec4e1f93b0",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -97,9 +97,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1485,
-                  "outputSha256": "e69b76f96d65d2280d7bfefa1421e119e30632e4ea0333088f003973abeed236",
-                  "reportSha256": "f31217a4b3384dfef5c8ac698797b49c47086e171a1e7303927433fbf9b8c6cc",
+                  "durationMs": 4259,
+                  "outputSha256": "ff7b0be387babfcf87a8f1af9a59c90dc110f8dd1422edadf4350cf3782f4e23",
+                  "reportSha256": "c38a16786df4e5c83fd9fa4029eeb540efb574cdb60ac300fd22980eb1a8d3f4",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -128,9 +128,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1399,
-                  "outputSha256": "e69b76f96d65d2280d7bfefa1421e119e30632e4ea0333088f003973abeed236",
-                  "reportSha256": "8a23541ac748580794aea1b4a7c6b91261e1b1b8a84d4557cfb153c3745f8cc5",
+                  "durationMs": 3321,
+                  "outputSha256": "13374ae06d7762c6cad66c7733b00d3be66ef3d171d188af7213e822f1b89400",
+                  "reportSha256": "be0002b29a2ee29cff971d3d1966186cabe451cc03d9c632085e25e271a384d3",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -159,9 +159,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1482,
-                  "outputSha256": "489ab320b4d5b1efc3953fea33bbe22191c9d31b193d090932e81184b9e317c0",
-                  "reportSha256": "57b7ab1f75ce8c85a4bd4a9fb11d0638699b11ddee351e3f055c47b6ff25ae9e",
+                  "durationMs": 4463,
+                  "outputSha256": "5645e9322cc24c81c400e813928401ee57a4290faf08d2457eb032f82db2bdd4",
+                  "reportSha256": "a1451517975f7d1d9bdf1f350ba40fdebc588f0fc686fd76c207ff1118001f1f",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -188,9 +188,9 @@
                   "JAVA_HOME": "discovered-installed-jdk17"
                 },
                 "exit": 0,
-                "durationMs": 1447,
-                "outputSha256": "830e1d2a7a4300db38feed7c25bfd047262b4bf07ed369a317f97852e6bc7a4f",
-                "reportSha256": "e866ed12611c5b12a51b4a837ffb0ae0fb20ca80f2b7a1c20f2b5c3d1861ba4a",
+                "durationMs": 5521,
+                "outputSha256": "d2bb95f37fd819e2e94489270289e5392cc389a111a513a449d0e85b3c60d950",
+                "reportSha256": "1895dc72aa9473738ab96ba71c53199c72f4b5e25e81665b81a39b07393c4701",
                 "tests": {
                   "discovered": 3,
                   "skipped": 0,
@@ -202,7 +202,7 @@
           }
         }
       ],
-      "durationMs": 9430
+      "durationMs": 26620
     },
     "kotlin-other": {
       "jdk": {
@@ -238,9 +238,9 @@
                 "JAVA_HOME": "discovered-installed-jdk17"
               },
               "exit": 0,
-              "durationMs": 1388,
-              "outputSha256": "830e1d2a7a4300db38feed7c25bfd047262b4bf07ed369a317f97852e6bc7a4f",
-              "reportSha256": "dd8b1b8f3649dcb168fffad4fd514f652aa465dac50f35a3e3c6e1969e735701",
+              "durationMs": 3358,
+              "outputSha256": "e499abd760321899b07ff4c76802348c1e276c13df3194f43b4fd3350351c2c8",
+              "reportSha256": "f277b43810c15aa95e38a29f2b9308a626419b550f52f64bc3ca4eb7612d530d",
               "tests": {
                 "discovered": 3,
                 "skipped": 0,
@@ -269,9 +269,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1428,
-                  "outputSha256": "c8ce4d8a5ff54dcc14b47cd06e6b5cb13ddbad213ab0a8094a68ad021805e6ee",
-                  "reportSha256": "b465502ebf67769c29a9f992efc4bdb0f2d4c029a26a03e776afc18373572601",
+                  "durationMs": 5873,
+                  "outputSha256": "fcdecc76cccb247fb82017098f5d0de18e4c314223ac880081918cd8e60d248b",
+                  "reportSha256": "eaa01989adeff6874b2bdd16630bdd9ebc94e5060b2e546721936d4edeaf360f",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -300,9 +300,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1447,
-                  "outputSha256": "918a1653a1c20f3b82e9a69d7312916af33d50b155bf718cb5790acb38849441",
-                  "reportSha256": "f36fe01747d7d7ff5646a46fdcf4447c8869243956e744142fcf1381633d96b5",
+                  "durationMs": 4032,
+                  "outputSha256": "1bbed920f85c7cb4272ae3d0109550f246521bcb9722216d6073f5f19b69a330",
+                  "reportSha256": "95072eebdb6a837c0f57fee4f9be27c1873f9f5a83cc8cb4356c6d0399875fba",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -331,9 +331,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1390,
-                  "outputSha256": "918a1653a1c20f3b82e9a69d7312916af33d50b155bf718cb5790acb38849441",
-                  "reportSha256": "bdfc297a70ace6a40beaf972599689008a4e9018a97704deee5b2c2d3d4e6542",
+                  "durationMs": 4614,
+                  "outputSha256": "089570ae1c284e97a915965ffc569bc0c0aeb8dad5faf82503f61aa2d77fd52a",
+                  "reportSha256": "05958c15c7ef28db9bd46d29c8faf201d854c886e9291034aed30bcc5bd5f7e9",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -362,9 +362,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1419,
-                  "outputSha256": "341168920f9e1f371fcd4ec99292e9a60881f039eefcefe0a9ddec19ddee0d28",
-                  "reportSha256": "8fee473c424171354b91161182c50aa7962ac75d0711594da060b036c4efd1fc",
+                  "durationMs": 4160,
+                  "outputSha256": "275eca666b82b6679fcde26c17a38cd78609192a398bc0bf51e6f3d06e141966",
+                  "reportSha256": "efa8449d9c4b4d0f0a20f67b2d7979cb59557241cd6bc2b46342af72e5f1ca50",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -393,9 +393,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1445,
-                  "outputSha256": "bf32da024b4c3ba50389170888ea81392ad3f7db98d2f0997be29946eaa1fbfa",
-                  "reportSha256": "e3ed4ee9b3482e9766e4ec1a9099934692a07e8d265f4670aa2c624c3cacf62e",
+                  "durationMs": 3484,
+                  "outputSha256": "4bc45630b5a3dace7953927c241ef2ec981a5e6a0c59cbfff26cc80fe4909772",
+                  "reportSha256": "ba0e6350246d760b1404177063a9eff6ffc0bd04eab02117f47a2258273ad245",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -422,9 +422,9 @@
                   "JAVA_HOME": "discovered-installed-jdk17"
                 },
                 "exit": 0,
-                "durationMs": 1420,
-                "outputSha256": "9556d619c1643c3857f351b27f8a8d61d4cc00575deb774050823f5793d99b5b",
-                "reportSha256": "1a5a49c852b6e15b3892b4a817ccf19348e8cc980f28a55e6575f5d8ff6d8d09",
+                "durationMs": 4847,
+                "outputSha256": "db91ace1dae76dd40e9e313511ff6e829906d0e1c0d74427e25679d88aaad0e5",
+                "reportSha256": "f2babc017920c43d5869a1d2f12192cb6f8d55642b032aa1feaa3dc4b456e248",
                 "tests": {
                   "discovered": 3,
                   "skipped": 0,
@@ -459,9 +459,9 @@
                 "JAVA_HOME": "discovered-installed-jdk17"
               },
               "exit": 0,
-              "durationMs": 1385,
-              "outputSha256": "830e1d2a7a4300db38feed7c25bfd047262b4bf07ed369a317f97852e6bc7a4f",
-              "reportSha256": "c671404255f98547c75766f92e2ffefcb460b7029380b6110b398630e882551b",
+              "durationMs": 4821,
+              "outputSha256": "f157a383318c27f2c336cd95a2895f0ee109d3ae2b088b64803a842b042ac374",
+              "reportSha256": "5139683613db950ded7d9707e482671fb291bbe029f9201bcb531195e91c1167",
               "tests": {
                 "discovered": 3,
                 "skipped": 0,
@@ -490,9 +490,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1411,
-                  "outputSha256": "3d34926152bee3a9b90e52af4f5c7b7cc4a198b382c7c423667bd50bf5236b3f",
-                  "reportSha256": "1baac85217bd43857d9c58fdfbe12438089dd0938ef25723ad7729945aeca6c5",
+                  "durationMs": 4414,
+                  "outputSha256": "07485446581908342bf58613203bfb452769cd550f2c0c9b67a78d40905737cb",
+                  "reportSha256": "8b94048e1537d316720e847d688399a101ee3360b9dc5dd48f5f194e4b54db9a",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -521,9 +521,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1491,
-                  "outputSha256": "d63aa2ccd5f380e8f21457a4bff89b9a9ae56d4bb4188c542d880713433e6055",
-                  "reportSha256": "75b2bf3c83d57dd710dbec19f560c324b766c2ddeb46e0d08ae120fd3743a52d",
+                  "durationMs": 4676,
+                  "outputSha256": "f5cdabc4e98f71068614b2acc725cb6da2309dea20bc8c1b39c09e329459971c",
+                  "reportSha256": "3ec16cbe667656b4f3c72a073475a822f86bef406143f8edba0652a2f56b7146",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -552,9 +552,9 @@
                     "JAVA_HOME": "discovered-installed-jdk17"
                   },
                   "exit": 1,
-                  "durationMs": 1479,
-                  "outputSha256": "d63aa2ccd5f380e8f21457a4bff89b9a9ae56d4bb4188c542d880713433e6055",
-                  "reportSha256": "a39e56c315d2cf748a05bd24bdc5d240f0b5f95fdf4e2bee83c1442d6782bcfb",
+                  "durationMs": 4666,
+                  "outputSha256": "78a405640fb97f2c3ce0a57bad93acce11834b00a44b00229b3a5f5125b4e349",
+                  "reportSha256": "7216246dabef9f03eda149015505d6944fe901a9ab8708dad338df59abfbcbfb",
                   "tests": {
                     "discovered": 3,
                     "skipped": 0,
@@ -581,9 +581,9 @@
                   "JAVA_HOME": "discovered-installed-jdk17"
                 },
                 "exit": 0,
-                "durationMs": 1353,
-                "outputSha256": "830e1d2a7a4300db38feed7c25bfd047262b4bf07ed369a317f97852e6bc7a4f",
-                "reportSha256": "85ca713dfe51e9fc01b33a0831514963d1b79333a3ea4a19a7b303a5037bc8d5",
+                "durationMs": 3856,
+                "outputSha256": "e499abd760321899b07ff4c76802348c1e276c13df3194f43b4fd3350351c2c8",
+                "reportSha256": "55b042a062c72274933cb2caae98aa6886a2f0c64b5fd3a9d84888c9151f5c17",
                 "tests": {
                   "discovered": 3,
                   "skipped": 0,
@@ -595,7 +595,7 @@
           }
         }
       ],
-      "durationMs": 17118
+      "durationMs": 52924
     }
   },
   "inventory": [
