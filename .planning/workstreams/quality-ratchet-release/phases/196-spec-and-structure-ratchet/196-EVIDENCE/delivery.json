@@ -88,5 +88,106 @@
     "polls": 36,
     "recorded_after_head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
     "note": "Recorded in a local commit after the push; the PR head stays bb291f01."
+  },
+  "attempt": {
+    "scope": "merge_pr_to_main",
+    "pr": 260,
+    "head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+    "base": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+    "decision": "allow",
+    "consumed": false,
+    "at": "2026-10-29T01:41:43Z"
+  },
+  "attempt_context": {
+    "title": "fix(196): make spec and structure ratchets fail on empty evidence",
+    "url": "https://github.com/szTheory/crosswake/pull/260",
+    "merge_method": "merge_commit",
+    "merge_command": "gh pr merge 260 --merge --match-head-commit bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+    "branch_deletion": "none",
+    "repository_setting_change": "none",
+    "publish": "none",
+    "tag": "none",
+    "ci": {
+      "workflow": "Crosswake CI",
+      "run_id": 40791204733,
+      "event": "pull_request",
+      "conclusion": "success",
+      "check_runs": 49,
+      "check_runs_head_sha": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+      "ready_gate_rerun_at": "2026-10-29T01:41:43Z",
+      "ready_gate_result": "pass"
+    },
+    "github_synthetic_merge_sha": "09222d0a57a4d25c7b49d110ea6dfd764b149277",
+    "synthetic_is_not_head_proof": true,
+    "candidate_identity": {
+      "source_roster_sha256": "bc288cde60facd0139c792f9ea60234117bfb64a9c70d2e99e17a35081d891d0",
+      "source_count": 1376,
+      "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
+      "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf",
+      "preserved_roster_sha256": "44019928d4a0f12252339781c7269fc24550e826757cdd56231a5be520aa45f2"
+    },
+    "tools_unchanged": {
+      "phase_evidence_sha256": "b4c1124e7d131088d9200bdda275c506d89d11c4bdb440170fe25bb225e6e1bd",
+      "measure_main_sha256": "af5acfc3325eba95baab8bb4dd75e0d3bf5d10dd995fbf1024f7548e88d7ccaf"
+    },
+    "attempt_rule": "The PR head must stay exactly the displayed head through allow, merge write and merge. No commit is pushed to the PR branch after display. Any head, base, CI or scope change invalidates the attempt and needs a fresh display and decision.",
+    "residual_risk": "GitHub cannot guard the base. If main advances between the final read and the merge call, the merge can land on a newer base; landed proof records base_drift_at_write and recovery is fix-forward with no revert.",
+    "evidence_plan": {
+      "branch": "docs/196-landed-evidence",
+      "created_from": "actual merge commit",
+      "pr_target": "main",
+      "merge_of_that_pr": "needs its own later one-use allow"
+    }
+  },
+  "auto_delete_observation": {
+    "setting": "delete_branch_on_merge",
+    "value": false,
+    "observed_at": "2026-10-29T01:41:43Z",
+    "source": "gh api repos/szTheory/crosswake --jq .delete_branch_on_merge",
+    "earlier_reading_this_attempt": true,
+    "earlier_reading_outcome": "read true on three reads before the change; plan 196-17 held with no mutation",
+    "setting_changed_during_this_attempt": true,
+    "changed_by": "explicit user decision, separate from and not part of the merge approval; applied by the orchestrator; read-back false",
+    "earlier_auto_delete_effect": {
+      "pr": 261,
+      "head_branch": "fix/bandit-advisory",
+      "merged_at": "2026-10-28T18:38:33Z",
+      "merge_commit": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+      "head_branch_on_remote_now": false
+    }
+  },
+  "approval": {
+    "status": "consumed",
+    "scope": "merge_pr_to_main",
+    "pr": 260,
+    "head": "bb291f019740a20e5ea0d0c388a7416adf85bd1f",
+    "base": "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+    "decision": "allow",
+    "at": "2026-10-29T01:52:57Z",
+    "note": "One-use allow bound to this attempt. Recorded locally before the merge write; never pushed. Consumed is recorded only on the evidence branch.",
+    "merge_commit": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+    "consumed_at": "2026-10-29T01:53:27Z"
+  },
+  "reconciliation": {
+    "merge_commit": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+    "merge_parents": [
+      "4ebe37fe893f8ef420379d1f27c83bca37c0ce33",
+      "bb291f019740a20e5ea0d0c388a7416adf85bd1f"
+    ],
+    "merged_at": "2026-10-29T01:53:27Z",
+    "base_drift_at_write": false,
+    "landed_as_displayed": true,
+    "merge_call": "gate merge with execute, one guarded merge-commit call, exit 0; read back from the remote after the call",
+    "head_branch_still_on_remote": true,
+    "auto_delete_setting_after_merge": false,
+    "branch_deletion": "none",
+    "approval_ref": "refs/crosswake/196-17-approval, local only, never pushed",
+    "landed_proof_verdict": "fail",
+    "landed_proof_cause": "landed_restoration_failed"
+  },
+  "evidence": {
+    "branch": "docs/196-landed-evidence",
+    "created_from": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
+    "pr": null
   }
 }
