@@ -1045,9 +1045,11 @@ function inventoryHash(root) {
 // ---- isolated landed run
 const LANDED_WORKTREE = "crosswake-196-landed";
 const LANDED_LEDGER = "crosswake-196-landed-children.json";
-// Ignored caches the children rely on. They are cloned (copy-on-write where the volume supports it) into the worktree, so
-// the main checkout's copies are only read. A cache that is absent simply is not warmed; the child then bootstraps or fails closed.
-const WARM_NAMES = new Set(["_build", "deps", "node_modules", ".build", "build", ".gradle", "local.properties"]);
+// Only path-independent fetched inputs are cloned (copy-on-write where the volume supports it) into the worktree, so the
+// main checkout's copies are only read. Build outputs are never cloned: SwiftPM module caches record the absolute build
+// path and refuse a moved copy, and stale Gradle or Mix output could be credited by a child. Every build starts cold,
+// as it does in CI. A fetched input that is absent is not warmed; the child then fetches it or fails closed.
+const WARM_NAMES = new Set(["deps", "node_modules", "local.properties"]);
 function commonGitDir(root) { return path.resolve(root, git(root, ["rev-parse", "--git-common-dir"])); }
 // Per-child results persist to a file in the git dir after every child. Earlier ledgers are rotated, never overwritten.
 function landedLedger(root) {
@@ -1447,13 +1449,14 @@ async function selfTestMerge(root) {
 // file must not disturb the main checkout, per-child results survive any refusal, and the linked worktree is always removed.
 function landedFixture() {
   const f = fixtureRepo();
-  f.put(".gitignore", "_build/\n"); f.g("add", ".gitignore");
+  f.put(".gitignore", "_build/\ndeps/\n"); f.g("add", ".gitignore");
   mkdirSync(path.join(f.root, ".planning/ev"), { recursive: true });
   f.put(".planning/ev/x-vectors.json", `${JSON.stringify({ d: 1 })}\n`); f.g("add", ".planning/ev/x-vectors.json");
   f.g("commit", "-q", "-m", "evidence receipt");
-  mkdirSync(path.join(f.root, "_build"), { recursive: true }); f.put("_build/cache.txt", "warm\n");
+  mkdirSync(path.join(f.root, "_build"), { recursive: true }); f.put("_build/cache.txt", "stale build output\n");
+  mkdirSync(path.join(f.root, "deps"), { recursive: true }); f.put("deps/cache.txt", "fetched\n");
   const rewrite = "require('fs').writeFileSync('.planning/ev/x-vectors.json', JSON.stringify({ d: Date.now() }) + '\\n');" +
-    "console.log(require('fs').existsSync('_build/cache.txt') ? 'warm' : 'cold');";
+    "console.log(require('fs').existsSync('deps/cache.txt') && !require('fs').existsSync('_build/cache.txt') ? 'warm' : 'cold');";
   const child = (id, code, lastLine) => ({ id, req: [], kind: "version", route: "plain", command: process.execPath, args: ["-e", code], cwd: ".", expect: { lastLine } });
   return { ...f, rewrite, child, mergeSha: ref40(f.root, "HEAD") };
 }
@@ -1480,7 +1483,7 @@ async function landedIsolationControls() {
     assert.equal(receipt(), before.receipt); assert.equal(git(f.root, ["branch", "--show-current"]), before.branch); assert.equal(ref40(f.root, "HEAD"), before.head);
     assert.equal(existsSync(wt), false); assert.equal(worktrees(), 1);
     assert.equal(ledger().children.length, 1); assert.equal(ledger().phase, "complete"); assert.equal(ledger().cleanup, "removed");
-    assert.ok(Array.isArray(ledger().warmed) && ledger().warmed.includes("_build"), "ignored caches are cloned into the worktree");
+    assert.deepEqual(ledger().warmed, ["deps"], "fetched inputs are cloned into the worktree and build output never is");
     // A failing child is judged, kept in the ledger, and the run continues to the next child.
     const failing = await runLandedRegistry(f.root, f.mergeSha, { registry: [f.child("bad", "process.exit(3)", "x"), f.child("after", f.rewrite, "warm")], progress: false });
     assert.deepEqual(failing.children.map((c) => `${c.id}:${c.status}`), ["bad:fail", "after:pass"]);
