@@ -115,9 +115,11 @@ defmodule Crosswake.Proof.Phase161_1NavigationGateIntegrityTest do
     dedicated = "mix " <> @phase41_dedicated_command
     broad = "mix " <> @phase41_hosted_broad_command
 
+    # The hosted Phase 41 lane runs only the dedicated nested-process half. The broad half
+    # of the partition runs once per PR through `mix verify` in phase130-core-hermetic-proof
+    # (asserted above through the alias contract), so it must not be repeated here.
     assert length(:binary.matches(phase41_commands, dedicated)) == 1
-    assert length(:binary.matches(phase41_commands, broad)) == 1
-    assert :binary.match(phase41_commands, dedicated) < :binary.match(phase41_commands, broad)
+    assert :binary.match(phase41_commands, broad) == :nomatch
     assert phase41_commands =~ "mix test test/crosswake/proof/phase41_gating_doctor_test.exs"
   end
 

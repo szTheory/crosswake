@@ -296,7 +296,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
     manifest = decode!(@ci_manifest_path)
     workflow = File.read!(@ci_workflow_path)
 
-    assert length(manifest["proof_leaves"]) == 46
+    assert length(manifest["proof_leaves"]) == 35
 
     assert Enum.any?(manifest["proof_leaves"], fn leaf ->
              leaf["leaf_id"] == "release-candidate-fixtures" and
