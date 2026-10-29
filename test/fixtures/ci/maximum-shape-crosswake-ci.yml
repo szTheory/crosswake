@@ -143,36 +143,18 @@ jobs:
     steps:
       - run: "true"
     name: phase18-ios-proof
-  phase23-commerce-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase23-commerce-proof
   phase41-gating-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - run: "true"
     name: phase41-gating-proof
-  phase48-provider-adapter-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase48-provider-adapter-proof
   phase5-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - run: "true"
     name: phase5-proof
-  phase52-operator-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase52-operator-proof
   phase58-auth-closeout-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -185,42 +167,6 @@ jobs:
     steps:
       - run: "true"
     name: phase67-android-jvm-proof
-  phase69-closeout-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase69-closeout-proof
-  phase70-subscription-saas-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase70-subscription-saas-proof
-  phase71-notification-workflow-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase71-notification-workflow-proof
-  phase73-auth-sensitive-admin-workflow-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase73-auth-sensitive-admin-workflow-proof
-  phase74-offline-draft-recovery-proof:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase74-offline-draft-recovery-proof
-  phase75-closeout-gate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - run: "true"
-    name: phase75-closeout-gate
   phase79-android-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -281,6 +227,12 @@ jobs:
     steps:
       - run: "true"
     name: route-tour-proof
+  small-hermetic-proofs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: small-hermetic-proofs
 
   merge-blocking-crosswake-ci:
     name: Crosswake CI
@@ -307,19 +259,10 @@ jobs:
       - phase132-core-hermetic-proof
       - phase18-elixir-android-proof
       - phase18-ios-proof
-      - phase23-commerce-proof
       - phase41-gating-proof
-      - phase48-provider-adapter-proof
       - phase5-proof
-      - phase52-operator-proof
       - phase58-auth-closeout-proof
       - phase67-android-jvm-proof
-      - phase69-closeout-proof
-      - phase70-subscription-saas-proof
-      - phase71-notification-workflow-proof
-      - phase73-auth-sensitive-admin-workflow-proof
-      - phase74-offline-draft-recovery-proof
-      - phase75-closeout-gate
       - phase79-android-proof
       - phase79-ios-proof
       - phase96-threadline-docs-contract-proof
@@ -330,6 +273,7 @@ jobs:
       - release-candidate-fixtures
       - release-candidate-full-proof
       - route-tour-proof
+      - small-hermetic-proofs
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

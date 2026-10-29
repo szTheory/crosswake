@@ -5,7 +5,7 @@ defmodule Crosswake.Planning.CloseoutCIParityTest do
 
   test "phase 69 merge-blocking proof lane runs milestone closeout checks" do
     workflow = File.read!(@workflow)
-    merge_blocking = job_section!(workflow, "phase69-closeout-proof")
+    merge_blocking = job_section!(workflow, "small-hermetic-proofs")
 
     assert merge_blocking =~ "mix compile --warnings-as-errors"
 
