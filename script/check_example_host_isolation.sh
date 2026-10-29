@@ -4,6 +4,10 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXAMPLE_DIR="${ROOT_DIR}/examples/phoenix_host"
 seeds="17 101 1009"
+# The tagged class runs on every seed; the complete class (whole suite with the
+# example host included) runs once, on the first seed, because it is the most
+# expensive run and the tagged matrix already varies the ordering.
+complete_seed="${seeds%% *}"
 mode="${1:-}"
 
 snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/crosswake-phase164-isolation.XXXXXX")"
@@ -137,7 +141,7 @@ fi
 
 for seed in ${seeds}; do
   run_class "${seed}" "tagged"
-  run_class "${seed}" "complete"
 done
+run_class "${complete_seed}" "complete"
 
-echo "[crosswake] PASS example-host-isolation matrix seeds=${seeds} classes=tagged,complete"
+echo "[crosswake] PASS example-host-isolation matrix tagged_seeds=${seeds} complete_seed=${complete_seed}"

@@ -573,10 +573,15 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+      # Keyed per job (default scope) and per working directory, so this lane's
+      # root test tree and example-host dev tree never share a cache with other lanes.
+      - uses: ./.github/actions/setup-elixir-cache
         with:
-          version-file: .tool-versions
-          version-type: strict
+          mix-env: test
+      - uses: ./.github/actions/setup-elixir-cache
+        with:
+          mix-env: dev
+          working-directory: examples/phoenix_host
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22.14.0"

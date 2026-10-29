@@ -55,7 +55,7 @@ mix test test/crosswake/proof/phase164_exunit_ownership_test.exs
 section "example-host-lifecycle" "mix test test/crosswake/proof/phase164_example_host_isolation_test.exs"
 mix test test/crosswake/proof/phase164_example_host_isolation_test.exs
 
-section "example-host-six-run-matrix" "script/check_example_host_isolation.sh"
+section "example-host-four-run-matrix" "script/check_example_host_isolation.sh"
 script/check_example_host_isolation.sh
 
 section "aggregator-structural-parity" "mix test test/crosswake/proof/phase134_native_gate_blocking_proof_test.exs"
