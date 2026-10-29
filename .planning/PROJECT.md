@@ -76,7 +76,7 @@ v28.0 Truth and Release Train (phases 194–199, started 2026-10-24): land the b
 
 Workstream: Quality Ratchet & Release. Phases 194–199; 30 requirements. [Roadmap](workstreams/quality-ratchet-release/ROADMAP.md), [requirements](workstreams/quality-ratchet-release/REQUIREMENTS.md), [scope](workstreams/quality-ratchet-release/v28.0-SCOPE.md).
 
-Phase 194 (Bearings reset and ADR amendments) completed 2026-10-25. It added BEARINGS, ROADMAP-ROLLING and PERSONAS, a short STATE, and `script/bearings-report`. ADR amendments A1 (Android unfrozen for proof and parity) and A2 (the synthetic-profile reversal gate) changed every rule text together. Phase 195 (Pipeline repair and hygiene) completed 2026-10-27:21/21 plans, passed8/8; the release pipeline and current bot PR are green, supported secret-shape diagnostics are proven on actual main, and hygiene/published cleanroom evidence is retained. Phase196 (Spec and structure ratchet) is next; GR-06 is its accepted receiver and the original cleanroom debt remains with Phase197.
+Phase 194 (Bearings reset and ADR amendments) completed 2026-10-25. It added BEARINGS, ROADMAP-ROLLING and PERSONAS, a short STATE, and `script/bearings-report`. ADR amendments A1 (Android unfrozen for proof and parity) and A2 (the synthetic-profile reversal gate) changed every rule text together. Phase 195 (Pipeline repair and hygiene) completed 2026-10-27:21/21 plans, passed8/8; the release pipeline and current bot PR are green, supported secret-shape diagnostics are proven on actual main, and hygiene/published cleanroom evidence is retained. Phase 196 (Spec and structure ratchet) completed 2026-10-29: 17/17 plans (196-14 retired), actual-main landed proof 40 of 40 on 51a1885c, UAT 36/36, security 39/39 closed, verification 5/5. Sensitive offline, policy and bridge specs can no longer pass empty, and compile-cycle, bare-rescue, runtime-dependency and absence ratchets hold on main; GR-06 is closed; SPEC-04 (Muex pilot) moved intact to v29.0. Phase 197 (Public docs truth) is next and keeps the original cleanroom debt (WR-04/05/06, IN-03).
 
 ### v27.0 Land and Clean Up (Phases 189–193) — shipped 2026-10-24
 
@@ -314,6 +314,8 @@ Crosswake shipped `v3.2 Commerce And Entitlement Seams` on `2026-05-27`.
 ## Requirements
 
 ### Validated
+
+- ✓ **SPEC-01..03, SPEC-05, ARCH-01..03** Specs that cannot pass empty (pinned vector counts in Elixir, Swift and Kotlin; delta-only absence guard in enforce mode), offline scope and observation boundary specs, an exhaustive 108-case route-policy oracle, and compile-cycle, bare-rescue and runtime-dependency ratchets, each with negative controls; GR-06 derived-secret grammar closed. Native proof stops at JVM-hermetic and Swift-package. SPEC-04 moved to v29.0. — v28.0 Phase 196.
 
 - ✓ **REL-01..06, HYG-01..02** Pipeline repair, supported secret-shape masking, recurring CI, grouped updates, published cleanroom and repository hygiene. Current main proof and release-head CI passed; historical HYG override retained. — v28.0 Phase195.
 
@@ -650,4 +652,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-27 after Phase195 (v28.0); v24/v23 debt and parked adopter gates remain unchanged.*
+*Last updated: 2026-10-29 after Phase 196 (v28.0); v24/v23 debt and parked adopter gates remain unchanged.*
