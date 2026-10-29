@@ -168,7 +168,7 @@ Round-3 result: REL-03 is complete from fresh actual-main proof on b8398c38; all
   3. [Moved to v29.0 with SPEC-04; not a v28 gate] A Muex pilot record covers `SafeObservation`, `Journal`, `Policy.Compiler`/`Route` and `Bridge.Contract` with a non-zero mutant count, a wrapper that fails on zero mutants, baseline scores, runtime, survivors keyed by file + mutator + normalized text, and a written adopt/drop decision; `mix.exs` and `mix.lock` contain no Muex dependency.
   4. A test fails on any compile-label xref cycle (the `bridge/contract`, `bridge/denial`, `manifest/types`, `shell/denial` cycle is broken) and on an all-cycles count above the committed baseline; an AST test fails on bare `rescue _ ->` in the `bridge`, `policy`, `router`, `offline`, `manifest` and `compatibility` modules (the three in `bridge.ex` now return explicit results); a test fails when a package's runtime direct deps differ from the committed list with one-line justifications; each ratchet has a negative control.
 
-**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13, 15 and 16 complete; 196-14 retired (SPEC-04 moved to v29.0); plan17 pending.
+**Plans**: 17 plans, 41 tasks; sequential waves 1–17 in one main checkout. Plans01–13, 15 and 16 complete; 196-14 retired (SPEC-04 moved to v29.0); plan17 merged PR 260 to main (88c8bdd8) but the actual-main landed proof is blocked (landed_restoration_failed), so Phase 196 is not yet verifiable.
 
 Plans:
 **Wave 1**

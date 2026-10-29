@@ -4,8 +4,8 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 17
 status: executing
-stopped_at: "Completed 196-16-PLAN.md: PR 260 head bb291f01, Crosswake CI green on that head, gate ready passed"
-last_updated: "2026-10-29T01:00:00.000Z"
+stopped_at: "196-17 merged PR 260 as 88c8bdd8 (two parents, no base drift); actual-main landed proof refused landed_restoration_failed; blocked, fix-forward needed"
+last_updated: "2026-10-29T03:30:00.000Z"
 state_head: bb291f019740a20e5ea0d0c388a7416adf85bd1f
 progress:
   total_phases: 3
@@ -15,7 +15,7 @@ progress:
   percent: 98
 current_phase: 196
 current_phase_name: Spec and structure ratchet
-last_activity_desc: 196-16 completed; PR 260 head bb291f01 has Crosswake CI green (run 40791204733) and gate ready passed; fresh 40-child candidate on the final identity
+last_activity_desc: 196-17 merged PR 260 once (88c8bdd8, parents 4ebe37fe and bb291f01); actual-main landed proof refused landed_restoration_failed; evidence branch docs/196-landed-evidence; Phase 196 executed on main but not verifiable
 ---
 
 ## Current Position
@@ -25,7 +25,7 @@ Last completed phase:195,21/21 plans,passed8/8 on actual main b8398c38. Active p
 
 ## Exact Next Action
 
-`/gsd-execute-phase 196 --ws quality-ratchet-release` runs 196-17 next (fresh one-use main merge and actual-main phase proof). It needs a fresh one-use user `allow` bound to the displayed PR 260, head `bb291f019740a20e5ea0d0c388a7416adf85bd1f`, base `4ebe37fe893f8ef420379d1f27c83bca37c0ce33` and that head's CI result (run 40791204733, success). Do not push to the PR branch before the merge: any new commit on it changes the head and voids the attempt. The local branch is ahead of the remote head by planning-only commits (this state and the 196-16 summary), so 196-17's gates must be run with the remote head `bb291f01` as the one displayed. `measure-main.mjs verify-source` refuses `main_ref_mismatch` while main is past b8398c38; this is expected and recorded in review finding R-15. Do not edit `phase-evidence.mjs` or `measure-main.mjs` without a fresh candidate run.
+Phase 196 is merged to main (PR 260, merge commit `88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be`, parents `4ebe37fe` and `bb291f01`) but is NOT verifiable: the actual-main landed proof refused `landed_restoration_failed` and retained no per-child result (see `196-17-BLOCKED.md`, `196-EVIDENCE/landed.json`). `/gsd-verify-work 196` is not eligible. Next: branch `fix/196-landed-restoration-tracked-evidence` from current origin/main so the landed proof runs its vector children without rewriting tracked evidence (the tool change needs a fresh candidate run, then the normal PR, CI and a fresh one-use merge), then rerun the landed proof. The evidence PR from `docs/196-landed-evidence` needs its own later one-use allow to merge. Nothing is complete: SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 stay pending phase verification; SPEC-04 stays moved to v29.0.
 
 ## Carried debt
 
@@ -34,8 +34,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 ## Session
 
 **Last session:** 2026-10-29T01:00:00.000Z
-**Stopped at:** Completed 196-16-PLAN.md
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-17-PLAN.md
+**Stopped at:** 196-17 merged; landed proof blocked
+**Resume file:** .planning/workstreams/quality-ratchet-release/phases/196-spec-and-structure-ratchet/196-17-BLOCKED.md
 
 ## Accumulated Context
 
