@@ -52,6 +52,14 @@ one coherent set ("Lock all").
   `NOT_APPLICABLE`; the leg FAILs if any of the bridge-hook, esbuild, `attach/1` or `:ios_host`
   steps is NOT_APPLICABLE, and FAILs when `executed` is below a pinned floor. Prefer keeping
   unreleased behavior out of these two files (CHANGELOG `[Unreleased]` instead).
+  **Amended 2026-10-29 (plan-check B-1, user decision):** 0.2.11 (`7273e6cf`) does not read
+  `config :crosswake, :ios_host`; it landed in Phase 179 after the release. The `:ios_host` step
+  carries `since=0.2.12`, reports `NOT_APPLICABLE` against 0.2.11 and is recorded in the Phase 197
+  evidence as a named deferral, never counted as executed or passed. It is the only required
+  step exempt from the NOT_APPLICABLE FAIL rule, and only while the version under test is below
+  0.2.12. The bridge-hook, esbuild and `attach/1` steps must still execute. Phase 199 (0.2.12)
+  must execute the `:ios_host` step with no exemption. The D-05 marker test still requires the
+  `:ios_host` token in both files.
 - **D-05:** Network-free marker test (ExUnit, in the normal suite) fails when a fence in scope has
   no marker, a `run` block mentions `script/`, `bash script` or `examples/`, a `clone` block lacks
   its label, or the combined run/apply blocks lack the required tokens (bridge hook,
