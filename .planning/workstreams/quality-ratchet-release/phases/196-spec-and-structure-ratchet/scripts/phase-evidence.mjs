@@ -657,10 +657,15 @@ function supportedTreeClean(root) {
   const untracked = git(root, ["ls-files", "--others", "--exclude-standard"]).split("\n").filter(Boolean);
   return [...changed, ...untracked].every((name) => name.startsWith(".planning/"));
 }
-function expandArgs(root, args) {
+// The main commit PR 260 was displayed against (the first parent of its merge commit). The explicit-format child reads
+// the Elixir files changed since it, not since origin/main: before the merge the two are the same commit, and after the
+// merge origin/main contains the work, so a diff against it is empty and the child would prove nothing (found when the
+// candidate rerun refused format_scope_empty on a branch with no Elixir change against the merged main).
+const FORMAT_BASE = "4ebe37fe893f8ef420379d1f27c83bca37c0ce33";
+function expandArgs(root, args, formatBase = FORMAT_BASE) {
   return args.flatMap((arg) => {
     if (arg === "@changed-elixir") {
-      const files = git(root, ["diff", "--name-only", "--diff-filter=ACMRT", "origin/main", "HEAD", "--", "*.ex", "*.exs"]).split("\n").filter(Boolean)
+      const files = git(root, ["diff", "--name-only", "--diff-filter=ACMRT", formatBase, "HEAD", "--", "*.ex", "*.exs"]).split("\n").filter(Boolean)
         .filter((name) => existsSync(path.join(root, name)));
       return files;
     }
