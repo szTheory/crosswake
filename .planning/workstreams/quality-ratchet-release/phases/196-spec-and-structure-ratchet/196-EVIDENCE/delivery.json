@@ -188,6 +188,13 @@
   "evidence": {
     "branch": "docs/196-landed-evidence",
     "created_from": "88c8bdd88c234c7d9c6b4cc8dbcc2fc9d63fe1be",
-    "pr": null
+    "pr": {
+      "number": 263,
+      "url": "https://github.com/szTheory/crosswake/pull/263",
+      "base_ref": "main",
+      "first_pushed_head": "66726f482687f2bc280e182449cbead82ae993ec"
+    },
+    "merge_of_this_pr": "needs its own later one-use allow; not requested here",
+    "ci_note": "Observed on the final pushed head; the synthetic merge commit is reported separately in the plan summary."
   }
 }
