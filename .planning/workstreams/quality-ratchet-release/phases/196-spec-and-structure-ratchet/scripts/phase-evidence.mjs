@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -638,6 +638,8 @@ function reviewState(text) {
 
 // ---------------------------------------------------------------- candidate: runner
 const BRANCH = "fix/spec-structure-ratchet";
+// The landed-restoration fix branch is a second place the candidate may run, because the tool is part of the candidate identity.
+const CANDIDATE_BRANCHES = [BRANCH, "fix/196-landed-restoration"];
 const PRIVACY = `.planning/workstreams/quality-ratchet-release/phases/193-cleanup-and-new-working-rules/scripts/privacy-193.sh`;
 const CANDIDATE = `${EVIDENCE}/candidate.json`;
 const REVIEW = `${PHASE}/196-REVIEW.md`;
@@ -706,7 +708,7 @@ async function runEntry(root, entry, routes) {
   result.counts = parser ? (entry.kind === "vector" ? parser(output, entry.mode) : entry.kind === "stage" ? parser(output, entry.stage) : parser(output)) : null;
   return result;
 }
-async function runRegistry(root, registry, { progress = true, only = null } = {}) {
+async function runRegistry(root, registry, { progress = true, only = null, afterChild = null } = {}) {
   const cache = {};
   const routes = { node: () => (cache.node ??= nodeRoute()), jdk: () => (cache.jdk ??= jdkRoute()) };
   const children = [];
@@ -730,6 +732,8 @@ async function runRegistry(root, registry, { progress = true, only = null } = {}
         counted: status === "pass" && (c.tests === null || c.tests === undefined || c.tests > 0),
         output_sha256: result.output_sha256 ?? null,
       });
+      // Called after every child so a caller can persist what exists before anything later can refuse.
+      if (afterChild) afterChild(children.slice(), entry);
     }
   } finally {
     for (const key of ["node"]) if (cache[key]) { const r = await cache[key]; if (r?.scratch) rmSync(r.scratch, { recursive: true, force: true }); }
@@ -739,7 +743,7 @@ async function runRegistry(root, registry, { progress = true, only = null } = {}
   return { children, routes: routesUsed };
 }
 async function candidate(root, { observe = false, only = null } = {}) {
-  need(git(root, ["branch", "--show-current"]) === BRANCH, "wrong_branch");
+  need(CANDIDATE_BRANCHES.includes(git(root, ["branch", "--show-current"])), "wrong_branch");
   need(supportedTreeClean(root), "dirty_supported_code");
   const identity = candidateIdentity(root, "HEAD");
   const disp = checkDisposition(loadInputs(root, "HEAD"));
@@ -1038,6 +1042,83 @@ function inventoryHash(root) {
     tracked: git(root, ["ls-files", "-z"]).split("\0").filter(Boolean).map((name) => [name, sha(worktree(root, name))]),
   }));
 }
+// ---- isolated landed run
+const LANDED_WORKTREE = "crosswake-196-landed";
+const LANDED_LEDGER = "crosswake-196-landed-children.json";
+// Ignored caches the children rely on. They are cloned (copy-on-write where the volume supports it) into the worktree, so
+// the main checkout's copies are only read. A cache that is absent simply is not warmed; the child then bootstraps or fails closed.
+const WARM_NAMES = new Set(["_build", "deps", "node_modules", ".build", "build", ".gradle", "local.properties"]);
+function commonGitDir(root) { return path.resolve(root, git(root, ["rev-parse", "--git-common-dir"])); }
+// Per-child results persist to a file in the git dir after every child. Earlier ledgers are rotated, never overwritten.
+function landedLedger(root) {
+  const file = path.join(commonGitDir(root), LANDED_LEDGER);
+  let record = { schema_version: 1, purpose: "phase196_landed_children", children: [] };
+  return {
+    file,
+    start(patch) {
+      if (existsSync(file)) {
+        const stamp = (() => { try { return String(JSON.parse(readFileSync(file, "utf8")).started_at ?? "").replace(/[^0-9A-Za-z]/g, ""); } catch { return ""; } })();
+        let n = 0, target;
+        do { target = file.replace(/\.json$/, `.${stamp || "earlier"}${n ? `-${n}` : ""}.json`); n += 1; } while (existsSync(target));
+        renameSync(file, target);
+      }
+      record = { ...record, children: [], started_at: new Date().toISOString(), ...patch };
+      writeFileSync(file, `${JSON.stringify(record, null, 2)}\n`);
+    },
+    update(patch) { record = { ...record, ...patch }; writeFileSync(file, `${JSON.stringify(record, null, 2)}\n`); },
+  };
+}
+function warmCaches(root, wt) {
+  const listed = git(root, ["ls-files", "--others", "--ignored", "--exclude-standard", "--directory", "-z"], { timeout: 120_000 }).split("\0").filter(Boolean);
+  const warmed = [];
+  for (const entry of listed) {
+    const name = entry.replace(/\/$/, "");
+    if (!WARM_NAMES.has(path.posix.basename(name)) || name.startsWith(".planning/") || name.startsWith(".git/")) continue;
+    rel(name);
+    mkdirSync(path.dirname(path.join(wt, name)), { recursive: true });
+    const target = path.join(wt, name);
+    let result = sync(root, "cp", ["-cR", path.join(root, name), target], { timeout: 600_000 });
+    if (result.status !== 0) { rmSync(target, { recursive: true, force: true }); result = sync(root, "cp", ["-R", path.join(root, name), target], { timeout: 600_000 }); }
+    need(result.status === 0, "landed_cache_warm_failed", name);
+    warmed.push(name);
+  }
+  return warmed;
+}
+function removeLandedWorktree(root, wt) {
+  sync(root, "git", ["worktree", "remove", "--force", wt], { timeout: 300_000 });
+  if (existsSync(wt)) rmSync(wt, { recursive: true, force: true });
+  sync(root, "git", ["worktree", "prune"]);
+  return !existsSync(wt) && !git(root, ["worktree", "list", "--porcelain"]).split("\n").includes(`worktree ${wt}`);
+}
+async function runLandedRegistry(root, mergeSha, { registry, prepare = null, afterChild = null, ledger = landedLedger(root), progress = true } = {}) {
+  need(SHA40.test(mergeSha), "invalid_commit");
+  const wt = path.join(commonGitDir(root), LANDED_WORKTREE);
+  // A directory left by a killed run is ours (fixed name under the git dir), so it is replaced, never trusted.
+  if (existsSync(wt)) need(removeLandedWorktree(root, wt), "landed_worktree_stale");
+  ledger.start({ merge_commit: mergeSha, worktree: wt, phase: "created", warmed: [], registry_size: registry.length });
+  let run;
+  try {
+    git(root, ["worktree", "add", "--detach", wt, mergeSha], { timeout: 300_000 });
+    need(ref40(wt, "HEAD") === mergeSha && supportedTreeClean(wt), "landed_detach_failed");
+    if (prepare) prepare(wt);
+    const warmed = warmCaches(root, wt);
+    ledger.update({ phase: "running", warmed });
+    run = await runRegistry(wt, registry, { progress, afterChild: (children, entry) => {
+      ledger.update({ children });
+      if (afterChild) afterChild(children, entry);
+    } });
+    ledger.update({ children: run.children, routes: run.routes, phase: "complete" });
+  } catch (error) {
+    ledger.update({ phase: "refused", refusal: error instanceof Refusal ? error.code : "internal_error" });
+    throw error;
+  } finally {
+    let removed = false;
+    try { removed = removeLandedWorktree(root, wt); } catch { removed = false; }
+    ledger.update({ cleanup: removed ? "removed" : "failed" });
+    if (!removed) console.error(`phase-evidence: landed worktree not removed at ${wt}`);
+  }
+  return run;
+}
 async function landed(root) {
   need(supportedTreeClean(root), "dirty_supported_code");
   const original = { branch: git(root, ["branch", "--show-current"]), head: ref40(root, "HEAD") };
@@ -1056,21 +1137,25 @@ async function landed(root) {
   const mergeSha = pr.merge_commit_sha;
   need(SHA40.test(mergeSha ?? "") && child0(root, ["merge-base", "--is-ancestor", mergeSha, "origin/main"]), "merge_not_on_main");
   const judgement = judgeMergeCommit(readMergeCommit(root, mergeSha, attempt));
-  let run, disp, idMatches;
-  try {
-    git(root, ["switch", "--detach", mergeSha]);
-    need(ref40(root, "HEAD") === mergeSha && supportedTreeClean(root), "landed_detach_failed");
+  // The registry runs in an isolated linked worktree of the merge commit under the git dir. The main checkout is
+  // never switched or written, so the restoration checks below hold by construction and stay as asserted invariants.
+  let idMatches, disp;
+  const prepare = (wt) => {
     // The landed proof uses the committed tools at the merge commit, so identity is recomputed there.
-    const identity = candidateIdentity(root, "HEAD");
+    const identity = candidateIdentity(wt, "HEAD");
     idMatches = identityEqual(identity, candidateRecord.candidate_identity);
-    disp = checkDisposition(loadInputs(root, "HEAD"));
+    disp = checkDisposition(loadInputs(wt, "HEAD"));
     need(disp.spec04.roster_digest === candidateRecord.spec04.roster_digest, "roster_digest_changed");
-    run = await runRegistry(root, REGISTRY);
-  } finally {
-    // Restoration is verified before any evidence is written.
-    if (git(root, ["branch", "--show-current"]) === "") git(root, ["switch", original.branch]);
+  };
+  const ledger = landedLedger(root);
+  let run;
+  try {
+    run = await runLandedRegistry(root, mergeSha, { registry: REGISTRY, prepare, ledger });
+    need(ref40(root, "HEAD") === original.head && git(root, ["branch", "--show-current"]) === original.branch && inventoryHash(root) === before, "landed_restoration_failed");
+  } catch (error) {
+    ledger.update({ refusal: error instanceof Refusal ? error.code : "internal_error" });
+    throw error;
   }
-  need(ref40(root, "HEAD") === original.head && inventoryHash(root) === before, "landed_restoration_failed");
   const verdict = judgeCandidate(REGISTRY, run.children);
   const landedRecord = {
     schema_version: 1, purpose: "phase196_landed", merge_commit: mergeSha, merge_parents: readMergeCommit(root, mergeSha, attempt).parents,
@@ -1620,4 +1705,4 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
     process.exitCode = 1;
   });
 }
-export { scanClaims, disposition, candidateIdentity, checkDisposition, checkPromotion, runChild, sha, Refusal };
+export { scanClaims, disposition, candidateIdentity, checkDisposition, checkPromotion, runChild, sha, Refusal, runLandedRegistry, REGISTRY };
