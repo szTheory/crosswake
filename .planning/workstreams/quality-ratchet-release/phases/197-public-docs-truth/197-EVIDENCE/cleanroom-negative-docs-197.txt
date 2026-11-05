@@ -1,0 +1,21 @@
+control: doctor_nonexistent_task
+check: cmp guides/install.md against the mutated copy: differs (only line 278 changed: 'mix crosswake.doctor' -> 'mix crosswake.nonexistent_task'); README.md copy identical
+note: the docs leg's static required-step check (docs_validate) rejects this copy before any host is built, because no applicable run block still contains 'mix crosswake.doctor'; the leg is red and exits 1, but this mutation never reaches the runtime doctor step
+cleanroom: selftest overrides active
+cleanroom: docs source commit 0000000000000000000000000000000000000000
+cleanroom: FAIL docs required_step doctor guides/install.md
+cleanroom: result FAIL legs docs version 0.2.11
+control: rc 1
+control: doctor_nonexistent_router
+check: cmp guides/install.md against the mutated copy: differs (only line 278 changed: 'mix crosswake.doctor' -> 'mix crosswake.doctor --router NonexistentWeb.Router'); README.md copy identical
+note: this copy passes static validation and fails at the real doctor step against published 0.2.11; executed_below_floor follows because the failed step is not counted; the setpgid line is a job-control warning from the backgrounded shell, and the other 17 steps still ran
+cleanroom: selftest overrides active
+cleanroom: docs source commit 0000000000000000000000000000000000000000
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+script/verify_published_cleanroom.sh: child setpgid (70314 to 70314): Operation not permitted
+cleanroom: docs deferred ios_host README.md since=0.2.12 version=0.2.11
+cleanroom: docs deferred ios_host guides/install.md since=0.2.12 version=0.2.11
+cleanroom: FAIL docs step doctor exit 1
+cleanroom: FAIL docs executed_below_floor 17 18
+cleanroom: result FAIL legs docs version 0.2.11
+control: rc 1
