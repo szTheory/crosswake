@@ -56,10 +56,10 @@ created: "2026-11-05"
 | 198-06-T1 | 06 | 6 | AND-01 (SC4) | T-198-18, T-198-20 | typed Android ceiling; Android evidence column; no level above ceiling | unit | `mix crosswake.docs.sync --check` + `mix run` API assertions + capability/support gate | ✅ extend | ⬜ pending |
 | 198-06-T2 | 06 | 6 | AND-01 (SC4) | T-198-19 | single-sourced boundary sentence; hand-written native_shell.md copy exempted and pinned | unit | documentation-contracts gate + lib literal-count check + guides copy check | ✅ extend | ⬜ pending |
 | 198-06-T3 | 06 | 6 | AND-01 (SC4) | T-198-18 | API raise controls, typed vs rendered count, native_shell.md pin | unit | `mix test test/crosswake/support_matrix/android_evidence_test.exs` (>= 9); directory gate >= 110 | ❌ W0 | ⬜ pending |
-| 198-07-T1 | 07 | 7 | AND-01 | T-198-21, T-198-22 | ledger generated through docs.sync; hash equal on all sides | integration | `mix crosswake.docs.sync --check` + ledger/docs.sync/hex_page gate | ❌ W0 | ⬜ pending |
-| 198-07-T2 | 07 | 7 | AND-01 | T-198-21, T-198-23, T-198-24 | registry two-sided; every D-06 control red | unit | `mix test test/crosswake/parity_ledger_test.exs` (>= 16) | ❌ W0 | ⬜ pending |
-| 198-07-T3 | 07 | 7 | AND-01 | T-198-22 | ledger declared output; tampered ledger fails --check | integration | phase166 + docs.sync gate + node suite | ✅ extend | ⬜ pending |
-| 198-08-T1 | 08 | 8 | AND-01 (SC4) | T-198-25 | no Android column cell above `JVM hermetic proof`; floor; controls | unit | `mix test test/crosswake/guides/android_claim_ceiling_test.exs` | ❌ W0 | ⬜ pending |
+| 198-07-T1 | 07 | 7 | AND-01 | T-198-21, T-198-22 | ledger generated through docs.sync; hash equal on all sides | integration | `mix crosswake.docs.sync --check` + ledger/docs.sync/hex_page gate (>= 20) | ❌ W0 | ⬜ pending |
+| 198-07-T2 | 07 | 7 | AND-01 | T-198-21, T-198-23, T-198-24 | registry two-sided; every D-06 control red | unit | `mix test test/crosswake/parity_ledger_test.exs` (>= 20) | ❌ W0 | ⬜ pending |
+| 198-07-T3 | 07 | 7 | AND-01 | T-198-22 | ledger declared output; tampered ledger fails --check | integration | phase166 + docs.sync gate (>= 22) + node suite | ✅ extend | ⬜ pending |
+| 198-08-T1 | 08 | 8 | AND-01 (SC4) | T-198-25 | no Android column cell above `JVM hermetic proof`; floor; controls | unit | `mix test test/crosswake/guides/android_claim_ceiling_test.exs` (>= 8) | ❌ W0 | ⬜ pending |
 | 198-08-T2 | 08 | 8 | AND-01 (SC4) | T-198-26 | measured prose backstop over capability map and ledger | unit | documentation-contracts gate (>= 256) | ✅ extend | ⬜ pending |
 | 198-08-T3 | 08 | 8 | AND-01 | T-198-27 | ledger qualifier mandatory; roadmap/requirements amended | unit + artifact | documentation-contracts + hex_page gate; ROADMAP awk checks | ✅ extend | ⬜ pending |
 | 198-09-T1 | 09 | 9 | AND-03 | T-198-28..32 | real foreign-host run PASS; control fails `could_not_find` | networked script | `bash script/verify_android_foreign_host.sh --evidence ...` | ❌ W0 | ⬜ pending |
@@ -69,8 +69,8 @@ created: "2026-11-05"
 | 198-10-T3 | 10 | 10 | AND-03 | T-198-33 | bearings report android_foreign line with UNVERIFIED control | unit | `mix test test/crosswake/bearings_report_test.exs` (>= 74) | ✅ extend | ⬜ pending |
 | 198-11-T1 | 11 | 11 | AND-03 | T-198-37..39 | advisory job wired, outside required authority | structural | `python3 script/check_ci_leaf_manifest.py --self-test` + job-shape check | ✅ extend | ⬜ pending |
 | 198-11-T2 | 11 | 11 | AND-03 | T-198-38 | advisory controls for the new job; sibling integrity test | structural | manifest self-test + phase165/134 gate (>= 48) | ✅ extend | ⬜ pending |
-| 198-12-T1 | 12 | 12 | AND-01..03 | T-198-41, T-198-42 | full local gates, privacy clean, PR open | full suite | `script/mix_test_gate.sh --min 3100 --min-total 3176` + swift + floor + selftests | ✅ | ⬜ pending |
-| 198-12-T2 | 12 | 12 | AND-03 | T-198-43 | first CI run recorded with exactly one foreign-host outcome (A success with control wording, or B external-outage advisory failure); derived promotion line | CI evidence | ci-198.txt outcome greps | ❌ W0 | ⬜ pending |
+| 198-12-T1 | 12 | 12 | AND-01..03 | T-198-41, T-198-42 | full local gates, privacy clean, PR open | full suite | `script/mix_test_gate.sh --min 3102 --min-total 3178` + swift + floor + selftests | ✅ | ⬜ pending |
+| 198-12-T2 | 12 | 12 | AND-03 | T-198-43 | first CI run recorded with exactly one foreign-host outcome (A success with control wording, or B external-outage advisory failure, which keeps AND-03 open); derived promotion line | CI evidence | ci-198.txt outcome greps | ❌ W0 | ⬜ pending |
 | 198-12-T3 | 12 | 12 | AND-01..03 | — | validation signed off; STATE handoff (old one in history); ROADMAP 198 row; one final push; CI green on final pushed head | artifact + CI | frontmatter, STATE, ROADMAP greps + final privacy rc + `gh pr view` statusCheckRollup on the pushed head | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky. Task IDs are filled in once plans exist.*
