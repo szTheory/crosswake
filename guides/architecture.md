@@ -104,7 +104,9 @@ whole document, and renders it through `Crosswake.Manifest.Serializer`. Jason pr
 JSON encoding; Crosswake orders every map before encoding so equivalent policy produces
 stable artifact bytes.
 
-The manifest, rather than raw router declarations, crosses into the shell:
+The manifest, rather than raw router declarations, crosses into the shell. The example
+shows schema `1.2.0`, which is not in a published release yet (0.2.11 emits `1.1.0`);
+see CHANGELOG `[Unreleased]`:
 
 ```elixir
 %{
