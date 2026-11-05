@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 10
+current_plan: 11
 status: executing
-stopped_at: Completed 198-09-PLAN.md
-last_updated: "2026-11-05T23:27:46.792Z"
-state_head: e9f393219d0a79e1a0f03e471316e57f2b1dff97
+stopped_at: Completed 198-10-PLAN.md
+last_updated: "2026-11-05T23:48:25.154Z"
+state_head: 39a0cb353681a2c6ed378c3f36318c1511cb1f4f
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 74
-  completed_plans: 71
+  completed_plans: 72
   percent: 60
 current_phase: 198
 current_phase_name: Android foreign-host proof
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 10
+Current Plan: 11
 Total Plans in Phase: 12
 
 ## Exact Next Action
 
-Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 9 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-09 (`script/verify_android_foreign_host.sh`: seven legs against the published 0.2.11 generator and Maven coordinate, real local run PASS with the wrong-coordinate control failing on `Could not find ...negctl` and `Could not resolve all files for configuration`; hermetic 21-case selftest OK, also under `env -i`; Phase 170 ledger display line refreshed). AND-03 stays open until Linux CI evidence (Plans 11 and 12). Exact next command: execute 198-10 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. Run `test/crosswake/proof` after any Elixir test-file edit on this branch (ledger line shifts); phase52_operator_truth and two phase175 tests are known pre-existing reds in deferred-items.md. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 10 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-10 (`script/android_foreign_promotion.sh` derives `clean_runs=N/2` from Crosswake CI history and the foreign-host evidence artifacts; real local run `android_foreign: clean_runs=0/2 eligible=no head=none ci_ran_on=synthetic_merge` over 50 runs; 13-case fake-gh selftest OK; the bearings report prints the line, test 72 to 74). AND-03 stays open until Linux CI evidence (Plans 11 and 12); Plan 11 must name the job `android-foreign-host` and the artifact `android-foreign-host-evidence` with the evidence JSON at the top level of the zip, because the promotion script matches those names. Exact next command: execute 198-11 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. Run `test/crosswake/proof` after any Elixir test-file edit on this branch (ledger line shifts); phase52_operator_truth and two phase175 tests are known pre-existing reds in deferred-items.md. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T23:27:46.481Z
-**Stopped at:** Completed 198-09-PLAN.md
+**Last session:** 2026-11-05T23:48:24.800Z
+**Stopped at:** Completed 198-10-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -75,6 +75,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 198 P07 | 30min | 3 tasks | 10 files |
 | Phase 198 P08 | 40min | 3 tasks | 12 files |
 | Phase 198 P09 | 35min | 2 tasks | 3 files |
+| Phase 198 P10 | 50min | 3 tasks | 4 files |
 
 ## Decisions
 
@@ -107,6 +108,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 198]: Plan 07: ParityLedger reads both corpus locations at run time, computes the Android cell from reference checks plus a two-sided consumer registry (registry entries carry an executes scope), and ships as a third docs.sync projection with a tamper control; AND-01 floor met locally, wording amendment (Plan 08) and CI evidence (Plan 12) still owed
 - [Phase 198]: Plan 08: Android ceiling test derives its allowed set from the typed ceiling; prose backstop patterns measured at 0 unsuppressed hits after rewording 3 source lines; phase 170 collection ledger regenerated (290 sites) after Phase 198 test edits; AND-01 corpus wording amended on the record (D-01)
 - [Phase 198]: Plan 09: foreign-host proof picks the highest version on both Maven Central and Hex, proves non-vacuity three ways (host probe, runtime-jar code source, AAR sha256), and stops at the first failing leg; AND-03 stays open until Linux CI evidence (Plans 11/12)
+- [Phase 198]: Plan 10: promotion readiness is derived from CI history plus evidence content and the current script blob; each gh read is attempted twice (GitHub 502s), a double failure is UNVERIFIED never zero; AND-03 stays open until Linux CI evidence (Plans 11/12)
 
 ### Blockers
 
