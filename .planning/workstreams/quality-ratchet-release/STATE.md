@@ -2,29 +2,30 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 1
-status: ready_to_plan
-stopped_at: Phase 197 context gathered
-last_updated: "2026-11-05T15:30:15.964Z"
-state_head: e82cbab3a3a84f1646a649f233920b39d51234fc
+current_plan: 2
+status: executing
+stopped_at: Completed 197-01-PLAN.md
+last_updated: "2026-11-05T15:41:11.214Z"
+state_head: 9066d0ab498dd91ff6b07294fa5a2c4739eb5a1d
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 47
+  completed_plans: 48
   percent: 75
-current_phase_name: Public docs truth
 current_phase: 197
+current_phase_name: Public docs truth
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
 ---
 
 ## Current Position
 
-Current Plan: 1
+Current Plan: 2
+Total Plans in Phase: 15
 
 ## Exact Next Action
 
-`/gsd-plan-phase 197 --ws quality-ratchet-release` (197-CONTEXT.md locked 2026-10-29, D-01..D-25). The Phase 196 verification commits and the 197 context commit sit on branch `docs/196-uat`; they land through their own PR with Crosswake CI green on the head, and merging to main needs a fresh one-use allow.
+Phase 197 is executing on branch `docs/197-public-docs-truth` (cut from origin/main, planning commits cherry-picked; not pushed). Last completed plan: 197-01 (docs-report, shared `mix test` gate). Next: execute 197-02 via `/gsd-execute-phase 197 --ws quality-ratchet-release`. The merge to main needs a fresh one-use allow and is not executor work. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -32,9 +33,9 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-10-29T15:38:06.026Z
-**Stopped at:** Phase 197 context gathered
-**Resume file:** .planning/workstreams/quality-ratchet-release/phases/197-public-docs-truth/197-CONTEXT.md
+**Last session:** 2026-11-05T15:40:54.898Z
+**Stopped at:** Completed 197-01-PLAN.md
+**Resume file:** None
 
 ## Accumulated Context
 
@@ -49,6 +50,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 196 P15 | 3h 40m | 3 tasks | 20 files |
 | Phase 196 P16 | 6h 15m | 2 tasks | 11 files |
 | Phase 196 P17 | about 1h 50m (this run; landed proof 66 min) | 3 tasks | 5 files |
+| Phase 197 P01 | 70min | 3 tasks | 6 files |
 
 ## Decisions
 
@@ -57,6 +59,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 196]: Facade stages expose no counts, so the core, Swift and Android suites also run directly; Gradle is forced to execute because an unchanged test task reports UP-TO-DATE.
 - [Phase 196]: Post-halt candidate is recorded as an amendment with failed runs retained; the 196-15 summary and both tools stay unedited, and the actual-main receipts stay pinned to b8398c38 (guard blobs unchanged).
 - [Phase 196]: Absence collections default is enforce; the Phase 170 ledger is regenerated with cited overrides rather than retired, since retiring it is a separate decision.
+- [Phase 197]: Plan 01: leak patterns carry a leading word boundary so SEED-NN is not also counted as D-NN
+- [Phase 197]: Plan 01: scan floor below parsed .md extras is UNVERIFIED for both leaks and links; every later mix test gate runs through script/mix_test_gate.sh
 
 ### Blockers
 
