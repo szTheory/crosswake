@@ -3,7 +3,6 @@ import com.vanniktech.maven.publish.SonatypeHost
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.vanniktech.maven.publish") version "0.31.0"
 }
 
@@ -38,16 +37,18 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    // Note: Android bridge may use WebKit/WebView and we might need androidx.webkit
+    // Imported by BridgeChannel.kt (WebViewCompat.addWebMessageListener).
     implementation("androidx.webkit:webkit:1.10.0")
 
     testImplementation("junit:junit:4.13.2")
-    // Provide the real org.json implementation for JVM unit tests.
-    // Android's android.jar stubs org.json.JSONObject as "not mocked"; the production
-    // BridgeChannel.kt uses JSONObject to build reply strings, so tests that call
-    // evaluateForTesting() need the real implementation on the test classpath.
-    testImplementation("org.json:json:20231013")
+    // AOSP-derived org.json for JVM unit tests (Phase 198 D-09). Android's android.jar stubs
+    // org.json as "not mocked", so tests need a real implementation. This artifact is used
+    // instead of the Crockford org.json build because it coerces like the platform library
+    // (getString on numbers and JSON null) while the Crockford build is stricter, so a
+    // "non-string rejected" test cannot pass only because the JVM library is stricter.
+    // Production uses the platform org.json with no runtime dependency. JVM evidence only,
+    // not device evidence; decision recorded in 198-DECISIONS.md.
+    testImplementation("com.vaadin.external.google:android-json:0.0.20131108.vaadin1")
 }
 
 mavenPublishing {

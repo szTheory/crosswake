@@ -366,19 +366,29 @@ data class BridgeRequestEnvelope(
     val payload: Map<String, String>
 ) {
     constructor(json: JSONObject) : this(
-        protocol = json.getString("protocol"),
-        version = json.getString("version"),
-        command = json.getString("command"),
-        capability = json.getString("capability"),
-        routeId = json.getString("route_id"),
-        activeRouteId = json.getString("active_route_id"),
-        origin = json.getString("origin"),
-        nativeRuntimeVersion = json.getString("native_runtime_version"),
-        correlationId = json.getString("correlation_id"),
+        protocol = json.requireString("protocol"),
+        version = json.requireString("version"),
+        command = json.requireString("command"),
+        capability = json.requireString("capability"),
+        routeId = json.requireString("route_id"),
+        activeRouteId = json.requireString("active_route_id"),
+        origin = json.requireString("origin"),
+        nativeRuntimeVersion = json.requireString("native_runtime_version"),
+        correlationId = json.requireString("correlation_id"),
         capabilities = json.optJSONObject("capabilities").toStringMap(),
         installedPacks = json.optJSONObject("installed_packs").toStringMap(),
         payload = json.optJSONObject("payload").toStringMap()
     )
+}
+
+/**
+ * Returns the named field only when it is a JSON string. JSON null, numbers, booleans,
+ * objects and arrays are rejected so a required field never coerces (fail closed, D-11).
+ */
+private fun JSONObject.requireString(name: String): String {
+    val value = opt(name)
+    if (value !is String) throw org.json.JSONException("$name must be a JSON string")
+    return value
 }
 
 private fun JSONObject?.toStringMap(): Map<String, String> {

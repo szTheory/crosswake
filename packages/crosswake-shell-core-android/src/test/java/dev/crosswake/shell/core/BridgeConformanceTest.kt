@@ -82,7 +82,7 @@ class BridgeConformanceTest {
         if (overrideObj.has("capabilities")) {
             val capObj = overrideObj.optJSONObject("capabilities")
             if (capObj != null) {
-                val caps = capObj.keys().asSequence()
+                val caps = capObj.keys().asSequence().map { it as String }
                     .associateWith { capObj.getString(it) }
                 result = result.copy(capabilities = caps)
             }
@@ -96,7 +96,7 @@ class BridgeConformanceTest {
                     result = result.copy(installedPacks = emptyMap())
                 }
                 installedPacksVal is JSONObject -> {
-                    val packs = installedPacksVal.keys().asSequence()
+                    val packs = installedPacksVal.keys().asSequence().map { it as String }
                         .associateWith { installedPacksVal.getString(it) }
                     result = result.copy(installedPacks = packs)
                 }
@@ -143,7 +143,7 @@ class BridgeConformanceTest {
         if (requestOverride.has("capabilities")) {
             val capObj = requestOverride.optJSONObject("capabilities")
             if (capObj != null) {
-                val caps = capObj.keys().asSequence()
+                val caps = capObj.keys().asSequence().map { it as String }
                     .associateWith { capObj.getString(it) }
                 result = result.copy(capabilities = caps)
             }
