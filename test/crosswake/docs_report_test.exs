@@ -256,7 +256,7 @@ defmodule Crosswake.DocsReportTest do
       body = """
       # A
 
-      [site](https://example.com/guide.md) [mail](mailto:x@example.com)
+      [site](https://example.com/guide.md) [mail](mailto:someone)
 
       ```markdown
       [fenced](missing.md)

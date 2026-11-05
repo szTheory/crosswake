@@ -31,7 +31,7 @@
   </developers>
   <scm>
     <connection>scm:git:git://github.com/szTheory/crosswake.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/szTheory/crosswake.git</developerConnection>
+    <developerConnection>scm:git:ssh://github.com/szTheory/crosswake.git</developerConnection>
     <url>https://github.com/szTheory/crosswake/</url>
   </scm>
   <dependencies>
