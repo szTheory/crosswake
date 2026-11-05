@@ -3,6 +3,10 @@ package dev.crosswake.shell.core
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
@@ -45,5 +49,31 @@ class BridgeChannelBoundaryTest {
             }
         }
         assertEquals("CW-ENVELOPE-CASES expected 18", 18, ran)
+    }
+
+    private fun channel() = BridgeChannel(
+        BridgeFixtures.makeSession(),
+        transferCoordinator = null,
+        config = CrosswakeShellConfig()
+    )
+
+    @Test
+    fun `parse body returns null for missing garbage and non string bodies on the JVM`() {
+        val channel = channel()
+        assertNull(channel.parseBody(null))
+        assertNull(channel.parseBody(""))
+        assertNull(channel.parseBody("[]"))
+        assertNotNull(channel.parseBody(BridgeFixtures.validEnvelopeJson().toString()))
+        val nullRoute = BridgeFixtures.validEnvelopeJson().put("route_id", JSONObject.NULL)
+        assertNull(channel.parseBody(nullRoute.toString()))
+    }
+
+    @Test
+    fun `listener gate allows only the main frame from the exact allowed origin`() {
+        val channel = channel()
+        val origin = "https://app.example.com"
+        assertTrue(channel.listenerAllows(true, origin))
+        assertFalse(channel.listenerAllows(false, origin))
+        assertFalse(channel.listenerAllows(true, "$origin/"))
     }
 }

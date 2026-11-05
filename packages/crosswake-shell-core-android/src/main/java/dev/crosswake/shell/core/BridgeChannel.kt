@@ -1,7 +1,6 @@
 package dev.crosswake.shell.core
 
 import android.webkit.WebView
-import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewCompat
 import dev.crosswake.shell.core.transfer.TransferCoordinator
 import org.json.JSONObject
@@ -62,9 +61,11 @@ class BridgeChannel(
             JS_OBJECT,
             allowedOriginRules
         ) { _, message, sourceOrigin, isMainFrame, replyProxy ->
-            val request = parseRequest(message) ?: return@addWebMessageListener
+            // A body that cannot be parsed has no correlation id to echo, so it is dropped
+            // silently on purpose (recorded in 198-DECISIONS.md).
+            val request = parseBody(message.data) ?: return@addWebMessageListener
 
-            if (!isMainFrame || sourceOrigin.toString() != session.allowedOrigin) {
+            if (!listenerAllows(isMainFrame, sourceOrigin.toString())) {
                 replyProxy.postMessage(
                     deny(
                         request,
@@ -85,14 +86,19 @@ class BridgeChannel(
         }
     }
 
-    private fun parseRequest(message: WebMessageCompat): BridgeRequestEnvelope? {
-        val body = message.data ?: return null
+    /** Parses a raw bridge message body; null for a missing, unparseable or rejected envelope. */
+    internal fun parseBody(body: String?): BridgeRequestEnvelope? {
+        if (body == null) return null
         return try {
             BridgeRequestEnvelope(JSONObject(body))
         } catch (_: Exception) {
             null
         }
     }
+
+    /** The listener origin gate: main frame only, exact match with the session's allowed origin. */
+    internal fun listenerAllows(isMainFrame: Boolean, sourceOrigin: String): Boolean =
+        isMainFrame && sourceOrigin == session.allowedOrigin
 
     private fun evaluate(
         request: BridgeRequestEnvelope,
