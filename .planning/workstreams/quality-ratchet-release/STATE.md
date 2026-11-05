@@ -42,6 +42,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 ### Roadmap Evolution
 
 - Phase 196 edited: edited fields: requirements, success_criteria — SPEC-04 moved intact to v29.0 (overrun cut order, D-03/D-24); both attempts preserved
+- Phase 198 edited: AND-01 and SC1 corpus wording (D-01) and Phase 199 SC6 removal list gains guides/parity_ledger.md (D-08)
 
 ## Performance Metrics
 
