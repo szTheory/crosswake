@@ -231,12 +231,59 @@ Plans:
 **Depends on**: Phase 195 (clean-room command), Phase 194 (Android amendment)
 **Requirements**: DOCS-01, DOCS-02, DOCS-03
 **Success Criteria** (what must be TRUE):
-  1. The REL-06 clean-room command executes the README "Integrating" and `install.md` steps on a host without a repository clone and passes; neither file contains a repo-only command, both state which steps need a clone, and both include the bridge hook, esbuild flags, `attach/1` and `:ios_host` wiring.
-  2. The companion matrix matches the versions actually published on Hex (checked against the registry, not a copied literal), the phase132 test no longer hardcodes stale values, CHANGELOG makes no false "current release" claim and points to GitHub Releases for 0.2.2–0.2.11, the telemetry guide lists `[:crosswake, :offline, :replay]`, and `see_it_run.md` states that the twin receipt attests `a53fbef`.
+  1. The REL-06 clean-room command executes the README "Integrating" and `install.md` steps on a host without a repository clone and passes; neither file contains a repo-only command, both state which steps need a clone, and both include the bridge hook, esbuild flags, `attach/1` and `:ios_host` wiring. (Amended 2026-10-29, CONTEXT D-04, D-06: a repo-only command may appear only in a clone-labeled block; against 0.2.11 the :ios_host step is a named deferral, never counted as executed, and Phase 199 executes it against 0.2.12.)
+  2. The companion matrix carries no copied version and links each package to its hex.pm page, with published presence checked by one recorded mix crosswake.release.status --live run, the phase132 test no longer hardcodes stale values, CHANGELOG makes no false "current release" claim and points to GitHub Releases for 0.2.2–0.2.11, the telemetry guide lists `[:crosswake, :offline, :replay]`, and `see_it_run.md` states that the twin receipt attests `a53fbef`. (Amended 2026-10-29, CONTEXT D-10, D-12: the matrix carries no copied version and links each package to hex.pm; published presence is checked by one recorded live registry run.)
   3. `mix docs` warnings, a relative link/anchor check and a public internal-code leak scan (`Phase N`, `TODO-`, `D-NN`, `v2x`) run in report mode with their counts recorded, and none is a required check.
   4. `android_uat.md` has no automated "Last verified" stamp and no phantom capability families, and a grep for "Android frozen" posture text in README, the support matrix and the native shell guide returns zero hits.
 
-**Plans**: TBD
+**Plans**: 15/15 plans executed, 35 tasks; sequential waves 1–15 in one checkout on branch `docs/197-public-docs-truth`; one PR; the merge to main is a separate one-use allow (not executor work)
+
+Plans:
+**Wave 1**
+- [x] 197-01-PLAN.md — docs-report tracer: branch cut, launcher, extras scope, leak counter with schema-validated allowlist, link/anchor counter, fixture controls, shared `mix test` gate helper (DOCS-03)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 197-02-PLAN.md — mix docs warnings counter, not-in-CI guard, baseline on a main-equal tree before any doc edit; DOCS-01/02 and SC1/SC2 amended in place (DOCS-03, DOCS-01, DOCS-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 197-03-PLAN.md — Carried clean-room fixes WR-04, WR-05, WR-06 (real-POM fixture) and IN-03 (every tool tested) (DOCS-01)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 197-04-PLAN.md — docs leg tracer: commit-pinned docs, marker parser, pinned phx_new host, scrubbed env, per-step time bound, D-07a control (DOCS-01)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 197-05-PLAN.md — docs leg tarball default source and real-toolchain smoke against 0.2.11 (DOCS-01)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 197-06-PLAN.md — docs leg apply modes with per-mode target and anchor rules, substitution table, harness compile (DOCS-01)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 197-07-PLAN.md — since=/NOT_APPLICABLE, required steps, version-conditional :ios_host deferral, executed floor placeholder (DOCS-01)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 197-08-PLAN.md — Marked Hex-only README and install.md with bridge hook, esbuild, route, attach and :ios_host; selftest PASS against 0.2.11 bound to the final doc blobs (DOCS-01)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 197-09-PLAN.md — Marker test, pinned executed floor, fail-closed reader audit against the 0.2.11 tarball, documented :ios_host values test (DOCS-01)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 197-10-PLAN.md — Version-free companion matrix, phase132 no-literal test against the 5-package set, per-package live registry evidence (DOCS-02)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 197-11-PLAN.md — CHANGELOG truth, version-free publish.parity candidate rule, [Unreleased] audit and wording guard (DOCS-02)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 197-12-PLAN.md — Android UAT truth and set-equality test, drift-test update, telemetry replay event, twin attestation, Android-frozen grep (DOCS-02, DOCS-03)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 197-15-PLAN.md — D-26: qualify linked guides that describe :ios_host and manifest 1.2.0 as shipped, through renderers and docs.sync, with a guard test (DOCS-01, DOCS-02)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [x] 197-13-PLAN.md — Full suite, docs-report after-counts on the final inputs, baseline-first ordering proof, D-07b real negative control (DOCS-01, DOCS-03)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [x] 197-14-PLAN.md — Privacy scan, push, real four-leg clean-room PASS against 0.2.11, :ios_host deferral record, PR with CI green on the final head, CI record as a PR comment (DOCS-01..03)
+
 **Research**: Skip
 **Carried from Phase 195 review**: WR-04 (clean-room curl timeout, retry and protocol pin), WR-05 (report resolve or parse failures separately from not_published), WR-06 (POM project-coordinate check) and IN-03 (need_tools completeness) in script/verify_published_cleanroom.sh; see 195-REVIEW-DISPOSITION.md.
 
@@ -264,6 +311,8 @@ Plans:
   2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven.
   3. A post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch.
   4. `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close.
+  5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
+  6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md` and `guides/architecture.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
 
 **Plans**: TBD
 **Research**: Skip
@@ -275,7 +324,7 @@ Plans:
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
-| 197. Public docs truth | 0/TBD | Not started | - |
+| 197. Public docs truth | 15/15 | In Progress | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 

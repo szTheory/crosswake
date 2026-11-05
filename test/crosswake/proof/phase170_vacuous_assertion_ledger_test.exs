@@ -31,8 +31,12 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # lexical fixture sources as string literals, which this line-based scanner reads as sites (26
   # sites there, 4 of them manual overrides, see @manual_overrides), plus 2 sites in the dependency
   # ratchet test, 1 in the rescue ratchet test and 1 guarded site in policy/compiler_test.exs.
-  @audited_site_count 273
-  @shape_counts %{"assert_all" => 84, "assert_any" => 138, "refute_any" => 51, "refute_all" => 0}
+  # Phase 197 (2026-11-05) added 15 sites and moved 2 (13 net): 8 guarded negated-any sites in the
+  # docs-report tests, 4 any-sites in the changelog, publish-readiness and unreleased-claim
+  # tests, and the native-evidence drift test gained a third synthetic regression (3 rows, 2 of the
+  # old rows replaced) and shifted its other rows.
+  @audited_site_count 286
+  @shape_counts %{"assert_all" => 84, "assert_any" => 143, "refute_any" => 59, "refute_all" => 0}
   # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
   # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
   # real test execution proved their collections are permanently empty by design (positive-path
@@ -42,10 +46,10 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # `needs-fix` is intentionally absent: `Enum.frequencies_by/2` never emits a key for zero
   # occurrences, and the committed ledger now has zero `needs-fix` rows (VAC-02 complete).
   @bucket_counts %{
-    "safe-by-construction" => 138,
+    "safe-by-construction" => 143,
     "safe-compile-time-literal" => 9,
     "safe-cardinality-pinned" => 51,
-    "safe-guarded" => 75
+    "safe-guarded" => 83
   }
 
   describe "Task 1: a clean run against the committed ledger" do

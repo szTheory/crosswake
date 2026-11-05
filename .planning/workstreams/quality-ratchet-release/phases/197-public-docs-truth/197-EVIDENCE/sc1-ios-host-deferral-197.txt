@@ -1,0 +1,13 @@
+deferral: ios_host
+version_under_test: 0.2.11
+reason: crosswake 0.2.11 does not read config :crosswake, :ios_host (it landed in Phase 179, after the release)
+marker: since=0.2.12 in README.md and guides/install.md
+counted_executed: no
+counted_passed: no
+sc1_status: bridge hook, esbuild and attach/1 executed against 0.2.11; :ios_host execution deferred
+deferred_to: Phase 199 (0.2.12), no exemption
+roadmap: Phase 199 success criterion 5 (deferred=none)
+cleanroom: leg docs PASS 0.2.11 executed=18 not_applicable=2 deferred=ios_host clone=4 shown=4 source=commit:e4a25fb575d2822d83072e26101fb36b7a3b5b13 phx_new=1.8.13
+cleanroom: docs deferred ios_host README.md since=0.2.12 version=0.2.11
+cleanroom: docs deferred ios_host guides/install.md since=0.2.12 version=0.2.11
+reader-audit: ios_host reader=:ios_host in extracted lib/ (expected not read by 0.2.11) 0.2.11=not_found disposition=deferred

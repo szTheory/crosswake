@@ -1,0 +1,5 @@
+docs.warnings total=197 extras=2
+docs.links broken=0 checked=232 files=30
+docs.leaks hits=95 allowlisted=0 stale_allowlist=0 files=30
+docs-report: REPORT-ONLY (not a required check)
+docs-report: rc 0

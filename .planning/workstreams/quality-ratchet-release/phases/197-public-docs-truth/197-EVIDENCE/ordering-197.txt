@@ -1,0 +1,9 @@
+ordering: D-19 baseline-first proof
+baseline commit (first commit adding 197-DOCS-REPORT.md): 1782366bb4c5afda763741a7d8647602df4a42a1
+baseline subject: docs(197): record docs-report baseline on main-equal tree
+first doc-touching commit since origin/main (README.md CHANGELOG.md guides): c1542d9f854ca9ff00c429f9b1c371fc857d9315
+first doc-touching subject: docs(197-08): mark and wire the Hex-only install path, executed against 0.2.11
+doc-touching commits since origin/main: 9
+git log --reverse --format=%H origin/main..HEAD -- README.md CHANGELOG.md guides: exit 0, non-empty
+git merge-base --is-ancestor 1782366bb4c5afda763741a7d8647602df4a42a1 c1542d9f854ca9ff00c429f9b1c371fc857d9315
+merge-base --is-ancestor: rc 0

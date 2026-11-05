@@ -1,0 +1,14 @@
+# privacy scan run 1 (HEAD 2e4a9b3e, 92 changed files)
+privacy: hit email file 79
+privacy: hit email file 92
+privacy: hits 2
+privacy: rc 1
+# privacy scan run 2 (HEAD e4a25fb5, 92 changed files)
+privacy: clean files 92
+privacy: rc 0
+# privacy scan run 3 (HEAD e7825282, 96 files incl. PR body)
+privacy: clean files 96
+privacy: rc 0
+# privacy scan run 4 (HEAD 9e87d327 after merging main with the PR 269 lock bumps, 96 changed files plus the live PR body and the draft PR body; 98 inputs)
+privacy: clean files 98
+privacy: rc 0

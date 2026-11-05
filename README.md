@@ -18,6 +18,8 @@ native screens, and local-first work can live in honest offline islands.
 Crosswake's one job is to declare, enforce, and diagnose which runtime owns each
 route as a Phoenix app crosses into mobile.
 
+*Steps marked "Needs a clone" are for contributors; every other step works from Hex alone.*
+
 ## What this is
 
 Crosswake gives Phoenix apps a mobile runtime contract built around:
@@ -47,6 +49,8 @@ Crosswake is not:
 ```bash
 bin/see-it-run.sh
 ```
+
+*Needs a clone of the Crosswake repository; skip this if you installed from Hex.*
 
 Boots the shared backend on port 4700 and auto-opens `http://localhost:4700/`,
 the showcase hub for the checked-in example host. Requires Docker.
@@ -118,22 +122,119 @@ Use the [canonical support matrix](guides/support_matrix.md) for current support
 Crosswake owns compilation, compatibility checks, and bounded diagnostics. Use this current path,
 then let `mix crosswake.doctor` name the exact owner or action when proof cannot proceed:
 
-```bash
-mix deps.get
-mix crosswake.install
-mix crosswake.doctor
+Add the dependency, fetch it and install:
 
-# Add native targets only when this host starts claiming them.
-mix crosswake.gen.shell ios
-mix crosswake.gen.shell android
-mix crosswake.doctor --native-checks
+<!-- cleanroom:apply id=readme-deps-crosswake file=mix.exs mode=deps -->
+```elixir
+def deps do
+  [
+    {:crosswake, "~> 0.2"}
+  ]
+end
 ```
 
-Then run the checked-in proof lane:
+<!-- cleanroom:run id=readme-deps -->
+```bash
+mix deps.get
+```
 
+<!-- cleanroom:run id=readme-install -->
+```bash
+mix crosswake.install
+```
+
+Wire the bridge hook, tell esbuild to leave the absolute import alone and emit ESM,
+declare one route and attach the bridge (each step is explained in
+[guides/install.md](guides/install.md)):
+
+<!-- cleanroom:apply id=readme-bridge-hook file=assets/js/app.js mode=js-hook -->
+```javascript
+import {CrosswakeBridge} from "/crosswake/crosswake.esm.js";
+const liveSocket = new LiveSocket("/live", Socket, {params, hooks: {CrosswakeBridge}});
+```
+
+<!-- cleanroom:apply id=readme-esbuild file=config/config.exs mode=esbuild-args -->
+```elixir
+~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets --external:/crosswake/* --format=esm)
+```
+
+<!-- cleanroom:apply id=readme-route file=lib/my_app_web/router.ex mode=router-route -->
+```elixir
+live "/study", StudyLive, crosswake: [id: "study-session", runtime: :live_view, offline: :unavailable]
+```
+
+<!-- cleanroom:apply id=readme-attach file=lib/my_app_web/live/study_live.ex mode=create -->
+```elixir
+defmodule MyAppWeb.StudyLive do
+  use MyAppWeb, :live_view
+
+  def mount(_params, _session, socket) do
+    socket =
+      socket
+      |> assign(
+        crosswake_manifest: MyAppWeb.Crosswake.Policy.manifest(),
+        crosswake_route_id: "study-session"
+      )
+      |> Crosswake.Bridge.attach()
+
+    {:ok, socket}
+  end
+
+  def render(assigns) do
+    ~H"""
+    <%!-- ONE element per page. Client events broadcast to EVERY mounted hook, so a
+          second element would post every bridge request to the shell twice. --%>
+    <div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>
+    """
+  end
+end
+```
+
+Then check the host:
+
+<!-- cleanroom:run id=readme-doctor -->
+```bash
+mix crosswake.doctor
+```
+
+Add native targets only when this host starts claiming them. For an iOS shell, declare
+its build inputs first:
+
+<!-- cleanroom:apply id=readme-ios-host file=config/config.exs mode=append since=0.2.12 -->
+```elixir
+config :crosswake, :ios_host,
+  router: MyAppWeb.Router,
+  origin: "https://study.crosswake.test",
+  entry_route_id: "study-session",
+  app_bundle_id: "org.crosswake.host",
+  proof_app_bundle_id: "org.crosswake.host.proof",
+  device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+```
+
+`mix crosswake.gen.shell ios` reads this setting in Crosswake releases after 0.2.11; see
+the CHANGELOG `[Unreleased]` section for the release that adds it.
+
+<!-- cleanroom:show -->
+```bash
+mix crosswake.gen.shell ios
+mix crosswake.gen.shell android
+```
+
+The example-host proof lane and the native verification hooks are repository scripts:
+
+<!-- cleanroom:clone id=readme-phase5-example-hosts -->
 ```bash
 bash script/verify_phase5_example_hosts.sh
 ```
+
+*Needs a clone of the Crosswake repository; skip this if you installed from Hex.*
+
+<!-- cleanroom:clone id=readme-native-checks -->
+```bash
+mix crosswake.doctor --native-checks
+```
+
+*Needs a clone of the Crosswake repository; skip this if you installed from Hex.*
 
 Crosswake owns the DSL, manifest contract, doctor tooling, and proof posture.
 Your Phoenix host and generated shells are **host-owned** after generation.
@@ -199,10 +300,10 @@ the executable support boundary.
 - [guides/troubleshooting.md](guides/troubleshooting.md) maps doctor findings, denial reasons, route-unavailable states, offline replay outcomes, and native evidence labels to route-owner fixes.
 - [guides/install.md](guides/install.md) is the canonical install and proof-entry guide.
 - The checked-in `examples/ios_shell_host` and `examples/android_shell_host` hosts are `checked-in public-coordinate proof`; use `--local` only for maintainer/local-dev proof.
-- `bash script/verify_phase5_example_hosts.sh` is the primary checked-in proof lane.
+- `bash script/verify_phase5_example_hosts.sh` is the primary checked-in proof lane (needs a clone).
 - The route-tour evidence path uses `merge-blocking proof` for browser semantic assertions, manifest labels for artifacts, and `advisory evidence` for native simulator/emulator collateral.
 - `mix crosswake.doctor` discovers the installed router and stays green with native support `not_claimed` before a shell exists; `--native-targets none` makes that CI posture explicit.
-- `mix crosswake.doctor --native-checks` reruns verification hooks for generated or explicitly claimed native targets.
+- `mix crosswake.doctor --native-checks` reruns verification hooks for generated or explicitly claimed native targets (needs a clone).
 
 Crosswake stays deliberately narrow and explicit. Unsupported or incompatible routes
 fail closed onto explicit denial behavior instead of silently degrading into a generic

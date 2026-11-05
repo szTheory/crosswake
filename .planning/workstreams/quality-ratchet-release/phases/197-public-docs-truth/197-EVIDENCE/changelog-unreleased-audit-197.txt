@@ -1,0 +1,10 @@
+changelog-audit: fetch rc 0 http 200
+changelog-audit: extract outer rc 0
+changelog-audit: extract contents rc 0
+changelog-audit: tree version=0.2.11 lib_ex_files=138
+audit: host_command_seam identifiers=host_commands 0.2.11=not_found action=kept
+audit: legacy_manifest_denial identifiers=host_commands_legacy_manifest 0.2.11=not_found action=kept
+audit: doctor_offline_fidelity identifiers=offline_posture_not_claimed 0.2.11=not_found action=kept
+audit: navigation_shell_provenance identifiers=git-unknown 0.2.11=not_found action=kept
+audit: ios_host identifiers=ios_host 0.2.11=not_found action=bullet_added
+changelog-audit: rc 0

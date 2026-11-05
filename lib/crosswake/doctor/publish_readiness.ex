@@ -14,6 +14,8 @@ defmodule Crosswake.Doctor.PublishReadiness do
   alias Crosswake.SupportMatrix
 
   @schema_version "1.0.0"
+  @releases_pointer "](https://github.com/szTheory/crosswake/releases)"
+  @hex_versions_pointer "](https://hex.pm/packages/crosswake/versions)"
   @allowed_docs [
     "guides/support_matrix.md",
     "guides/compatibility.md",
@@ -1083,21 +1085,29 @@ defmodule Crosswake.Doctor.PublishReadiness do
   defp explicit_unpublished_candidate?(cwd, contents, expected_version) do
     with {:ok, manifest} <- read_release_manifest(cwd),
          ^expected_version <- Map.get(manifest, "."),
-         [_, published_version] <- Regex.run(~r/^## \[(\d+\.\d+\.\d+)\]/m, contents),
-         :gt <- Version.compare(expected_version, published_version) do
-      unreleased = changelog_section(contents, "## [Unreleased]")
-
-      String.contains?(
-        unreleased,
-        "No new support claims have been cut after `#{published_version}` yet"
-      ) and
-        String.contains?(
-          unreleased,
-          "The current published Hex release is `#{published_version}`"
-        )
+         [_, newest_release] <- Regex.run(~r/^## \[(\d+\.\d+\.\d+)\]/m, contents),
+         :gt <- Version.compare(expected_version, newest_release) do
+      contents
+      |> changelog_section("## [Unreleased]")
+      |> published_truth_pointer?()
     else
       _ -> false
     end
+  end
+
+  # Version-free: the candidate is recognised by the Published Hex truth pointer
+  # to the registry and the release list, never by a sentence naming a version.
+  defp published_truth_pointer?(unreleased) do
+    subsection =
+      case Regex.run(~r/^### Published Hex truth\r?\n(.*?)(?=^### |\z)/ms, unreleased,
+             capture: :all_but_first
+           ) do
+        [body] -> body
+        nil -> ""
+      end
+
+    String.contains?(subsection, @releases_pointer) and
+      String.contains?(subsection, @hex_versions_pointer)
   end
 
   defp read_release_manifest(cwd) do

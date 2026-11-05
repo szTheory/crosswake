@@ -1,0 +1,10 @@
+cleanroom: selftest overrides active
+cleanroom: docs source commit 0000000000000000000000000000000000000000
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+cleanroom: docs deferred ios_host README.md since=0.2.12 version=0.2.11
+cleanroom: docs deferred ios_host guides/install.md since=0.2.12 version=0.2.11
+cleanroom: leg docs PASS 0.2.11 executed=18 not_applicable=2 deferred=ios_host clone=4 shown=4 source=commit:0000000000000000000000000000000000000000 phx_new=1.8.13
+cleanroom: result SELFTEST legs docs version 0.2.11
+cleanroom: rc 0
+cleanroom: docs blob README.md f4ef35cd4c7b66b243a9a8bd285a8d9514de8f2a
+cleanroom: docs blob guides/install.md 56a192a85d00a7966aa5b3b106f90f9cd9251cf0

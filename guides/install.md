@@ -14,12 +14,15 @@ doctor before claiming a native target.
 > Phoenix route inventory pass.
 > See [guides/adoption.md](adoption.md) for offline-sync architecture context and the rationale for the generated shell pattern.
 
+*Steps marked "Needs a clone" are for contributors; every other step works from Hex alone.*
+
 1. `mix crosswake.install`
-2. Declare at least one Phoenix route with `crosswake: [...]` policy metadata
-3. `mix crosswake.doctor`
-4. `mix crosswake.gen.shell ios|android` when the host starts claiming a native target
-5. `bash script/verify_phase5_example_hosts.sh`
-6. `mix crosswake.doctor --native-checks`
+2. Wire the bridge hook, the esbuild flags and `Crosswake.Bridge.attach/1` (Step 1b)
+3. Declare at least one Phoenix route with `crosswake: [...]` policy metadata
+4. `mix crosswake.doctor`
+5. `mix crosswake.gen.shell ios|android` when the host starts claiming a native target
+6. `bash script/verify_phase5_example_hosts.sh` (needs a clone)
+7. `mix crosswake.doctor --native-checks` (needs a clone)
 
 The generated Phoenix and native files are `host-owned`, reviewable, and editable
 after generation. Crosswake owns the DSL, manifest contract, doctor surface, support
@@ -42,6 +45,7 @@ contracts. Use [guides/route_policy.md](route_policy.md) as the owner-decision m
 
 Add `crosswake` to the deps in your Phoenix host's `mix.exs`:
 
+<!-- cleanroom:apply id=deps-crosswake file=mix.exs mode=deps -->
 ```elixir
 def deps do
   [
@@ -52,6 +56,7 @@ end
 
 Then fetch it:
 
+<!-- cleanroom:run id=deps -->
 ```sh
 mix deps.get
 ```
@@ -60,6 +65,7 @@ mix deps.get
 
 Run:
 
+<!-- cleanroom:run id=install -->
 ```sh
 mix crosswake.install
 ```
@@ -88,6 +94,7 @@ Crosswake and `Phoenix.LiveDashboard.Router` both wrap Phoenix route macros. The
 dashboard macro imports its own `get/4` and `live/4` inside the development block, so
 exclude the two conflicting Crosswake arities in that same lexical block:
 
+<!-- cleanroom:show -->
 ```elixir
 if Application.compile_env(:my_app, :dev_routes) do
   import Crosswake.Router, except: [get: 4, live: 4], warn: false
@@ -116,6 +123,7 @@ whether the fail-closed contract holds.
 prints the part that is not. Run `mix crosswake.gen.bridge_hook` at any time to see all
 three fragments again — it refuses to generate anything and prints the wiring instead:
 
+<!-- cleanroom:show -->
 ```elixir
 # lib/<app>_web/endpoint.ex — patched for you by mix crosswake.install
 # crosswake:install:start
@@ -128,6 +136,7 @@ plug(Plug.Static,
 # crosswake:install:end
 ```
 
+<!-- cleanroom:apply id=bridge-hook file=assets/js/app.js mode=js-hook -->
 ```javascript
 // your layout's module script — yours to place
 import {CrosswakeBridge} from "/crosswake/crosswake.esm.js";
@@ -137,19 +146,21 @@ const liveSocket = new LiveSocket("/live", Socket, {params, hooks: {CrosswakeBri
 Phoenix's esbuild profile must preserve that application-served absolute import and
 emit ESM. Add both arguments to the existing `args` list in `config/config.exs`:
 
+<!-- cleanroom:apply id=esbuild file=config/config.exs mode=esbuild-args -->
 ```elixir
-~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets \
-   --external:/crosswake/* --format=esm)
+~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets --external:/crosswake/* --format=esm)
 ```
 
 Without `--external:/crosswake/*`, esbuild tries to resolve the URL as a source file.
 Without `--format=esm`, the external absolute import cannot remain in the emitted
 module in the form the browser expects.
 
-```heex
-<%!-- ONE element per page. Client events broadcast to EVERY mounted hook, so a
-      second element would post every bridge request to the shell twice. --%>
-<div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>
+Declare the route that carries the bridge. The installer's router markers make the
+`crosswake:` option available on `live`, so one line in your browser scope is enough:
+
+<!-- cleanroom:apply id=route file=lib/my_app_web/router.ex mode=router-route -->
+```elixir
+live "/study", StudyLive, crosswake: [id: "study-session", runtime: :live_view, offline: :unavailable]
 ```
 
 If you genuinely need a host-owned copy, `mix crosswake.gen.bridge_hook --eject` writes
@@ -164,14 +175,34 @@ once. `Crosswake.Bridge.push/3` raises `Crosswake.Bridge.NotMountedError` on a s
 that never called `Crosswake.Bridge.attach/1`. Crosswake never guesses a route id, so a
 missing attach is a named, loud, first-push failure rather than a silent no-op.
 
-```elixir
-def mount(_params, _session, socket) do
-  socket =
-    socket
-    |> assign(crosswake_manifest: MyAppWeb.Crosswake.Policy.manifest(), crosswake_route_id: "my-route")
-    |> Crosswake.Bridge.attach()
+The module below is a complete host-owned LiveView for the route above. Its `mount/3`
+assigns the manifest and the same route id the router line declares, then attaches the
+bridge:
 
-  {:ok, socket}
+<!-- cleanroom:apply id=attach file=lib/my_app_web/live/study_live.ex mode=create -->
+```elixir
+defmodule MyAppWeb.StudyLive do
+  use MyAppWeb, :live_view
+
+  def mount(_params, _session, socket) do
+    socket =
+      socket
+      |> assign(
+        crosswake_manifest: MyAppWeb.Crosswake.Policy.manifest(),
+        crosswake_route_id: "study-session"
+      )
+      |> Crosswake.Bridge.attach()
+
+    {:ok, socket}
+  end
+
+  def render(assigns) do
+    ~H"""
+    <%!-- ONE element per page. Client events broadcast to EVERY mounted hook, so a
+          second element would post every bridge request to the shell twice. --%>
+    <div id="crosswake-bridge" phx-hook="CrosswakeBridge" phx-update="ignore"></div>
+    """
+  end
 end
 ```
 
@@ -188,8 +219,28 @@ runtime wiring deadline: the server arms it on every push and delivers a
 
 ## Step 2: Generate Host-Owned Native Shells
 
+Before generating an iOS shell, declare its build inputs once in the host's ordinary
+Mix configuration (see [guides/native_shell.md](native_shell.md) for every key and the
+origin rules):
+
+<!-- cleanroom:apply id=ios-host file=config/config.exs mode=append since=0.2.12 -->
+```elixir
+config :crosswake, :ios_host,
+  router: MyAppWeb.Router,
+  origin: "https://study.crosswake.test",
+  entry_route_id: "study-session",
+  app_bundle_id: "org.crosswake.host",
+  proof_app_bundle_id: "org.crosswake.host.proof",
+  device_signing: [mode: :automatic, team_id: "ABCDE12345"]
+```
+
+`mix crosswake.gen.shell ios` reads this setting in Crosswake releases after 0.2.11; see
+the CHANGELOG `[Unreleased]` section for the release that adds it. The entry route id is
+the one declared above.
+
 Run one of:
 
+<!-- cleanroom:show -->
 ```sh
 mix crosswake.gen.shell ios
 mix crosswake.gen.shell android
@@ -222,6 +273,7 @@ for the bounded bridge contract.
 
 Run after installation and the first managed route declaration:
 
+<!-- cleanroom:run id=doctor -->
 ```sh
 mix crosswake.doctor
 ```
@@ -245,9 +297,12 @@ policy posture, and fail-closed denial vocabulary in the pre-shell posture.
 
 Run:
 
+<!-- cleanroom:clone id=phase5-example-hosts -->
 ```sh
 bash script/verify_phase5_example_hosts.sh
 ```
+
+*Needs a clone of the Crosswake repository; skip this if you installed from Hex.*
 
 This is the primary proof artifact class Crosswake publishes for adopters.
 
@@ -255,11 +310,14 @@ This is the primary proof artifact class Crosswake publishes for adopters.
 
 Run:
 
+<!-- cleanroom:clone id=native-checks -->
 ```sh
 mix crosswake.doctor --native-checks
 ```
 
-With `--native-checks`, doctor executes the generated-host verification hooks:
+*Needs a clone of the Crosswake repository; skip this if you installed from Hex.*
+
+With `--native-checks`, doctor executes the generated-host verification hooks (needs a clone: these are repository scripts):
 
 - `script/verify_generated_ios_shell.sh`
 - `script/verify_generated_android_shell.sh`

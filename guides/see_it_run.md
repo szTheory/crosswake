@@ -193,6 +193,8 @@ What the receipt proves: a virtual twin on a simulator with synthetic test autho
 trusted local runner. What it does not prove: a physical iPhone, a signed device, a physical
 speaker, first adopter evidence, or cryptographic certification of the run.
 
+The twin receipt attests candidate commit `a53fbef`, not `main`; no twin run has been recorded against a later commit.
+
 ## Go Deeper
 
 - Full proof command reference: [examples/QUICK_START.md](https://github.com/szTheory/crosswake/blob/main/examples/QUICK_START.md)

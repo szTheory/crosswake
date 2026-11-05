@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Planning milestones vs Hex releases
 
-This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)** headings like **`[0.1.0]`** for **published Hex releases**. Separately, maintainers track **planning milestones** labeled **v1.0–v3.6** in **`.planning/MILESTONE-ARC.md`** and archived milestone evidence under **`.planning/milestones/`** — those labels describe shipped *tranches of work*, **not** a second installable version axis on Hex (this repo remains **0.x** on Hex until a real **1.0.0**). When in doubt, treat **`.planning/MILESTONE-ARC.md`** as canonical for milestone ordering and archive paths.
+This changelog uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html) headings for published Hex releases. The planning milestones used inside this repository are internal labels for tranches of work, not a second installable version axis on Hex.
 
 ## [Unreleased]
 
@@ -17,9 +17,7 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 * **Legacy-manifest denial (iOS shell, not released).** A manifest route without `host_commands` (generated before schema `1.2.0`) now grants no host command, and each one is denied with `not_registered` or `version_unsupported`. Already-generated hosts must rerun `mix crosswake.gen.shell ios`; `mix crosswake.doctor` reports `host_commands_legacy_manifest` for them. This entry is not a release.
 * **Doctor offline and unmanaged-route fidelity (not released).** `mix crosswake.doctor` now reports the doctor field `offline.status` as `"not_claimed"`, with the advisory finding `offline_posture_not_claimed`, when no route declares offline behavior; this is distinct from the native-shell support posture `not_claimed` described in `guides/install.md`. An `:offline_island` route declared `offline: :local_first` without an `island_contract` (an unbacked offline island) is now the `offline_posture_incomplete` error listing `incoherent_routes`, so doctor exits non-zero for it. The `unmanaged_routes` finding now carries `unmanaged_paths` and `router` in its details. This entry is not a release.
 * **Navigation-shell proof provenance (not released).** `mix crosswake.proof_lane.verify_navigation_shell` now records the real crosswake version, the host template version (from `native/ios/crosswake_shell/.crosswake/shell.json`, else the generator constant) and the host commit instead of fixed placeholders. A value that cannot be known is the exact sentinel `"unknown"` or `"git-unknown"`; a host whose tracked files differ from `HEAD` records `git-unknown`. The evidence validator rejects an all-zero commit, so previously stored placeholder evidence now fails the check, and sentinel evidence is never promotable to `physical_iphone`. This entry is not a release and claims no device result.
-* No new support claims have been cut after `0.2.1` yet. Future entries here must distinguish planning milestone work from published Hex release truth.
-* **The companion-decoupling core refactor shipped in `0.2.0`** (runtime `:companions` registry inversion — see the `[0.2.0]` section below).
-* The current published Hex family includes `crosswake 0.2.1`, `crosswake_sigra 0.1.3`, `crosswake_chimeway 0.1.0`, and `crosswake_threadline 0.1.0`. The local release graph also tracks `crosswake_rulestead 0.1.0` and `crosswake_rindle 0.1.0`; public registry presence is reported by `mix crosswake.release.status --live`, and compatibility floors remain documented in `guides/companion_compatibility.md`.
+* **Declared iOS host setup (iOS only, not released).** The `config :crosswake, :ios_host` declaration (router, origin, entry route id and app identity) is read by `mix crosswake.gen.shell ios`; no published release reads it yet. This entry is not a release.
 
 ### Verification-required and advisory surfaces
 
@@ -33,7 +31,8 @@ This changelog uses **[Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Published Hex truth
 
-* The current published Hex release is `0.2.1`. Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.
+* Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.
+* Releases that have no section in this file are listed on [GitHub Releases](https://github.com/szTheory/crosswake/releases) and [hex.pm](https://hex.pm/packages/crosswake/versions).
 
 ## [0.2.1] — 2026-09-14
 
@@ -85,7 +84,7 @@ Additive, Elixir-only core surface: `Crosswake.Shell.Finding` gains `code` and `
 
 ### Notes
 
-* This core release is the published prerequisite for the v17.0 first-party companion packages (`crosswake_sigra`, `crosswake_chimeway`, `crosswake_threadline`), which publish separately and require `crosswake` `~> 0.2` (`>= 0.2.0`). Current companion versions are tracked in `[Unreleased]` and `guides/companion_compatibility.md`.
+* This core release is the published prerequisite for the v17.0 first-party companion packages (`crosswake_sigra`, `crosswake_chimeway`, `crosswake_threadline`), which publish separately and require `crosswake` `~> 0.2` (`>= 0.2.0`). Companion package versions are listed on hex.pm.
 * Deferred and not shipped (unchanged from `0.1.2`): RevenueCat provider adapter, Chimeway notification delivery, native device/emulator proof lanes, and broad native runtime expansion beyond the published-core shell path.
 
 ## [0.1.2] — 2026-06-17

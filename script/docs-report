@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Docs report launcher: runs script/docs_report.exs from the repo root.
+# exit contract: 0 ran / 2 UNVERIFIED, never 1 (report-only, not a required check)
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+exec elixir "$ROOT_DIR/script/docs_report.exs" "$@"

@@ -90,20 +90,37 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
     assert Enum.any?(failures, &(&1.category == :missing_label))
   end
 
-  test "synthetic regressions fail on stale Android UAT version wording and overclaims" do
+  test "synthetic regressions fail on a re-added Android UAT verification stamp and overclaims" do
     current_android_uat = File.read!("guides/android_uat.md")
 
-    stale_version_failures =
-      scan_surface(
-        "guides/android_uat.md",
-        String.replace(
-          current_android_uat,
-          "Crosswake v#{current_version()}",
-          "Crosswake v0.1.0"
-        ) <> "\nPreserved current version marker: Crosswake v#{current_version()}\n"
-      )
+    # The real guide carries no verification stamp, so the rule must not flag it.
+    real_stale_failures =
+      "guides/android_uat.md"
+      |> scan_surface(current_android_uat)
+      |> Enum.filter(&(&1.category == :stale_android_truth))
+
+    assert real_stale_failures == []
+
+    stamped_line = "**Last verified against:** Crosswake v0.1.0 on Android 15 (API 35)"
+    stamped = current_android_uat <> "\n" <> stamped_line <> "\n"
+
+    refute stamped == current_android_uat, "stale-stamp control did not change the guide"
+
+    stale_version_failures = scan_surface("guides/android_uat.md", stamped)
 
     assert Enum.any?(stale_version_failures, &(&1.category == :stale_android_truth))
+
+    # A stamp that names the current version has no stale literal; the stamp rule alone flags it.
+    current_stamped =
+      current_android_uat <>
+        "\n**Last verified against:** Crosswake v#{current_version()}\n"
+
+    refute current_stamped == current_android_uat
+
+    assert Enum.any?(
+             scan_surface("guides/android_uat.md", current_stamped),
+             &(&1.category == :stale_android_truth)
+           )
 
     overclaim_failures =
       scan_surface(
@@ -304,6 +321,7 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
         stale_version_category(path),
         "stale 0.1.0 truth remains in a public native surface"
       )
+      |> maybe_stamp_failure(path, line, line_number)
       |> maybe_line_failure(
         path,
         line,
@@ -544,7 +562,7 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
         ]
 
       "guides/android_uat.md" ->
-        [current_version(), "Android 15 (API 35)", "What This Proves", "Boundary"]
+        ["What This Proves", "Boundary", "Capability families (registry mirror)"]
 
       "examples/ios_shell_host/README.md" ->
         ["What this proves:", "What this does not prove:", "Next link:"]
@@ -727,6 +745,22 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
         []
     end
   end
+
+  defp maybe_stamp_failure(failures, "guides/android_uat.md", line, line_number) do
+    if Regex.match?(~r/\*\*Last verified against:\*\*/, line) do
+      [
+        failure("guides/android_uat.md", :stale_android_truth,
+          line: line_number,
+          detail: "Android UAT guide must not carry a verification stamp (no run is recorded)"
+        )
+        | failures
+      ]
+    else
+      failures
+    end
+  end
+
+  defp maybe_stamp_failure(failures, _path, _line, _line_number), do: failures
 
   defp stale_version_category("guides/android_uat.md"), do: :stale_android_truth
 

@@ -1,0 +1,7 @@
+# D-24: case-insensitive 'frozen' over README.md guides/support_matrix.md guides/native_shell.md
+# command: grep -n -i "frozen" README.md guides/support_matrix.md guides/native_shell.md
+grep: rc 1
+
+# control: same grep over a copy of README.md with the sentence 'Android remains frozen.' appended
+338:Android remains frozen.
+control: rc 0

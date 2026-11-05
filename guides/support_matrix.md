@@ -41,6 +41,8 @@ Bridge is not high-frequency or mutation authority.
 
 `manifest_schema_version` then moved `1.1.0` -> `1.2.0` (Phase 181): additive and iOS-only. Routes may carry `host_commands`, and `compatibility` may carry `host_command_seam_version`. The Android shell does not read either field. This is `compatibility-bump only` for hosts that declare no host commands.
 
+Manifest schema `1.2.0` is not in a published release yet; published 0.2.11 emits `1.1.0`; see CHANGELOG `[Unreleased]`.
+
 Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.
 
 **Guarantee strength, stated honestly (D-45/D-52).** That `@enforce_keys` widening is the only part of the Phase 154 catalog line that is structurally impossible to violate: a capability declaring neither `interaction` nor `rebuild` does not compile, and no reviewer or CI job is involved. Every other part of the bounded-bridge contract is CI-caught rather than structural. `Crosswake.Bridge.CatalogGuard` is a merge-blocking structural test proving there is no dynamic-registration seam, no streaming seam, no external SDK inside the bridge tree, and native command enum parity in both directions — but a gate caught in CI is a gate a maintainer can still walk through deliberately, one honest control at a time. Read `guides/bridge.md#guarantee-strength-what-is-structural-and-what-is-ci-caught` before treating either as airtight.
@@ -77,7 +79,7 @@ Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` n
 
 ## iOS Host Generation and Xcode Settings
 
-The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.
+The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. The `:ios_host` declaration is not in a published release yet (0.2.11 and earlier do not read it); see CHANGELOG `[Unreleased]`. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.
 
 `mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.
 

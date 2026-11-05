@@ -16,22 +16,19 @@ each package's `mix.exs`; a merge-blocking drift test
 cell drifts from the package source in either direction.
 
 <!-- compat-03 contract: col1=Hex Package, requirement cell = "Requires `crosswake`";
+     columns are Hex Package | Companion ID | Latest on Hex | Requires `crosswake` | Engine Dependency;
      do not reorder columns without updating phase132_compat_matrix_drift_test.exs -->
-<!-- Current Version: do not hand-edit; keep this aligned with package mix.exs / release manifest.
-     Use mix crosswake.release.status --live for public registry presence. -->
-| Hex Package | Companion ID | Current Version | Requires `crosswake` | Engine Dependency | hexdocs |
-|---|---|---|---|---|---|
-| `crosswake_rulestead` | `:rulestead` | `0.1.0` | `~> 0.2` | `{:rulestead, "~> 0.1", optional: true}` | [hexdocs.pm/crosswake_rulestead](https://hexdocs.pm/crosswake_rulestead) |
-| `crosswake_rindle` | `:rindle` | `unpublished` | `~> 0.2` | `{:rindle, "~> 0.1", optional: true}` | not yet on hexdocs |
-| `crosswake_sigra` | `:sigra` | `0.1.3` | `~> 0.2` | none (pure-Elixir auth machinery) | [hexdocs.pm/crosswake_sigra](https://hexdocs.pm/crosswake_sigra) |
-| `crosswake_chimeway` | `:chimeway` | `0.1.0` | `~> 0.2` | none (pure-Elixir notification machinery) | [hexdocs.pm/crosswake_chimeway](https://hexdocs.pm/crosswake_chimeway) |
-| `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | `0.1.0` | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) | [hexdocs.pm/crosswake_threadline](https://hexdocs.pm/crosswake_threadline) |
+| Hex Package | Companion ID | Latest on Hex | Requires `crosswake` | Engine Dependency |
+|---|---|---|---|---|
+| `crosswake_rulestead` | `:rulestead` | [hex.pm/packages/crosswake_rulestead](https://hex.pm/packages/crosswake_rulestead) | `~> 0.2` | `{:rulestead, "~> 0.1", optional: true}` |
+| `crosswake_rindle` | `:rindle` | [hex.pm/packages/crosswake_rindle](https://hex.pm/packages/crosswake_rindle) | `~> 0.2` | `{:rindle, "~> 0.1", optional: true}` |
+| `crosswake_sigra` | `:sigra` | [hex.pm/packages/crosswake_sigra](https://hex.pm/packages/crosswake_sigra) | `~> 0.2` | none (pure-Elixir auth machinery) |
+| `crosswake_chimeway` | `:chimeway` | [hex.pm/packages/crosswake_chimeway](https://hex.pm/packages/crosswake_chimeway) | `~> 0.2` | none (pure-Elixir notification machinery) |
+| `crosswake_threadline` | N/A (observer — not a `:companions` registrant) | [hex.pm/packages/crosswake_threadline](https://hex.pm/packages/crosswake_threadline) | `~> 0.2` | none (optional `:plug` + `:phoenix_live_view` for surface modules) |
 
-The `Current Version` column reflects **published Hex truth**. A cell reading
-`unpublished` means the package is extracted and wired into the release graph in this
-repository but has never been published to hex.pm — it cannot be added to a project yet,
-and it has no hexdocs page. `crosswake_rindle` is in that state today.
-`crosswake_rulestead` `0.1.0` is published and has current HexDocs.
+This matrix does not list package versions: a copied version goes stale the moment a
+release ships. The `Latest on Hex` link is the registry's own page for each package,
+which names the current release and links its documentation.
 
 For public registry truth, run `mix crosswake.release.status --live`; that command is
 allowed to report a package version as configured locally while still warning that Hex,
@@ -77,8 +74,8 @@ a separate status concern and does not couple independent companion version line
 
 ## Engine Dependencies
 
-`crosswake_sigra` is the exception to the engine-dependency pattern: version `0.1.3`
-has no dependency on the `sigra` Hex package. It supplies Crosswake's pure-Elixir auth
+`crosswake_sigra` is the exception to the engine-dependency pattern: it has no
+dependency on the `sigra` Hex package. It supplies Crosswake's pure-Elixir auth
 projection seam, while the host projects its verified Sigra session into that seam.
 Consequently it does not constrain Sigra's package version: a host on Sigra `1.4.x`,
 or on a separately sourced `1.5.0`, has no Mix-solver conflict with
@@ -92,11 +89,12 @@ engine-present behavior; absent it, the companion fails closed and
 `mix crosswake.doctor` reports `companion.dependency_missing`.
 
 Name the friction honestly. Because `~> 0.1` admits every `0.x` (`>= 0.1.0 and
-< 1.0.0`), a companion only hits the cap when its engine reaches `1.0.0`. `rulestead`
-is at `1.0.0` — outside `~> 0.1` — so to run it engine-present you must pin the engine
-to its `0.1.x` line rather than taking the latest release; widening past the next
-major is deferred until the contract is proven against it. `rindle` is at `0.3.0`,
-which is still within `~> 0.1`, so it resolves engine-present without pinning.
+< 1.0.0`), a companion only hits the cap when its engine reaches `1.0.0`. Check the
+engine's latest release on hex.pm: while it is still a `0.x` release it resolves
+engine-present without pinning, and once it is at `1.0.0` or later you must pin the
+engine to its `0.1.x` line to run it engine-present rather than taking the latest
+release. Widening past the next major is deferred until the contract is proven against
+it.
 
 ## Verifying Companion Health
 
