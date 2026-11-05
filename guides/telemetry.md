@@ -186,6 +186,19 @@ Event names:
 - `` `[:crosswake, :bridge, :hook_missing, :stop]` ``
 - `` `[:crosswake, :bridge, :hook_missing, :exception]` ``
 
+### Offline: replay
+
+Event: `[:crosswake, :offline, :replay]`
+
+Emitted for a closed scoped-replay observation. It is emitted once per closed observation as the `:stop` suffix only, not as a span: there is no `:start` or `:exception` event.
+
+| Suffix | Measurements | Metadata |
+|--------|-------------|----------|
+| `:stop` | `attempt_count`, `event_count`, `duration_ms` | `route_id`, `runtime`, `lifecycle`, `outcome`, `denial` |
+
+Event names:
+- `` `[:crosswake, :offline, :replay, :stop]` ``
+
 ## Reserved Events
 
 Sigra and Chimeway each declare event catalogs (via `event_names/0`) that are not yet emitted from production code. These appear in `Crosswake.Telemetry.events/0` with `tier: :reserved`.
@@ -197,7 +210,7 @@ Reserved events are:
 
 Sigra declares 14 reserved events; Chimeway declares 10. Their event names follow the `` `[:crosswake, :sigra, ...]` `` and `` `[:crosswake, :chimeway, ...]` `` prefixes respectively. Filter by `tier: :reserved` in `events/0` to enumerate them.
 
-`Crosswake.Offline.Telemetry` is a metadata-contract module only; it has no event catalog and contributes no events to `events/0`.
+`Crosswake.Offline.Telemetry` is a metadata-contract module only; it has no event catalog of its own and contributes no events to `events/0`. The offline replay event above is declared in `Crosswake.Telemetry.events/0`.
 
 ## Attaching the Default Logger
 
