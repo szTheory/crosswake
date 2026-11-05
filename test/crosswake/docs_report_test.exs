@@ -11,6 +11,26 @@ defmodule Crosswake.DocsReportTest do
   @allowlist "script/docs_leak_allowlist.json"
   @empty_allowlist ~s({"schema_version": 1, "entries": []})
 
+  # Two warning blocks copied verbatim from a real `MIX_ENV=dev mix docs` run (ex_doc 0.40.3):
+  # the first locates an extras file, the second a lib file.
+  @extras_block """
+      warning: documentation references function "Crosswake.Manifest.Builder.capability_catalog/0" but it is undefined or private
+      │
+   44 │ Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.
+      │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      │
+      └─ guides/support_matrix.md:44: (file)
+  """
+
+  @lib_block """
+      warning: documentation references type "Crosswake.Manifest.Types.Root.t()" but the module Crosswake.Manifest.Types.Root is hidden
+      │
+   28 │   def evaluate(%Root{} = manifest, route_id, %Target{} = target) do
+      │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      │
+      └─ (crosswake 0.2.11) lib/crosswake/compatibility/route_gate.ex:28: Crosswake.Compatibility.RouteGate.evaluate/3
+  """
+
   setup_all do
     Process.put(:crosswake_docs_report_library, true)
 
@@ -83,8 +103,15 @@ defmodule Crosswake.DocsReportTest do
     allowlist(root)
   end
 
+  # The default `run` is a successful, warning-free `mix docs` stand-in: no test below spawns
+  # the real thing except the CLI test, which puts a stub `mix` on PATH.
+  defp quiet_docs(_cmd, _args, opts) do
+    put(opts[:cd], "doc/index.html", "<html/>")
+    {"Generating docs...\n", 0}
+  end
+
   defp report(root, deps_overrides \\ %{}, opts \\ []) do
-    deps = Map.merge(Crosswake.DocsReport.deps(), deps_overrides)
+    deps = Map.merge(%{Crosswake.DocsReport.deps() | run: &quiet_docs/3}, deps_overrides)
     {code, lines} = Crosswake.DocsReport.run(root, deps, opts)
     {code, lines}
   end
@@ -99,9 +126,8 @@ defmodule Crosswake.DocsReportTest do
 
       assert leaks_line(lines) == "docs.leaks hits=5 allowlisted=0 stale_allowlist=0 files=2"
       assert "docs-report: REPORT-ONLY (not a required check)" in lines
-      assert "docs.warnings UNVERIFIED reason=not_measured" in lines
-      # warnings are unmeasured until the mix docs counter lands, so the exit is 2, never 1
-      assert code == 2
+      assert "docs.warnings total=0 extras=0" in lines
+      assert code == 0
     end
 
     @tag :tmp_dir
@@ -398,6 +424,175 @@ defmodule Crosswake.DocsReportTest do
       assert leaks_line(lines) =~ "docs.leaks hits="
       assert lines != []
       refute Enum.any?(lines, &(&1 =~ "allowlist_invalid"))
+    end
+  end
+
+  describe "warnings counter" do
+    # A `mix docs` stand-in for the `run` seam: records the call, writes `doc/index.html`
+    # under the working directory it was given, and returns canned output.
+    defp docs_run(output, status \\ 0, opts \\ []) do
+      test_pid = self()
+
+      fn cmd, args, run_opts ->
+        send(test_pid, {:ran, cmd, args, run_opts})
+        if Keyword.get(opts, :index, true), do: put(run_opts[:cd], "doc/index.html", "<html/>")
+        {output, status}
+      end
+    end
+
+    defp warnings_line(lines), do: Enum.find(lines, &String.starts_with?(&1, "docs.warnings"))
+
+    defp docs_fixture(root) do
+      mix_exs(root, ["README.md", "guides/support_matrix.md"])
+      allowlist(root)
+      put(root, "README.md", "# Readme\n")
+      put(root, "guides/support_matrix.md", "# Matrix\n")
+    end
+
+    @tag :tmp_dir
+    test "the real captured fixture yields exactly total=2 extras=1", %{tmp_dir: root} do
+      docs_fixture(root)
+
+      output =
+        "Generating docs...\n" <> @extras_block <> "\n" <> @lib_block <> "\nView html docs\n"
+
+      {code, lines} = report(root, %{run: docs_run(output)})
+
+      assert warnings_line(lines) == "docs.warnings total=2 extras=1"
+      assert code == 0
+    end
+
+    @tag :tmp_dir
+    test "runs mix docs in the dev env at the root and never passes warnings-as-errors", %{
+      tmp_dir: root
+    } do
+      docs_fixture(root)
+      {0, _lines} = report(root, %{run: docs_run("")})
+
+      assert_received {:ran, "mix", args, run_opts}
+      assert args == ["docs"]
+      assert run_opts[:cd] == Path.expand(root)
+      assert {"MIX_ENV", "dev"} in run_opts[:env]
+      assert run_opts[:stderr_to_stdout] == true
+    end
+
+    @tag :tmp_dir
+    test "a non-zero mix docs exit is UNVERIFIED mix_docs_failed, never a count", %{
+      tmp_dir: root
+    } do
+      docs_fixture(root)
+      {code, lines} = report(root, %{run: docs_run(@extras_block, 1)})
+
+      assert code == 2
+      assert "docs.warnings UNVERIFIED reason=mix_docs_failed" in lines
+      assert lines != []
+      refute Enum.any?(lines, &String.starts_with?(&1, "docs.warnings total="))
+    end
+
+    @tag :tmp_dir
+    test "exit 0 with no doc/index.html is UNVERIFIED no_doc_index", %{tmp_dir: root} do
+      docs_fixture(root)
+      {code, lines} = report(root, %{run: docs_run("", 0, index: false)})
+
+      assert code == 2
+      assert "docs.warnings UNVERIFIED reason=no_doc_index" in lines
+      assert lines != []
+      refute Enum.any?(lines, &String.starts_with?(&1, "docs.warnings total="))
+    end
+
+    @tag :tmp_dir
+    test "zero warnings with an index file is the one legitimate zero", %{tmp_dir: root} do
+      docs_fixture(root)
+      {code, lines} = report(root, %{run: docs_run("Generating docs...\nView html docs\n")})
+
+      assert warnings_line(lines) == "docs.warnings total=0 extras=0"
+      assert code == 0
+    end
+
+    @tag :tmp_dir
+    test "a block with no location counts toward total but not extras; --detail names files",
+         %{tmp_dir: root} do
+      docs_fixture(root)
+      located = String.replace(@extras_block, "guides/support_matrix.md:44", "README.md:3")
+      bare = "    warning: something with no location line\n"
+      output = located <> "\n" <> bare <> "\n" <> @lib_block
+
+      {_code, lines} = report(root, %{run: docs_run(output)}, detail: true)
+
+      assert warnings_line(lines) == "docs.warnings total=3 extras=1"
+      assert "docs.warnings.hit file=README.md" in lines
+      assert lines != []
+      refute Enum.any?(lines, &(&1 =~ "route_gate"))
+    end
+
+    @tag :tmp_dir
+    test "a missing mix binary is UNVERIFIED, not a crash and not a zero", %{tmp_dir: root} do
+      docs_fixture(root)
+      missing = fn _cmd, _args, _opts -> {"", 127} end
+      {code, lines} = report(root, %{run: missing})
+
+      assert code == 2
+      assert "docs.warnings UNVERIFIED reason=mix_docs_failed" in lines
+    end
+
+    @tag :tmp_dir
+    test "the CLI prints the warnings line from a stub mix first on PATH", %{tmp_dir: root} do
+      docs_fixture(root)
+      bin = Path.join(root, "bin")
+      File.mkdir_p!(bin)
+      block = @extras_block |> String.replace("`", "")
+
+      stub = """
+      #!/bin/sh
+      mkdir -p doc
+      : > doc/index.html
+      cat <<'WARNING_EOF'
+      #{block}WARNING_EOF
+      """
+
+      stub_path = Path.join(bin, "mix")
+      File.write!(stub_path, stub)
+      File.chmod!(stub_path, 0o755)
+
+      env = [{"PATH", bin <> ":" <> System.get_env("PATH")}]
+      script = Path.join(@repo_root, "script/docs_report.exs")
+
+      {out, status} =
+        System.cmd("elixir", [script, "--root", root], env: env, stderr_to_stdout: true)
+
+      assert status == 0
+      assert out =~ "docs.warnings total=1 extras=1\n"
+    end
+  end
+
+  describe "not in CI" do
+    @workflows Path.join(@repo_root, ".github/workflows")
+
+    defp workflow_refs(body) do
+      Enum.filter(["docs-report", "docs_report.exs"], &String.contains?(body, &1))
+    end
+
+    defp workflow_files do
+      Path.wildcard(Path.join(@workflows, "*.{yml,yaml}"))
+    end
+
+    test "no workflow references the docs report" do
+      files = workflow_files()
+      assert files != []
+
+      for wf <- files do
+        assert workflow_refs(File.read!(wf)) == [], "#{wf} references the docs report"
+      end
+    end
+
+    test "control: the scan helper flags an injected reference" do
+      [first | _] = workflow_files()
+      body = File.read!(first)
+      injected = body <> "\n      - run: script/docs-report\n"
+
+      assert injected != body
+      assert workflow_refs(body) == []
+      assert workflow_refs(injected) == ["docs-report"]
     end
   end
 

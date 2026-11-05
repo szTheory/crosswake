@@ -38,18 +38,14 @@ defmodule Crosswake.DocsReport do
 
   @doc "The default external seams: reads, existence, subprocesses, and the scan scope."
   def deps do
-    %{read: &File.read/1, exists?: &File.exists?/1, run: &system_run/2, scan: & &1}
+    %{read: &File.read/1, exists?: &File.exists?/1, run: &system_run/3, scan: & &1}
   end
 
-  @doc "The single subprocess seam: `{:ok, out}` or `{:error, reason_atom}`, never stderr text."
-  def system_run(cmd, args) do
-    case System.cmd(cmd, args, stderr_to_stdout: true) do
-      {out, 0} -> {:ok, out}
-      {_discarded, _status} -> {:error, :exit_status}
-    end
+  @doc "The single subprocess seam: `{output, exit_status}`; a missing binary is `{\"\", 127}`."
+  def system_run(cmd, args, opts) do
+    System.cmd(cmd, args, opts)
   rescue
-    ErlangError -> {:error, :missing_binary}
-    _ -> {:error, :exception}
+    _ -> {"", 127}
   end
 
   @doc "Runs every counter over `root`; returns `{exit_code, lines}`."
@@ -66,10 +62,7 @@ defmodule Crosswake.DocsReport do
           {links(scope, detail?), leaks(root, scope, deps, detail?)}
       end
 
-    render(
-      [{:unverified, "docs.warnings UNVERIFIED reason=not_measured"}] ++
-        links_lines ++ leaks_lines
-    )
+    render(warnings(root, deps, detail?) ++ links_lines ++ leaks_lines)
   end
 
   @doc "Joins counter lines, appends the report-only banner and derives the exit code."
@@ -81,6 +74,76 @@ defmodule Crosswake.DocsReport do
   end
 
   defp unverified(counter, reason), do: {:unverified, "#{counter} UNVERIFIED reason=#{reason}"}
+
+  # --- warnings: `mix docs` in the dev env (ex_doc is a dev-only dependency) ------------------
+
+  @doc """
+  Runs `mix docs` through the `run` seam and counts its `warning:` blocks; returns report
+  lines. Never passes `--warnings-as-errors`. A non-zero exit or a missing `doc/index.html`
+  is UNVERIFIED, never `total=0`: a docs build that did not produce docs measured nothing.
+  """
+  def warnings(root, deps, detail?) do
+    with {:ok, extras} <- extras(root, deps),
+         {output, 0} <- deps.run.("mix", ["docs"], docs_opts(root)),
+         true <- deps.exists?.(Path.join([root, "doc", "index.html"])) do
+      hits = warning_locations(output)
+      total = length(hits)
+      in_extras = Enum.filter(hits, &(&1 in extras))
+
+      summary = {:ok, "docs.warnings total=#{total} extras=#{length(in_extras)}"}
+
+      detail =
+        if detail? do
+          for file <- in_extras, do: {:ok, "docs.warnings.hit file=#{file}"}
+        else
+          []
+        end
+
+      [summary | detail]
+    else
+      {:error, reason} -> [unverified("docs.warnings", reason)]
+      {_output, _status} -> [unverified("docs.warnings", :mix_docs_failed)]
+      false -> [unverified("docs.warnings", :no_doc_index)]
+    end
+  end
+
+  defp docs_opts(root), do: [cd: root, env: [{"MIX_ENV", "dev"}], stderr_to_stdout: true]
+
+  # One entry per `warning:` line: the file named by its location line (`└─ <file>:<n>`, the
+  # first such line before the next warning), or `nil` when the block names none. ExDoc 0.40
+  # prints the location as `└─ guides/x.md:44: (file)` or `└─ (pkg 1.2.3) lib/x.ex:28: Mod.fun/3`.
+  defp warning_locations(output) do
+    output
+    |> String.split("\n")
+    |> Enum.chunk_while(
+      nil,
+      fn line, current ->
+        if warning_line?(line),
+          do: {:cont, current, [line]},
+          else: {:cont, current && [line | current]}
+      end,
+      fn
+        nil -> {:cont, nil}
+        current -> {:cont, current, nil}
+      end
+    )
+    |> Enum.reject(&is_nil/1)
+    |> Enum.map(&block_file/1)
+  end
+
+  defp warning_line?(line), do: line |> String.trim_leading() |> String.starts_with?("warning:")
+
+  defp block_file(reversed_block) do
+    reversed_block
+    |> Enum.reverse()
+    |> tl()
+    |> Enum.find_value(fn line ->
+      case Regex.run(~r/^\s*└─\s.*?([^\s()]+):[0-9]+/u, line, capture: :all_but_first) do
+        [file] -> file
+        _ -> nil
+      end
+    end)
+  end
 
   # --- scope: the `.md` files listed in mix.exs `extras:` ---------------------------------
 
