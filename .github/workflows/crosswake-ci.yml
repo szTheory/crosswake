@@ -898,11 +898,57 @@ jobs:
         run: script/verify_generated_android_shell.sh
       - name: Check public Android propagation and build failure handling
         run: python3 script/verify_android_public_build_test.py
+      - name: Check foreign-host proof failure handling
+        run: python3 script/verify_android_foreign_host_test.py
+      - name: Check foreign-host promotion counting
+        run: python3 script/android_foreign_promotion_test.py
       - name: Summarize generated Android proof
         if: always()
         run: |
           echo 'android-generated-shell-unit: generated Android shell JVM proof completed.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: CROSSWAKE_ANDROID_CONNECTED_TESTS=0 CROSSWAKE_ANDROID_USE_MAVEN_LOCAL=1 script/verify_generated_android_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+
+  android-foreign-host:
+    name: android-foreign-host
+    needs: [classify-change]
+    if: needs.classify-change.outputs.classification == 'full_proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "27.3"
+      - uses: ./.github/actions/setup-android-jvm
+        with:
+          working-directory: packages/crosswake-shell-core-android
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.crosswake/gradle
+          key: crosswake-gradle-dist-${{ hashFiles('packages/crosswake-shell-core-android/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Install Hex and rebar
+        run: mix local.hex --force && mix local.rebar --force
+      - name: Run published foreign-host proof
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash script/verify_android_foreign_host.sh --evidence "$RUNNER_TEMP/android-foreign-host-evidence.json" --head-sha "$HEAD_SHA"
+      - name: Upload foreign-host evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-foreign-host-evidence
+          path: ${{ runner.temp }}/android-foreign-host-evidence.json
+          if-no-files-found: error
+      - name: Summarize foreign-host proof
+        if: always()
+        run: |
+          {
+            echo 'android-foreign-host is visible advisory evidence and is intentionally outside Crosswake CI required authority.'
+            echo 'It proves the published generator output and the published Maven Central version, not the version at this head.'
+            echo 'CI ran on the pull request synthetic merge commit; the evidence records the pull request head SHA.'
+            echo 'Remediation: bash script/verify_android_foreign_host.sh'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   ios-package-unit:
     name: ios-package-unit
