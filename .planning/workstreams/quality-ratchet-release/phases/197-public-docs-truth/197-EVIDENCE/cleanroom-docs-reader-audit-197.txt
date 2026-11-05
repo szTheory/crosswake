@@ -1,0 +1,12 @@
+reader-audit: fetch rc 0 http 200
+reader-audit: extract outer rc 0
+reader-audit: extract contents rc 0
+reader-audit: tree version=0.2.11 lib_ex_files=138
+reader-audit: deps reader=outer metadata.config names version 0.2.11, so {:crosswake, "== 0.2.11"} resolves 0.2.11=found disposition=executed
+reader-audit: install reader=lib/mix/tasks/crosswake.install.ex 0.2.11=found disposition=executed
+reader-audit: bridge_hook reader=priv/static/crosswake.esm.js exporting CrosswakeBridge, served by the Plug.Static that lib/crosswake/install/patcher.ex adds for mix crosswake.install 0.2.11=found disposition=executed
+reader-audit: esbuild reader=the host's esbuild tool, version-independent of crosswake 0.2.11=not_applicable_host_tool disposition=executed
+reader-audit: route reader=the crosswake: route option popped and attached as route metadata by the router macro in lib/crosswake/router.ex 0.2.11=found disposition=executed
+reader-audit: attach reader=def attach( in contents/lib/crosswake/bridge.ex 0.2.11=found disposition=executed
+reader-audit: ios_host reader=:ios_host in extracted lib/ (expected not read by 0.2.11) 0.2.11=not_found disposition=deferred
+reader-audit: rc 0
