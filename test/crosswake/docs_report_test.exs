@@ -168,6 +168,130 @@ defmodule Crosswake.DocsReportTest do
     end
   end
 
+  defp links_line(lines), do: Enum.find(lines, &String.starts_with?(&1, "docs.links "))
+
+  # `guides/a.md` links out; `guides/other.md` is the shipped target with known headings.
+  defp links_fixture(root, a_body, other_body \\ "# Other\n\n## Real Heading\n") do
+    mix_exs(root, ["guides/a.md", "guides/other.md"])
+    allowlist(root)
+    put(root, "guides/a.md", a_body)
+    put(root, "guides/other.md", other_body)
+  end
+
+  describe "link counter" do
+    @tag :tmp_dir
+    test "a relative link to a shipped extra is checked and not broken", %{tmp_dir: root} do
+      links_fixture(root, "# A\n\nSee [other](other.md).\n")
+      {_code, lines} = report(root)
+      assert links_line(lines) == "docs.links broken=0 checked=1 files=2"
+    end
+
+    @tag :tmp_dir
+    test "a link to a missing file is broken", %{tmp_dir: root} do
+      links_fixture(root, "# A\n\nSee [gone](missing.md).\n")
+      {_code, lines} = report(root)
+      assert links_line(lines) == "docs.links broken=1 checked=1 files=2"
+    end
+
+    @tag :tmp_dir
+    test "a cross-file anchor resolves against the target's headings", %{tmp_dir: root} do
+      links_fixture(
+        root,
+        "# A\n\n[ok](other.md#real-heading) and [bad](other.md#no-such-heading)\n"
+      )
+
+      {_code, lines} = report(root, %{}, detail: true)
+      assert links_line(lines) == "docs.links broken=1 checked=2 files=2"
+      assert "docs.links.broken file=guides/a.md target=other.md#no-such-heading" in lines
+    end
+
+    @tag :tmp_dir
+    test "a same-file anchor resolves against the file's own headings", %{tmp_dir: root} do
+      links_fixture(root, "# A\n\n## Local Part\n\n[ok](#local-part) [bad](#nowhere)\n")
+      {_code, lines} = report(root)
+      assert links_line(lines) == "docs.links broken=1 checked=2 files=2"
+    end
+
+    @tag :tmp_dir
+    test "links into non-shipped paths are broken", %{tmp_dir: root} do
+      links_fixture(
+        root,
+        "# A\n\n[code](../lib/crosswake.ex) [state](../.planning/STATE.md)\n"
+      )
+
+      {_code, lines} = report(root, %{}, detail: true)
+      assert links_line(lines) == "docs.links broken=2 checked=2 files=2"
+      assert "docs.links.broken file=guides/a.md target=../lib/crosswake.ex" in lines
+      assert "docs.links.broken file=guides/a.md target=../.planning/STATE.md" in lines
+    end
+
+    @tag :tmp_dir
+    test "URL links and links inside fenced code are not checked", %{tmp_dir: root} do
+      body = """
+      # A
+
+      [site](https://example.com/guide.md) [mail](mailto:x@example.com)
+
+      ```markdown
+      [fenced](missing.md)
+      ```
+      """
+
+      links_fixture(root, body)
+      {_code, lines} = report(root)
+      assert links_line(lines) == "docs.links broken=0 checked=0 files=2"
+    end
+
+    @tag :tmp_dir
+    test "heading slugs follow the GitHub rule, duplicates suffixed", %{tmp_dir: root} do
+      other = """
+      # Other
+
+      ## Real Heading
+
+      ## Real Heading
+
+      ## What's `new`? (v2)
+
+      ## Caf\u00e9 au_lait
+      """
+
+      body =
+        "# A\n\n[1](other.md#real-heading) [2](other.md#real-heading-1) " <>
+          "[3](other.md#whats-new-v2) [4](other.md#caf\u00e9-au_lait) [5](other.md#real-heading-2)\n"
+
+      links_fixture(root, body, other)
+      {_code, lines} = report(root, %{}, detail: true)
+      assert links_line(lines) == "docs.links broken=1 checked=5 files=2"
+      assert "docs.links.broken file=guides/a.md target=other.md#real-heading-2" in lines
+    end
+
+    @tag :tmp_dir
+    test "renaming the target heading turns a clean link broken", %{tmp_dir: root} do
+      body = "# A\n\n[ok](other.md#real-heading)\n"
+      other = "# Other\n\n## Real Heading\n"
+      links_fixture(root, body, other)
+      {_code, lines} = report(root)
+      assert links_line(lines) == "docs.links broken=0 checked=1 files=2"
+
+      renamed = String.replace(other, "Real Heading", "Renamed Heading")
+      assert renamed != other
+      put(root, "guides/other.md", renamed)
+      {_code, lines} = report(root)
+      assert links_line(lines) == "docs.links broken=1 checked=1 files=2"
+    end
+
+    @tag :tmp_dir
+    test "UNVERIFIED scope leaves the links line UNVERIFIED too", %{tmp_dir: root} do
+      mix_exs(root, [])
+      allowlist(root)
+
+      {code, lines} = report(root)
+      assert code == 2
+      assert "docs.links UNVERIFIED reason=no_extras" in lines
+    end
+  end
+
   describe "scope and UNVERIFIED rules" do
     @tag :tmp_dir
     test "scan floor: a scan that drops a parsed extra is UNVERIFIED, not clean", %{

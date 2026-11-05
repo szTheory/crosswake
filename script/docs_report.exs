@@ -176,9 +176,116 @@ defmodule Crosswake.DocsReport do
     Enum.join(stripped, "\n")
   end
 
-  # --- links: filled by the link counter -------------------------------------------------
+  # --- links: relative `.md` links and `#anchors` over the shipped extras ---------------------
 
-  defp links(_scope, _detail?), do: [{:unverified, "docs.links UNVERIFIED reason=not_measured"}]
+  @doc "Counts broken relative links over the scoped files; returns report lines."
+  def links(scope, detail?) do
+    slugs = Map.new(scope.files, fn {file, text} -> {file, heading_slugs(text)} end)
+    extras = MapSet.new(scope.extras)
+
+    results =
+      for {file, text} <- scope.files,
+          target <- link_targets(text),
+          result = check_link(target, file, scope, extras, slugs),
+          result != :skip,
+          do: {file, target, result}
+
+    broken = for {file, target, :broken} <- results, do: {file, target}
+
+    summary =
+      {:ok,
+       "docs.links broken=#{length(broken)} checked=#{length(results)} " <>
+         "files=#{length(scope.files)}"}
+
+    detail =
+      if detail? do
+        for {file, target} <- broken, do: {:ok, "docs.links.broken file=#{file} target=#{target}"}
+      else
+        []
+      end
+
+    [summary | detail]
+  end
+
+  defp link_targets(text) do
+    ~r/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/
+    |> Regex.scan(text, capture: :all_but_first)
+    |> List.flatten()
+  end
+
+  # `:skip` (not a checked link), `:ok` or `:broken`.
+  defp check_link(target, file, scope, extras, slugs) do
+    if Regex.match?(~r/^[a-zA-Z][a-zA-Z0-9+.\-]*:/, target) do
+      :skip
+    else
+      {path, anchor} = split_anchor(target)
+      check_path(path, anchor, file, scope, extras, slugs)
+    end
+  end
+
+  defp split_anchor(target) do
+    case String.split(target, "#", parts: 2) do
+      [path, anchor] -> {path, anchor}
+      [path] -> {path, nil}
+    end
+  end
+
+  defp check_path("", nil, _file, _scope, _extras, _slugs), do: :skip
+  defp check_path("", "", _file, _scope, _extras, _slugs), do: :skip
+
+  defp check_path("", anchor, file, _scope, _extras, slugs),
+    do: if(MapSet.member?(slugs[file], anchor), do: :ok, else: :broken)
+
+  defp check_path(path, anchor, file, scope, extras, slugs) do
+    relative = resolve(scope.root, file, path)
+
+    cond do
+      not (String.ends_with?(path, ".md") or unshipped_root?(relative)) -> :skip
+      not MapSet.member?(extras, relative) -> :broken
+      anchor in [nil, ""] -> :ok
+      MapSet.member?(Map.get(slugs, relative, MapSet.new()), anchor) -> :ok
+      true -> :broken
+    end
+  end
+
+  defp resolve(root, file, path) do
+    path
+    |> Path.expand(Path.dirname(Path.join(root, file)))
+    |> Path.relative_to(root)
+  end
+
+  defp unshipped_root?(relative),
+    do: String.starts_with?(relative, "lib/") or String.starts_with?(relative, ".planning/")
+
+  # GitHub heading-slug rule: lowercase, drop everything but letters, digits, spaces, hyphens
+  # and underscores, spaces to hyphens, duplicate slugs suffixed -1, -2 in document order.
+  # ExDoc's own slugger differs in places; those differences are recorded, not reconciled.
+  defp heading_slugs(text) do
+    text
+    |> String.split("\n")
+    |> Enum.flat_map(fn line ->
+      case Regex.run(~r/^ {0,3}[#]{1,6}[ \t]+(.+?)[ \t]*$/, line, capture: :all_but_first) do
+        [heading] -> [heading |> String.replace(~r/[ \t]+[#]+$/, "") |> slug_base()]
+        _ -> []
+      end
+    end)
+    |> Enum.map_reduce(%{}, fn slug, seen ->
+      n = Map.get(seen, slug, 0)
+      {if(n == 0, do: slug, else: "#{slug}-#{n}"), Map.put(seen, slug, n + 1)}
+    end)
+    |> elem(0)
+    |> MapSet.new()
+  end
+
+  defp slug_base(heading) do
+    heading
+    |> then(&Regex.replace(~r/!?\[([^\]]*)\]\([^)]*\)/, &1, "\\1"))
+    |> String.replace(["`", "*"], "")
+    |> then(&Regex.replace(~r/(?<![\p{L}\p{N}])_(.+?)_(?![\p{L}\p{N}])/u, &1, "\\1"))
+    |> String.downcase()
+    |> then(&Regex.replace(~r/[^\p{L}\p{N} _-]/u, &1, ""))
+    |> String.replace(" ", "-")
+  end
 
   # --- leaks ---------------------------------------------------------------------------------
 
