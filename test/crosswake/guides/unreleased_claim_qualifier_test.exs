@@ -20,7 +20,12 @@ defmodule Crosswake.Guides.UnreleasedClaimQualifierTest do
 
   # {guide, token}. Each pair is a claim a first adopter on 0.2.11 could read as shipped.
   @claims [
-    {"guides/capability_map.md", ":ios_host"}
+    {"guides/capability_map.md", ":ios_host"},
+    {"guides/support_matrix.md", ":ios_host"},
+    {"guides/support_matrix.md", "1.2.0"},
+    {"guides/native_shell.md", ":ios_host"},
+    {"guides/native_shell_upgrade.md", ":ios_host"},
+    {"guides/native_shell_upgrade.md", "1.2.0"}
   ]
 
   describe "sections/1" do

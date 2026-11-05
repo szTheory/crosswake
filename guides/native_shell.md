@@ -60,7 +60,9 @@ not make the native project a general regeneratable overlay.
 For a production iOS host, declare the build inputs once in the host's ordinary
 Phoenix/Mix configuration. `MIX_ENV` selects the normal environment; generation
 requires the compiled router but does not start the Phoenix application, evaluate
-`runtime.exs`, or load unrelated runtime-server credentials.
+`runtime.exs`, or load unrelated runtime-server credentials. The `:ios_host`
+declaration is not in a published release yet (0.2.11 and earlier do not read it); see
+CHANGELOG `[Unreleased]`.
 
 ```elixir
 config :crosswake, :ios_host,
@@ -74,8 +76,9 @@ config :crosswake, :ios_host,
 
 The declaration accepts exactly `router`, `origin`, `entry_route_id`,
 `app_bundle_id`, `proof_app_bundle_id`, and `device_signing`. The origin must be an
-absolute HTTPS origin without a path, query, fragment, credentials, or example host;
-the entry must be declared by the selected router. The app and proof app identities
+absolute HTTPS origin without a path, query, fragment, credentials, or example host.
+The declaration requires a non-empty `entry_route_id`; `mix crosswake.gen.shell ios`
+refuses an entry the selected router does not declare. The app and proof app identities
 must be distinct. Crosswake derives the shell unit-test identity by adding `.tests`
 to `app_bundle_id`, and derives the proof unit/UI test identities by adding `.tests`
 and `.uitests` to `proof_app_bundle_id`.
