@@ -186,6 +186,7 @@ defmodule Crosswake.Proof.Phase166RepositoryQualityTest do
              "packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/VectorSetHash.kt",
              "packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json",
              "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json",
+             "packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/VectorSetHash.swift",
              "test/fixtures/bridge_contract_vectors.json"
            ]
 
