@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 197-01-PLAN.md
-last_updated: "2026-11-05T15:41:11.214Z"
-state_head: 9066d0ab498dd91ff6b07294fa5a2c4739eb5a1d
+stopped_at: Completed 197-02-PLAN.md
+last_updated: "2026-11-05T15:47:51.973Z"
+state_head: 8e41045cc6170fd75be18c037a7a7b4232a0a273
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 48
+  completed_plans: 49
   percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
@@ -20,7 +20,7 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 15
 
 ## Exact Next Action
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T15:40:54.898Z
-**Stopped at:** Completed 197-01-PLAN.md
+**Last session:** 2026-11-05T15:47:51.745Z
+**Stopped at:** Completed 197-02-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -51,6 +51,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 196 P16 | 6h 15m | 2 tasks | 11 files |
 | Phase 196 P17 | about 1h 50m (this run; landed proof 66 min) | 3 tasks | 5 files |
 | Phase 197 P01 | 70min | 3 tasks | 6 files |
+| Phase 197 P02 | 45min | 3 tasks | 8 files |
 
 ## Decisions
 
@@ -62,6 +63,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: Plan 01: leak patterns carry a leading word boundary so SEED-NN is not also counted as D-NN
 - [Phase 197]: Plan 01: scan floor below parsed .md extras is UNVERIFIED for both leaks and links; every later mix test gate runs through script/mix_test_gate.sh
 - [Phase 197]: DOCS-01, DOCS-02 and SC1/SC2 amended 2026-10-29 to CONTEXT D-04 (:ios_host deferred to Phase 199), D-06 (clone-labeled blocks) and D-10 (matrix links to the registry).
+- [Phase 197]: Plan 02: warning location is the first corner-marker line before the next warning, not any path:digits line; D-19 baseline differs from discussion only by counting unit (occurrences vs distinct lines)
 
 ### Blockers
 
