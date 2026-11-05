@@ -3,7 +3,7 @@
 #
 # "Required only after two clean runs" is computed here from Crosswake CI run history and the
 # foreign-host evidence artifacts. It is never a hand-stamped value. This script only reports:
-# promotion itself is a later reviewed PR that edits FINAL_PROOF_LEAVES and the umbrella needs.
+# promotion itself is a later reviewed PR that edits the final proof leaf list and the umbrella needs.
 #
 # usage: script/android_foreign_promotion.sh
 #
