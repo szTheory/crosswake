@@ -104,3 +104,14 @@ All phase behaviors have automated verification. The one-time native-loader muta
 - [ ] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
+
+---
+
+## Accepted plan-checker warnings (revision cap reached, 2026-11-05)
+
+Checker iteration 3 returned 0 blockers and 2 warnings, both in Plan 08. Accepted for execution, to be resolved by the executor with the fix hints below.
+
+1. **Plan 08 Task 1, vacuous support-matrix assertion.** `guides/support_matrix.md` has no `Android evidence` or `Android` table header, so `ceiling_violations == []` holds by construction. Either floor the assertion on the `Android (existing contracts)` row (boundary cell equals `SupportMatrix.android_boundary()`), or state in the test and in `198-DECISIONS.md` that the support-matrix ceiling rests on the boundary pin plus the prose scanner, and drop the vacuous assertion.
+2. **Plan 08 Task 2, D-22 "renders once".** The added `Android ceiling:` legend line makes the sentence render four times in the support matrix, while D-21 keeps three existing copies. Either drop the legend line, or record a D-22 override in `198-DECISIONS.md` naming the rows D-21 keeps.
+
+Advisory info to carry: Plan 06 T2 wording (the sentence is the third cell, not the middle); record in `198-DECISIONS.md` that the renderer's "Android remains available..." bullet is outside the single-source set; run the Plan 12 full-suite gate in the background (512 s in Phase 197).
