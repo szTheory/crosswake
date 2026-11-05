@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: Not started
+current_plan: 3
 status: executing
-stopped_at: Completed 198-01-PLAN.md
-last_updated: "2026-11-05T22:28:09.031Z"
-state_head: c118ff37bd4b9527dc0fa7936bbc7ee8bf5cc338
+stopped_at: Completed 198-02-PLAN.md
+last_updated: "2026-11-05T22:32:24.364Z"
+state_head: 6cf7a51000dde71df9d3ba6ea372e6d0b39a664b
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 74
-  completed_plans: 63
+  completed_plans: 64
   percent: 60
 current_phase: 198
 current_phase_name: Android foreign-host proof
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 12
 
 ## Exact Next Action
 
-Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 1 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-01 (Kotlin JVM tests on the AOSP-derived android-json artifact, fail-closed envelope, listener extraction, SemVer digit-only hardening; 21 JVM tests green; decisions in 198-DECISIONS.md; AND-02 stays open until the later floor of 25 tests and remaining plans land). Exact next command: execute 198-02 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 2 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-02 (BridgeChannel boundary tests for every D-12 group; Kotlin core JVM suite at 37 tests, 0 failures or skips; no fail-open finding; no production change). AND-02 literal floor (25 tests, webkit decision, JSON stack in writing) is met on JVM evidence; the requirement stays open until Plan 03 lands the floor checker. Exact next command: execute 198-03 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T22:28:08.713Z
-**Stopped at:** Completed 198-01-PLAN.md
+**Last session:** 2026-11-05T22:32:24.180Z
+**Stopped at:** Completed 198-02-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -66,6 +66,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P13 | 75min | 2 tasks | 8 files |
 | Phase 197 P14 | about 1h 10m (second session; first session blocked at CI) | 2 tasks | 8 files |
 | Phase 198 P01 | 25min | 3 tasks | 9 files |
+| Phase 198 P02 | 20min | 3 tasks | 2 files |
 
 ## Decisions
 
@@ -90,6 +91,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-14: dependency advisories fixed by separate PR 269 to main, then main merged into the branch; mix.lock is a measured input so suite and docs-report after-counts were remeasured; PR 268 green 38/38 on e4936637 (CI ran on synthetic merge 9d0aa1f0)
 - [Phase 198]: JVM tests use AOSP-derived android-json test artifact; production keeps platform org.json (D-09)
 - [Phase 198]: SemVer digit-only on Android; divergence from iOS Int(_:) recorded as debt row (e)
+- [Phase 198]: Plan 02: BridgeChannel boundary tests run with counted near-miss loops and positive controls; every D-12 near miss denied fail closed, no finding. server.event.push and server.state.update ungated behavior is pinned as characterization only (debt row a)
 
 ### Blockers
 
