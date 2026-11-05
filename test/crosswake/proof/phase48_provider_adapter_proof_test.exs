@@ -334,7 +334,7 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.provider_adapters.changelog_unreleased",
       "CHANGELOG.md",
-      "No new support claims have been cut after `0.2.1` yet. Future entries here must distinguish planning milestone work from published Hex release truth.",
+      "Public readers should treat this `[Unreleased]` section as future development and planning continuity, not a newer installable release.",
       source: "CHANGELOG.md [Unreleased] support claims",
       hint: "separate local support truth from published Hex release truth",
       posture: :merge_blocking
@@ -352,7 +352,7 @@ defmodule Crosswake.Proof.Phase48ProviderAdapterProofTest do
     ProofAssertions.assert_contains_exact(
       "proof.docs.provider_adapters.changelog_hex_truth",
       "CHANGELOG.md",
-      "The current published Hex release is `0.2.1`.",
+      "Releases that have no section in this file are listed on [GitHub Releases](https://github.com/szTheory/crosswake/releases) and [hex.pm](https://hex.pm/packages/crosswake/versions).",
       source: "CHANGELOG.md published release section",
       hint: "preserve distinction between unreleased planning claims and published package truth",
       posture: :merge_blocking
