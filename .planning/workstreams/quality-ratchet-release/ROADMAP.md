@@ -298,7 +298,7 @@ Plans:
   3. A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on the Linux CI head commit as an advisory leg (required only after two clean runs), and a negative control with a wrong coordinate fails.
   4. No Android claim in the support matrix or capability map exceeds JVM-hermetic evidence (no device, emulator or feature-breadth claim).
 
-**Plans**: 5/12 plans executed (one checkout, sequential waves)
+**Plans**: 6/12 plans executed (one checkout, sequential waves)
 
 **Wave 1**
 - [x] 198-01-PLAN.md — JSON-stack swap to AOSP-derived android-json, dead serialization removed, fail-closed envelope, listener extractions, SemVer hardening, decisions in writing (AND-02)
@@ -316,7 +316,7 @@ Plans:
 - [x] 198-05-PLAN.md — Generated Swift vector-set hash, verified Swift loaders, one-time byte-flip evidence (AND-01)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 198-06-PLAN.md — Typed Android evidence ceiling, capability-map Android evidence column, single-sourced boundary sentence (AND-01, SC4)
+- [x] 198-06-PLAN.md — Typed Android evidence ceiling, capability-map Android evidence column, single-sourced boundary sentence (AND-01, SC4)
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 198-07-PLAN.md — Generated public parity ledger via docs.sync with computed Android cells, two-sided consumer registry and controls (AND-01)
@@ -362,7 +362,7 @@ Plans:
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | In Progress | - |
-| 198. Android foreign-host proof | 5/12 | In Progress | - |
+| 198. Android foreign-host proof | 6/12 | In Progress | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 
 <details>
