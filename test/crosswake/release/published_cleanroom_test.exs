@@ -860,9 +860,24 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
 
   # Runs the leg over README (unchanged) and an install.md carrying `blocks`, keeping the work
   # dir. Returns {out, rc, work}; the caller reads work/host-install and removes work.
-  defp apply_run(root, blocks, name, extra \\ []) do
+  defp apply_run(root, blocks, name, opts \\ []) do
     base = write_docs(root, docs_readme(), install_with(blocks), "docs-#{name}")
-    env = docs_selftest_env(root, base, [{"CLEANROOM_KEEP_WORK", "1"} | extra])
+
+    env =
+      docs_selftest_env(root, base, [
+        {"CLEANROOM_KEEP_WORK", "1"} | Keyword.get(opts, :env, [])
+      ])
+
+    # Stub-host edits (anchor removals) are applied to the skeleton the `phx.new` stub copies,
+    # after docs_selftest_env wrote it; each must change the file.
+    for {rel, fun} <- Keyword.get(opts, :skeleton, []) do
+      skel = Path.join([root, "mixstubs", "skeleton", rel])
+      before = File.read!(skel)
+      mutated = fun.(before)
+      assert mutated != before, "skeleton edit changed nothing in #{rel}"
+      File.write!(skel, mutated)
+    end
+
     {out, rc} = run(@script, ["0.0.1"], env)
 
     work =
@@ -1039,6 +1054,304 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert rc == 1, out
     assert "cleanroom: FAIL docs required_step doctor README.md" in String.split(out, "\n")
     refute out =~ "leg docs PASS"
+  end
+
+  # ---- the five remaining apply modes ------------------------------------------------------
+
+  defp assert_apply_fail(out, rc, id, reason) do
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs apply #{id} #{reason}" in String.split(out, "\n"), out
+    refute out =~ "leg docs PASS"
+  end
+
+  test "apply mode create: writes a new host file and its parent directories inside the host",
+       %{root: root} do
+    blocks =
+      apply_block(
+        "mk",
+        "create",
+        "lib/my_app_web/live/study_live.ex",
+        "defmodule MyAppWeb.StudyLive do\nend"
+      )
+
+    {out, rc, work} = apply_run(root, blocks, "create")
+
+    assert rc == 0, out
+
+    assert host_file(work, "lib/clean_room_host_web/live/study_live.ex") =~
+             "defmodule CleanRoomHostWeb.StudyLive do"
+
+    refute File.exists?(Path.join([work, "host-install", "lib", "my_app_web"]))
+    File.rm_rf!(work)
+  end
+
+  test "apply mode create: identical existing content is a no-op, different content is exists",
+       %{root: root} do
+    one = apply_block("mk_a", "create", "lib/note.ex", "same")
+    two = apply_block("mk_b", "create", "lib/note.ex", "same")
+    {out, rc, work} = apply_run(root, one <> two, "create-same")
+    assert rc == 0, out
+    assert host_file(work, "lib/note.ex") == "same\n"
+    File.rm_rf!(work)
+
+    other = apply_block("mk_c", "create", "lib/note.ex", "different")
+    {out, rc, work} = apply_run(root, one <> other, "create-diff")
+    assert_apply_fail(out, rc, "mk_c", "exists")
+    refute out =~ "anchor_missing"
+    File.rm_rf!(work)
+  end
+
+  test "apply mode append: appends once, never twice (idempotent)", %{root: root} do
+    block = fn id ->
+      apply_block(id, "append", "config/config.exs", "config :my_app, :flag, true")
+    end
+
+    {out, rc, work} = apply_run(root, block.("ap_a") <> block.("ap_b"), "append")
+
+    assert rc == 0, out
+    cfg = host_file(work, "config/config.exs")
+    assert length(String.split(cfg, "config :clean_room_host, :flag, true")) == 2
+    assert String.ends_with?(cfg, "config :clean_room_host, :flag, true\n")
+    # the existing content is intact
+    assert cfg =~ "import Config"
+    File.rm_rf!(work)
+  end
+
+  test "apply mode esbuild-args: adds absent flags to the sigil, skips present ones, is idempotent",
+       %{root: root} do
+    body =
+      "~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets \\\n   --external:/crosswake/* --format=esm)"
+
+    block = fn id -> apply_block(id, "esbuild-args", "config/config.exs", body) end
+    {out, rc, work} = apply_run(root, block.("es_a") <> block.("es_b"), "esbuild")
+
+    assert rc == 0, out
+    cfg = host_file(work, "config/config.exs")
+
+    assert cfg =~
+             "~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --external:/crosswake/* --format=esm),"
+
+    # --outdir=... was already present under another value, so it is not repeated
+    assert length(String.split(cfg, "--outdir=")) == 2
+    assert length(String.split(cfg, "--external:/crosswake/*")) == 2
+    assert length(String.split(cfg, "--format=esm")) == 2
+    File.rm_rf!(work)
+  end
+
+  test "apply mode esbuild-args: --external compares the whole token", %{root: root} do
+    blocks =
+      apply_block(
+        "es_ext",
+        "esbuild-args",
+        "config/config.exs",
+        "--external:/fonts/* --external:/other/*"
+      )
+
+    {out, rc, work} = apply_run(root, blocks, "esbuild-ext")
+
+    assert rc == 0, out
+    cfg = host_file(work, "config/config.exs")
+    assert length(String.split(cfg, "--external:/fonts/*")) == 2
+    assert cfg =~ "--external:/images/* --external:/other/*)"
+    File.rm_rf!(work)
+  end
+
+  test "apply mode esbuild-args: no sigil is anchor_missing", %{root: root} do
+    blocks = apply_block("es_x", "esbuild-args", "config/config.exs", "--format=esm")
+
+    {out, rc, work} =
+      apply_run(root, blocks, "esbuild-anchor",
+        skeleton: [{"config/config.exs", &String.replace(&1, "~w(js/app.js", "~w(js/main.js")}]
+      )
+
+    assert_apply_fail(out, rc, "es_x", "anchor_missing")
+    File.rm_rf!(work)
+  end
+
+  @hook_body "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";\nconst liveSocket = new LiveSocket(\"/live\", Socket, {params, hooks: {CrosswakeBridge}});"
+
+  test "apply mode js-hook: prepends the import and adds the hook once (idempotent)", %{
+    root: root
+  } do
+    block = fn id -> apply_block(id, "js-hook", "assets/js/app.js", @hook_body) end
+    {out, rc, work} = apply_run(root, block.("jh_a") <> block.("jh_b"), "jshook")
+
+    assert rc == 0, out
+    js = host_file(work, "assets/js/app.js")
+
+    assert String.starts_with?(
+             js,
+             "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";\nimport \"phoenix_html\""
+           )
+
+    assert js =~ "hooks: {CrosswakeBridge, ...colocatedHooks}"
+    # one import plus one hook entry
+    assert length(String.split(js, "CrosswakeBridge")) == 3
+    File.rm_rf!(work)
+  end
+
+  test "apply mode js-hook: a hooks object that already names the bridge is left alone", %{
+    root: root
+  } do
+    blocks = apply_block("jh_has", "js-hook", "assets/js/app.js", @hook_body)
+
+    {out, rc, work} =
+      apply_run(root, blocks, "jshook-present",
+        skeleton: [
+          {"assets/js/app.js",
+           &String.replace(&1, "hooks: {...colocatedHooks}", "hooks: {CrosswakeBridge}")}
+        ]
+      )
+
+    assert rc == 0, out
+    js = host_file(work, "assets/js/app.js")
+    assert js =~ "hooks: {CrosswakeBridge}"
+    refute js =~ "CrosswakeBridge, "
+    File.rm_rf!(work)
+  end
+
+  test "apply mode js-hook: no hooks object is anchor_missing", %{root: root} do
+    blocks = apply_block("jh_x", "js-hook", "assets/js/app.js", @hook_body)
+
+    {out, rc, work} =
+      apply_run(root, blocks, "jshook-anchor",
+        skeleton: [{"assets/js/app.js", &String.replace(&1, "hooks: {", "hooks:{")}]
+      )
+
+    assert_apply_fail(out, rc, "jh_x", "anchor_missing")
+    File.rm_rf!(work)
+  end
+
+  @route_body "live \"/settings\", SettingsLive,\n  crosswake: [id: \"settings\", runtime: :live_view, offline: :unavailable]"
+
+  test "apply mode router-route: inserts the route after pipe_through :browser once (idempotent)",
+       %{root: root} do
+    block = fn id -> apply_block(id, "router-route", "lib/my_app_web/router.ex", @route_body) end
+    {out, rc, work} = apply_run(root, block.("rt_a") <> block.("rt_b"), "route")
+
+    assert rc == 0, out
+    router = host_file(work, "lib/clean_room_host_web/router.ex")
+
+    assert router =~
+             "    pipe_through :browser\n    live \"/settings\", SettingsLive,\n      crosswake: [id: \"settings\""
+
+    assert length(String.split(router, "live \"/settings\"")) == 2
+    assert router =~ ~s(get "/", PageController, :home)
+    File.rm_rf!(work)
+  end
+
+  test "apply mode router-route: no pipe_through :browser is anchor_missing", %{root: root} do
+    blocks = apply_block("rt_x", "router-route", "lib/my_app_web/router.ex", @route_body)
+
+    {out, rc, work} =
+      apply_run(root, blocks, "route-anchor",
+        skeleton: [
+          {"lib/clean_room_host_web/router.ex",
+           &String.replace(&1, "pipe_through :browser", "pipe_through :api")}
+        ]
+      )
+
+    assert_apply_fail(out, rc, "rt_x", "anchor_missing")
+    File.rm_rf!(work)
+  end
+
+  test "apply mode router-route: a pipe_through :browser in a later scope is not the anchor", %{
+    root: root
+  } do
+    blocks = apply_block("rt_y", "router-route", "lib/my_app_web/router.ex", @route_body)
+
+    later = """
+      scope "/", CleanRoomHostWeb do
+        pipe_through :browser
+
+        get "/later", PageController, :later
+      end
+    """
+
+    {out, rc, work} =
+      apply_run(root, blocks, "route-later",
+        skeleton: [
+          {"lib/clean_room_host_web/router.ex",
+           fn router ->
+             router
+             |> String.replace("pipe_through :browser", "pipe_through :api")
+             |> String.replace_suffix("end\n", "\n" <> later <> "end\n")
+           end}
+        ]
+      )
+
+    assert_apply_fail(out, rc, "rt_y", "anchor_missing")
+    File.rm_rf!(work)
+  end
+
+  test "apply deps: no deps list anchor is anchor_missing", %{root: root} do
+    blocks = apply_block("dp_x", "deps", "mix.exs", @crosswake_dep)
+
+    {out, rc, work} =
+      apply_run(root, blocks, "deps-anchor",
+        skeleton: [{"mix.exs", &String.replace(&1, "defp deps do", "defp dependencies do")}]
+      )
+
+    assert_apply_fail(out, rc, "dp_x", "anchor_missing")
+    File.rm_rf!(work)
+  end
+
+  test "apply target_missing: every mode but create needs its host file to exist", %{root: root} do
+    cases = [
+      {"deps", "mix_missing.exs", @crosswake_dep},
+      {"esbuild-args", "config/missing.exs", "--format=esm"},
+      {"js-hook", "assets/js/missing.js", @hook_body},
+      {"router-route", "lib/my_app_web/missing_router.ex", @route_body},
+      {"append", "lib/missing.ex", "x"}
+    ]
+
+    for {mode, file, body} <- cases do
+      id = "tm_" <> String.replace(mode, "-", "_")
+      {out, rc, work} = apply_run(root, apply_block(id, mode, file, body), "tm-#{mode}")
+      assert_apply_fail(out, rc, id, "target_missing")
+
+      refute File.exists?(
+               Path.join([
+                 work,
+                 "host-install",
+                 String.replace(file, "my_app", "clean_room_host")
+               ])
+             )
+
+      File.rm_rf!(work)
+    end
+  end
+
+  test "apply: a missing or unknown mode= and a missing file= are parse errors", %{root: root} do
+    no_mode = "<!-- cleanroom:apply id=nm file=mix.exs -->\n```text\nx\n```\n\n"
+    odd_mode = apply_block("om", "rewrite", "mix.exs", "x")
+    no_file = "<!-- cleanroom:apply id=nf mode=append -->\n```text\nx\n```\n\n"
+
+    for {blocks, reason} <- [
+          {no_mode, "missing_mode"},
+          {odd_mode, "unknown_mode"},
+          {no_file, "missing_file"}
+        ] do
+      base = write_docs(root, docs_readme(), install_with(blocks), "docs-#{reason}")
+      {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+      assert rc == 1, out
+      assert "cleanroom: FAIL docs parse #{reason}" in String.split(out, "\n")
+      refute out =~ "leg docs PASS"
+    end
+  end
+
+  test "apply: a failed apply stops that file's sequence and counts nothing after it", %{
+    root: root
+  } do
+    bad = apply_block("stop_a", "append", "lib/missing.ex", "x")
+    {out, rc, work} = apply_run(root, bad, "stop")
+
+    assert rc == 1, out
+    lines = String.split(out, "\n")
+    assert "cleanroom: FAIL docs apply stop_a target_missing" in lines
+    refute out =~ "step doctor"
+    refute out =~ "step compile"
+    File.rm_rf!(work)
   end
 
   # ---- default docs source: the Hex tarball of the version under test (D-03) ----------------

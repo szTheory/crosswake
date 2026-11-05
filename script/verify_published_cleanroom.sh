@@ -749,6 +749,151 @@ docs_apply_deps() {
   cp "$WORK/docs/edit.tmp" "$1"
 }
 
+# docs_apply_create <target> <body>: write the body as a new host file (parent directories
+# inside the host). An existing file with identical content is a no-op; a different one is
+# exit 5 (`exists`). No anchor.
+docs_apply_create() {
+  if [ -e "$1" ]; then
+    cmp -s "$2" "$1" && return 0
+    return 5
+  fi
+  mkdir -p "${1%/*}" && cp "$2" "$1"
+}
+
+# docs_apply_append <target> <body>: append the body to an existing file unless that exact
+# body text is already in it. No anchor.
+docs_apply_append() {
+  local content body
+  content=$(<"$1")
+  body=$(<"$2")
+  case "$content" in *"$body"*) return 0 ;; esac
+  if [ -s "$1" ] && [ -n "$(tail -c 1 "$1")" ]; then printf '\n' >>"$1" || return 1; fi
+  cat "$2" >>"$1"
+}
+
+# docs_apply_esbuild <target> <body>: inside the first `~w(js/app.js ...)` sigil add every
+# `--` token of the body that is absent. A `--name=value` token is skipped when `--name=`
+# is already there; any other token (`--external:<v>`, `--flag`) compares whole.
+# Exit 3: no such sigil on one line.
+docs_apply_esbuild() {
+  awk -v bodyfile="$2" '
+    BEGIN {
+      while ((getline l < bodyfile) > 0) {
+        m = split(l, parts, /[ \t]+/)
+        for (i = 1; i <= m; i++) {
+          sub(/[)]+$/, "", parts[i])
+          if (substr(parts[i], 1, 2) == "--" && !(parts[i] in want)) { want[parts[i]] = 1; order[++n] = parts[i] }
+        }
+      }
+      close(bodyfile)
+    }
+    {
+      p = index($0, "~w(js/app.js")
+      if (!done && p > 0) {
+        head = substr($0, 1, p + 2)
+        rest = substr($0, p + 3)
+        q = index(rest, ")")
+        if (q > 0) {
+          inner = substr(rest, 1, q - 1)
+          tail_part = substr(rest, q)
+          k = split(inner, toks, /[ \t]+/)
+          for (i = 1; i <= n; i++) {
+            t = order[i]
+            eq = index(t, "=")
+            pre = (t ~ /^--[A-Za-z0-9_-]+=/) ? substr(t, 1, eq) : ""
+            present = 0
+            for (j = 1; j <= k; j++) {
+              if (pre != "") { if (substr(toks[j], 1, length(pre)) == pre) present = 1 }
+              else if (toks[j] == t) present = 1
+            }
+            if (!present) { inner = inner " " t; toks[++k] = t }
+          }
+          print head inner tail_part
+          done = 1
+          next
+        }
+      }
+      print
+    }
+    END { exit (done ? 0 : 3) }
+  ' "$1" >"$WORK/docs/edit.tmp" || return $?
+  cp "$WORK/docs/edit.tmp" "$1"
+}
+
+# docs_apply_jshook <target> <body>: prepend each `import` line of the body that is absent,
+# and put `CrosswakeBridge, ` right after the first `hooks: {` unless that object already
+# names it. Exit 3: no `hooks: {`.
+docs_apply_jshook() {
+  awk -v tgt="$1" -v bodyfile="$2" '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t\r]+$/, "", s); return s }
+    BEGIN {
+      while ((getline l < tgt) > 0) have[trim(l)] = 1
+      close(tgt)
+      while ((getline l < bodyfile) > 0) {
+        t = trim(l)
+        if (t ~ /^import[ \t]/ && !(t in have)) { have[t] = 1; print t }
+      }
+      close(bodyfile)
+    }
+    {
+      p = index($0, "hooks: {")
+      if (!done && p > 0) {
+        head = substr($0, 1, p + 7)
+        rest = substr($0, p + 8)
+        q = index(rest, "}")
+        obj = (q > 0) ? substr(rest, 1, q - 1) : rest
+        if (index(obj, "CrosswakeBridge") == 0) print head "CrosswakeBridge, " rest
+        else print
+        done = 1
+        next
+      }
+      print
+    }
+    END { exit (done ? 0 : 3) }
+  ' "$1" >"$WORK/docs/edit.tmp" || return $?
+  cp "$WORK/docs/edit.tmp" "$1"
+}
+
+# docs_apply_route <target> <body>: insert each body line that the router lacks after the
+# first `pipe_through :browser` line inside the first `scope "/", ` block, indented like that
+# line. The block ends at the first `end` at the scope line indentation.
+# Exit 3: no such line in that block.
+docs_apply_route() {
+  awk -v tgt="$1" -v bodyfile="$2" '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t\r]+$/, "", s); return s }
+    BEGIN {
+      while ((getline l < tgt) > 0) have[trim(l)] = 1
+      close(tgt)
+      while ((getline l < bodyfile) > 0) {
+        t = trim(l)
+        if (t == "" || (t in have)) continue
+        have[t] = 1
+        lines[++n] = t
+        raw[n] = l
+      }
+      close(bodyfile)
+    }
+    {
+      print
+      if (!anchor && !scope_done) {
+        if (!inscope) {
+          if (substr(trim($0), 1, 10) == "scope \"/\",") { inscope = 1; match($0, /^[ \t]*/); sind = RLENGTH }
+        } else if ($0 ~ /pipe_through :browser/) {
+          match($0, /^[ \t]*/)
+          ind = substr($0, 1, RLENGTH)
+          for (i = 1; i <= n; i++) print ind raw[i]
+          anchor = 1
+        } else {
+          match($0, /^[ \t]*/)
+          if (RLENGTH == sind && trim($0) == "end") scope_done = 1
+        }
+      }
+    }
+    END { exit (anchor ? 0 : 3) }
+  ' "$1" >"$WORK/docs/edit.tmp" || return $?
+  cp "$WORK/docs/edit.tmp" "$1"
+}
+
 # docs_apply_step <tag> <id> <attrs> <body file> <host dir>: one apply block. The target
 # rule is checked once here from the per-mode table: every mode but `create` needs its file
 # to exist (`target_missing`); `create` needs it absent or identical (`exists`); the anchored
@@ -780,8 +925,13 @@ docs_apply_step() {
       ;;
   esac
   case "$mode" in
+    create) docs_apply_create "$target" "$sbody"; rc=$? ;;
+    append) docs_apply_append "$target" "$sbody"; rc=$? ;;
     deps) docs_apply_deps "$target" "$sbody"; rc=$? ;;
-    *) fail docs "apply $id mode_unsupported"; return 1 ;;
+    esbuild-args) docs_apply_esbuild "$target" "$sbody"; rc=$? ;;
+    js-hook) docs_apply_jshook "$target" "$sbody"; rc=$? ;;
+    router-route) docs_apply_route "$target" "$sbody"; rc=$? ;;
+    *) fail docs "apply $id write_failed"; return 1 ;;
   esac
   case "$rc" in
     0) ;;
