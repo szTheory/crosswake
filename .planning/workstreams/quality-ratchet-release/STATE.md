@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 8
+current_plan: 9
 status: executing
-stopped_at: Completed 198-07-PLAN.md
-last_updated: "2026-11-05T22:55:53.051Z"
-state_head: b90e54da4898b2ef01c666178b1f73724114f2c2
+stopped_at: Completed 198-08-PLAN.md
+last_updated: "2026-11-05T23:08:28.080Z"
+state_head: f0a8592ae20e746f89ebfa36b8f9a1a275e9b89a
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 74
-  completed_plans: 69
+  completed_plans: 70
   percent: 60
 current_phase: 198
 current_phase_name: Android foreign-host proof
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 8
+Current Plan: 9
 Total Plans in Phase: 12
 
 ## Exact Next Action
 
-Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 7 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-07 (generated `guides/parity_ledger.md` through `mix crosswake.docs.sync` from both corpus locations; vector-set hash equals both native constants; Android cell computed as JVM hermetic proof only while reference checks, a clean two-sided consumer registry and a Kotlin behavioral consumer all hold; 20 ledger tests with 10 negative controls plus a tampered-ledger docs.sync control; AND-01 marked complete locally, CI unobserved). Exact next command: execute 198-08 via `/gsd-execute-phase 198 --ws quality-ratchet-release` (it owes the AND-01 corpus-wording amendment and the ledger qualifier pin). The user's uncommitted `.planning/config.json` change stays uncommitted.
+Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 8 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-08 (header-driven Android claim ceiling test over the capability map, ledger and support matrix with floor and controls; measured prose backstop with two Android patterns, 0 unsuppressed hits after rewording 3 source lines; support matrix legend renders the ceiling and links the ledger; ledger pinned in the unreleased qualifier; AND-01 and SC1 corpus wording amended on the record; Phase 170 collection ledger regenerated to 290 sites). Exact next command: execute 198-09 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. Run `test/crosswake/proof` after any test-file edit on this branch (ledger line shifts). The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T22:55:52.877Z
-**Stopped at:** Completed 198-07-PLAN.md
+**Last session:** 2026-11-05T23:08:27.860Z
+**Stopped at:** Completed 198-08-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -73,6 +73,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 198 P05 | 25min | 3 tasks | 11 files |
 | Phase 198 P06 | 20min | 3 tasks | 9 files |
 | Phase 198 P07 | 30min | 3 tasks | 10 files |
+| Phase 198 P08 | 40min | 3 tasks | 12 files |
 
 ## Decisions
 
@@ -103,6 +104,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 198]: Plan 05: Swift constant generated from the same hex as Kotlin and outside Resources/; five Swift loaders verify via CryptoKit (CW-VECTOR-HASH); one-time byte-flip turned both native suites red; AND-01 stays open until the ledger (Plans 06/07)
 - [Phase 198]: Plan 06: Android evidence ceiling typed at :jvm_hermetic (validate raises above it), only bounded-bridge-app-info carries JVM hermetic proof, boundary sentence single-sourced via android_boundary/0; native_shell.md is a pinned hand-written exemption; AND-01 stays open until the ledger (Plan 07)
 - [Phase 198]: Plan 07: ParityLedger reads both corpus locations at run time, computes the Android cell from reference checks plus a two-sided consumer registry (registry entries carry an executes scope), and ships as a third docs.sync projection with a tamper control; AND-01 floor met locally, wording amendment (Plan 08) and CI evidence (Plan 12) still owed
+- [Phase 198]: Plan 08: Android ceiling test derives its allowed set from the typed ceiling; prose backstop patterns measured at 0 unsuppressed hits after rewording 3 source lines; phase 170 collection ledger regenerated (290 sites) after Phase 198 test edits; AND-01 corpus wording amended on the record (D-01)
 
 ### Blockers
 
