@@ -111,11 +111,11 @@ count taken here alone.
 
 | Item | Value |
 |---|---|
-| Measured at HEAD | `c224e0844423605aaf011d10e36a664631bb9e54` (`docs/197-public-docs-truth`) |
-| Last commit touching a measured input | `7a139f1e` (`docs(197): make changelog release claims registry-true`); every later commit, including the measured HEAD, changes none of README.md, CHANGELOG.md, LICENSE, guides/, lib/, mix.exs, mix.lock |
+| Measured at HEAD | `35f18f93d4b504cd93f35b7701e2b493fbc66f9e` (`docs/197-public-docs-truth`, the merge of main carrying the PR 269 lock bumps; remeasured because `mix.lock` is a measured input, the earlier measurement was at `c224e084`) |
+| Last commit touching a measured input | `e8252b3c` (`fix(deps): bump phoenix_html and ecto to patched releases`, `mix.lock`, merged from main as PR 269); the last such commit authored on this branch is `7a139f1e` (`docs(197): make changelog release claims registry-true`); the remeasured counters and the sorted detail hit lines are identical to the earlier measurement at `c224e084` |
 | Measured-input tree | `git status --porcelain -- README.md CHANGELOG.md LICENSE guides lib mix.exs mix.lock` printed nothing |
 | Baseline-first order | `197-EVIDENCE/ordering-197.txt`: baseline `1782366b` is an ancestor of the first doc-touching commit `c1542d9f` (`merge-base --is-ancestor: rc 0`) |
-| Evidence | `197-EVIDENCE/docs-report-after-197.txt`, `docs-report-after-detail-197.txt` (both `docs-report: rc 0`, `docs-report: measured_at c224e084...`) |
+| Evidence | `197-EVIDENCE/docs-report-after-197.txt`, `docs-report-after-detail-197.txt` (both `docs-report: rc 0`, `docs-report: measured_at 35f18f93...`) |
 
 Counter lines, verbatim from `197-EVIDENCE/docs-report-after-197.txt`:
 

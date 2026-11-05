@@ -100,4 +100,4 @@ docs.leaks.hit file=guides/telemetry.md pattern=decision text=Emitted when a bri
 docs.leaks.hit file=guides/telemetry.md pattern=decision text=Emitted when a reply, unreachable fact, or timer message arrives for a correlation id that is no longer in flight. `reason` is `:duplicate` (a second terminal event arrived for a correlation id already resolved) or `:foreign_epoch` (the reply was minted under a prior per-mount epoch — the LiveView reconnected since it was dispatched). Exactly-once delivery is structural (D-23): this event is what makes a duplicate or stale delivery an observable counter instead of a silent double mutation.
 docs-report: REPORT-ONLY (not a required check)
 docs-report: rc 0
-docs-report: measured_at c224e0844423605aaf011d10e36a664631bb9e54
+docs-report: measured_at 35f18f93d4b504cd93f35b7701e2b493fbc66f9e
