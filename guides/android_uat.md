@@ -1,6 +1,8 @@
 # Android Device-UAT Checklist
 
-**Last verified against:** Crosswake v0.2.11 on Android 15 (API 35) <!-- x-release-please-version -->
+## Status
+
+No emulator or physical-device verification of Android has been recorded. The only Android evidence is JVM hermetic proof and the shared bridge-contract vectors. The checklist below is a template for future device evidence, not a record of runs.
 
 ## What This Proves
 
@@ -35,9 +37,9 @@ Use the labels literally:
 
 ---
 
-## Capabilities (Parity-Locked)
+## Capability families (registry mirror)
 
-Every capability family in the registry must have an entry here for verification.
+This list mirrors the capability-family registry. Listing a family here does not mean Android implements it or has verified it.
 
 - `deep_link`
 - `app_info`
@@ -48,12 +50,8 @@ Every capability family in the registry must have an entry here for verification
 - `purchase_intent`
 - `restore_intent`
 - `paywall_entry`
-- `account_management`
-- `diagnostic_export`
 - `entitlement_snapshot`
 - `reconciliation_evidence`
-- `companion_snapshot`
-- `location_capture`
 - `document_scan`
 - `permissions.status`
 - `scanner`
@@ -61,5 +59,6 @@ Every capability family in the registry must have an entry here for verification
 
 ## Boundary
 
+Android claims stop at JVM-hermetic proof and the shared bridge-contract vectors. No emulator, device or feature-breadth claim is made until a later phase produces that evidence.
+
 Use `checked-in public-coordinate proof` for the checked-in host paths and `--local` for maintainer/local-dev proof.
-Do not treat JVM, emulator, or device evidence as a claim of physical-device support unless a future milestone explicitly promotes it.
