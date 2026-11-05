@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 14
+current_plan: 15
 status: executing
-stopped_at: Completed 197-13-PLAN.md
-last_updated: "2026-11-05T18:04:04.787Z"
-state_head: 22d56f695bb7330aa637e0e703e6231cf99c1594
+stopped_at: Completed 197-14-PLAN.md
+last_updated: "2026-11-05T19:18:37.119Z"
+state_head: e49366372c41c2854520dc80985529ffb0a89dae
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 61
+  completed_plans: 62
   percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 14
+Current Plan: 15
 Total Plans in Phase: 15
 
 ## Exact Next Action
 
-Phase 197 is executing on branch `docs/197-public-docs-truth` (cut from origin/main, planning commits cherry-picked; not pushed). Last completed plan: 197-13 (full suite 3134 tests 0 failures, docs-report after-counts at c224e084, baseline-first ordering rc 0, D-07b real negative controls rc 1). Only 197-14 remains (wave 15: privacy scan, push, real four-leg clean-room PASS against 0.2.11, PR with CI green); the push and the PR each need a fresh one-use allow. Next: execute 197-14 via `/gsd-execute-phase 197 --ws quality-ratchet-release`. The merge to main needs a fresh one-use allow and is not executor work. The user's uncommitted `.planning/config.json` change stays uncommitted.
+All 15 plans of Phase 197 are done on branch `docs/197-public-docs-truth`, pushed at `e49366372c41c2854520dc80985529ffb0a89dae` (PR 268, open). Last completed plan: 197-14 (real four-leg clean-room PASS against 0.2.11 with `:ios_host` a named Phase 199 deferral; PR 268 Crosswake CI green 38 of 38 on the synthetic merge `9d0aa1f0`, run 42089200558; the earlier red run was fixed by the separately merged PR 269 and a merge of main; full suite 3134/0 and docs-report remeasured at `35f18f93`). DOCS-01, DOCS-02 and DOCS-03 are marked complete. The 197-14 SUMMARY commit is local and not pushed. Phase 197 is ready for verification, but the merge of PR 268 to main needs a fresh one-use allow for the PR head at that time (not executor work; re-read the delete-branch-on-merge setting first, `false` on 2026-11-05). After the merge the exact next command is `/gsd-verify-work 197 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T17:36:38.384Z
-**Stopped at:** Completed 197-13-PLAN.md
+**Last session:** 2026-11-05T19:18:36.737Z
+**Stopped at:** Completed 197-14-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -64,6 +64,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P12 | 25min | 3 tasks | 7 files |
 | Phase 197 P15 | 25 min | 3 tasks | 11 files |
 | Phase 197 P13 | 75min | 2 tasks | 8 files |
+| Phase 197 P14 | about 1h 10m (second session; first session blocked at CI) | 2 tasks | 8 files |
 
 ## Decisions
 
@@ -85,6 +86,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-11: publish.parity candidate rule keys on the Published Hex truth pointer (GitHub Releases + hex.pm links), not version sentences; CHANGELOG makes no current-release claim
 - [Phase 197]: 197-15: qualifier sentences sit on one physical line and the guard reads heading plus body, so a wrapped or heading-only claim cannot slip past D-26
 - [Phase 197]: 197-13: ledger fix-forward regenerates the collection-assertion snapshot with the script classifier; D-07b literal mutation is rejected statically by required_step doctor, so a --router mutation is also run to reach the runtime doctor step
+- [Phase 197]: 197-14: dependency advisories fixed by separate PR 269 to main, then main merged into the branch; mix.lock is a measured input so suite and docs-report after-counts were remeasured; PR 268 green 38/38 on e4936637 (CI ran on synthetic merge 9d0aa1f0)
 
 ### Blockers
 
