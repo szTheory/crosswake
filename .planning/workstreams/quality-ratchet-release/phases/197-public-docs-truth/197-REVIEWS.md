@@ -22,11 +22,11 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 ## 197-01
 
-**Summary:** Adds the report-only docs checker, leak counter, link checker and fixture tests. The chosen scan scope matches the 30 Markdown extras in [`mix.exs`](/Users/jon/projects/crosswake/mix.exs:124).
+**Summary:** Adds the report-only docs checker, leak counter, link checker and fixture tests. The chosen scan scope matches the 30 Markdown extras in [`mix.exs`](mix.exs:124).
 
-**Strengths:** The plan covers unreadable inputs, empty extras, non-vacuity and mutation controls. It also keeps warning counts explicitly unmeasured until the next plan, consistent with the report’s UNVERIFIED contract in [197-CONTEXT.md](/Users/jon/projects/crosswake/.planning/workstreams/quality-ratchet-release/phases/197-public-docs-truth/197-CONTEXT.md:111).
+**Strengths:** The plan covers unreadable inputs, empty extras, non-vacuity and mutation controls. It also keeps warning counts explicitly unmeasured until the next plan, consistent with the report’s UNVERIFIED contract in [197-CONTEXT.md](.planning/workstreams/quality-ratchet-release/phases/197-public-docs-truth/197-CONTEXT.md:111).
 
-**Concerns (MEDIUM):** The allowlist plan says to handle unparseable JSON, but does not require validating a valid JSON document’s schema or entry types. A syntactically valid but malformed file could be treated as an empty allowlist or crash the report, contrary to the UNVERIFIED-on-bad-input rule. The existing report pattern checks decoded structure before using it ([`bearings_report.exs`](/Users/jon/projects/crosswake/script/bearings_report.exs:85)).
+**Concerns (MEDIUM):** The allowlist plan says to handle unparseable JSON, but does not require validating a valid JSON document’s schema or entry types. A syntactically valid but malformed file could be treated as an empty allowlist or crash the report, contrary to the UNVERIFIED-on-bad-input rule. The existing report pattern checks decoded structure before using it ([`bearings_report.exs`](script/bearings_report.exs:85)).
 
 **Suggestions:** Add controls for a wrong schema version, missing `entries`, and entries missing `file`, `text`, or `reason`; each should yield exit 2.
 
@@ -38,7 +38,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Strengths:** The baseline precondition checks the measured files against `origin/main`, and the plan records the SHA and `ex_doc` version as required by D-19.
 
-**Concerns (MEDIUM):** The amendment task updates the Phase 197 plan list from 9 to 14 plans when needed, but does not update the roadmap progress row, which also says `0/9` ([`ROADMAP.md`](/Users/jon/projects/crosswake/.planning/workstreams/quality-ratchet-release/ROADMAP.md:239), [`ROADMAP.md`](/Users/jon/projects/crosswake/.planning/workstreams/quality-ratchet-release/ROADMAP.md:307)). That leaves the roadmap internally inconsistent after the task.
+**Concerns (MEDIUM):** The amendment task updates the Phase 197 plan list from 9 to 14 plans when needed, but does not update the roadmap progress row, which also says `0/9` ([`ROADMAP.md`](.planning/workstreams/quality-ratchet-release/ROADMAP.md:239), [`ROADMAP.md`](.planning/workstreams/quality-ratchet-release/ROADMAP.md:307)). That leaves the roadmap internally inconsistent after the task.
 
 **Suggestions:** Update the progress row to `0/14` as part of the same roadmap edit.
 
@@ -48,7 +48,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Fixes the carried fetch, failure-reason, Maven identity and tool-inventory defects before the docs leg is added.
 
-**Strengths:** The plan targets the actual loose POM checks and error conflation in [`verify_published_cleanroom.sh`](/Users/jon/projects/crosswake/script/verify_published_cleanroom.sh:109) and [`verify_published_cleanroom.sh`](/Users/jon/projects/crosswake/script/verify_published_cleanroom.sh:162). Its fixture controls distinguish missing releases from parse and resolve failures.
+**Strengths:** The plan targets the actual loose POM checks and error conflation in [`verify_published_cleanroom.sh`](script/verify_published_cleanroom.sh:109) and [`verify_published_cleanroom.sh`](script/verify_published_cleanroom.sh:162). Its fixture controls distinguish missing releases from parse and resolve failures.
 
 **Concerns (LOW):** The POM parser strips XML blocks with line-oriented text tooling. The fixture plan should confirm the real published POM’s formatting and nesting are handled, not just the compact synthetic fixture.
 
@@ -60,7 +60,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Adds the commit-pinned docs leg, marker parser, Phoenix host generation and scrubbed execution environment.
 
-**Strengths:** It extends the existing three-leg script explicitly ([`verify_published_cleanroom.sh`](/Users/jon/projects/crosswake/script/verify_published_cleanroom.sh:40)) and includes an environment sentinel test for caller credentials.
+**Strengths:** It extends the existing three-leg script explicitly ([`verify_published_cleanroom.sh`](script/verify_published_cleanroom.sh:40)) and includes an environment sentinel test for caller credentials.
 
 **Concerns (LOW):** Documented run blocks have no per-step timeout. A network command or broken task could leave the local proof hanging; the plan acknowledges the run is local but does not bound it.
 
@@ -72,7 +72,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Switches the docs leg’s default source to the Hex tarball and proves host generation against the real toolchain.
 
-**Strengths:** This keeps docs and code tied to one published artifact, as required for the later release run. The pinned Phoenix generator already has a repository precedent in [`verify_companion_cleanroom.sh`](/Users/jon/projects/crosswake/script/verify_companion_cleanroom.sh:287).
+**Strengths:** This keeps docs and code tied to one published artifact, as required for the later release run. The pinned Phoenix generator already has a repository precedent in [`verify_companion_cleanroom.sh`](script/verify_companion_cleanroom.sh:287).
 
 **Concerns (LOW):** The smoke requires live Hex access and a generator install, so local success depends on registry availability and toolchain behavior. The plan appropriately keeps that smoke separate from the hermetic suite.
 
@@ -96,7 +96,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Adds `since=` handling, required-step checks, the version-conditional `:ios_host` deferral and an executed-step floor.
 
-**Strengths:** The exemption is explicitly version-bound and named in output. That matches the amended D-04 decision and avoids counting the 0.2.11-unread setting as executed. The source guide confirms the documented setting and reader constraints ([`native_shell.md`](/Users/jon/projects/crosswake/guides/native_shell.md:65)).
+**Strengths:** The exemption is explicitly version-bound and named in output. That matches the amended D-04 decision and avoids counting the 0.2.11-unread setting as executed. The source guide confirms the documented setting and reader constraints ([`native_shell.md`](guides/native_shell.md:65)).
 
 **Concerns (LOW):** The floor is intentionally a placeholder until 197-09. If the plan sequence is interrupted before then, the interim floor provides little protection.
 
@@ -108,7 +108,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Rewrites the README integration section and install guide as marked, executable steps, with repo-only steps labeled for clone users.
 
-**Strengths:** The planned content follows existing install guidance for the bridge hook, esbuild, attach and iOS host configuration ([`install.md`](/Users/jon/projects/crosswake/guides/install.md:105), [`native_shell.md`](/Users/jon/projects/crosswake/guides/native_shell.md:65)). It also requires the final selftest to run after the last doc edit.
+**Strengths:** The planned content follows existing install guidance for the bridge hook, esbuild, attach and iOS host configuration ([`install.md`](guides/install.md:105), [`native_shell.md`](guides/native_shell.md:65)). It also requires the final selftest to run after the last doc edit.
 
 **Concerns (LOW):** The clean-room proof exercises only `:ios_host` as a named deferral against 0.2.11, so the plan correctly relies on 197-09’s independent value validator and reader audit to cover what that run cannot.
 
@@ -120,7 +120,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Adds the merge-blocking marker and route-consistency tests, pins the executed floor and audits the documented iOS host values.
 
-**Strengths:** The negative controls cover marker removal, repo-only commands, missing wiring tokens, route drift and deferral drift. The value test exercises the real validator, which requires a compiled router and checks production origin rules ([`ios_host_config.ex`](/Users/jon/projects/crosswake/lib/crosswake/shell/ios_host_config.ex:56)).
+**Strengths:** The negative controls cover marker removal, repo-only commands, missing wiring tokens, route drift and deferral drift. The value test exercises the real validator, which requires a compiled router and checks production origin rules ([`ios_host_config.ex`](lib/crosswake/shell/ios_host_config.ex:56)).
 
 **Concerns (LOW):** The reader audit is based on an extracted 0.2.11 tarball, but the plan’s audit line format alone does not ensure the extraction itself is successful before marking readers `found`.
 
@@ -132,9 +132,9 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Removes copied release versions from the companion matrix, adds Hex links, revises the drift test and records one live registry check.
 
-**Strengths:** This follows D-10’s reason for removing hand-kept versions: release-please changes the manifest in its PR without editing the guide ([197-CONTEXT.md](/Users/jon/projects/crosswake/.planning/workstreams/quality-ratchet-release/phases/197-public-docs-truth/197-CONTEXT.md:85)).
+**Strengths:** This follows D-10’s reason for removing hand-kept versions: release-please changes the manifest in its PR without editing the guide ([197-CONTEXT.md](.planning/workstreams/quality-ratchet-release/phases/197-public-docs-truth/197-CONTEXT.md:85)).
 
-**Concerns (MEDIUM):** The plan expects the test helper to yield five extracted companion rows, but the current helper explicitly returns only two package manifests ([`phase132_compat_matrix_drift_test.exs`](/Users/jon/projects/crosswake/test/crosswake/proof/phase132_compat_matrix_drift_test.exs:360)). The guide has five rows ([`companion_compatibility.md`](/Users/jon/projects/crosswake/guides/companion_compatibility.md:24)). The stated row-set equality cannot pass as written.
+**Concerns (MEDIUM):** The plan expects the test helper to yield five extracted companion rows, but the current helper explicitly returns only two package manifests ([`phase132_compat_matrix_drift_test.exs`](test/crosswake/proof/phase132_compat_matrix_drift_test.exs:360)). The guide has five rows ([`companion_compatibility.md`](guides/companion_compatibility.md:24)). The stated row-set equality cannot pass as written.
 
 **Suggestions:** Define the intended set explicitly: either compare the two extracted companion manifests to their two rows and separately guard the full five-row matrix, or update the source of expected rows so it genuinely contains all five.
 
@@ -144,7 +144,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Removes stale CHANGELOG release claims while preserving `publish.parity` through a version-free pointer rule.
 
-**Strengths:** The proposed predicate preserves the existing manifest/version ordering checks and replaces only the stale sentence match in [`publish_readiness.ex`](/Users/jon/projects/crosswake/lib/crosswake/doctor/publish_readiness.ex:1083). The broken-copy controls test the actual readiness function against the real repository context.
+**Strengths:** The proposed predicate preserves the existing manifest/version ordering checks and replaces only the stale sentence match in [`publish_readiness.ex`](lib/crosswake/doctor/publish_readiness.ex:1083). The broken-copy controls test the actual readiness function against the real repository context.
 
 **Concerns (LOW):** The plan changes a doctor readiness rule as part of a docs phase. It has focused regression coverage, but this adds product behavior beyond editing public copy.
 
@@ -156,7 +156,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Corrects Android UAT claims, adds replay telemetry documentation and records the twin receipt’s attested commit.
 
-**Strengths:** The replay event details match the emitting code: prefix `[:crosswake, :offline, :replay]`, suffix `:stop`, measurements and metadata ([`telemetry.ex`](/Users/jon/projects/crosswake/lib/crosswake/telemetry.ex:127), [`telemetry.ex`](/Users/jon/projects/crosswake/lib/crosswake/telemetry.ex:362)). The Android family test is designed as two-way set equality with a non-vacuity guard.
+**Strengths:** The replay event details match the emitting code: prefix `[:crosswake, :offline, :replay]`, suffix `:stop`, measurements and metadata ([`telemetry.ex`](lib/crosswake/telemetry.ex:127), [`telemetry.ex`](lib/crosswake/telemetry.ex:362)). The Android family test is designed as two-way set equality with a non-vacuity guard.
 
 **Concerns (LOW):** None material found against the cited source.
 
@@ -180,7 +180,7 @@ Lanes that did not produce a review: cursor (authentication required), opencode 
 
 **Summary:** Runs the privacy scan, pushes the feature branch, performs the real four-leg clean-room run and opens a green PR without merging.
 
-**Strengths:** The plan separates the PR head SHA from the synthetic merge SHA and explicitly leaves merge, tags and publishes behind a fresh one-use approval. This matches the clean-room script’s current all-legs result contract ([`verify_published_cleanroom.sh`](/Users/jon/projects/crosswake/script/verify_published_cleanroom.sh:33)) and the project’s approval boundary.
+**Strengths:** The plan separates the PR head SHA from the synthetic merge SHA and explicitly leaves merge, tags and publishes behind a fresh one-use approval. This matches the clean-room script’s current all-legs result contract ([`verify_published_cleanroom.sh`](script/verify_published_cleanroom.sh:33)) and the project’s approval boundary.
 
 **Concerns (LOW):** The PR body requires a Claude Code attribution line, but the supplied project instructions do not define that requirement. It may be an execution-environment convention unavailable to a different agent.
 
