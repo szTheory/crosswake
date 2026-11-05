@@ -254,7 +254,7 @@ testcase_failed() { # dir name
   for f in "$dir"/TEST-*.xml; do
     [ -f "$f" ] || continue
     if awk -v want="$name" '
-      /<testcase / { cur = ($0 ~ ("name=\"" want "\"")) ? 1 : 0 }
+      /<testcase / { cur = ($0 ~ ("name=\"" want "\"")) ? 1 : 0; if ($0 ~ /\/>[ \t]*$/) cur = 0 }
       /<\/testcase>/ { cur = 0 }
       cur && (/<failure/ || /<error/) { found = 1 }
       END { exit(found ? 0 : 1) }' "$f"; then
