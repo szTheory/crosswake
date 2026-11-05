@@ -14,8 +14,9 @@
 #          io.github.sztheory, crosswake-shell-core-android, <version> and aar
 #   ios    find refs/tags/v<version> on the SwiftPM mirror, clone it shallowly,
 #          and `swift build` it
-#   docs   fetch README.md and guides/install.md at the commit CLEANROOM_DOCS_REF (40
-#          lowercase hex, no clone), parse every fence in README "Integrating Crosswake"
+#   docs   read README.md and guides/install.md from the Hex tarball of the version under
+#          test (default) or, when CLEANROOM_DOCS_REF is set, from that commit (40
+#          lowercase hex, no clone); parse every fence in README "Integrating Crosswake"
 #          and in guides/install.md (each must follow a `<!-- cleanroom:<kind> ... -->`
 #          marker: run, apply, clone or show), generate a throwaway Phoenix host from a
 #          pinned phx_new with assets enabled, and execute the `run` blocks verbatim
@@ -35,14 +36,19 @@
 # resolve; otherwise it uses whatever `mix` PATH finds.
 #
 # CLEANROOM_DOCS_REF=<40-hex commit> is also a selector, not an override: it names which
-# public commit the docs leg reads, is accepted without CLEANROOM_SELFTEST, and a value
-# that is not 40 lowercase hex exits 2. CLEANROOM_DOCS_STEP_TIMEOUT=<seconds> is the same
+# public commit the docs leg reads instead of the Hex tarball, is accepted without
+# CLEANROOM_SELFTEST, and a value that is not 40 lowercase hex exits 2. Without it the docs
+# come from $HEX_REPO/tarballs/crosswake-<version>.tar (https://repo.hex.pm), so docs and code
+# are one artifact; only README.md and guides/install.md are extracted. A default run against a
+# version whose shipped docs carry no markers fails `parse unmarked_fence` (true for 0.2.11 and
+# earlier); the Phase 197 evidence run therefore uses CLEANROOM_DOCS_REF. CLEANROOM_DOCS_STEP_TIMEOUT=<seconds> is the same
 # class (a positive integer, default 900, otherwise exit 2): every documented step and every
 # host-generation command runs under that bound, because a bound can only turn a run red.
 #
 # Selftest overrides (honored only with CLEANROOM_SELFTEST=1; without it any
 # override exits 2): CLEANROOM_LEGS, CLEANROOM_MAVEN_BASE, CLEANROOM_HEX_API,
 # CLEANROOM_DOCS_BASE (docs source root, layout <base>/<ref>/README.md),
+# CLEANROOM_HEX_REPO (tarball repo root, layout <repo>/tarballs/crosswake-<v>.tar),
 # CLEANROOM_KEEP_WORK=1 (keep the work dir and print `cleanroom: work kept <path>`).
 # With the flag set the run announces itself and ends `result SELFTEST`,
 # never `result PASS`.
@@ -57,13 +63,13 @@
 #              maven   not_published, fetch_failed, checksum_mismatch, pom_mismatch
 #              ios     not_published (successful lookup, no tag), resolve_failed (git
 #                      ls-remote failed), clone_failed, build_failed
-#              docs    fetch <file>, parse <reason> (no_docs_source, unmarked_fence <file>,
+#              docs    fetch <file>, fetch tarball, parse <reason> (unmarked_fence <file>,
 #                      unterminated_fence <file>, no_fences <file>, readme_scope_missing,
 #                      missing_id, bad_id, duplicate_id, unknown_attr, apply_unsupported),
 #                      step <id> exit <code>, step <id> timeout <secs>, step <id> interrupted
 #                      (the step's whole process group is killed; a host-generation command is
 #                      step host_setup)
-#   cleanroom: docs source commit <ref>
+#   cleanroom: docs source commit <ref> | docs source tarball crosswake-<version>.tar
 #     Network calls carry --max-time, --retry and an https-only protocol pin.
 #   cleanroom: result PASS|FAIL|SELFTEST legs <list> version <version>
 
@@ -72,6 +78,7 @@ set -uo pipefail
 DEFAULT_LEGS="hex,maven,ios,docs"
 MAVEN_DEFAULT_BASE="https://repo1.maven.org/maven2"
 HEX_DEFAULT_API="https://hex.pm/api"
+HEX_REPO_DEFAULT="https://repo.hex.pm"
 DOCS_DEFAULT_BASE="https://raw.githubusercontent.com/szTheory/crosswake"
 PHX_NEW_VERSION="1.8.13"
 DOCS_STEP_TIMEOUT_DEFAULT=900
@@ -99,6 +106,7 @@ LEGS="${CLEANROOM_LEGS:-$DEFAULT_LEGS}"
 MAVEN_BASE="${CLEANROOM_MAVEN_BASE:-$MAVEN_DEFAULT_BASE}"
 HEX_API="${CLEANROOM_HEX_API:-$HEX_DEFAULT_API}"
 DOCS_BASE="${CLEANROOM_DOCS_BASE:-$DOCS_DEFAULT_BASE}"
+HEX_REPO="${CLEANROOM_HEX_REPO:-$HEX_REPO_DEFAULT}"
 DOCS_REF="${CLEANROOM_DOCS_REF:-}"
 if [ -n "$DOCS_REF" ] && ! [[ "$DOCS_REF" =~ ^[0-9a-f]{40}$ ]]; then
   usage
@@ -109,7 +117,7 @@ if ! [[ "$DOCS_STEP_TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
 fi
 
 if [ "$SELFTEST" != "1" ]; then
-  if [ "$LEGS" != "$DEFAULT_LEGS" ] || [ -n "${CLEANROOM_MAVEN_BASE:-}" ] || [ -n "${CLEANROOM_HEX_API:-}" ] || [ -n "${CLEANROOM_DOCS_BASE:-}" ] || [ -n "${CLEANROOM_KEEP_WORK:-}" ]; then
+  if [ "$LEGS" != "$DEFAULT_LEGS" ] || [ -n "${CLEANROOM_MAVEN_BASE:-}" ] || [ -n "${CLEANROOM_HEX_API:-}" ] || [ -n "${CLEANROOM_DOCS_BASE:-}" ] || [ -n "${CLEANROOM_HEX_REPO:-}" ] || [ -n "${CLEANROOM_KEEP_WORK:-}" ]; then
     echo "cleanroom: override refused (set CLEANROOM_SELFTEST=1 to use selftest overrides)"
     exit 2
   fi
@@ -335,21 +343,51 @@ leg_ios() {
 
 # ---- docs leg -------------------------------------------------------------------------
 #
-# docs_fetch_sources: README.md and guides/install.md at CLEANROOM_DOCS_REF, through fetch
-# only (never from beside this script). No ref: the leg fails; the Hex tarball default
-# arrives in a later plan.
+# docs_fetch_sources: README.md and guides/install.md, through fetch only (never from beside
+# this script). With CLEANROOM_DOCS_REF they come from that commit; without it from the Hex
+# tarball of the version under test (D-03), so docs and code are one artifact. DOCS_SOURCE
+# records which, for the PASS line.
+DOCS_SOURCE=""
 docs_fetch_sources() {
   local rc
-  if [ -z "$DOCS_REF" ]; then
-    fail docs "parse no_docs_source"
-    return 1
-  fi
   mkdir -p "$WORK/docs/body" "$WORK/docs/steps" || { fail docs tool_unavailable; return 1; }
+  if [ -z "$DOCS_REF" ]; then
+    docs_fetch_tarball
+    return
+  fi
   fetch "$DOCS_BASE/$DOCS_REF/README.md" "$WORK/docs/README.md"; rc=$?
   if [ "$rc" -ne 0 ]; then fail docs "fetch README.md"; return 1; fi
   fetch "$DOCS_BASE/$DOCS_REF/guides/install.md" "$WORK/docs/install.md"; rc=$?
   if [ "$rc" -ne 0 ]; then fail docs "fetch guides/install.md"; return 1; fi
+  DOCS_SOURCE="commit:$DOCS_REF"
   echo "cleanroom: docs source commit $DOCS_REF"
+}
+
+# docs_fetch_tarball: the Hex tarball is an outer tar holding contents.tar.gz. Only the two
+# named members are extracted, into a directory inside the work dir (removed with it), and each
+# must be a regular file that is not a symlink. A fetch failure (404 or otherwise) is
+# `fetch tarball`; a missing member is `fetch <member>`.
+docs_fetch_tarball() {
+  local name="crosswake-$VERSION.tar" tarball="$WORK/docs/crosswake-$VERSION.tar"
+  local ex="$WORK/docs/extract" member rc
+  fetch "$HEX_REPO/tarballs/$name" "$tarball"; rc=$?
+  if [ "$rc" -ne 0 ]; then fail docs "fetch tarball"; return 1; fi
+  mkdir -p "$ex" || { fail docs tool_unavailable; return 1; }
+  if ! tar -xf "$tarball" -C "$ex" contents.tar.gz >/dev/null 2>&1 || [ ! -f "$ex/contents.tar.gz" ]; then
+    fail docs "fetch tarball"
+    return 1
+  fi
+  for member in README.md guides/install.md; do
+    if ! tar -xzf "$ex/contents.tar.gz" -C "$ex" "$member" >/dev/null 2>&1 ||
+      [ -L "$ex/$member" ] || [ -L "$ex/guides" ] || [ ! -f "$ex/$member" ]; then
+      fail docs "fetch $member"
+      return 1
+    fi
+  done
+  cp "$ex/README.md" "$WORK/docs/README.md" || { fail docs "fetch README.md"; return 1; }
+  cp "$ex/guides/install.md" "$WORK/docs/install.md" || { fail docs "fetch guides/install.md"; return 1; }
+  DOCS_SOURCE="tarball"
+  echo "cleanroom: docs source tarball $name"
 }
 
 # docs_parse_file <tag> <path> <display>: one record per fence in scope appended to
@@ -629,7 +667,7 @@ docs_run_all() {
     esac
   done <"$WORK/docs/steps.tsv"
   [ "$bad" -eq 0 ] || return 1
-  echo "cleanroom: leg docs PASS $VERSION executed=$executed not_applicable=0 clone=$clone shown=$shown source=commit:$DOCS_REF phx_new=$PHX_NEW_VERSION"
+  echo "cleanroom: leg docs PASS $VERSION executed=$executed not_applicable=0 clone=$clone shown=$shown source=$DOCS_SOURCE phx_new=$PHX_NEW_VERSION"
 }
 
 leg_docs() {

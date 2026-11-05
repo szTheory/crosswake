@@ -32,6 +32,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {"CLEANROOM_HEX_API", nil},
     {"CLEANROOM_DOCS_REF", nil},
     {"CLEANROOM_DOCS_BASE", nil},
+    {"CLEANROOM_HEX_REPO", nil},
     {"CLEANROOM_KEEP_WORK", nil},
     {"CLEANROOM_DOCS_STEP_TIMEOUT", nil},
     {"CLEANROOM_ELIXIR_VERSION", nil},
@@ -790,15 +791,204 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert out =~ "cleanroom: FAIL docs parse apply_unsupported"
   end
 
-  test "docs leg: without a docs ref it fails parse no_docs_source, never a skip", %{root: root} do
-    base = write_docs(root, docs_readme(), docs_install())
+  # ---- default docs source: the Hex tarball of the version under test (D-03) ----------------
 
-    {out, rc} =
-      run(@script, ["0.0.1"], docs_selftest_env(root, base) ++ [{"CLEANROOM_DOCS_REF", nil}])
+  # Writes <root>/<name>/tarballs/crosswake-<version>.tar the way Hex packs it: an outer
+  # uncompressed tar holding VERSION and contents.tar.gz, the latter a gzip tar of the package
+  # files. Built with :erl_tar so the test assumes no external tar. `members` are
+  # {path, binary} pairs for the inner archive. Returns the file:// repo root.
+  defp write_tarball(root, version, members, name \\ "hexrepo") do
+    repo = Path.join(root, name)
+    dir = Path.join(repo, "tarballs")
+    File.mkdir_p!(dir)
+    inner = Path.join(root, "#{name}-contents-#{System.unique_integer([:positive])}.tar.gz")
+    :ok = :erl_tar.create(String.to_charlist(inner), to_entries(members), [:compressed])
+
+    outer = Path.join(dir, "crosswake-#{version}.tar")
+
+    :ok =
+      :erl_tar.create(String.to_charlist(outer), [
+        {~c"VERSION", "3"},
+        {~c"contents.tar.gz", File.read!(inner)}
+      ])
+
+    "file://" <> repo
+  end
+
+  defp to_entries(members) do
+    for {path, body} <- members, do: {String.to_charlist(path), body}
+  end
+
+  defp tarball_env(root, repo, extra \\ []) do
+    path = mix_stub(root) <> ":" <> System.get_env("PATH", "")
+
+    [
+      {"CLEANROOM_SELFTEST", "1"},
+      {"CLEANROOM_LEGS", "docs"},
+      {"CLEANROOM_HEX_REPO", repo},
+      {"PATH", path}
+    ] ++ extra
+  end
+
+  test "docs leg: with no ref the docs come from the Hex tarball of the version under test", %{
+    root: root
+  } do
+    repo =
+      write_tarball(root, "0.0.1", [
+        {"README.md", docs_readme()},
+        {"guides/install.md", docs_install()}
+      ])
+
+    {out, rc} = run(@script, ["0.0.1"], tarball_env(root, repo))
+
+    assert rc == 0, out
+    assert out =~ "cleanroom: docs source tarball crosswake-0.0.1.tar\n"
+    refute out =~ "docs source commit"
+
+    assert out =~
+             "cleanroom: leg docs PASS 0.0.1 executed=5 not_applicable=0 clone=2 shown=2 source=tarball phx_new=1.8.13"
+
+    assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
+    refute out =~ "cleanroom: result PASS"
+  end
+
+  test "docs leg: a tarball without guides/install.md is fetch guides/install.md", %{root: root} do
+    repo = write_tarball(root, "0.0.1", [{"README.md", docs_readme()}])
+    {out, rc} = run(@script, ["0.0.1"], tarball_env(root, repo))
 
     assert rc == 1, out
-    assert out =~ "cleanroom: FAIL docs parse no_docs_source"
+    assert out =~ "cleanroom: FAIL docs fetch guides/install.md"
+    refute out =~ "docs source tarball"
     refute out =~ "leg docs PASS"
+    assert last_line(out) == "cleanroom: result FAIL legs docs version 0.0.1"
+  end
+
+  test "docs leg: a tarball without README.md is fetch README.md", %{root: root} do
+    repo = write_tarball(root, "0.0.1", [{"guides/install.md", docs_install()}])
+    {out, rc} = run(@script, ["0.0.1"], tarball_env(root, repo))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs fetch README.md"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: a missing tarball is fetch tarball", %{root: root} do
+    empty = Path.join(root, "emptyrepo")
+    File.mkdir_p!(empty)
+    {out, rc} = run(@script, ["0.0.1"], tarball_env(root, "file://" <> empty))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs fetch tarball"
+    refute out =~ "docs source tarball"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: a tarball for another version is fetch tarball", %{root: root} do
+    repo =
+      write_tarball(root, "0.0.2", [
+        {"README.md", docs_readme()},
+        {"guides/install.md", docs_install()}
+      ])
+
+    {out, rc} = run(@script, ["0.0.1"], tarball_env(root, repo))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs fetch tarball"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: a file that is not a tar archive is fetch tarball", %{root: root} do
+    repo = Path.join(root, "garbagerepo")
+    File.mkdir_p!(Path.join(repo, "tarballs"))
+    File.write!(Path.join(repo, "tarballs/crosswake-0.0.1.tar"), "this is not a tar archive")
+    {out, rc} = run(@script, ["0.0.1"], tarball_env(root, "file://" <> repo))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs fetch tarball"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: only the two named members are extracted from the tarball", %{root: root} do
+    repo =
+      write_tarball(root, "0.0.1", [
+        {"README.md", docs_readme()},
+        {"guides/install.md", docs_install()},
+        {"mix.exs", "# not a doc"},
+        {"guides/other.md", "# not a doc"},
+        {"lib/crosswake.ex", "# not a doc"}
+      ])
+
+    {out, rc} = run(@script, ["0.0.1"], tarball_env(root, repo, [{"CLEANROOM_KEEP_WORK", "1"}]))
+    assert rc == 0, out
+    [_, work] = Regex.run(~r/^cleanroom: work kept (.+)$/m, out)
+
+    extract = Path.join([work, "docs", "extract"])
+    assert File.regular?(Path.join(extract, "README.md"))
+    assert File.regular?(Path.join(extract, "guides/install.md"))
+    refute File.exists?(Path.join(extract, "mix.exs"))
+    refute File.exists?(Path.join(extract, "guides/other.md"))
+    refute File.exists?(Path.join(extract, "lib"))
+
+    File.rm_rf!(work)
+  end
+
+  test "docs leg: a ref wins over the tarball and the Hex repo is not read", %{root: root} do
+    base = write_docs(root, docs_readme(), docs_install())
+    empty = Path.join(root, "unusedrepo")
+    File.mkdir_p!(empty)
+
+    {out, rc} =
+      run(
+        @script,
+        ["0.0.1"],
+        docs_selftest_env(root, base, [{"CLEANROOM_HEX_REPO", "file://" <> empty}])
+      )
+
+    assert rc == 0, out
+    assert out =~ "cleanroom: docs source commit #{@zero_ref}"
+    refute out =~ "docs source tarball"
+    assert out =~ "source=commit:#{@zero_ref}"
+  end
+
+  test "CLEANROOM_HEX_REPO is refused without CLEANROOM_SELFTEST=1", %{root: root} do
+    repo =
+      write_tarball(root, "0.0.1", [
+        {"README.md", docs_readme()},
+        {"guides/install.md", docs_install()}
+      ])
+
+    {out, rc} = run(@script, ["0.0.1"], [{"CLEANROOM_HEX_REPO", repo}])
+    assert rc == 2
+    assert out =~ "cleanroom: override refused"
+    refute out =~ "cleanroom: result"
+    refute out =~ "docs source tarball"
+  end
+
+  test "the tarball default points at repo.hex.pm and CLEANROOM_HEX_REPO is an override, not a selector" do
+    src = File.read!(@script)
+    assert src =~ ~r/^HEX_REPO_DEFAULT="https:\/\/repo\.hex\.pm"$/m
+    assert src =~ "tarballs/$name"
+
+    [line] = Enum.filter(String.split(src, "\n"), &(&1 =~ ~s(if [ "$LEGS" != "$DEFAULT_LEGS" ])))
+    assert line =~ "CLEANROOM_HEX_REPO"
+  end
+
+  test "the script header names every docs selector and selftest override" do
+    header =
+      @script
+      |> File.read!()
+      |> String.split("\n")
+      |> Enum.take_while(&String.starts_with?(&1, "#"))
+
+    header = Enum.join(header, "\n")
+
+    for name <-
+          ~w(CLEANROOM_DOCS_REF CLEANROOM_DOCS_BASE CLEANROOM_HEX_REPO CLEANROOM_KEEP_WORK) do
+      assert header =~ name, "header does not name #{name}"
+    end
+
+    assert header =~ ~r/selector/
+    assert header =~ ~r/Selftest overrides/
   end
 
   test "docs leg: a missing doc at the pinned commit is fetch <file>", %{root: root} do
