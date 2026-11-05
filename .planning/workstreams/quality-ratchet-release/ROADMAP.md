@@ -240,7 +240,7 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 197-01-PLAN.md — docs-report tracer: branch cut, launcher, extras scope, leak counter with schema-validated allowlist, link/anchor counter, fixture controls (DOCS-03)
+- [ ] 197-01-PLAN.md — docs-report tracer: branch cut, launcher, extras scope, leak counter with schema-validated allowlist, link/anchor counter, fixture controls, shared `mix test` gate helper (DOCS-03)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 197-02-PLAN.md — mix docs warnings counter, not-in-CI guard, baseline on a main-equal tree before any doc edit; DOCS-01/02 and SC1/SC2 amended in place (DOCS-03, DOCS-01, DOCS-02)
