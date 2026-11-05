@@ -860,11 +860,16 @@ jobs:
           node-version: "22.14.0"
       - name: Run Android JVM tests
         run: script/verify_repository.sh --stage android-package-proof
+      - name: Check Kotlin JVM test floor
+        run: python3 script/check_kotlin_test_floor.py --run
+      - name: Check Kotlin test floor controls
+        run: python3 script/check_kotlin_test_floor_test.py
       - name: Summarize Android package proof
         if: always()
         run: |
           echo 'android-package-unit: Android JVM behavioral proof completed.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Remediation: cd packages/crosswake-shell-core-android && ./gradlew test' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation (test floor): python3 script/check_kotlin_test_floor.py --run' >> "$GITHUB_STEP_SUMMARY"
 
   android-generated-shell-unit:
     name: android-generated-shell-unit
