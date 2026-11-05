@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 13
+current_plan: 14
 status: executing
-stopped_at: Completed 197-12-PLAN.md
-last_updated: "2026-11-05T17:07:20.381Z"
-state_head: 6aaad12a68e783c18663eb1e395be02a12b9e80b
+stopped_at: Completed 197-15-PLAN.md
+last_updated: "2026-11-05T17:12:48.325Z"
+state_head: fc46a9661cea95cbb66b128ebd362586248d2e78
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 59
+  completed_plans: 60
   percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 13
+Current Plan: 14
 Total Plans in Phase: 15
 
 ## Exact Next Action
 
-Phase 197 is executing on branch `docs/197-public-docs-truth` (cut from origin/main, planning commits cherry-picked; not pushed). Last completed plan: 197-09 (marker test, `DOCS_EXECUTED_FLOOR` pinned to 18, 0.2.11 reader audit, documented `:ios_host` values test). Next: execute 197-10 via `/gsd-execute-phase 197 --ws quality-ratchet-release`. The merge to main needs a fresh one-use allow and is not executor work. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Phase 197 is executing on branch `docs/197-public-docs-truth` (cut from origin/main, planning commits cherry-picked; not pushed). Last completed plan: 197-15 (D-26: `:ios_host` and manifest 1.2.0 qualified in the six linked guides, `UnreleasedClaimQualifierTest`, Phase 199 criterion 6). Wave order puts 197-13 (wave 14) before 197-14 (wave 15). Next: execute 197-13 via `/gsd-execute-phase 197 --ws quality-ratchet-release`. The merge to main needs a fresh one-use allow and is not executor work. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T17:07:20.208Z
-**Stopped at:** Completed 197-12-PLAN.md
+**Last session:** 2026-11-05T17:12:48.150Z
+**Stopped at:** Completed 197-15-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -62,6 +62,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P10 | 25min | 2 tasks | 3 files |
 | Phase 197 P11 | 20min | 2 tasks | 6 files |
 | Phase 197 P12 | 25min | 3 tasks | 7 files |
+| Phase 197 P15 | 25 min | 3 tasks | 11 files |
 
 ## Decisions
 
@@ -81,6 +82,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-07: required-step check is dynamic over executed bodies per file; :ios_host exemption is version-conditional on DOCS_IOS_HOST_SINCE=0.2.12; DOCS_EXECUTED_FLOOR=1 is a placeholder until 197-09
 - [Phase 197]: 197-09: DOCS_EXECUTED_FLOOR pinned to 18 (16 run/apply blocks without since= plus 2 harness compiles), asserted equal in the marker test
 - [Phase 197]: 197-11: publish.parity candidate rule keys on the Published Hex truth pointer (GitHub Releases + hex.pm links), not version sentences; CHANGELOG makes no current-release claim
+- [Phase 197]: 197-15: qualifier sentences sit on one physical line and the guard reads heading plus body, so a wrapped or heading-only claim cannot slip past D-26
 
 ### Blockers
 
