@@ -9,3 +9,6 @@ privacy: rc 0
 # privacy scan run 3 (HEAD e7825282, 96 files incl. PR body)
 privacy: clean files 96
 privacy: rc 0
+# privacy scan run 4 (HEAD 9e87d327 after merging main with the PR 269 lock bumps, 96 changed files plus the live PR body and the draft PR body; 98 inputs)
+privacy: clean files 98
+privacy: rc 0
