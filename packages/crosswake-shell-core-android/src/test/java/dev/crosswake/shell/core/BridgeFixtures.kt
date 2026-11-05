@@ -61,6 +61,15 @@ internal object BridgeFixtures {
         payload = emptyMap()
     )
 
+    /** The wire commands listed in the shared vector corpus `commands` array. */
+    fun vectorCommands(): Set<String> {
+        val stream = BridgeFixtures::class.java.getResourceAsStream("/bridge_contract_vectors.json")
+            ?: throw AssertionError("CW-VECTOR-MISSING bridge_contract_vectors.json")
+        val text = stream.bufferedReader().use { it.readText() }
+        val array = JSONObject(text).getJSONArray("commands")
+        return (0 until array.length()).map { array.getString(it) }.toSet()
+    }
+
     /** The reply's top-level `status` (`ok` or `deny`). */
     fun status(reply: String): String = JSONObject(reply).getString("status")
 

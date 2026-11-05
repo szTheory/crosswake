@@ -363,4 +363,108 @@ class BridgeChannelBoundaryTest {
             missingPack.evaluateForTesting(base.copy(command = "no.such.command"))
         )
     }
+
+    @Test
+    fun `transfer commands deny with a null coordinator`() {
+        val channel = baselineChannel(transferCoordinator = null)
+        assertBaselineOk(channel)
+        var ran = 0
+        for (command in listOf("transfer.import", "transfer.export", "transfer.download", "transfer.upload.prepare")) {
+            val request = BridgeFixtures.makeRequest(command = command, capability = command)
+            assertDenied("undeclared_capability", command, channel.evaluateForTesting(request))
+            ran++
+        }
+        assertEquals("CW-TRANSFER-CASES expected 4", 4, ran)
+    }
+
+    @Test
+    fun `files pick deferred without a sink denies with unavailable_capability`() {
+        var started = false
+        val delegate = object : FilesPickDelegate {
+            override fun pick(payload: Map<String, String>, correlationId: String): FilesPickResult =
+                FilesPickResult.Deferred { _, _ -> started = true }
+        }
+        val channel = baselineChannel(
+            session = BridgeFixtures.makeSession(capabilities = mapOf("file_picker" to "1.0.0")),
+            config = CrosswakeShellConfig(filesPickDelegate = delegate)
+        )
+        val request = BridgeFixtures.makeRequest(
+            command = "files.pick",
+            capability = "file_picker",
+            capabilities = mapOf("file_picker" to "1.0.0")
+        )
+        assertDenied("unavailable_capability", "files.pick deferred, no sink", channel.evaluateForTesting(request))
+        assertFalse("CW-PICKER-STARTED the picker must not start without a result channel", started)
+    }
+
+    @Test
+    fun `permissions status with a missing or unknown alias denies`() {
+        val delegate = object : PermissionStatusDelegate {
+            override fun getStatus(alias: String): Map<String, String>? =
+                if (alias == "notifications") mapOf("status" to "granted") else null
+        }
+        val channel = baselineChannel(
+            session = BridgeFixtures.makeSession(capabilities = mapOf("permissions.status" to "1.0.0")),
+            config = CrosswakeShellConfig(permissionStatusDelegate = delegate)
+        )
+        val base = BridgeFixtures.makeRequest(
+            command = "permissions.status",
+            capability = "permissions.status",
+            capabilities = mapOf("permissions.status" to "1.0.0")
+        )
+
+        val known = channel.evaluateForTesting(base.copy(payload = mapOf("alias" to "notifications")))
+        assertEquals("CW-CONTROL-NOT-OK $known", "ok", BridgeFixtures.status(known))
+
+        assertDenied("unavailable_capability", "alias missing", channel.evaluateForTesting(base))
+        assertDenied(
+            "unavailable_capability",
+            "alias camera",
+            channel.evaluateForTesting(base.copy(payload = mapOf("alias" to "camera")))
+        )
+    }
+
+    @Test
+    fun `bridge command wire values cover the vector commands plus exactly two extras`() {
+        val kotlinSet = BridgeCommand.entries.map { it.wireValue }.toSet()
+        val corpusSet = BridgeFixtures.vectorCommands()
+        assertTrue("CW-CORPUS-TOO-SMALL ${corpusSet.size}", corpusSet.size >= 10)
+        assertTrue("CW-CORPUS-NOT-SUBSET ${corpusSet - kotlinSet}", kotlinSet.containsAll(corpusSet))
+        assertEquals(setOf("server.event.push", "server.state.update"), kotlinSet - corpusSet)
+    }
+
+    // Characterizes CURRENT behavior, not an endorsement: debt row (a) in 198-DECISIONS.md
+    // (owner Android bridge maintainers, trigger bridge-command breadth, receiver the v29 phase).
+    @Test
+    fun `server push and state update are ungated in current behavior characterization`() {
+        val state = kotlinx.coroutines.flow.MutableStateFlow(ConnectionState.Disconnected)
+        val channel = BridgeChannel(
+            BridgeFixtures.makeSession(capabilities = emptyMap()),
+            transferCoordinator = null,
+            config = CrosswakeShellConfig(),
+            connectionState = state
+        )
+        val push = BridgeFixtures.makeRequest(
+            command = "server.event.push",
+            capability = "server_event_push",
+            capabilities = emptyMap()
+        )
+        val pushed = channel.evaluateForTesting(push.copy(payload = mapOf("name" to "tick")))
+        assertEquals("CW-PUSH-GATED $pushed", "ok", BridgeFixtures.status(pushed))
+        assertDenied("invalid_payload", "push without name", channel.evaluateForTesting(push))
+
+        val update = BridgeFixtures.makeRequest(
+            command = "server.state.update",
+            capability = "server_state_update",
+            capabilities = emptyMap()
+        )
+        val bogus = channel.evaluateForTesting(update.copy(payload = mapOf("state" to "bogus")))
+        assertEquals("CW-UPDATE-GATED $bogus", "ok", BridgeFixtures.status(bogus))
+        assertEquals(ConnectionState.Disconnected, state.value)
+
+        // Control: a known state value does move the flow, so the unchanged value above is real.
+        val known = channel.evaluateForTesting(update.copy(payload = mapOf("state" to "connected")))
+        assertEquals("ok", BridgeFixtures.status(known))
+        assertEquals(ConnectionState.Connected, state.value)
+    }
 }
