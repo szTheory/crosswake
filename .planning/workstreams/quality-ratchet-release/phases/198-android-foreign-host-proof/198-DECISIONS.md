@@ -102,3 +102,38 @@ any ROADMAP or STATE conflict by keeping both sides' facts.
 ## Appended by later plans
 
 - (Plan 03, D-13) The Kotlin JVM test floor is `script/check_kotlin_test_floor.py --run` (ratchet floor 25, derived XML-to-source equality, `BridgeChannelBoundaryTest` at least 10 testcases, seven load-bearing named tests, dependency-drift checks), with its fixture controls in `script/check_kotlin_test_floor_test.py`. Both run as separate steps in `android-package-unit`; the pinned `android-package-proof` stage argv is unchanged. Measured on the branch 2026-11-05: 37 XML tests, 37 source tests, 20 boundary testcases. Claim ceiling: JVM evidence only.
+
+## D-24 measurement
+
+Measured 2026-11-05 on the branch, before any edit to `native_evidence_drift_test.exs` or the
+reworded sources. Instrument: a one-off `mix run` that applies the two new `:device_support_overclaim`
+patterns line by line, with and without the scanner's `line_support_negated?` suppression.
+
+Patterns: `\bAndroid\b.*\b(emulator|device|physical)[- ](verified|tested|proven|support)` and
+`\b(emulator|device)-verified Android\b`, both case-insensitive.
+
+Before rewording (hits without suppression / with suppression):
+
+| Surface | Without suppression | With suppression | Hit lines (normalized) |
+|---|---|---|---|
+| `guides/support_matrix.md` | 2 | 0 | the `shell.android.device_verified` rule row; the non-claims bullet "Android remains available ... that posture is not device-verified" (both carry negation words) |
+| `guides/capability_map.md` | 0 | 0 | none |
+| `guides/parity_ledger.md` | 0 | 0 | none |
+| `guides/native_shell.md` | 0 | 0 | none |
+| `lib/crosswake/support_matrix/renderer.ex` (already scanned) | 1 | 0 | the non-claims bullet source (negated) |
+| `lib/crosswake/support_matrix/support_matrix.ex` (already scanned) | 3 | 3 | the D-19 comment "Android device-verified promotion criteria"; the rule title "Android shell device/emulator-verified proof promotion"; the evidence text "docs-contract parity for Android device-verified runtime-line" |
+
+The three unsuppressed hits are true hits in the source (comment, title and evidence text of the
+`shell.android.device_verified` rule). They are reworded in place; no regex is loosened. The two
+suppressed hits in the rendered guide and renderer stay: they are negated statements of the boundary.
+
+After rewording and extending the scanner (same instrument, plus the full `NativeEvidenceDriftTest`
+over `guides/capability_map.md` and `guides/parity_ledger.md`, which are now scanned under every
+existing line rule as well as the two new ones): unsuppressed hits are 0 on all six surfaces.
+The three source lines now read "Android promotion criteria for device-level proof",
+"Android shell emulator and device proof promotion" and "docs-contract parity for Android
+device_verified runtime-line" (the rule id `shell.android.device_verified` is unchanged). The
+documentation-contracts set ran 292 of 297 tests green (284 measured before this plan's tests plus
+8 ceiling tests). Known blind spot (H5): the scanner's negation suppression skips any line containing
+` not `, ` never `, ` without ` and similar words, so the table test in
+`android_claim_ceiling_test.exs` is the primary gate and this scanner is a backstop.

@@ -255,7 +255,10 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "Visual collateral is not correctness proof by itself.",
       "Device/provider evidence is not backend/session authority.",
       "Cached read-only is not offline mutation.",
-      "Bridge is not high-frequency or mutation authority."
+      "Bridge is not high-frequency or mutation authority.",
+      "",
+      "Android ceiling: #{Crosswake.SupportMatrix.android_boundary()}",
+      "Per-vector Android parity: [parity ledger](parity_ledger.md)."
     ]
     |> Enum.join("\n")
   end

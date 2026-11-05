@@ -1605,14 +1605,14 @@ defmodule Crosswake.SupportMatrix do
           "Demote to verification_required when Android JVM hermetic CI proof is stale, fails, or coverage drops below the freshness window. jvm_hermetic promotion MUST NOT be read as device_verified — CI-level evidence is not device/emulator evidence.",
         required_verification_method: :jvm_hermetic
       ),
-      # D-19: Android device-verified promotion criteria — GATED until Phases 67/68.
+      # D-19: Android promotion criteria for device-level proof — GATED until Phases 67/68.
       # Device/emulator proof is unavailable until Phase 67 (Android shell implementation)
       # and Phase 68 (Android verification closure and device-UAT).
       # jvm_hermetic promotion MUST NOT be read as device_verified.
       promotion_rule(
         claim_id: "shell.android.device_verified",
         claim_scope:
-          "Android shell device/emulator-verified proof promotion — GATED until Phases 67/68",
+          "Android shell emulator and device proof promotion — GATED until Phases 67/68",
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "device_verified",
@@ -1620,7 +1620,7 @@ defmodule Crosswake.SupportMatrix do
           "Android emulator advisory lane evidence (Phase 68)",
           "device-UAT checklist completion (Phase 68)",
           "capability-parity-locked device proof",
-          "docs-contract parity for Android device-verified runtime-line"
+          "docs-contract parity for Android device_verified runtime-line"
         ],
         minimum_consecutive_passes: 3,
         freshness_window: "current release branch, within 10 device-UAT runs",

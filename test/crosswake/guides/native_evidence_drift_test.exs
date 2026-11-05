@@ -10,6 +10,8 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
     "guides/native_shell.md",
     "guides/compatibility.md",
     "guides/support_matrix.md",
+    "guides/capability_map.md",
+    "guides/parity_ledger.md",
     "guides/android_uat.md",
     "examples/ios_shell_host/README.md",
     "examples/android_shell_host/README.md",
@@ -132,6 +134,20 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
       )
 
     assert Enum.any?(overclaim_failures, &(&1.category == :device_support_overclaim))
+
+    for {surface, line} <- [
+          {"guides/capability_map.md", "Android is emulator-verified for this route."},
+          {"guides/parity_ledger.md", "Device-verified Android support ships today."}
+        ] do
+      failures = scan_surface(surface, line <> "\n")
+
+      assert Enum.any?(
+               failures,
+               &(&1.category == :device_support_overclaim and
+                   &1.detail =~ "Android emulator or device evidence")
+             ),
+             "negative control for #{inspect(line)} did not trip the Android overclaim pattern"
+    end
   end
 
   test "native collateral manifest example keeps advisory labels and unavailable reasons" do
@@ -329,6 +345,22 @@ defmodule Crosswake.Guides.NativeEvidenceDriftTest do
         ~r/\bverified Android\b/i,
         :device_support_overclaim,
         "line overstates Android verification"
+      )
+      |> maybe_line_failure(
+        path,
+        line,
+        line_number,
+        ~r/\bAndroid\b.*\b(emulator|device|physical)[- ](verified|tested|proven|support)/i,
+        :device_support_overclaim,
+        "line overstates Android emulator or device evidence"
+      )
+      |> maybe_line_failure(
+        path,
+        line,
+        line_number,
+        ~r/\b(emulator|device)-verified Android\b/i,
+        :device_support_overclaim,
+        "line overstates Android emulator or device evidence"
       )
       |> maybe_line_failure(
         path,
