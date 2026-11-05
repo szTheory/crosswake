@@ -236,7 +236,7 @@ Plans:
   3. `mix docs` warnings, a relative link/anchor check and a public internal-code leak scan (`Phase N`, `TODO-`, `D-NN`, `v2x`) run in report mode with their counts recorded, and none is a required check.
   4. `android_uat.md` has no automated "Last verified" stamp and no phantom capability families, and a grep for "Android frozen" posture text in README, the support matrix and the native shell guide returns zero hits.
 
-**Plans**: 5/15 plans executed, 35 tasks; sequential waves 1–15 in one checkout on branch `docs/197-public-docs-truth`; one PR; the merge to main is a separate one-use allow (not executor work)
+**Plans**: 6/15 plans executed, 35 tasks; sequential waves 1–15 in one checkout on branch `docs/197-public-docs-truth`; one PR; the merge to main is a separate one-use allow (not executor work)
 
 Plans:
 **Wave 1**
@@ -255,7 +255,7 @@ Plans:
 - [x] 197-05-PLAN.md — docs leg tarball default source and real-toolchain smoke against 0.2.11 (DOCS-01)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 197-06-PLAN.md — docs leg apply modes with per-mode target and anchor rules, substitution table, harness compile (DOCS-01)
+- [x] 197-06-PLAN.md — docs leg apply modes with per-mode target and anchor rules, substitution table, harness compile (DOCS-01)
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 197-07-PLAN.md — since=/NOT_APPLICABLE, required steps, version-conditional :ios_host deferral, executed floor placeholder (DOCS-01)
@@ -323,7 +323,7 @@ Plans:
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
-| 197. Public docs truth | 5/15 | In Progress | - |
+| 197. Public docs truth | 6/15 | In Progress | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 
