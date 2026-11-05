@@ -61,6 +61,13 @@ internal object BridgeFixtures {
         payload = emptyMap()
     )
 
+    /** The reply's top-level `status` (`ok` or `deny`). */
+    fun status(reply: String): String = JSONObject(reply).getString("status")
+
+    /** The reply's `denial.denial.reason`; fails the test if the reply is not a denial. */
+    fun denialReason(reply: String): String =
+        JSONObject(reply).getJSONObject("denial").getJSONObject("denial").getString("reason")
+
     val REQUIRED_STRING_FIELDS = listOf(
         "protocol",
         "version",
