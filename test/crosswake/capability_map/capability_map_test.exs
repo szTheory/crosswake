@@ -475,6 +475,32 @@ defmodule Crosswake.CapabilityMapTest do
 
   defp alternate(current, allowed), do: Enum.find(allowed, &(&1 != current))
 
+  test "Android evidence stays within the ceiling and the rendered column matches the typed rows" do
+    rows = CapabilityMap.canonical()
+
+    for row <- rows do
+      assert row.android_evidence in [:not_claimed, :jvm_hermetic]
+    end
+
+    typed_count = Enum.count(rows, &(&1.android_evidence == :jvm_hermetic))
+    assert typed_count >= 1
+
+    rendered_count =
+      Crosswake.CapabilityMap.Renderer.render()
+      |> String.split("\n")
+      |> Enum.filter(&String.starts_with?(&1, "| "))
+      |> Enum.count(fn line ->
+        line |> String.split(" | ") |> Enum.at(7) == "JVM hermetic proof"
+      end)
+
+    assert rendered_count == typed_count
+
+    # Control: row/1 delegates to this exact call, so a canonical row at :device cannot be built.
+    assert_raise ArgumentError, fn ->
+      Crosswake.SupportMatrix.validate_android_evidence!(:device)
+    end
+  end
+
   defp available_authority_tuple?(claim) do
     Map.take(claim, authority_fields()) == %{
       evidence_subject: :crosswake_contract,
