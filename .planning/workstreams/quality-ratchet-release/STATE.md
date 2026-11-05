@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 197-03-PLAN.md
-last_updated: "2026-11-05T15:54:21.733Z"
-state_head: 91503186a6f96892bb42b2f5c3a39c15d60bfc52
+stopped_at: Completed 197-04-PLAN.md
+last_updated: "2026-11-05T16:07:24.172Z"
+state_head: 76eba5d885d270a7750467c734a6879d16ae7dff
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 50
+  completed_plans: 51
   percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
@@ -20,7 +20,7 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 4
+Current Plan: 5
 Total Plans in Phase: 15
 
 ## Exact Next Action
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T15:54:21.570Z
-**Stopped at:** Completed 197-03-PLAN.md
+**Last session:** 2026-11-05T16:07:24.020Z
+**Stopped at:** Completed 197-04-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -53,6 +53,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P01 | 70min | 3 tasks | 6 files |
 | Phase 197 P02 | 45min | 3 tasks | 8 files |
 | Phase 197 P03 | 55min | 2 tasks | 3 files |
+| Phase 197 P04 | 95min | 3 tasks | 2 files |
 
 ## Decisions
 
@@ -66,6 +67,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: DOCS-01, DOCS-02 and SC1/SC2 amended 2026-10-29 to CONTEXT D-04 (:ios_host deferred to Phase 199), D-06 (clone-labeled blocks) and D-10 (matrix links to the registry).
 - [Phase 197]: Plan 02: warning location is the first corner-marker line before the next warning, not any path:digits line; D-19 baseline differs from discussion only by counting unit (occurrences vs distinct lines)
 - [Phase 197]: 197-03: file:// fixtures answered locally in fetch (missing 3, uncopyable 4); version validation uses a bash regex so a missing grep is tool_unavailable, not usage
+- [Phase 197]: 197-04: docs leg runs only run blocks; a failed run block stops its own file only; extra fail-closed parse reasons (no_fences, readme_scope_missing, unterminated_fence, bad_id); asdf callers must set CLEANROOM_ELIXIR_VERSION and CLEANROOM_ERLANG_VERSION for the docs leg
 
 ### Blockers
 
