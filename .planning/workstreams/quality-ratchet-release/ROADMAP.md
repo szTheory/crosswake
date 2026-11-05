@@ -298,7 +298,44 @@ Plans:
   3. A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on the Linux CI head commit as an advisory leg (required only after two clean runs), and a negative control with a wrong coordinate fails.
   4. No Android claim in the support matrix or capability map exceeds JVM-hermetic evidence (no device, emulator or feature-breadth claim).
 
-**Plans**: TBD
+**Plans**: 12 plans (one checkout, sequential waves)
+
+**Wave 1**
+- [ ] 198-01-PLAN.md — JSON-stack swap to AOSP-derived android-json, dead serialization removed, fail-closed envelope, listener extractions, SemVer hardening, decisions in writing (AND-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 198-02-PLAN.md — BridgeChannel boundary tests for every D-12 group, suite at 37 or more (AND-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 198-03-PLAN.md — Kotlin test-floor checker with fixture controls, wired into android-package-unit (AND-02)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 198-04-PLAN.md — Generated Kotlin vector-set hash, verified Kotlin loaders, .gitattributes LF pins, declared output (AND-01)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 198-05-PLAN.md — Generated Swift vector-set hash, verified Swift loaders, one-time byte-flip evidence (AND-01)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 198-06-PLAN.md — Typed Android evidence ceiling, capability-map Android evidence column, single-sourced boundary sentence (AND-01, SC4)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 198-07-PLAN.md — Generated public parity ledger via docs.sync with computed Android cells, two-sided consumer registry and controls (AND-01)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 198-08-PLAN.md — Android claim-ceiling table test, measured prose backstop, ledger qualifier, recorded AND-01 wording amendment (AND-01, SC4)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 198-09-PLAN.md — Foreign-host script against the published Maven coordinate with wrong-coordinate control, hermetic selftest (AND-03)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 198-10-PLAN.md — Derived two-clean-runs promotion script and bearings report line (AND-03)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 198-11-PLAN.md — Advisory android-foreign-host CI job, ADVISORY_JOBS loop, selftests in the hermetic lane (AND-03)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 198-12-PLAN.md — Full gates, privacy scan, PR with CI green on head, first Linux foreign-host run, clean-run count, cost record (AND-01..03)
+
 **Research**: Needs `--research-phase` (Android build files, `androidx.webkit` and `org.json` usage, generator templates versus Gradle files were read at grep level only)
 
 ### Phase 199: Release 0.2.12
@@ -325,7 +362,7 @@ Plans:
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | In Progress | - |
-| 198. Android foreign-host proof | 0/TBD | Not started | - |
+| 198. Android foreign-host proof | 0/12 | Planned | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 
 <details>

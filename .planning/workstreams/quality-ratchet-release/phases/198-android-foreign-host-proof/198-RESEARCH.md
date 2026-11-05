@@ -451,15 +451,22 @@ Controls required as fixture XML: 24 tests, one skipped, boundary class absent, 
 | A6 | CI cost of the foreign-host leg is 5-8 billable minutes (local fresh-cache build took 67 s plus Hex deps and Gradle distribution download) | Environment | Cost report after the first PR (D-19) replaces this estimate |
 | A7 | `gh api` can list `Crosswake CI` runs, jobs and artifacts for the promotion script without extra scopes when the user is authenticated; artifact ZIP download needs auth even on a public repo | Open Question 4 | Promotion script might need a token in CI context; it runs locally per D-20, so low |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All five questions were resolved at planning time; each resolution is recorded in `198-DECISIONS.md` (Plan 01 Task 3) and implemented by the plan named.
 
 1. **Harden `SemVer` (reject negative and `+` components) or characterize current behavior?**
    - Known: C6 table; `SemVerBoundaryTest` as written in D-12 cannot pass for negatives without a change; D-11 already adds fail-closed production hardening.
    - Recommendation: harden (two lines in `SemVer.parse`: require `^[0-9]+$` per part). It stays inside A1 (existing contract, stricter denial) and removes the subtraction-overflow accident. Record the choice in the Phase 198 decisions. If declined, rename the tests as current-behavior characterization and log a debt row (owner, trigger, receiver).
+   - **RESOLVED: harden.** Implemented by Plan 01 Task 2 (digit-only `SemVer.parse`, `SemVerBoundaryTest`). The divergence from the iOS `SemVer.swift` reference (which uses `Int(_:)` and so still accepts `+1` and `-1` components) is recorded in `198-DECISIONS.md` with a debt row (Plan 01 Task 3).
 2. **Option A vs B for the floor checker hook (C7).** Recommendation: A (job step, no schema or pin edits).
+   - **RESOLVED: Option A.** Implemented by Plan 03 Task 3 (separate steps in `android-package-unit`; stage argv unchanged).
 3. **Capability-map "Android evidence" column placement (C8, C10).** D-22 accepts the 11th column with a fallback. Recommendation: build it, but run the existing overclaim scanner over the rendered guide before choosing which rows carry `:jvm_hermetic`; if more than a handful of rows would need rewording, use D-22's documented fallback and record it honestly.
+   - **RESOLVED: build the 11th column.** Implemented by Plan 06 Task 1 (with the C10 check before choosing `:jvm_hermetic` rows).
 4. **Promotion script runtime (D-20).** Confirm in plan whether it only runs locally and from `bearings_report.exs`, or also in CI. Artifact download needs authentication; the local `gh` is logged in [VERIFIED: `gh auth status`].
+   - **RESOLVED: local only** (directly and through `bearings_report.exs`), because artifact download needs an authenticated `gh` and Crosswake CI is pull-request only. Implemented by Plan 10.
 5. **Which token for the `@claims` entry (C13)?** Recommendation: `vector-set hash` (appears in every section that describes the hash).
+   - **RESOLVED: `vector-set hash`.** Implemented by Plan 08 Task 3.
 
 ## Environment Availability
 
