@@ -161,7 +161,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## What the first adopter changes",
       "",
-      "Crosswake is currently infrastructure for one first adopter. Work is ordered by host-reusable proof, privacy-safe replay, one foreground iOS pronunciation-pack adapter, and physical-iPhone evidence. Android is unfrozen only for proof and parity of existing contracts; native-control breadth stays frozen.",
+      "Crosswake is currently infrastructure for one first adopter. Work is ordered by host-reusable proof, privacy-safe replay, one foreground iOS pronunciation-pack adapter, and physical-iPhone evidence. #{Crosswake.SupportMatrix.android_boundary()} Native-control breadth stays frozen.",
       "",
       "### Frozen candidates",
       "",
