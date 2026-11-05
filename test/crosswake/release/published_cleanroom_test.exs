@@ -572,6 +572,11 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     mix crosswake.install
     ```
 
+    <!-- cleanroom:run id=readme_doctor -->
+    ```bash
+    mix crosswake.doctor
+    ```
+
     <!-- cleanroom:show -->
     ```elixir
     Crosswake.Bridge.attach()
@@ -631,22 +636,83 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     "file://" <> base
   end
 
+  # A Phoenix-shaped host skeleton the `phx.new` stub copies into place: the four host files
+  # the apply modes edit (mix.exs deps list, the esbuild args sigil, the LiveSocket hooks
+  # object and a router scope with `pipe_through :browser`).
+  @skeleton %{
+    "mix.exs" => """
+    defmodule CleanRoomHost.MixProject do
+      use Mix.Project
+
+      defp deps do
+        [
+          {:phoenix, "~> 1.8.1"},
+          {:phoenix_html, "~> 4.1"}
+        ]
+      end
+    end
+    """,
+    "config/config.exs" => """
+    import Config
+
+    config :esbuild,
+      version: "0.25.4",
+      clean_room_host: [
+        args:
+          ~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/*),
+        cd: Path.expand("../assets", __DIR__)
+      ]
+    """,
+    "assets/js/app.js" => """
+    import "phoenix_html"
+    import {Socket} from "phoenix"
+    import {LiveSocket} from "phoenix_live_view"
+    const liveSocket = new LiveSocket("/live", Socket, {longPollFallbackMs: 2500, params: {_csrf_token: csrfToken}, hooks: {...colocatedHooks}})
+    """,
+    "lib/clean_room_host_web/router.ex" => """
+    defmodule CleanRoomHostWeb.Router do
+      use CleanRoomHostWeb, :router
+
+      scope "/", CleanRoomHostWeb do
+        pipe_through :browser
+
+        get "/", PageController, :home
+      end
+    end
+    """
+  }
+
   # A PATH-first `mix` stub: the generator and install tasks succeed, anything else is the
-  # real "task could not be found" failure (exit 1).
+  # real "task could not be found" failure (exit 1). `phx.new` copies the skeleton above;
+  # `compile` prints the file `compile_out` beside the stub and exits with the number in
+  # `compile_exit` (default 0), so a test can stage a warning block or a failure.
   defp mix_stub(root, capture \\ nil) do
     stubs = Path.join(root, "mixstubs")
     File.mkdir_p!(stubs)
     path = Path.join(stubs, "mix")
+
+    for {rel, body} <- @skeleton do
+      skel = Path.join([stubs, "skeleton", rel])
+      File.mkdir_p!(Path.dirname(skel))
+      File.write!(skel, body)
+    end
+
     # With a capture path the stub appends its whole environment there before acting.
     capture_line = if capture, do: "env >> '#{capture}'\n", else: ""
 
     File.write!(path, """
     #!/bin/sh
     #{capture_line}case "$1" in
-      local.hex|local.rebar|archive.install|deps.get|crosswake.install|crosswake.doctor|compile)
+      local.hex|local.rebar|archive.install|deps.get|crosswake.install|crosswake.doctor)
         exit 0 ;;
+      compile)
+        d="${0%/*}"
+        [ -f "$d/compile_out" ] && cat "$d/compile_out"
+        code=0
+        [ -f "$d/compile_exit" ] && code=$(cat "$d/compile_exit")
+        exit "$code" ;;
       phx.new)
-        mkdir -p "$2" && : > "$2/mix.exs"
+        mkdir -p "$2" && cp -R "${0%/*}/skeleton/." "$2/"
         exit 0 ;;
       *)
         echo "The task \\"$1\\" could not be found"
@@ -682,7 +748,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert out =~ "cleanroom: docs source commit #{@zero_ref}"
 
     assert out =~
-             "cleanroom: leg docs PASS 0.0.1 executed=5 not_applicable=0 clone=2 shown=2 source=commit:#{@zero_ref} phx_new=1.8.13"
+             "cleanroom: leg docs PASS 0.0.1 executed=8 not_applicable=0 clone=2 shown=2 source=commit:#{@zero_ref} phx_new=1.8.13"
 
     assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
     refute out =~ "cleanroom: result PASS"
@@ -692,7 +758,14 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     root: root
   } do
     install = docs_install()
-    mutated = String.replace(install, "mix crosswake.doctor", "mix crosswake.no_such_task")
+
+    mutated =
+      String.replace(
+        install,
+        "mix crosswake.doctor",
+        "mix crosswake.doctor\nmix crosswake.no_such_task"
+      )
+
     assert mutated != install
 
     base = write_docs(root, docs_readme(), mutated)
@@ -773,22 +846,199 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert out =~ "cleanroom: FAIL docs parse unknown_attr"
   end
 
-  test "docs leg: an apply marker parses but is not yet supported", %{root: root} do
+  # ---- apply blocks and the harness compile step (D-01, D-02) --------------------------------
+
+  # An apply marker plus a `text` fence.
+  defp apply_block(id, mode, file, body) do
+    "<!-- cleanroom:apply id=#{id} file=#{file} mode=#{mode} -->\n```text\n#{body}\n```\n\n"
+  end
+
+  # install.md with extra blocks ahead of its run blocks.
+  defp install_with(blocks) do
+    String.replace(docs_install(), "# Install\n\n", "# Install\n\n" <> blocks, global: false)
+  end
+
+  # Runs the leg over README (unchanged) and an install.md carrying `blocks`, keeping the work
+  # dir. Returns {out, rc, work}; the caller reads work/host-install and removes work.
+  defp apply_run(root, blocks, name, extra \\ []) do
+    base = write_docs(root, docs_readme(), install_with(blocks), "docs-#{name}")
+    env = docs_selftest_env(root, base, [{"CLEANROOM_KEEP_WORK", "1"} | extra])
+    {out, rc} = run(@script, ["0.0.1"], env)
+
+    work =
+      case Regex.run(~r/^cleanroom: work kept (.+)$/m, out) do
+        [_, w] -> w
+        nil -> flunk("no kept work dir: #{out}")
+      end
+
+    {out, rc, work}
+  end
+
+  defp host_file(work, rel), do: File.read!(Path.join([work, "host-install", rel]))
+
+  defp stub_file(root, name, body) do
+    File.mkdir_p!(Path.join(root, "mixstubs"))
+    File.write!(Path.join([root, "mixstubs", name]), body)
+  end
+
+  @crosswake_dep ~s({:crosswake, "~> 0.2"})
+
+  test "apply deps: the documented requirement is pinned to the version under test and inserted first",
+       %{root: root} do
+    blocks = apply_block("add_dep", "deps", "mix.exs", "    " <> @crosswake_dep)
+    {out, rc, work} = apply_run(root, blocks, "deps")
+
+    assert rc == 0, out
+    mix_exs = host_file(work, "mix.exs")
+    assert mix_exs =~ ~s(      {:crosswake, "== 0.0.1"},\n      {:phoenix, "~> 1.8.1"},)
+    assert mix_exs =~ "  defp deps do\n    [\n      {:crosswake"
+    refute mix_exs =~ "~> 0.2"
+
+    # the apply block counts as an executed step: README 3 runs + compile, install 3 runs + compile + apply
+    assert out =~ "executed=9 "
+    File.rm_rf!(work)
+  end
+
+  test "apply deps: applying the same block twice leaves one tuple (idempotent)", %{root: root} do
+    block = fn id -> apply_block(id, "deps", "mix.exs", @crosswake_dep) end
+    {out, rc, work} = apply_run(root, block.("dep_a") <> block.("dep_b"), "deps-twice")
+
+    assert rc == 0, out
+    mix_exs = host_file(work, "mix.exs")
+    assert length(String.split(mix_exs, "{:crosswake,")) == 2
+    File.rm_rf!(work)
+  end
+
+  test "apply deps: a tuple whose name is already in the host list is left alone", %{root: root} do
+    blocks = apply_block("dup_dep", "deps", "mix.exs", ~s({:phoenix, "~> 9.9"}))
+    {out, rc, work} = apply_run(root, blocks, "deps-present")
+
+    assert rc == 0, out
+    mix_exs = host_file(work, "mix.exs")
+    assert mix_exs =~ ~s({:phoenix, "~> 1.8.1"})
+    refute mix_exs =~ "9.9"
+    File.rm_rf!(work)
+  end
+
+  test "apply: a file= with a .. segment is parse bad_path and nothing is written", %{root: root} do
+    blocks = apply_block("escape", "create", "../x", "x")
+    base = write_docs(root, docs_readme(), install_with(blocks))
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs parse bad_path" in String.split(out, "\n")
+    refute out =~ "leg docs PASS"
+  end
+
+  test "apply: an absolute file= is parse bad_path and nothing is written", %{root: root} do
+    target = Path.join(root, "outside-x")
+    blocks = apply_block("abs", "create", target, "x")
+    base = write_docs(root, docs_readme(), install_with(blocks))
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs parse bad_path" in String.split(out, "\n")
+    refute File.exists?(target)
+
+    # /etc/x, the shape the plan names, is the same rule
+    etc = apply_block("etc", "create", "/etc/x", "x")
+    base = write_docs(root, docs_readme(), install_with(etc), "docs-etc")
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs parse bad_path" in String.split(out, "\n")
+  end
+
+  @warning_block "warning: variable \"x\" is unused\n  mix.exs:12: CleanRoomHost.MixProject.project/0\n\n"
+
+  test "compile: a warning located in a file an apply block wrote is compile_warning", %{
+    root: root
+  } do
+    stub_file(root, "compile_out", @warning_block)
+    blocks = apply_block("add_dep", "deps", "mix.exs", @crosswake_dep)
+    {out, rc, work} = apply_run(root, blocks, "warn")
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs compile_warning mix.exs" in String.split(out, "\n")
+    refute out =~ "leg docs PASS"
+    refute out =~ "step doctor"
+    # the compile output is kept per file in the work dir
+    assert File.read!(Path.join(work, "docs-compile-install.log")) =~ "mix.exs:12"
+    File.rm_rf!(work)
+  end
+
+  test "compile: a warning in a file no apply block wrote is ignored", %{root: root} do
+    stub_file(
+      root,
+      "compile_out",
+      "warning: unused alias Foo\n  lib/clean_room_host_web/endpoint.ex:5: CleanRoomHostWeb.Endpoint\n\n"
+    )
+
+    blocks = apply_block("add_dep", "deps", "mix.exs", @crosswake_dep)
+    {out, rc, work} = apply_run(root, blocks, "warn-foreign")
+
+    assert rc == 0, out
+    assert out =~ "leg docs PASS"
+    File.rm_rf!(work)
+  end
+
+  test "compile: a leg-written path that only ends like a foreign path is not a match", %{
+    root: root
+  } do
+    # mix.exs is the written file; `umix.exs:3` names a different file
+    stub_file(root, "compile_out", "warning: x\n  umix.exs:3: Foo.bar/0\n\n")
+    blocks = apply_block("add_dep", "deps", "mix.exs", @crosswake_dep)
+    {out, rc, work} = apply_run(root, blocks, "warn-suffix")
+
+    assert rc == 0, out
+    File.rm_rf!(work)
+  end
+
+  test "compile: a non-zero mix compile is step compile exit <code> and the doctor never runs", %{
+    root: root
+  } do
+    stub_file(root, "compile_exit", "3")
+    {out, rc, work} = apply_run(root, "", "compile-fail")
+
+    assert rc == 1, out
+    lines = String.split(out, "\n")
+    assert "cleanroom: FAIL docs step compile exit 3" in lines
+    refute out =~ "step doctor"
+    refute out =~ "leg docs PASS"
+    File.rm_rf!(work)
+  end
+
+  test "required_step doctor: an install.md with no doctor run block fails, naming the file", %{
+    root: root
+  } do
     install = docs_install()
-
-    mutated =
-      String.replace(
-        install,
-        "<!-- cleanroom:show -->",
-        "<!-- cleanroom:apply id=wire file=lib/x.ex mode=append -->"
-      )
-
+    mutated = String.replace(install, "mix crosswake.doctor", "mix crosswake.install")
     assert mutated != install
     base = write_docs(root, docs_readme(), mutated)
     {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
 
     assert rc == 1, out
-    assert out =~ "cleanroom: FAIL docs parse apply_unsupported"
+
+    assert "cleanroom: FAIL docs required_step doctor guides/install.md" in String.split(
+             out,
+             "\n"
+           )
+
+    refute out =~ "required_step doctor README.md"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "required_step doctor: a README with no doctor run block fails, naming the file", %{
+    root: root
+  } do
+    readme = docs_readme()
+    mutated = String.replace(readme, "mix crosswake.doctor", "mix crosswake.install")
+    assert mutated != readme
+    base = write_docs(root, mutated, docs_install())
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs required_step doctor README.md" in String.split(out, "\n")
+    refute out =~ "leg docs PASS"
   end
 
   # ---- default docs source: the Hex tarball of the version under test (D-03) ----------------
@@ -846,7 +1096,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     refute out =~ "docs source commit"
 
     assert out =~
-             "cleanroom: leg docs PASS 0.0.1 executed=5 not_applicable=0 clone=2 shown=2 source=tarball phx_new=1.8.13"
+             "cleanroom: leg docs PASS 0.0.1 executed=8 not_applicable=0 clone=2 shown=2 source=tarball phx_new=1.8.13"
 
     assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
     refute out =~ "cleanroom: result PASS"
@@ -1212,6 +1462,11 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     ```bash
     sleep 30 & echo $! > #{pidfile}
     sleep 30
+    ```
+
+    <!-- cleanroom:run id=doctor -->
+    ```bash
+    mix crosswake.doctor
     ```
     """
   end

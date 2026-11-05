@@ -65,10 +65,15 @@
 #                      ls-remote failed), clone_failed, build_failed
 #              docs    fetch <file>, fetch tarball, parse <reason> (unmarked_fence <file>,
 #                      unterminated_fence <file>, no_fences <file>, readme_scope_missing,
-#                      missing_id, bad_id, duplicate_id, unknown_attr, apply_unsupported),
+#                      missing_id, bad_id, duplicate_id, unknown_attr, missing_mode,
+#                      unknown_mode, missing_file, bad_path),
+#                      apply <id> <reason> (target_missing, anchor_missing, exists,
+#                      empty_body, write_failed), compile_warning <path>,
+#                      required_step doctor <file>,
 #                      step <id> exit <code>, step <id> timeout <secs>, step <id> interrupted
 #                      (the step's whole process group is killed; a host-generation command is
-#                      step host_setup)
+#                      step host_setup; step compile is the harness `mix compile` before a
+#                      file's doctor block)
 #   cleanroom: docs source commit <ref> | docs source tarball crosswake-<version>.tar
 #     Network calls carry --max-time, --retry and an https-only protocol pin.
 #   cleanroom: result PASS|FAIL|SELFTEST legs <list> version <version>
@@ -501,11 +506,57 @@ docs_parse() {
   : >"$WORK/docs/parse_error"
   docs_parse_file readme "$WORK/docs/README.md" "README.md" || return 1
   docs_parse_file install "$WORK/docs/install.md" "guides/install.md" || return 1
-  # apply blocks parse today; running them lands in a later plan, so one fails the leg.
-  if awk -F '\t' '$3 == "apply" { found = 1 } END { exit found ? 0 : 1 }' "$WORK/docs/steps.tsv"; then
-    fail docs "parse apply_unsupported"
-    return 1
-  fi
+  docs_validate || return 1
+}
+
+# docs_path_ok <file>: a `file=` path is relative, non-empty and has no `..` segment, so no
+# documented fragment can be written outside the throwaway host (T-197-14).
+docs_path_ok() {
+  case "$1" in
+    "" | /* | .. | ../* | */.. | */../*) return 1 ;;
+  esac
+  return 0
+}
+
+# docs_validate: structural rules checked before any host is built. Every apply block names
+# a known `mode=` and a safe `file=` (parse missing_mode, unknown_mode, missing_file,
+# bad_path), and each doc file carries a doctor run block (required_step doctor <file>,
+# D-02): the doctor is the one documented step that reads the whole install.
+docs_validate() {
+  local tag ord kind id attrs body mode file kv rest bad=0
+  local doctor_readme=0 doctor_install=0
+  while IFS=$'\t' read -r tag ord kind id attrs body; do
+    case "$kind" in
+      run)
+        if grep -qF 'mix crosswake.doctor' "$body"; then
+          if [ "$tag" = readme ]; then doctor_readme=1; else doctor_install=1; fi
+        fi
+        ;;
+      apply)
+        mode=""
+        file=""
+        rest="$attrs"
+        while [ -n "$rest" ] && [ "$rest" != "-" ]; do
+          kv="${rest%%;*}"
+          if [ "$rest" = "$kv" ]; then rest=""; else rest="${rest#*;}"; fi
+          case "$kv" in
+            mode=*) mode="${kv#mode=}" ;;
+            file=*) file="${kv#file=}" ;;
+          esac
+        done
+        if [ -z "$mode" ]; then fail docs "parse missing_mode"; return 1; fi
+        case "$mode" in
+          create | append | deps | esbuild-args | js-hook | router-route) ;;
+          *) fail docs "parse unknown_mode"; return 1 ;;
+        esac
+        if [ -z "$file" ]; then fail docs "parse missing_file"; return 1; fi
+        if ! docs_path_ok "$file"; then fail docs "parse bad_path"; return 1; fi
+        ;;
+    esac
+  done <"$WORK/docs/steps.tsv"
+  if [ "$doctor_readme" -eq 0 ]; then fail docs "required_step doctor README.md"; bad=1; fi
+  if [ "$doctor_install" -eq 0 ]; then fail docs "required_step doctor guides/install.md"; bad=1; fi
+  [ "$bad" -eq 0 ] || return 1
 }
 
 # docs_env <cmd...>: run one command with an allowlisted environment only. The caller's
@@ -558,13 +609,14 @@ docs_bounded() {
   shift
   DOCS_STEP_ID="$id"
   DOCS_BOUND_TIMEOUT=0
+  : >"$flag"
   trap docs_interrupt INT TERM
   set -m
   "$@" &
   DOCS_STEP_PID=$!
   (
     sleep "$DOCS_STEP_TIMEOUT"
-    : >"$flag"
+    echo 1 >"$flag"
     kill -s TERM -- "-$DOCS_STEP_PID" 2>/dev/null
     sleep 5
     kill -s KILL -- "-$DOCS_STEP_PID" 2>/dev/null
@@ -575,7 +627,7 @@ docs_bounded() {
   rc=$?
   kill -s KILL -- "-$DOCS_WATCHDOG_PID" 2>/dev/null
   wait "$DOCS_WATCHDOG_PID" 2>/dev/null
-  if [ -e "$flag" ]; then
+  if [ -s "$flag" ]; then
     kill -s KILL -- "-$DOCS_STEP_PID" 2>/dev/null
     DOCS_BOUND_TIMEOUT=1
   fi
@@ -649,13 +701,168 @@ docs_run_step() {
   fi
 }
 
+# docs_subst: stdin to stdout through the fixed substitution table (D-01), longest key first,
+# applied to apply bodies and `file=` values only; run blocks stay verbatim. The documented
+# `{:crosswake, "~> 0.2"}` requirement becomes an exact pin to the version under test.
+docs_subst() {
+  sed -e 's/my_app_web/clean_room_host_web/g' \
+    -e 's/MyAppWeb/CleanRoomHostWeb/g' \
+    -e 's/my_app/clean_room_host/g' \
+    -e 's/MyApp/CleanRoomHost/g' \
+    -e 's/{:crosswake, "~> 0\.2"}/{:crosswake, "== '"$VERSION"'"}/g'
+}
+
+# docs_apply_deps <target> <body>: add each `{:name, ...}` tuple of the body that the host's
+# deps list lacks, as the first elements after the `defp deps do` line and its `[` line.
+# Exit 3: no such anchor.
+docs_apply_deps() {
+  awk -v tgt="$1" -v bodyfile="$2" '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t\r]+$/, "", s); return s }
+    function tname(l,    s) { s = l; sub(/^[ \t]*[{]:/, "", s); sub(/,.*$/, "", s); return s }
+    BEGIN {
+      while ((getline l < tgt) > 0) if (l ~ /^[ \t]*[{]:[A-Za-z0-9_]+,/) have[tname(l)] = 1
+      close(tgt)
+      while ((getline l < bodyfile) > 0) {
+        if (l !~ /^[ \t]*[{]:[A-Za-z0-9_]+,/) continue
+        nm = tname(l)
+        if (nm in have) continue
+        have[nm] = 1
+        t = trim(l)
+        sub(/,$/, "", t)
+        tuples[++nt] = t
+      }
+      close(bodyfile)
+    }
+    {
+      if (prev_def && !anchor && trim($0) == "[") {
+        print
+        for (i = 1; i <= nt; i++) print "      " tuples[i] ","
+        anchor = 1
+        prev_def = 0
+        next
+      }
+      print
+      prev_def = (index($0, "defp deps do") > 0)
+    }
+    END { exit (anchor ? 0 : 3) }
+  ' "$1" >"$WORK/docs/edit.tmp" || return $?
+  cp "$WORK/docs/edit.tmp" "$1"
+}
+
+# docs_apply_step <tag> <id> <attrs> <body file> <host dir>: one apply block. The target
+# rule is checked once here from the per-mode table: every mode but `create` needs its file
+# to exist (`target_missing`); `create` needs it absent or identical (`exists`); the anchored
+# modes report `anchor_missing`. Writes stay inside the per-file host dir (the `file=` path
+# was checked by docs_validate and is checked again here).
+docs_apply_step() {
+  local tag="$1" id="$2" attrs="$3" body="$4" host="$5"
+  local mode="" file="" kv rest sbody target rc
+  rest="$attrs"
+  while [ -n "$rest" ] && [ "$rest" != "-" ]; do
+    kv="${rest%%;*}"
+    if [ "$rest" = "$kv" ]; then rest=""; else rest="${rest#*;}"; fi
+    case "$kv" in
+      mode=*) mode="${kv#mode=}" ;;
+      file=*) file="${kv#file=}" ;;
+    esac
+  done
+  if ! docs_path_ok "$file"; then fail docs "parse bad_path"; return 1; fi
+  file=$(printf '%s\n' "$file" | docs_subst)
+  if ! docs_path_ok "$file"; then fail docs "parse bad_path"; return 1; fi
+  sbody="$WORK/docs/steps/$id.apply"
+  target="$host/$file"
+  if ! docs_subst <"$body" >"$sbody"; then fail docs "apply $id subst_failed"; return 1; fi
+  if ! grep -q '[^[:space:]]' "$sbody"; then fail docs "apply $id empty_body"; return 1; fi
+  case "$mode" in
+    create) ;;
+    append | deps | esbuild-args | js-hook | router-route)
+      if [ ! -f "$target" ]; then fail docs "apply $id target_missing"; return 1; fi
+      ;;
+  esac
+  case "$mode" in
+    deps) docs_apply_deps "$target" "$sbody"; rc=$? ;;
+    *) fail docs "apply $id mode_unsupported"; return 1 ;;
+  esac
+  case "$rc" in
+    0) ;;
+    3) fail docs "apply $id anchor_missing"; return 1 ;;
+    5) fail docs "apply $id exists"; return 1 ;;
+    *) fail docs "apply $id write_failed"; return 1 ;;
+  esac
+  printf '%s\n' "$file" >>"$WORK/docs/written-$tag"
+}
+
+# docs_compile_warning <log> <written list>: print the first leg-written path named inside a
+# `warning:` block of the compile log (a block runs to the next blank line). Warnings in
+# Phoenix's own generated files are not named by any written path and are ignored.
+docs_compile_warning() {
+  [ -s "$2" ] || return 0
+  awk -v wfile="$2" '
+    BEGIN { while ((getline l < wfile) > 0) if (l != "") w[++n] = l }
+    /^[ \t]*$/ { inw = 0; next }
+    /warning:/ { inw = 1 }
+    inw {
+      for (i = 1; i <= n; i++) {
+        p = index($0, w[i] ":")
+        if (p > 0 && (p == 1 || substr($0, p - 1, 1) !~ /[A-Za-z0-9_.\/-]/)) { print w[i]; exit }
+      }
+    }
+  ' "$1"
+}
+
+docs_compile_exec() { # host log
+  (cd "$1" && docs_env mix compile) </dev/null >"$2" 2>&1
+}
+
+# docs_compile <tag>: harness step `compile` before the first doctor run block of a file
+# (D-02). Non-zero exit, or a warning located in a file an apply block wrote, fails.
+docs_compile() {
+  local tag="$1" log="$WORK/docs-compile-$1.log" rc bad
+  docs_bounded compile docs_compile_exec "$WORK/host-$tag" "$log"
+  rc=$?
+  [ "$DOCS_BOUND_TIMEOUT" -eq 0 ] || return 1
+  if [ "$rc" -ne 0 ]; then
+    fail docs "step compile exit $rc"
+    return 1
+  fi
+  bad=$(docs_compile_warning "$log" "$WORK/docs/written-$tag")
+  if [ -n "$bad" ]; then
+    fail docs "compile_warning $bad"
+    return 1
+  fi
+}
+
 docs_run_all() {
-  local tag ord kind id attrs body failed_tags=" " executed=0 clone=0 shown=0 bad=0
+  local tag ord kind id attrs body failed_tags=" " compiled_tags=" " executed=0 clone=0 shown=0 bad=0
   while IFS=$'\t' read -r tag ord kind id attrs body; do
     case "$kind" in
       run)
         case "$failed_tags" in *" $tag "*) continue ;; esac
+        case "$compiled_tags" in
+          *" $tag "*) ;;
+          *)
+            if grep -qF 'mix crosswake.doctor' "$body"; then
+              compiled_tags="$compiled_tags$tag "
+              if docs_compile "$tag"; then
+                executed=$((executed + 1))
+              else
+                bad=1
+                failed_tags="$failed_tags$tag "
+                continue
+              fi
+            fi
+            ;;
+        esac
         if docs_run_step "$id" "$body" "$WORK/host-$tag"; then
+          executed=$((executed + 1))
+        else
+          bad=1
+          failed_tags="$failed_tags$tag "
+        fi
+        ;;
+      apply)
+        case "$failed_tags" in *" $tag "*) continue ;; esac
+        if docs_apply_step "$tag" "$id" "$attrs" "$body" "$WORK/host-$tag"; then
           executed=$((executed + 1))
         else
           bad=1
@@ -671,7 +878,7 @@ docs_run_all() {
 }
 
 leg_docs() {
-  need_tools docs curl awk sed grep tr head tail cut mktemp mkdir cp tar gzip mix env bash sleep || return
+  need_tools docs curl awk sed grep tr head tail cut mktemp mkdir cp tar gzip mix env bash sleep cat cmp || return
   mk_work || { fail docs tool_unavailable; return; }
   docs_fetch_sources || return
   docs_parse || return
