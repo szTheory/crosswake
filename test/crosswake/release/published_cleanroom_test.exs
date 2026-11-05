@@ -436,49 +436,93 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     end
   end
 
-  # Remove each tool the leg lists from PATH, one at a time, and require that exact
-  # leg to fail closed with tool_unavailable. Tools missing from the host are replaced
-  # by an empty executable so every tool is in the set before its removal.
-  defp assert_every_listed_tool_is_required(root, leg) do
+  # The docs leg's list is read from the live script so a tool added later is covered
+  # without editing this test.
+  defp listed_tools("docs") do
+    listed = need_tools_from_source("docs")
+    assert listed != [], "no need_tools list parsed for docs"
+
+    for required <- ~w(awk env bash sleep) do
+      assert required in listed, "docs need_tools list lacks #{required}"
+    end
+
+    refute "rm" in listed
+    listed
+  end
+
+  defp listed_tools(leg) do
     listed = need_tools_from_source(leg)
     assert listed != [], "no need_tools list parsed for #{leg}"
     assert listed == @leg_tools[leg]
+    listed
+  end
 
-    universe = @leg_tools |> Map.values() |> List.flatten() |> Enum.uniq()
+  defp tool_universe do
+    @leg_tools
+    |> Map.values()
+    |> List.flatten()
+    |> Enum.concat(listed_tools("docs"))
+    |> Enum.uniq()
+  end
+
+  # Remove one tool from a PATH holding every tool any leg lists, run the leg, and require
+  # it to fail closed with tool_unavailable. Tools missing from the host are replaced by an
+  # empty executable so the tool is in the set before its removal. For the docs leg `mix`
+  # is the capture stub, so a step that ran despite the missing tool would write the
+  # capture file; none may.
+  defp assert_tool_removal(root, leg, tool) do
     bash = System.find_executable("bash")
+    bin = Path.join(root, "bin-#{leg}-#{tool}")
+    capture = Path.join(root, "capture-#{leg}-#{tool}")
+    File.mkdir_p!(bin)
 
-    for tool <- listed do
-      assert tool in universe
-      bin = Path.join(root, "bin-#{leg}-#{tool}")
-      File.mkdir_p!(bin)
+    stub_dir = mix_stub(root, capture)
 
-      for present <- universe -- [tool] do
-        target = Path.join(bin, present)
+    for present <- tool_universe() -- [tool] do
+      target = Path.join(bin, present)
 
-        case System.find_executable(present) do
-          nil ->
-            File.write!(target, "#!/bin/sh\nexit 0\n")
-            File.chmod!(target, 0o755)
+      cond do
+        leg == "docs" and present == "mix" ->
+          File.ln_s!(Path.join(stub_dir, "mix"), target)
 
-          path ->
-            File.ln_s!(path, target)
-        end
+        path = System.find_executable(present) ->
+          File.ln_s!(path, target)
+
+        true ->
+          File.write!(target, "#!/bin/sh\nexit 0\n")
+          File.chmod!(target, 0o755)
+      end
+    end
+
+    refute File.exists?(Path.join(bin, tool))
+
+    docs_env =
+      if leg == "docs" do
+        base = write_docs(root, docs_readme(), docs_install())
+        [{"CLEANROOM_DOCS_BASE", base}, {"CLEANROOM_DOCS_REF", @zero_ref}]
+      else
+        []
       end
 
-      refute File.exists?(Path.join(bin, tool))
+    {out, rc} =
+      System.cmd(bash, [@script, "0.0.1"],
+        env:
+          @selftest_env ++
+            [{"CLEANROOM_SELFTEST", "1"}, {"CLEANROOM_LEGS", leg}, {"PATH", bin}] ++ docs_env,
+        stderr_to_stdout: true
+      )
 
-      {out, rc} =
-        System.cmd(bash, [@script, "0.0.1"],
-          env:
-            @selftest_env ++
-              [{"CLEANROOM_SELFTEST", "1"}, {"CLEANROOM_LEGS", leg}, {"PATH", bin}],
-          stderr_to_stdout: true
-        )
+    assert rc == 1, "#{leg} without #{tool}: #{out}"
+    assert out =~ "cleanroom: FAIL #{leg} tool_unavailable", "#{leg} without #{tool}: #{out}"
+    refute out =~ "leg #{leg} PASS"
+    refute out =~ "cleanroom: result PASS"
+    refute File.exists?(capture), "#{leg} without #{tool}: a documented step ran"
+  end
 
-      assert rc == 1, "#{leg} without #{tool}: #{out}"
-      assert out =~ "cleanroom: FAIL #{leg} tool_unavailable", "#{leg} without #{tool}: #{out}"
-      refute out =~ "leg #{leg} PASS"
-      refute out =~ "cleanroom: result PASS"
+  defp assert_every_listed_tool_is_required(root, leg) do
+    for tool <- listed_tools(leg) do
+      assert tool in tool_universe()
+      assert_tool_removal(root, leg, tool)
     end
   end
 
@@ -497,6 +541,8 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
   # ---- docs leg (D-01, D-02, D-03, D-07a) ------------------------------------------------
 
   @zero_ref String.duplicate("0", 40)
+  @sentinel "cw-sentinel-197"
+  @allowed_step_vars ~w(PATH LANG HOME MIX_HOME HEX_HOME MIX_ENV ASDF_DIR ASDF_DATA_DIR PWD OLDPWD SHLVL _)
 
   defp docs_readme do
     """
@@ -585,14 +631,16 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
 
   # A PATH-first `mix` stub: the generator and install tasks succeed, anything else is the
   # real "task could not be found" failure (exit 1).
-  defp mix_stub(root) do
+  defp mix_stub(root, capture \\ nil) do
     stubs = Path.join(root, "mixstubs")
     File.mkdir_p!(stubs)
     path = Path.join(stubs, "mix")
+    # With a capture path the stub appends its whole environment there before acting.
+    capture_line = if capture, do: "env >> '#{capture}'\n", else: ""
 
     File.write!(path, """
     #!/bin/sh
-    case "$1" in
+    #{capture_line}case "$1" in
       local.hex|local.rebar|archive.install|deps.get|crosswake.install|crosswake.doctor|compile)
         exit 0 ;;
       phx.new)
@@ -608,8 +656,8 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     stubs
   end
 
-  defp docs_selftest_env(root, base, extra \\ []) do
-    path = mix_stub(root) <> ":" <> System.get_env("PATH", "")
+  defp docs_selftest_env(root, base, extra \\ [], capture \\ nil) do
+    path = mix_stub(root, capture) <> ":" <> System.get_env("PATH", "")
 
     [
       {"CLEANROOM_SELFTEST", "1"},
@@ -811,6 +859,154 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     src = File.read!(@script)
     assert src =~ ~r/^DEFAULT_LEGS="hex,maven,ios,docs"$/m
     assert src =~ ~r/hex \| maven \| ios \| docs\) ;;/
+  end
+
+  defp captured_env_names(capture) do
+    capture
+    |> File.read!()
+    |> String.split("\n", trim: true)
+    |> Enum.filter(&(&1 =~ ~r/^[A-Za-z_][A-Za-z0-9_]*=/))
+  end
+
+  defp run_with_env_capture(root, script, name) do
+    capture = Path.join(root, "env-capture-#{name}")
+    base = write_docs(root, docs_readme(), docs_install(), "docs-#{name}")
+
+    env =
+      docs_selftest_env(
+        root,
+        base,
+        [{"HEX_API_KEY", @sentinel}, {"CLEANROOM_KEEP_WORK", "1"}],
+        capture
+      )
+
+    {out, rc} = run(script, ["0.0.1"], env)
+    {out, rc, capture}
+  end
+
+  test "docs steps see an allowlisted environment: a caller credential never reaches them", %{
+    root: root
+  } do
+    {out, rc, capture} = run_with_env_capture(root, @script, "scrubbed")
+
+    assert rc == 0, out
+    assert File.exists?(capture)
+    captured = File.read!(capture)
+    assert captured != ""
+    lines = captured_env_names(capture)
+    assert lines != []
+    refute captured =~ @sentinel
+    refute captured =~ "HEX_API_KEY"
+    refute captured =~ "CLEANROOM_"
+
+    [_, work] = Regex.run(~r/^cleanroom: work kept (.+)$/m, out)
+
+    for prefix <- ["HOME=", "MIX_HOME=", "HEX_HOME="] do
+      values = for line <- lines, String.starts_with?(line, prefix), do: line
+      assert values != [], "no #{prefix} captured"
+
+      for value <- values do
+        assert String.starts_with?(value, prefix <> work <> "/"), value
+      end
+    end
+
+    for line <- lines do
+      [name, _] = String.split(line, "=", parts: 2)
+      assert name in @allowed_step_vars, "variable #{name} crossed the scrub"
+    end
+
+    File.rm_rf!(work)
+  end
+
+  test "the env-sentinel check can fail: without env -i the same run leaks the sentinel", %{
+    root: root
+  } do
+    src = File.read!(@script)
+    mutated = String.replace(src, ~s(env -i "${vars[@]}" "$@"), ~s(env "${vars[@]}" "$@"))
+    assert mutated != src
+    copy = Path.join(root, "unscrubbed.sh")
+    File.write!(copy, mutated)
+
+    {out, rc, capture} = run_with_env_capture(root, copy, "unscrubbed")
+
+    assert rc == 0, out
+    assert File.read!(capture) =~ @sentinel
+
+    [_, work] = Regex.run(~r/^cleanroom: work kept (.+)$/m, out)
+    File.rm_rf!(work)
+  end
+
+  test "docs leg: removing awk from PATH is tool_unavailable and no step runs", %{root: root} do
+    assert "awk" in listed_tools("docs")
+    assert_tool_removal(root, "docs", "awk")
+  end
+
+  test "docs leg: removing env from PATH is tool_unavailable, never an unscrubbed run", %{
+    root: root
+  } do
+    assert "env" in listed_tools("docs")
+    assert_tool_removal(root, "docs", "env")
+  end
+
+  test "docs leg: removing any tool in its need_tools list is tool_unavailable", %{root: root} do
+    assert_every_listed_tool_is_required(root, "docs")
+  end
+
+  test "docs leg: need_tools is the first statement of leg_docs, before any fetch" do
+    src = File.read!(@script)
+    [_, body] = Regex.run(~r/^leg_docs\(\) \{\n(.*?)^\}/ms, src)
+    [first | _] = body |> String.split("\n", trim: true)
+    assert first =~ ~r/^\s*need_tools docs /
+  end
+
+  @tool_candidates ~w(curl awk sed grep tr head tail cut mktemp mkdir cp mv tar gzip mix env bash
+                      sleep cat chmod sort uniq perl wc ls touch find xargs date rm)
+
+  # Command words from the docs-leg functions that appear in the candidate list. Comment
+  # lines are dropped; a word counts only in command position.
+  defp docs_tools_used(src) do
+    bodies =
+      ~r/^(?:leg_docs|docs_[a-z_]+)\(\) \{\n.*?^\}/ms
+      |> Regex.scan(src)
+      |> Enum.map(&hd/1)
+
+    assert length(bodies) >= 5, "expected at least five docs-leg functions"
+
+    code =
+      bodies
+      |> Enum.join("\n")
+      |> String.split("\n")
+      |> Enum.reject(&(&1 =~ ~r/^\s*#/))
+      |> Enum.join("\n")
+
+    for tool <- @tool_candidates,
+        code =~ ~r/(^|[;&|({\s]|\$\()#{tool}(\s|$)/m,
+        do: tool
+  end
+
+  test "docs leg: every external command its functions call is in need_tools (IN-03)" do
+    src = File.read!(@script)
+    used = docs_tools_used(src)
+    assert used != []
+    listed = need_tools_from_source("docs")
+    assert listed != []
+
+    for tool <- used -- ["leg_docs"] do
+      assert tool in listed, "docs leg calls #{tool} but need_tools does not list it"
+    end
+
+    # rm belongs to the EXIT cleanup trap only.
+    refute "rm" in used
+
+    # The detector can see an undeclared tool: inject one command into a docs function.
+    mutated =
+      String.replace(src, ~s(  cp "$body" "$step"), ~s(  sort "$body"\n  cp "$body" "$step"),
+        global: false
+      )
+
+    assert mutated != src
+    assert "sort" in docs_tools_used(mutated)
+    refute "sort" in used
   end
 
   test "the script locates nothing relative to itself or a checkout" do
