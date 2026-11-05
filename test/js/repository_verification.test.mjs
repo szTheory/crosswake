@@ -53,7 +53,11 @@ function multiRecordArtifactPolicy() {
     policy.generated_contracts.push({
       canonical_source: "lib/mix/tasks/crosswake.docs.sync.ex",
       regeneration_argv: [["mix", "crosswake.docs.sync"]],
-      output_paths: ["guides/capability_map.md", "guides/support_matrix.md"],
+      output_paths: [
+        "guides/capability_map.md",
+        "guides/parity_ledger.md",
+        "guides/support_matrix.md"
+      ],
       remediation_command: "mix crosswake.docs.sync"
     });
   }

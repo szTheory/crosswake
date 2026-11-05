@@ -129,6 +129,7 @@
       ],
       "output_paths": [
         "guides/capability_map.md",
+        "guides/parity_ledger.md",
         "guides/support_matrix.md"
       ],
       "remediation_command": "mix crosswake.docs.sync"

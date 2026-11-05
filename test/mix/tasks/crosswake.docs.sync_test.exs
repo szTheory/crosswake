@@ -133,6 +133,24 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
     assert count(error.message, @remediation) == 1
   end
 
+  test "control: a tampered parity ledger fails --check", %{root: root} do
+    write_canonical_guides(root)
+    in_root(root, fn -> run(["--check"]) end)
+    assert shell_messages() =~ "crosswake.docs.sync --check passed"
+
+    ledger_path = Path.join(root, "guides/parity_ledger.md")
+    original = File.read!(ledger_path)
+    File.write!(ledger_path, original <> "x")
+    refute File.read!(ledger_path) == original
+
+    error = assert_raise Mix.Error, fn -> in_root(root, fn -> run(["--check"]) end) end
+
+    assert error.message =~ "guides/parity_ledger.md"
+    refute error.message =~ "guides/capability_map.md"
+    refute error.message =~ "guides/support_matrix.md"
+    assert count(error.message, @remediation) == 1
+  end
+
   test "unknown, repeated, and combined options fail closed without echoing arguments", %{
     root: root
   } do
