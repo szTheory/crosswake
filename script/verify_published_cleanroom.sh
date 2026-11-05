@@ -101,10 +101,13 @@ DOCS_STEP_TIMEOUT_DEFAULT=900
 # from this one on (it landed after 0.2.11). Below it the `:ios_host` step is the single named
 # deferral; at or above it there is no exemption (Phase 199 runs against 0.2.12 with none).
 DOCS_IOS_HOST_SINCE="0.2.12"
-# Executed-step floor (D-04). Pinned to the measured executed count of the marked docs, and the
-# marker test asserts the two are equal. 1 is a PLACEHOLDER (197-07), not phase evidence: 197-09
-# pins the real value, and 197-13 and 197-14 refuse to start while it is still 1.
-DOCS_EXECUTED_FLOOR=1
+# Executed-step floor (D-04). Pinned to the measured executed count of the marked docs: the run
+# and apply blocks without since= in README.md and guides/install.md plus one harness compile per
+# file (8 + 8 + 2 = 18; the since-marked :ios_host blocks are deferred against 0.2.11 and are not
+# counted). test/crosswake/guides/cleanroom_doc_markers_test.exs asserts this equals that count,
+# and it equals the executed= value of the docs-leg selftest evidence. It is a minimum: at 0.2.12
+# the ios-host blocks execute and executed exceeds it.
+DOCS_EXECUTED_FLOOR=18
 CURL_MAX_TIME=120
 CURL_RETRY=2
 MIRROR_URL="https://github.com/szTheory/crosswake-shell-core-ios.git"

@@ -106,11 +106,40 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
   end
 
   defp run(script, args, env, opts \\ []) do
-    System.cmd("bash", [script | args],
-      env: @selftest_env ++ env,
-      stderr_to_stdout: true,
-      cd: Keyword.get(opts, :cd, File.cwd!())
-    )
+    if script == @script and {"CLEANROOM_LEGS", "docs"} in env and
+         not Keyword.get(opts, :pinned_floor, false) do
+      run_with_fixture_floor(args, env, opts)
+    else
+      System.cmd("bash", [script | args],
+        env: @selftest_env ++ env,
+        stderr_to_stdout: true,
+        cd: Keyword.get(opts, :cd, File.cwd!())
+      )
+    end
+  end
+
+  # The script pins DOCS_EXECUTED_FLOOR to the executed count of the REAL README and install
+  # guide (197-09); the small fixture docs below execute fewer steps, so a docs-leg fixture
+  # run uses a copy of the script with the floor at 1. The pinned value itself is exercised
+  # by `run(@script, ..., pinned_floor: true)` in the floor tests, and its equality with the
+  # real docs by test/crosswake/guides/cleanroom_doc_markers_test.exs.
+  defp run_with_fixture_floor(args, env, opts) do
+    dir =
+      Path.join(System.tmp_dir!(), "cw-cleanroom-floor-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(dir)
+    copy = Path.join(dir, "verify_published_cleanroom.sh")
+    source = File.read!(@script)
+    lowered = Regex.replace(~r/^DOCS_EXECUTED_FLOOR=[0-9]+$/m, source, "DOCS_EXECUTED_FLOOR=1")
+    assert lowered != source, "the floor lowering changed nothing"
+    File.write!(copy, lowered)
+    File.chmod!(copy, 0o755)
+
+    try do
+      run(copy, args, env, opts)
+    after
+      File.rm_rf!(dir)
+    end
   end
 
   defp maven_selftest_env(base) do
@@ -1115,7 +1144,8 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
        } do
     source = File.read!(@script)
     copy = Path.join(root, "verify_floor_99.sh")
-    mutated = mutate!(source, "DOCS_EXECUTED_FLOOR=1\n", "DOCS_EXECUTED_FLOOR=99\n")
+    mutated = Regex.replace(~r/^DOCS_EXECUTED_FLOOR=[0-9]+$/m, source, "DOCS_EXECUTED_FLOOR=99")
+    assert mutated != source
     File.write!(copy, mutated)
     File.chmod!(copy, 0o755)
 
@@ -1126,6 +1156,18 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert "cleanroom: FAIL docs executed_below_floor 14 99" in String.split(out, "\n"), out
     refute out =~ "leg docs PASS"
 
+    # The pinned floor counts the real docs' steps, so the small fixture docs fall below it.
+    [_, pinned] = Regex.run(~r/^DOCS_EXECUTED_FLOOR=([0-9]+)$/m, source)
+
+    {out, rc} =
+      run(@script, ["0.0.1"], docs_selftest_env(root, base), pinned_floor: true)
+
+    assert rc == 1, out
+
+    assert "cleanroom: FAIL docs executed_below_floor 14 #{pinned}" in String.split(out, "\n"),
+           out
+
+    # With the floor lowered to the fixture minimum the same docs pass.
     {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
     assert rc == 0, out
     assert out =~ "leg docs PASS"
@@ -1133,7 +1175,8 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
 
   test "the floor and the ios_host version are script constants with their documented values" do
     src = File.read!(@script)
-    assert src =~ ~r/^DOCS_EXECUTED_FLOOR=[0-9]+$/m
+    assert [_, floor] = Regex.run(~r/^DOCS_EXECUTED_FLOOR=([0-9]+)$/m, src)
+    assert String.to_integer(floor) > 1, "DOCS_EXECUTED_FLOOR is still the placeholder"
     assert src =~ ~r/^DOCS_IOS_HOST_SINCE="0\.2\.12"$/m
   end
 
@@ -2036,7 +2079,11 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     mutated = String.replace(src, ~s(env -i "${vars[@]}" "$@"), ~s(env "${vars[@]}" "$@"))
     assert mutated != src
     copy = Path.join(root, "unscrubbed.sh")
-    File.write!(copy, mutated)
+    # This copy runs the fixture docs, which execute fewer steps than the pinned floor counts.
+    File.write!(
+      copy,
+      Regex.replace(~r/^DOCS_EXECUTED_FLOOR=[0-9]+$/m, mutated, "DOCS_EXECUTED_FLOOR=1")
+    )
 
     {out, rc, capture} = run_with_env_capture(root, copy, "unscrubbed")
 
