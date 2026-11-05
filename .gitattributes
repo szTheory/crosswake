@@ -1,0 +1,7 @@
+# Byte-hashed contract corpora and generated hash constants are kept LF so their sha256 is platform-independent.
+test/fixtures/bridge_contract_vectors.json text eol=lf
+packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/Resources/bridge_contract_vectors.json text eol=lf
+packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors.json text eol=lf
+priv/contract_vectors/*.json text eol=lf
+packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/VectorSetHash.kt text eol=lf
+packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/VectorSetHash.swift text eol=lf
