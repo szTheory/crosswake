@@ -11,8 +11,19 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
   use ExUnit.Case, async: false
 
   @script Path.expand("../../../script/verify_published_cleanroom.sh", __DIR__)
-  @maven_path "io/github/sztheory/crosswake-shell-core-android/0.0.1"
   @artifact "crosswake-shell-core-android-0.0.1"
+  @real_pom Path.expand(
+              "../../fixtures/cleanroom/crosswake-shell-core-android-0.2.11.pom",
+              __DIR__
+            )
+
+  # The external tools each leg's `need_tools` call must list (IN-03). The test parses the
+  # real lists out of the script source and requires them to equal these.
+  @leg_tools %{
+    "hex" => ~w(curl grep cut tr head tail mktemp mkdir),
+    "maven" => ~w(curl cut grep mktemp head tr sed mkdir),
+    "ios" => ~w(git swift mktemp cut)
+  }
 
   @selftest_env [
     {"CLEANROOM_SELFTEST", nil},
@@ -32,26 +43,61 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {:ok, root: root}
   end
 
-  defp build_maven_fixture(root) do
+  # A multi-line project POM with its own coordinates and a dependency block whose
+  # <version> is 0.0.1, the shape that fooled the old substring check.
+  defp synthetic_pom(opts) do
+    group = Keyword.get(opts, :group, "io.github.sztheory")
+    artifact = Keyword.get(opts, :artifact, "crosswake-shell-core-android")
+    version = Keyword.get(opts, :version, "0.0.1")
+    packaging = Keyword.get(opts, :packaging, "aar")
+
+    """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project>
+      <modelVersion>4.0.0</modelVersion>
+      <groupId>#{group}</groupId>
+      <artifactId>#{artifact}</artifactId>
+      <version>#{version}</version>
+      <packaging>#{packaging}</packaging>
+      <dependencies>
+        <dependency>
+          <groupId>io.github.sztheory</groupId>
+          <artifactId>crosswake-shell-core-android</artifactId>
+          <version>0.0.1</version>
+        </dependency>
+      </dependencies>
+    </project>
+    """
+  end
+
+  defp sha256_hex(body), do: :crypto.hash(:sha256, body) |> Base.encode16(case: :lower)
+
+  defp write_with_sha(dir, name, body) do
+    File.write!(Path.join(dir, name), body)
+    File.write!(Path.join(dir, name <> ".sha256"), sha256_hex(body) <> "\n")
+  end
+
+  defp build_maven_fixture(root, opts \\ []) do
+    version = Keyword.get(opts, :version, "0.0.1")
+    pom = Keyword.get(opts, :pom, synthetic_pom(version: version))
+    art = "crosswake-shell-core-android-#{version}"
     base = Path.join(root, "maven")
-    dir = Path.join(base, @maven_path)
+    dir = Path.join([base, "io/github/sztheory/crosswake-shell-core-android", version])
     File.mkdir_p!(dir)
 
-    files = %{
-      "#{@artifact}.pom" =>
-        "<project><version>0.0.1</version><packaging>aar</packaging></project>\n",
-      "#{@artifact}.module" => ~s({"formatVersion":"1.1"}\n),
-      "#{@artifact}.aar" => "PK-fixture-aar-bytes"
-    }
-
-    for {name, body} <- files do
-      File.write!(Path.join(dir, name), body)
-
-      digest = :crypto.hash(:sha256, body) |> Base.encode16(case: :lower)
-      File.write!(Path.join(dir, name <> ".sha256"), digest <> "\n")
-    end
+    write_with_sha(dir, "#{art}.pom", pom)
+    write_with_sha(dir, "#{art}.module", ~s({"formatVersion":"1.1"}\n))
+    write_with_sha(dir, "#{art}.aar", "PK-fixture-aar-bytes")
 
     {"file://" <> base, dir}
+  end
+
+  defp assert_pom_mismatch({out, rc}) do
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL maven pom_mismatch"
+    refute out =~ "cleanroom: result PASS"
+    refute out =~ "cleanroom: result SELFTEST"
+    refute out =~ ~r/^cleanroom: leg maven PASS/m
   end
 
   defp run(script, args, env, opts \\ []) do
@@ -130,19 +176,75 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert out =~ "cleanroom: FAIL maven not_published"
   end
 
-  test "a pom whose version differs is pom_mismatch", %{root: root} do
-    {base, dir} = build_maven_fixture(root)
-    body = "<project><version>0.0.2</version><packaging>aar</packaging></project>\n"
-    File.write!(Path.join(dir, "#{@artifact}.pom"), body)
+  test "a pom whose project version differs is pom_mismatch even when a dependency carries the run version",
+       %{root: root} do
+    {base, _dir} = build_maven_fixture(root, pom: synthetic_pom(version: "0.0.2"))
+    assert_pom_mismatch(run(@script, ["0.0.1"], maven_selftest_env(base)))
+  end
 
-    File.write!(
-      Path.join(dir, "#{@artifact}.pom.sha256"),
-      (:crypto.hash(:sha256, body) |> Base.encode16(case: :lower)) <> "\n"
-    )
+  test "a pom whose project groupId differs is pom_mismatch", %{root: root} do
+    {base, _dir} = build_maven_fixture(root, pom: synthetic_pom(group: "io.github.other"))
+    assert_pom_mismatch(run(@script, ["0.0.1"], maven_selftest_env(base)))
+  end
 
-    {out, rc} = run(@script, ["0.0.1"], maven_selftest_env(base))
-    assert rc == 1
-    assert out =~ "cleanroom: FAIL maven pom_mismatch"
+  test "a pom whose project artifactId differs is pom_mismatch", %{root: root} do
+    {base, _dir} = build_maven_fixture(root, pom: synthetic_pom(artifact: "something-else"))
+    assert_pom_mismatch(run(@script, ["0.0.1"], maven_selftest_env(base)))
+  end
+
+  test "a pom whose packaging is not aar is pom_mismatch", %{root: root} do
+    {base, _dir} = build_maven_fixture(root, pom: synthetic_pom(packaging: "jar"))
+    assert_pom_mismatch(run(@script, ["0.0.1"], maven_selftest_env(base)))
+  end
+
+  test "the real published 0.2.11 pom passes the pom check", %{root: root} do
+    pom = File.read!(@real_pom)
+    assert pom =~ "<dependency>"
+    {base, _dir} = build_maven_fixture(root, version: "0.2.11", pom: pom)
+
+    {out, rc} = run(@script, ["0.2.11"], maven_selftest_env(base))
+
+    assert rc == 0, out
+    assert out =~ ~r/^cleanroom: leg maven PASS 0\.2\.11 aar [0-9a-f]{12}$/m
+    refute out =~ "pom_mismatch"
+    refute out =~ "cleanroom: result PASS"
+  end
+
+  test "the real pom with only the project version changed is pom_mismatch", %{root: root} do
+    real = File.read!(@real_pom)
+
+    derived =
+      String.replace(
+        real,
+        "  <version>0.2.11</version>\n  <packaging>",
+        "  <version>0.2.10</version>\n  <packaging>",
+        global: false
+      )
+
+    assert derived != real
+    # Every dependency <version> is untouched.
+    assert derived =~ "<version>1.9.24</version>"
+
+    {base, _dir} = build_maven_fixture(root, version: "0.2.11", pom: derived)
+    assert_pom_mismatch(run(@script, ["0.2.11"], maven_selftest_env(base)))
+  end
+
+  test "the real pom with a parent block carrying the real coordinates and a changed project groupId is pom_mismatch",
+       %{root: root} do
+    real = File.read!(@real_pom)
+
+    project_head =
+      "  <groupId>io.github.sztheory</groupId>\n  <artifactId>crosswake-shell-core-android</artifactId>\n  <version>0.2.11</version>\n"
+
+    parent =
+      "  <parent>\n    <groupId>io.github.sztheory</groupId>\n    <artifactId>crosswake-shell-core-android</artifactId>\n    <version>0.2.11</version>\n  </parent>\n  <groupId>io.github.other</groupId>\n  <artifactId>crosswake-shell-core-android</artifactId>\n  <version>0.2.11</version>\n"
+
+    assert real =~ project_head
+    derived = String.replace(real, project_head, parent, global: false)
+    assert derived != real
+
+    {base, _dir} = build_maven_fixture(root, version: "0.2.11", pom: derived)
+    assert_pom_mismatch(run(@script, ["0.2.11"], maven_selftest_env(base)))
   end
 
   test "a missing tool is tool_unavailable, never a skip", %{root: root} do
@@ -151,7 +253,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     File.mkdir_p!(bin)
 
     # Everything the script needs except curl.
-    for tool <- ~w(mktemp rm cat grep sed tr cut head awk date mkdir uname shasum perl) do
+    for tool <- ~w(mktemp rm cat grep sed tr cut head tail awk date mkdir uname shasum perl) do
       case System.find_executable(tool) do
         nil -> :ok
         path -> File.ln_s!(path, Path.join(bin, tool))
@@ -320,6 +422,73 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     mutated = String.replace(src, " --proto-redir '=https'", "")
     assert mutated != src
     assert missing_curl_pins(mutated) == ["--proto-redir '=https'"]
+  end
+
+  defp need_tools_from_source(leg) do
+    src = File.read!(@script)
+
+    case Regex.run(~r/^\s*need_tools #{leg} (.+?) \|\| return$/m, src) do
+      [_, list] -> String.split(list, " ", trim: true)
+      nil -> []
+    end
+  end
+
+  # Remove each tool the leg lists from PATH, one at a time, and require that exact
+  # leg to fail closed with tool_unavailable. Tools missing from the host are replaced
+  # by an empty executable so every tool is in the set before its removal.
+  defp assert_every_listed_tool_is_required(root, leg) do
+    listed = need_tools_from_source(leg)
+    assert listed != [], "no need_tools list parsed for #{leg}"
+    assert listed == @leg_tools[leg]
+
+    universe = @leg_tools |> Map.values() |> List.flatten() |> Enum.uniq()
+    bash = System.find_executable("bash")
+
+    for tool <- listed do
+      assert tool in universe
+      bin = Path.join(root, "bin-#{leg}-#{tool}")
+      File.mkdir_p!(bin)
+
+      for present <- universe -- [tool] do
+        target = Path.join(bin, present)
+
+        case System.find_executable(present) do
+          nil ->
+            File.write!(target, "#!/bin/sh\nexit 0\n")
+            File.chmod!(target, 0o755)
+
+          path ->
+            File.ln_s!(path, target)
+        end
+      end
+
+      refute File.exists?(Path.join(bin, tool))
+
+      {out, rc} =
+        System.cmd(bash, [@script, "0.0.1"],
+          env:
+            @selftest_env ++
+              [{"CLEANROOM_SELFTEST", "1"}, {"CLEANROOM_LEGS", leg}, {"PATH", bin}],
+          stderr_to_stdout: true
+        )
+
+      assert rc == 1, "#{leg} without #{tool}: #{out}"
+      assert out =~ "cleanroom: FAIL #{leg} tool_unavailable", "#{leg} without #{tool}: #{out}"
+      refute out =~ "leg #{leg} PASS"
+      refute out =~ "cleanroom: result PASS"
+    end
+  end
+
+  test "hex leg: removing any tool in its need_tools list is tool_unavailable", %{root: root} do
+    assert_every_listed_tool_is_required(root, "hex")
+  end
+
+  test "maven leg: removing any tool in its need_tools list is tool_unavailable", %{root: root} do
+    assert_every_listed_tool_is_required(root, "maven")
+  end
+
+  test "ios leg: removing any tool in its need_tools list is tool_unavailable", %{root: root} do
+    assert_every_listed_tool_is_required(root, "ios")
   end
 
   test "the script locates nothing relative to itself or a checkout" do

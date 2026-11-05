@@ -10,7 +10,8 @@
 #   maven  download the .pom, .module and .aar of
 #          io.github.sztheory:crosswake-shell-core-android:<version> from Maven
 #          Central, check each against its published .sha256, and require the
-#          pom <version> to match and <packaging> to be aar
+#          pom project groupId, artifactId, version and packaging to be
+#          io.github.sztheory, crosswake-shell-core-android, <version> and aar
 #   ios    find refs/tags/v<version> on the SwiftPM mirror, clone it shallowly,
 #          and `swift build` it
 #
@@ -63,7 +64,7 @@ case "$VERSION" in
   [0-9]*.[0-9]*.[0-9]*) ;;
   *) usage ;;
 esac
-if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   usage
 fi
 
@@ -143,6 +144,25 @@ fetch() {
   esac
 }
 
+# pom_field <pom> <element>: the value of the first project-level <element>. Blocks that
+# carry their own coordinates (dependencies, dependencyManagement, parent, build, profiles,
+# distributionManagement, reporting) and comments are removed first, so a dependency's
+# <version> or a parent's <groupId> can never stand in for the project's. The close tag of
+# each block becomes a one-byte sentinel so the delete stops at the first close (sed ERE
+# has no non-greedy match).
+pom_field() {
+  local pom="$1" element="$2" S tag
+  S=$'\001'
+  local flat
+  flat=$(tr '\n\r' '  ' <"$pom")
+  flat=$(printf '%s' "$flat" | sed -E 's#<!--[^>]*-->##g')
+  for tag in dependencyManagement profiles build parent dependencies distributionManagement reporting; do
+    flat=$(printf '%s' "$flat" | sed -E -e "s#</$tag>#$S#g" -e "s#<$tag>[^$S]*$S##g")
+  done
+  printf '%s' "$flat" | grep -Eo "<$element>[^<]*</$element>" | head -n1 |
+    sed -E -e "s#^<$element>##" -e "s#</$element>\$##" -e 's/^[[:space:]]+//' -e 's/[[:space:]]+$//'
+}
+
 mk_work() {
   if [ -z "$WORK" ]; then
     WORK=$(mktemp -d "${TMPDIR:-${RUNNER_TEMP:-/tmp}}/crosswake-cleanroom.XXXXXX") || return 1
@@ -150,7 +170,7 @@ mk_work() {
 }
 
 leg_maven() {
-  need_tools maven curl cut grep mktemp || return
+  need_tools maven curl cut grep mktemp head tr sed mkdir || return
   if [ -z "$(command -v shasum 2>/dev/null)$(command -v sha256sum 2>/dev/null)" ]; then
     fail maven tool_unavailable
     return
@@ -177,8 +197,11 @@ leg_maven() {
     fi
     [ "$ext" = "aar" ] && aar_sha="$actual"
   done
-  if ! grep -Fq "<version>$VERSION</version>" "$dir/$art-$VERSION.pom" ||
-    ! grep -Fq "<packaging>aar</packaging>" "$dir/$art-$VERSION.pom"; then
+  local pom="$dir/$art-$VERSION.pom"
+  if [ "$(pom_field "$pom" groupId)" != "io.github.sztheory" ] ||
+    [ "$(pom_field "$pom" artifactId)" != "$art" ] ||
+    [ "$(pom_field "$pom" version)" != "$VERSION" ] ||
+    [ "$(pom_field "$pom" packaging)" != "aar" ]; then
     fail maven pom_mismatch
     return
   fi
@@ -186,7 +209,7 @@ leg_maven() {
 }
 
 leg_hex() {
-  need_tools hex curl grep cut tr mktemp || return
+  need_tools hex curl grep cut tr head tail mktemp mkdir || return
   local jsontool=""
   if command -v jq >/dev/null 2>&1; then
     jsontool="jq"
@@ -249,7 +272,7 @@ leg_hex() {
 }
 
 leg_ios() {
-  need_tools ios git swift mktemp || return
+  need_tools ios git swift mktemp cut || return
   mk_work || { fail ios tool_unavailable; return; }
   local refs lsrc
   refs=$(git ls-remote "$MIRROR_URL" "refs/tags/v$VERSION" 2>/dev/null)
