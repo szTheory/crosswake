@@ -32,6 +32,10 @@ defmodule Crosswake.ParityLedger.Renderer do
       @qualifier,
       "",
       corpora_section(facts),
+      "",
+      vectors_section(facts),
+      "",
+      android_only_section(facts),
       ""
     ]
     |> Enum.join("\n")
@@ -68,7 +72,7 @@ defmodule Crosswake.ParityLedger.Renderer do
   defp corpora_section(facts) do
     rows =
       Enum.map_join(facts.corpora, "\n", fn corpus ->
-        "| #{escape_cell(corpus.id)} | #{escape_cell(files_cell(corpus))} | #{escape_cell(hash_cell(corpus))} | #{shared_cell(corpus)} | #{escape_cell(android_cell(facts, corpus))} |"
+        "| #{escape_cell(corpus.id)} | #{escape_cell(files_cell(corpus))} | #{escape_cell(hash_cell(corpus))} | #{shared_cell(corpus)} | #{escape_cell(android_cell(facts, corpus))} | #{escape_cell(consumer_cell(facts, corpus, :elixir))} | #{escape_cell(consumer_cell(facts, corpus, :swift))} | #{escape_cell(consumer_cell(facts, corpus, :kotlin))} | #{escape_cell(pinned_cell(corpus))} |"
       end)
 
     [
@@ -78,11 +82,73 @@ defmodule Crosswake.ParityLedger.Renderer do
       "",
       @qualifier,
       "",
-      "| Corpus | Files | Bytes sha256 | Shared | Android evidence |",
-      "|--------|-------|--------------|--------|------------------|",
+      "| Corpus | Files | Bytes sha256 | Shared | Android evidence | Elixir consumer | Swift consumer | Android consumer | Pinned executions |",
+      "|--------|-------|--------------|--------|------------------|-----------------|----------------|------------------|-------------------|",
+      rows,
+      "",
+      "A consumer is a declared test file that reads the corpus. `behavioral` executes vectors and asserts outcomes, `metadata` reads fields without executing each vector, and `integrity` loads or verifies the bytes. Only behavioral consumers produce an executed cell in the next section. A scan of the Kotlin and Swift test trees fails the registry check if a file names a corpus without being declared.",
+      "",
+      "The navigation transition corpus has no test reader. Its only reader is the advisory navigation proof input, which records a file digest and executes no vector."
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp vectors_section(facts) do
+    rows =
+      Enum.map_join(ParityLedger.vector_rows(facts), "\n", fn row ->
+        "| #{escape_cell(row.corpus)} | #{escape_cell(row.vector)} | #{escape_cell(row.expected)} | #{escape_cell(row.denial)} | #{escape_cell(row.elixir)} | #{escape_cell(row.swift)} | #{escape_cell(row.android)} |"
+      end)
+
+    [
+      "## Vectors",
+      "",
+      "One row per vector. `ExUnit executed`, `Swift test executed` and `JVM test executed` mean a declared behavioral test ran that vector. `not applicable` means the vector is scoped away from that platform: Elixir-only vectors are not run natively, native-only vectors are not run in Elixir, and a reply leg is produced by the native shell. `no consumer` means no declared behavioral test reads that vector on that platform.",
+      "",
+      "| Corpus | Vector | Expected outcome | Denial reason | Elixir | Swift | Android |",
+      "|--------|--------|------------------|---------------|--------|-------|---------|",
       rows
     ]
     |> Enum.join("\n")
+  end
+
+  defp android_only_section(facts) do
+    rows =
+      Enum.map_join(ParityLedger.android_only_commands(facts), "\n", fn command ->
+        "| `#{escape_cell(command)}` | Outside shared vectors and ungated. No platform is held to a shared contract for it, and its Android behavior is open debt, not a parity claim. |"
+      end)
+
+    [
+      "## Android-only commands",
+      "",
+      "The Android shell parses these command wire values, but no shared vector lists them.",
+      "",
+      "| Command | Status |",
+      "|---------|--------|",
+      rows
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp consumer_cell(facts, corpus, platform) do
+    case ParityLedger.consumers_for(facts, corpus.id, platform) do
+      [] ->
+        "no consumer"
+
+      entries ->
+        Enum.map_join(entries, "; ", fn entry ->
+          "`#{Path.basename(entry.path)}` (#{entry.kind})"
+        end)
+    end
+  end
+
+  defp pinned_cell(%{id: id}) do
+    if id == ParityLedger.bridge_corpus_id() do
+      pinned = ParityLedger.pinned_executions()
+
+      "#{pinned.loaded} loaded, #{pinned.native} native, #{pinned.elixir} Elixir, #{pinned.reply_leg} reply-leg"
+    else
+      "-"
+    end
   end
 
   defp files_cell(corpus), do: Enum.map_join(corpus.files, "; ", &"`#{&1.path}`")
