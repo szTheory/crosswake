@@ -30,6 +30,9 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {"CLEANROOM_LEGS", nil},
     {"CLEANROOM_MAVEN_BASE", nil},
     {"CLEANROOM_HEX_API", nil},
+    {"CLEANROOM_DOCS_REF", nil},
+    {"CLEANROOM_DOCS_BASE", nil},
+    {"CLEANROOM_KEEP_WORK", nil},
     {"CLEANROOM_ELIXIR_VERSION", nil},
     {"CLEANROOM_ERLANG_VERSION", nil}
   ]
@@ -489,6 +492,325 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
 
   test "ios leg: removing any tool in its need_tools list is tool_unavailable", %{root: root} do
     assert_every_listed_tool_is_required(root, "ios")
+  end
+
+  # ---- docs leg (D-01, D-02, D-03, D-07a) ------------------------------------------------
+
+  @zero_ref String.duplicate("0", 40)
+
+  defp docs_readme do
+    """
+    # Crosswake
+
+    Intro text.
+
+    ## Quick start
+
+    ```bash
+    this unmarked fence sits before the Integrating section
+    ```
+
+    ### Integrating Crosswake
+
+    Steps below.
+
+    <!-- cleanroom:run id=readme_deps -->
+    ```bash
+    mix deps.get
+    ```
+
+    <!-- cleanroom:run id=readme_install -->
+    ```bash
+    mix crosswake.install
+    ```
+
+    <!-- cleanroom:show -->
+    ```elixir
+    Crosswake.Bridge.attach()
+    ```
+
+    <!-- cleanroom:clone id=readme_clone -->
+    ```bash
+    script/verify_phase5_example_hosts.sh
+    ```
+
+    ### License
+
+    ```text
+    this unmarked fence sits after the Integrating section
+    ```
+    """
+  end
+
+  defp docs_install do
+    """
+    # Install
+
+    <!-- cleanroom:run id=deps -->
+    ```bash
+    mix deps.get
+    ```
+
+    <!-- cleanroom:run id=install -->
+    ```bash
+    mix crosswake.install
+    ```
+
+    <!-- cleanroom:run id=doctor -->
+    ```bash
+    mix crosswake.doctor
+    ```
+
+    <!-- cleanroom:show -->
+    ```elixir
+    Crosswake.Bridge.attach()
+    ```
+
+    <!-- cleanroom:clone id=install_clone -->
+    ```bash
+    script/verify_generated_ios_shell.sh
+    ```
+    """
+  end
+
+  # Writes <root>/<name>/<ref>/README.md and guides/install.md; returns the file:// base.
+  defp write_docs(root, readme, install, name \\ "docs") do
+    base = Path.join(root, name)
+    dir = Path.join(base, @zero_ref)
+    File.mkdir_p!(Path.join(dir, "guides"))
+    File.write!(Path.join(dir, "README.md"), readme)
+    File.write!(Path.join(dir, "guides/install.md"), install)
+    "file://" <> base
+  end
+
+  # A PATH-first `mix` stub: the generator and install tasks succeed, anything else is the
+  # real "task could not be found" failure (exit 1).
+  defp mix_stub(root) do
+    stubs = Path.join(root, "mixstubs")
+    File.mkdir_p!(stubs)
+    path = Path.join(stubs, "mix")
+
+    File.write!(path, """
+    #!/bin/sh
+    case "$1" in
+      local.hex|local.rebar|archive.install|deps.get|crosswake.install|crosswake.doctor|compile)
+        exit 0 ;;
+      phx.new)
+        mkdir -p "$2" && : > "$2/mix.exs"
+        exit 0 ;;
+      *)
+        echo "The task \\"$1\\" could not be found"
+        exit 1 ;;
+    esac
+    """)
+
+    File.chmod!(path, 0o755)
+    stubs
+  end
+
+  defp docs_selftest_env(root, base, extra \\ []) do
+    path = mix_stub(root) <> ":" <> System.get_env("PATH", "")
+
+    [
+      {"CLEANROOM_SELFTEST", "1"},
+      {"CLEANROOM_LEGS", "docs"},
+      {"CLEANROOM_DOCS_BASE", base},
+      {"CLEANROOM_DOCS_REF", @zero_ref},
+      {"PATH", path}
+    ] ++ extra
+  end
+
+  defp last_line(out), do: out |> String.trim_trailing() |> String.split("\n") |> List.last()
+
+  test "docs leg: commit-pinned docs execute every run block, count clone and show blocks", %{
+    root: root
+  } do
+    base = write_docs(root, docs_readme(), docs_install())
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 0, out
+    assert out =~ "cleanroom: docs source commit #{@zero_ref}"
+
+    assert out =~
+             "cleanroom: leg docs PASS 0.0.1 executed=5 not_applicable=0 clone=2 shown=2 source=commit:#{@zero_ref} phx_new=1.8.13"
+
+    assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
+    refute out =~ "cleanroom: result PASS"
+  end
+
+  test "docs leg: a doctor block naming a nonexistent task fails exactly that step (D-07a)", %{
+    root: root
+  } do
+    install = docs_install()
+    mutated = String.replace(install, "mix crosswake.doctor", "mix crosswake.no_such_task")
+    assert mutated != install
+
+    base = write_docs(root, docs_readme(), mutated)
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    lines = String.split(out, "\n")
+    assert "cleanroom: FAIL docs step doctor exit 1" in lines
+    assert Enum.count(lines, &String.starts_with?(&1, "cleanroom: FAIL")) == 1
+    assert last_line(out) == "cleanroom: result FAIL legs docs version 0.0.1"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: a fence with no marker is parse unmarked_fence", %{root: root} do
+    install = docs_install()
+    mutated = String.replace(install, "<!-- cleanroom:run id=install -->\n", "", global: false)
+    assert mutated != install
+
+    base = write_docs(root, docs_readme(), mutated)
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs parse unmarked_fence guides/install.md"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: README fences outside the Integrating section need no marker", %{root: root} do
+    readme = docs_readme()
+    # The two unmarked fences (before and after the section) are the whole point of this
+    # fixture: the passing run above proves they are ignored; here the section marker goes.
+    mutated = String.replace(readme, "### Integrating Crosswake", "### Something Else")
+    assert mutated != readme
+
+    base = write_docs(root, mutated, docs_install())
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs parse readme_scope_missing"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: an id reused across the two files is parse duplicate_id", %{root: root} do
+    install = docs_install()
+    mutated = String.replace(install, "id=deps", "id=readme_deps", global: false)
+    assert mutated != install
+
+    base = write_docs(root, docs_readme(), mutated)
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs parse duplicate_id"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: a run marker without id and an unknown attribute are parse errors", %{
+    root: root
+  } do
+    install = docs_install()
+
+    no_id = String.replace(install, "<!-- cleanroom:run id=deps -->", "<!-- cleanroom:run -->")
+    assert no_id != install
+    base = write_docs(root, docs_readme(), no_id)
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs parse missing_id"
+
+    odd =
+      String.replace(
+        install,
+        "<!-- cleanroom:run id=deps -->",
+        "<!-- cleanroom:run id=deps colour=red -->"
+      )
+
+    assert odd != install
+    base = write_docs(root, docs_readme(), odd, "docs-odd")
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs parse unknown_attr"
+  end
+
+  test "docs leg: an apply marker parses but is not yet supported", %{root: root} do
+    install = docs_install()
+
+    mutated =
+      String.replace(
+        install,
+        "<!-- cleanroom:show -->",
+        "<!-- cleanroom:apply id=wire file=lib/x.ex mode=append -->"
+      )
+
+    assert mutated != install
+    base = write_docs(root, docs_readme(), mutated)
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs parse apply_unsupported"
+  end
+
+  test "docs leg: without a docs ref it fails parse no_docs_source, never a skip", %{root: root} do
+    base = write_docs(root, docs_readme(), docs_install())
+
+    {out, rc} =
+      run(@script, ["0.0.1"], docs_selftest_env(root, base) ++ [{"CLEANROOM_DOCS_REF", nil}])
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs parse no_docs_source"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs leg: a missing doc at the pinned commit is fetch <file>", %{root: root} do
+    base = write_docs(root, docs_readme(), docs_install())
+    File.rm!(Path.join([root, "docs", @zero_ref, "guides/install.md"]))
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL docs fetch guides/install.md"
+    refute out =~ "leg docs PASS"
+  end
+
+  test "docs ref: anything but 40 lowercase hex exits 2 before any fetch", %{root: root} do
+    base = write_docs(root, docs_readme(), docs_install())
+
+    for bad <- [
+          "xyz",
+          String.duplicate("a", 39),
+          String.duplicate("a", 41),
+          String.duplicate("A", 40),
+          String.duplicate("g", 40)
+        ] do
+      {out, rc} =
+        run(@script, ["0.0.1"], docs_selftest_env(root, base) ++ [{"CLEANROOM_DOCS_REF", bad}])
+
+      assert rc == 2, "#{bad}: #{out}"
+      assert out =~ "cleanroom: usage", "#{bad}: #{out}"
+      refute out =~ "docs source commit", "#{bad}: #{out}"
+    end
+
+    {out, rc} = run(@script, ["0.2.11"], [{"CLEANROOM_DOCS_REF", "xyz"}])
+    assert rc == 2
+    assert out =~ "cleanroom: usage"
+  end
+
+  test "docs base and keep-work overrides are refused without CLEANROOM_SELFTEST=1", %{root: root} do
+    base = write_docs(root, docs_readme(), docs_install())
+
+    {out, rc} = run(@script, ["0.0.1"], [{"CLEANROOM_DOCS_BASE", base}])
+    assert rc == 2
+    assert out =~ "cleanroom: override refused"
+    refute out =~ "cleanroom: result"
+
+    {out, rc} = run(@script, ["0.0.1"], [{"CLEANROOM_KEEP_WORK", "1"}])
+    assert rc == 2
+    assert out =~ "cleanroom: override refused"
+  end
+
+  test "the docs ref is a selector: the refusal chain names the two overrides, not the ref" do
+    src = File.read!(@script)
+    [line] = Enum.filter(String.split(src, "\n"), &(&1 =~ ~s(if [ "$LEGS" != "$DEFAULT_LEGS" ])))
+
+    assert line =~ "CLEANROOM_DOCS_BASE"
+    assert line =~ "CLEANROOM_KEEP_WORK"
+    refute line =~ "CLEANROOM_DOCS_REF"
+  end
+
+  test "the default legs are hex,maven,ios,docs and docs is an accepted leg" do
+    src = File.read!(@script)
+    assert src =~ ~r/^DEFAULT_LEGS="hex,maven,ios,docs"$/m
+    assert src =~ ~r/hex \| maven \| ios \| docs\) ;;/
   end
 
   test "the script locates nothing relative to itself or a checkout" do

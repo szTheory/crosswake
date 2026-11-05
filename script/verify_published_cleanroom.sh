@@ -2,7 +2,7 @@
 # verify_published_cleanroom.sh <X.Y.Z>
 #
 # Fail-closed clean-room proof (REL-06) that a published Crosswake version is
-# consumable from nothing but the public registries. Three legs, all required:
+# consumable from nothing but the public registries. Four legs, all required:
 #
 #   hex    resolve crosswake == <version> from hex.pm into a fresh mix project,
 #          require the mix.lock outer checksum to equal the registry checksum,
@@ -14,6 +14,14 @@
 #          io.github.sztheory, crosswake-shell-core-android, <version> and aar
 #   ios    find refs/tags/v<version> on the SwiftPM mirror, clone it shallowly,
 #          and `swift build` it
+#   docs   fetch README.md and guides/install.md at the commit CLEANROOM_DOCS_REF (40
+#          lowercase hex, no clone), parse every fence in README "Integrating Crosswake"
+#          and in guides/install.md (each must follow a `<!-- cleanroom:<kind> ... -->`
+#          marker: run, apply, clone or show), generate a throwaway Phoenix host from a
+#          pinned phx_new with assets enabled, and execute the `run` blocks verbatim
+#          with `bash -e`. Steps see only an allowlisted environment (PATH, LANG, the
+#          asdf variables, and HOME, MIX_HOME, HEX_HOME inside the work dir), never the
+#          caller's credentials. `clone` and `show` blocks are counted, never run.
 #
 # Exit codes: 0 every leg passed; 1 any leg failed; 2 usage error or a refused
 # override. A missing tool is a FAIL for that leg (tool_unavailable), never a
@@ -26,8 +34,14 @@
 # them into a version file inside its own throwaway project so asdf shims
 # resolve; otherwise it uses whatever `mix` PATH finds.
 #
+# CLEANROOM_DOCS_REF=<40-hex commit> is also a selector, not an override: it names which
+# public commit the docs leg reads, is accepted without CLEANROOM_SELFTEST, and a value
+# that is not 40 lowercase hex exits 2.
+#
 # Selftest overrides (honored only with CLEANROOM_SELFTEST=1; without it any
-# override exits 2): CLEANROOM_LEGS, CLEANROOM_MAVEN_BASE, CLEANROOM_HEX_API.
+# override exits 2): CLEANROOM_LEGS, CLEANROOM_MAVEN_BASE, CLEANROOM_HEX_API,
+# CLEANROOM_DOCS_BASE (docs source root, layout <base>/<ref>/README.md),
+# CLEANROOM_KEEP_WORK=1 (keep the work dir and print `cleanroom: work kept <path>`).
 # With the flag set the run announces itself and ends `result SELFTEST`,
 # never `result PASS`.
 #
@@ -41,14 +55,21 @@
 #              maven   not_published, fetch_failed, checksum_mismatch, pom_mismatch
 #              ios     not_published (successful lookup, no tag), resolve_failed (git
 #                      ls-remote failed), clone_failed, build_failed
+#              docs    fetch <file>, parse <reason> (no_docs_source, unmarked_fence <file>,
+#                      unterminated_fence <file>, no_fences <file>, readme_scope_missing,
+#                      missing_id, bad_id, duplicate_id, unknown_attr, apply_unsupported),
+#                      step <id> exit <code>
+#   cleanroom: docs source commit <ref>
 #     Network calls carry --max-time, --retry and an https-only protocol pin.
 #   cleanroom: result PASS|FAIL|SELFTEST legs <list> version <version>
 
 set -uo pipefail
 
-DEFAULT_LEGS="hex,maven,ios"
+DEFAULT_LEGS="hex,maven,ios,docs"
 MAVEN_DEFAULT_BASE="https://repo1.maven.org/maven2"
 HEX_DEFAULT_API="https://hex.pm/api"
+DOCS_DEFAULT_BASE="https://raw.githubusercontent.com/szTheory/crosswake"
+PHX_NEW_VERSION="1.8.13"
 CURL_MAX_TIME=120
 CURL_RETRY=2
 MIRROR_URL="https://github.com/szTheory/crosswake-shell-core-ios.git"
@@ -72,9 +93,14 @@ SELFTEST="${CLEANROOM_SELFTEST:-}"
 LEGS="${CLEANROOM_LEGS:-$DEFAULT_LEGS}"
 MAVEN_BASE="${CLEANROOM_MAVEN_BASE:-$MAVEN_DEFAULT_BASE}"
 HEX_API="${CLEANROOM_HEX_API:-$HEX_DEFAULT_API}"
+DOCS_BASE="${CLEANROOM_DOCS_BASE:-$DOCS_DEFAULT_BASE}"
+DOCS_REF="${CLEANROOM_DOCS_REF:-}"
+if [ -n "$DOCS_REF" ] && ! [[ "$DOCS_REF" =~ ^[0-9a-f]{40}$ ]]; then
+  usage
+fi
 
 if [ "$SELFTEST" != "1" ]; then
-  if [ "$LEGS" != "$DEFAULT_LEGS" ] || [ -n "${CLEANROOM_MAVEN_BASE:-}" ] || [ -n "${CLEANROOM_HEX_API:-}" ]; then
+  if [ "$LEGS" != "$DEFAULT_LEGS" ] || [ -n "${CLEANROOM_MAVEN_BASE:-}" ] || [ -n "${CLEANROOM_HEX_API:-}" ] || [ -n "${CLEANROOM_DOCS_BASE:-}" ] || [ -n "${CLEANROOM_KEEP_WORK:-}" ]; then
     echo "cleanroom: override refused (set CLEANROOM_SELFTEST=1 to use selftest overrides)"
     exit 2
   fi
@@ -89,7 +115,14 @@ LEGS_RUN=""
 export GIT_TERMINAL_PROMPT=0
 
 WORK=""
-cleanup() { [ -n "$WORK" ] && rm -rf "$WORK"; }
+cleanup() {
+  [ -n "$WORK" ] || return 0
+  if [ "$SELFTEST" = "1" ] && [ "${CLEANROOM_KEEP_WORK:-}" = "1" ]; then
+    echo "cleanroom: work kept $WORK"
+    return 0
+  fi
+  rm -rf "$WORK"
+}
 trap cleanup EXIT
 
 fail() { # leg reason
@@ -291,10 +324,237 @@ leg_ios() {
   echo "cleanroom: leg ios PASS $VERSION tag_commit $(git -C "$clone" rev-parse HEAD | cut -c1-12)"
 }
 
+# ---- docs leg -------------------------------------------------------------------------
+#
+# docs_fetch_sources: README.md and guides/install.md at CLEANROOM_DOCS_REF, through fetch
+# only (never from beside this script). No ref: the leg fails; the Hex tarball default
+# arrives in a later plan.
+docs_fetch_sources() {
+  local rc
+  if [ -z "$DOCS_REF" ]; then
+    fail docs "parse no_docs_source"
+    return 1
+  fi
+  mkdir -p "$WORK/docs/body" "$WORK/docs/steps" || { fail docs tool_unavailable; return 1; }
+  fetch "$DOCS_BASE/$DOCS_REF/README.md" "$WORK/docs/README.md"; rc=$?
+  if [ "$rc" -ne 0 ]; then fail docs "fetch README.md"; return 1; fi
+  fetch "$DOCS_BASE/$DOCS_REF/guides/install.md" "$WORK/docs/install.md"; rc=$?
+  if [ "$rc" -ne 0 ]; then fail docs "fetch guides/install.md"; return 1; fi
+  echo "cleanroom: docs source commit $DOCS_REF"
+}
+
+# docs_parse_file <tag> <path> <display>: one record per fence in scope appended to
+# $WORK/docs/steps.tsv as tag, ordinal, kind, id, attrs, body file (tab separated, no empty
+# field). Scope: for the README the lines after `### Integrating Crosswake` up to the next
+# `# `, `## ` or `### ` heading; for guides/install.md the whole file. A trimmed line that
+# starts with three backticks toggles a fence, the same rule as strip_fences/1 in
+# check_release_doc_version_literals.exs, so headings inside a fence never count. The
+# nearest preceding non-blank line outside a fence must be a cleanroom marker. A problem is
+# written to parse_error as a reason and exits 1.
+docs_parse_file() {
+  local tag="$1" path="$2" display="$3" reason
+  awk -v tag="$tag" -v display="$display" -v tsv="$WORK/docs/steps.tsv" \
+    -v idsfile="$WORK/docs/ids" -v bodydir="$WORK/docs/body" -v errfile="$WORK/docs/parse_error" '
+    function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t\r]+$/, "", s); return s }
+    function die(reason) { print reason > errfile; close(errfile); failed = 1; exit 1 }
+    function open_fence(    m, n, parts, i, p, eq, key, val, nattr) {
+      ord++
+      nfence++
+      if (prev !~ /^<!-- cleanroom:(run|apply|clone|show)( [a-z_]+=[^ ]+)* -->$/) {
+        die("unmarked_fence " display)
+      }
+      m = prev
+      sub(/^<!-- cleanroom:/, "", m)
+      sub(/ -->$/, "", m)
+      n = split(m, parts, " ")
+      kind = parts[1]
+      id = ""; attrs = ""
+      delete seen_key
+      for (i = 2; i <= n; i++) {
+        p = parts[i]
+        eq = index(p, "=")
+        key = substr(p, 1, eq - 1)
+        val = substr(p, eq + 1)
+        if ((key != "id" && key != "file" && key != "mode" && key != "since") || (key in seen_key)) {
+          die("unknown_attr")
+        }
+        seen_key[key] = 1
+        if (key == "id") id = val
+        else attrs = attrs (attrs == "" ? "" : ";") key "=" val
+      }
+      if (kind != "show" && id == "") die("missing_id")
+      if (id != "") {
+        if (id !~ /^[A-Za-z0-9_-]+$/) die("bad_id")
+        if (id in ids) die("duplicate_id")
+        ids[id] = 1
+        print id >> idsfile
+        close(idsfile)
+      }
+      body = bodydir "/" tag "-" ord
+      printf "" > body
+      close(body)
+    }
+    BEGIN {
+      while ((getline l < idsfile) > 0) ids[l] = 1
+      close(idsfile)
+      in_fence = 0; prev = ""; ord = 0; nfence = 0
+      in_scope = (tag == "install"); found_scope = in_scope
+    }
+    {
+      line = $0
+      sub(/\r$/, "", line)
+      t = line
+      sub(/^[ \t]+/, "", t)
+      isfence = (substr(t, 1, 3) == "```")
+      if (in_fence) {
+        if (isfence) {
+          in_fence = 0
+          if (capture) {
+            if (id == "") rid = "-"; else rid = id
+            if (attrs == "") rattrs = "-"; else rattrs = attrs
+            printf "%s\t%d\t%s\t%s\t%s\t%s\n", tag, ord, kind, rid, rattrs, body >> tsv
+            close(tsv)
+          }
+          prev = "```"
+        } else if (capture) {
+          print line >> body
+        }
+        next
+      }
+      if (isfence) {
+        in_fence = 1
+        capture = in_scope
+        if (capture) open_fence()
+        next
+      }
+      if (tag == "readme") {
+        if (line ~ /^### Integrating Crosswake[ \t]*$/) { in_scope = 1; found_scope = 1 }
+        else if (in_scope && line ~ /^(# |## |### )/) in_scope = 0
+      }
+      if (trim(line) != "") prev = trim(line)
+    }
+    END {
+      if (failed) exit 1
+      if (in_fence) die("unterminated_fence " display)
+      if (!found_scope) die("readme_scope_missing")
+      if (nfence == 0) die("no_fences " display)
+    }
+  ' "$path"
+  if [ "$?" -ne 0 ]; then
+    reason=$(head -n1 "$WORK/docs/parse_error" 2>/dev/null)
+    [ -n "$reason" ] || reason="awk_failed"
+    fail docs "parse $reason"
+    return 1
+  fi
+}
+
+docs_parse() {
+  : >"$WORK/docs/steps.tsv"
+  : >"$WORK/docs/ids"
+  : >"$WORK/docs/parse_error"
+  docs_parse_file readme "$WORK/docs/README.md" "README.md" || return 1
+  docs_parse_file install "$WORK/docs/install.md" "guides/install.md" || return 1
+  # apply blocks parse today; running them lands in a later plan, so one fails the leg.
+  if awk -F '\t' '$3 == "apply" { found = 1 } END { exit found ? 0 : 1 }' "$WORK/docs/steps.tsv"; then
+    fail docs "parse apply_unsupported"
+    return 1
+  fi
+}
+
+# docs_env <cmd...>: run one command with an allowlisted environment only. The caller's
+# credentials and every other variable never cross: PATH, LANG, the asdf variables (so
+# shims resolve) and HOME, MIX_HOME, HEX_HOME inside the work dir.
+docs_env() {
+  local -a vars
+  vars=(PATH="$PATH" LANG="${LANG:-C.UTF-8}" HOME="$WORK/home" MIX_HOME="$WORK/mix_home" HEX_HOME="$WORK/hex_home" MIX_ENV=dev)
+  [ -n "${ASDF_DIR:-}" ] && vars+=(ASDF_DIR="$ASDF_DIR")
+  if [ -n "${ASDF_DATA_DIR:-}" ]; then
+    vars+=(ASDF_DATA_DIR="$ASDF_DATA_DIR")
+  elif [ -d "$HOME/.asdf" ]; then
+    vars+=(ASDF_DATA_DIR="$HOME/.asdf")
+  fi
+  env -i "${vars[@]}" "$@"
+}
+
+# docs_make_host: a throwaway Phoenix host from a pinned phx_new (assets enabled, because
+# the documented esbuild flags need them), copied to one fresh host per doc file.
+docs_make_host() {
+  local setup="$WORK/setup" log="$WORK/docs.log" pinned=0
+  mkdir -p "$WORK/home" "$WORK/mix_home" "$WORK/hex_home" "$setup" || { fail docs tool_unavailable; return 1; }
+  if [ -n "${CLEANROOM_ELIXIR_VERSION:-}" ] && [ -n "${CLEANROOM_ERLANG_VERSION:-}" ]; then
+    pinned=1
+    printf 'erlang %s\nelixir %s\n' "$CLEANROOM_ERLANG_VERSION" "$CLEANROOM_ELIXIR_VERSION" >"$setup/.tool-versions"
+    echo "cleanroom: toolchain elixir $CLEANROOM_ELIXIR_VERSION erlang $CLEANROOM_ERLANG_VERSION"
+  else
+    echo "cleanroom: toolchain path"
+  fi
+  if ! (
+    cd "$setup" &&
+      docs_env mix local.hex --force &&
+      docs_env mix local.rebar --force &&
+      docs_env mix archive.install hex phx_new "$PHX_NEW_VERSION" --force &&
+      docs_env mix phx.new "$WORK/host-template" --app clean_room_host --module CleanRoomHost \
+        --no-ecto --no-dashboard --no-mailer --no-gettext --no-install --no-version-check
+  ) </dev/null >>"$log" 2>&1; then
+    fail docs tool_unavailable
+    return 1
+  fi
+  if [ "$pinned" -eq 1 ]; then
+    printf 'erlang %s\nelixir %s\n' "$CLEANROOM_ERLANG_VERSION" "$CLEANROOM_ELIXIR_VERSION" >"$WORK/host-template/.tool-versions"
+  fi
+  cp -R "$WORK/host-template" "$WORK/host-readme" || { fail docs tool_unavailable; return 1; }
+  cp -R "$WORK/host-template" "$WORK/host-install" || { fail docs tool_unavailable; return 1; }
+}
+
+# docs_run_step <id> <body file> <host dir>: the body runs verbatim under `bash -e` in the
+# host, scrubbed env, stdin closed (the caller reads the step list from a file). Output is
+# appended to docs.log and never echoed.
+docs_run_step() {
+  local id="$1" body="$2" host="$3" step rc
+  step="$WORK/docs/steps/$id.sh"
+  cp "$body" "$step" || { fail docs "step $id exit 1"; return 1; }
+  (cd "$host" && docs_env bash -e "$step") </dev/null >>"$WORK/docs.log" 2>&1
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    fail docs "step $id exit $rc"
+    return 1
+  fi
+}
+
+docs_run_all() {
+  local tag ord kind id attrs body failed_tags=" " executed=0 clone=0 shown=0 bad=0
+  while IFS=$'\t' read -r tag ord kind id attrs body; do
+    case "$kind" in
+      run)
+        case "$failed_tags" in *" $tag "*) continue ;; esac
+        if docs_run_step "$id" "$body" "$WORK/host-$tag"; then
+          executed=$((executed + 1))
+        else
+          bad=1
+          failed_tags="$failed_tags$tag "
+        fi
+        ;;
+      clone) clone=$((clone + 1)) ;;
+      show) shown=$((shown + 1)) ;;
+    esac
+  done <"$WORK/docs/steps.tsv"
+  [ "$bad" -eq 0 ] || return 1
+  echo "cleanroom: leg docs PASS $VERSION executed=$executed not_applicable=0 clone=$clone shown=$shown source=commit:$DOCS_REF phx_new=$PHX_NEW_VERSION"
+}
+
+leg_docs() {
+  need_tools docs curl awk sed grep tr head tail cut mktemp mkdir cp tar gzip mix env bash sleep || return
+  mk_work || { fail docs tool_unavailable; return; }
+  docs_fetch_sources || return
+  docs_parse || return
+  docs_make_host || return
+  docs_run_all
+}
+
 IFS=',' read -r -a LEG_LIST <<<"$LEGS"
 for leg in "${LEG_LIST[@]}"; do
   case "$leg" in
-    hex | maven | ios) ;;
+    hex | maven | ios | docs) ;;
     *) echo "cleanroom: override refused (unknown leg)"; exit 2 ;;
   esac
 done
