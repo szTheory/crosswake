@@ -27,7 +27,7 @@ defmodule Crosswake.CapabilityMap do
       :adoption_implication
     ]
 
-    defstruct @enforce_keys
+    defstruct @enforce_keys ++ [android_evidence: :not_claimed]
 
     @type t :: %__MODULE__{
             id: String.t(),
@@ -43,7 +43,8 @@ defmodule Crosswake.CapabilityMap do
             source_binding: Crosswake.CapabilityMap.source_binding(),
             activation_state: Crosswake.CapabilityMap.activation_state(),
             denial_fallback: String.t(),
-            adoption_implication: String.t()
+            adoption_implication: String.t(),
+            android_evidence: atom()
           }
   end
 
@@ -216,6 +217,8 @@ defmodule Crosswake.CapabilityMap do
         route_runtime_owner: :bounded_bridge,
         package_owner: :core,
         proof_posture: :merge_blocking,
+        # vec-003 and the floor vectors exercise `app.info.get` in the shared corpus.
+        android_evidence: :jvm_hermetic,
         denial_fallback:
           "Phoenix route continues without native app metadata when the route has not declared the capability.",
         adoption_implication:
@@ -634,6 +637,8 @@ defmodule Crosswake.CapabilityMap do
     |> Map.put_new(:evidence_subject, :crosswake_contract)
     |> Map.put_new(:source_binding, :repository_bound)
     |> Map.put_new(:activation_state, default_activation_state(attrs))
+    |> Map.put_new(:android_evidence, :not_claimed)
+    |> Map.update!(:android_evidence, &Crosswake.SupportMatrix.validate_android_evidence!/1)
     |> then(&struct!(Row, &1))
   end
 

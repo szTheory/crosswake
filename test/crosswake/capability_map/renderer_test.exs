@@ -102,7 +102,7 @@ defmodule Crosswake.CapabilityMap.RendererTest do
     rendered = Renderer.render()
 
     assert rendered =~
-             "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | Adoption implication |"
+             "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Android evidence | Rebuild | Denial/fallback behavior | Adoption implication |"
 
     for label <- CapabilityMap.display_labels() do
       assert rendered =~ label

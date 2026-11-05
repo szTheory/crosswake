@@ -18,6 +18,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
     :route_runtime_owner,
     :package_owner,
     :proof_posture,
+    :android_evidence,
     :rebuild,
     :denial_fallback
   ]
@@ -177,8 +178,8 @@ defmodule Crosswake.CapabilityMap.Renderer do
     [
       "## Detailed Capability Rows",
       "",
-      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Rebuild | Denial/fallback behavior | Adoption implication |",
-      "|-----------------------|---------------|--------------------------|------------------|---------------------|---------------|---------------|---------|--------------------------|-----------------|",
+      "| Capability or surface | Display label | Route or evidence source | Current category | Route runtime owner | Package owner | Proof posture | Android evidence | Rebuild | Denial/fallback behavior | Adoption implication |",
+      "|-----------------------|---------------|--------------------------|------------------|---------------------|---------------|---------------|------------------|---------|--------------------------|-----------------|",
       Enum.map_join(rows, "\n", &table_row/1)
     ]
     |> Enum.join("\n")
@@ -193,7 +194,7 @@ defmodule Crosswake.CapabilityMap.Renderer do
   end
 
   defp table_row(row) do
-    "| #{escape_cell(row.surface)} | #{escape_cell(row.display_label)} | #{escape_cell(row.route_or_evidence_source)} | #{escape_cell(category_label(row.category))} | #{escape_cell(owner_label(row.route_runtime_owner))} | #{escape_cell(owner_label(row.package_owner))} | #{escape_cell(proof_label(row.proof_posture))} | #{escape_cell(rebuild_label(row.rebuild))} | #{escape_cell(row.denial_fallback)} | #{escape_cell(row.adoption_implication)} |"
+    "| #{escape_cell(row.surface)} | #{escape_cell(row.display_label)} | #{escape_cell(row.route_or_evidence_source)} | #{escape_cell(category_label(row.category))} | #{escape_cell(owner_label(row.route_runtime_owner))} | #{escape_cell(owner_label(row.package_owner))} | #{escape_cell(proof_label(row.proof_posture))} | #{escape_cell(Crosswake.SupportMatrix.android_evidence_label(Map.get(row, :android_evidence, :not_claimed)))} | #{escape_cell(rebuild_label(row.rebuild))} | #{escape_cell(row.denial_fallback)} | #{escape_cell(row.adoption_implication)} |"
   end
 
   # D-12 compatibility window: map-based renderer callers may keep supplying
