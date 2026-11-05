@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 11
+current_plan: 12
 status: executing
-stopped_at: Completed 197-10-PLAN.md
-last_updated: "2026-11-05T16:58:18.050Z"
-state_head: a26bf67e23102a61356f5b2c66d0deee19bf8354
+stopped_at: Completed 197-11-PLAN.md
+last_updated: "2026-11-05T17:01:18.878Z"
+state_head: 7a139f1ebc33bf924bb3445ab8f4cacd10701374
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 57
+  completed_plans: 58
   percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
@@ -20,7 +20,7 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 11
+Current Plan: 12
 Total Plans in Phase: 15
 
 ## Exact Next Action
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T16:58:17.785Z
-**Stopped at:** Completed 197-10-PLAN.md
+**Last session:** 2026-11-05T17:01:18.708Z
+**Stopped at:** Completed 197-11-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -60,6 +60,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P08 | 45min | 2 tasks | 3 files |
 | Phase 197 P09 | 50min | 2 tasks | 5 files |
 | Phase 197 P10 | 25min | 2 tasks | 3 files |
+| Phase 197 P11 | 20min | 2 tasks | 6 files |
 
 ## Decisions
 
@@ -78,6 +79,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-06: compile_warning names the leg-written host path; apply blocks and harness compile count in executed; apply structure and doctor requirement are validated at parse time
 - [Phase 197]: 197-07: required-step check is dynamic over executed bodies per file; :ios_host exemption is version-conditional on DOCS_IOS_HOST_SINCE=0.2.12; DOCS_EXECUTED_FLOOR=1 is a placeholder until 197-09
 - [Phase 197]: 197-09: DOCS_EXECUTED_FLOOR pinned to 18 (16 run/apply blocks without since= plus 2 harness compiles), asserted equal in the marker test
+- [Phase 197]: 197-11: publish.parity candidate rule keys on the Published Hex truth pointer (GitHub Releases + hex.pm links), not version sentences; CHANGELOG makes no current-release claim
 
 ### Blockers
 
