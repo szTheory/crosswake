@@ -174,16 +174,15 @@ one coherent set ("Lock all").
 - Plan/PR split and wave order, provided D-19's baseline-first ordering holds.
 - Test file names and module layout for the new tests.
 - **Apply-marker `mode=` attribute (recorded 2026-11-05, plan-check round 2; extends D-01 grammar;
-  user to confirm).** Plans 197-04 and 197-06 make every `apply` marker carry a required
+  confirmed by user 2026-11-05).** Plans 197-04 and 197-06 make every `apply` marker carry a required
   `mode=<create|append|deps|esbuild-args|js-hook|router-route>` attribute
   (`<!-- cleanroom:apply id=<id> file=<host path> mode=<mode> -->`); a missing `mode=` is
   `parse missing_mode` and an unknown one `parse unknown_mode`. D-01 names only `id=` and `file=`
   for `apply`. Rationale: D-01's "fragment injected into a host file" needs a fixed insertion rule
   per fragment class (a deps tuple, esbuild args, a JS hook, a router line, a new file, an
   appended config block), and naming it in the marker keeps the injector dependency-free and
-  deterministic instead of inferring the rule from the fragment text. D-01 itself is unchanged; if
-  the user rejects the extension, the alternative is to infer the mode from `file=` plus the body,
-  which 197-06 would have to re-plan.
+  deterministic instead of inferring the rule from the fragment text. D-01 itself is unchanged. The user
+  confirmed the extension on 2026-11-05, so no re-plan of 197-06 is needed.
 
 </decisions>
 
