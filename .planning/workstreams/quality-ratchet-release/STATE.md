@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 7
+current_plan: 8
 status: executing
-stopped_at: Completed 197-06-PLAN.md
-last_updated: "2026-11-05T16:22:58.061Z"
-state_head: b11bd0547b94a0fc19043f8979e943861adb1756
+stopped_at: Completed 197-07-PLAN.md
+last_updated: "2026-11-05T16:34:02.254Z"
+state_head: e15a883e0fef338fecba9443abd7ffd7e22143d6
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 53
+  completed_plans: 54
   percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
@@ -20,7 +20,7 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 7
+Current Plan: 8
 Total Plans in Phase: 15
 
 ## Exact Next Action
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T16:22:57.897Z
-**Stopped at:** Completed 197-06-PLAN.md
+**Last session:** 2026-11-05T16:34:01.998Z
+**Stopped at:** Completed 197-07-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -56,6 +56,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P04 | 95min | 3 tasks | 2 files |
 | Phase 197 P05 | 25min | 2 tasks | 2 files |
 | Phase 197 P06 | 75min | 2 tasks | 2 files |
+| Phase 197 P07 | 55min | 2 tasks | 2 files |
 
 ## Decisions
 
@@ -72,6 +73,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-04: docs leg runs only run blocks; a failed run block stops its own file only; extra fail-closed parse reasons (no_fences, readme_scope_missing, unterminated_fence, bad_id); asdf callers must set CLEANROOM_ELIXIR_VERSION and CLEANROOM_ERLANG_VERSION for the docs leg
 - [Phase 197]: 197-05: CLEANROOM_DOCS_REF wins over the Hex tarball default; tarball members must be regular non-symlink files
 - [Phase 197]: 197-06: compile_warning names the leg-written host path; apply blocks and harness compile count in executed; apply structure and doctor requirement are validated at parse time
+- [Phase 197]: 197-07: required-step check is dynamic over executed bodies per file; :ios_host exemption is version-conditional on DOCS_IOS_HOST_SINCE=0.2.12; DOCS_EXECUTED_FLOOR=1 is a placeholder until 197-09
 
 ### Blockers
 
