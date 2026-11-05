@@ -33,6 +33,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {"CLEANROOM_DOCS_REF", nil},
     {"CLEANROOM_DOCS_BASE", nil},
     {"CLEANROOM_KEEP_WORK", nil},
+    {"CLEANROOM_DOCS_STEP_TIMEOUT", nil},
     {"CLEANROOM_ELIXIR_VERSION", nil},
     {"CLEANROOM_ERLANG_VERSION", nil}
   ]
@@ -1007,6 +1008,175 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert mutated != src
     assert "sort" in docs_tools_used(mutated)
     refute "sort" in used
+  end
+
+  # ---- per-step time bound (docs_bounded) ------------------------------------------------
+
+  # install.md whose first run block starts a background sleep (pid written to pidfile) and
+  # then sleeps itself: only a process-group kill ends both.
+  defp stuck_install(pidfile) do
+    """
+    # Install
+
+    <!-- cleanroom:run id=stuck -->
+    ```bash
+    sleep 30 & echo $! > #{pidfile}
+    sleep 30
+    ```
+    """
+  end
+
+  defp stuck_env(root, extra \\ []) do
+    pidfile = Path.join(root, "child.pid")
+    base = write_docs(root, docs_readme(), stuck_install(pidfile))
+    {pidfile, docs_selftest_env(root, base, extra)}
+  end
+
+  defp os_alive?(pid), do: match?({_, 0}, System.cmd("kill", ["-0", pid], stderr_to_stdout: true))
+
+  defp wait_until_dead(pid, tries \\ 30) do
+    cond do
+      not os_alive?(pid) -> true
+      tries == 0 -> false
+      true -> Process.sleep(100) && wait_until_dead(pid, tries - 1)
+    end
+  end
+
+  test "docs leg: a step over the time bound is killed with its whole group and named", %{
+    root: root
+  } do
+    {pidfile, env} = stuck_env(root, [{"CLEANROOM_DOCS_STEP_TIMEOUT", "2"}])
+
+    started = System.monotonic_time(:millisecond)
+    {out, rc} = run(@script, ["0.0.1"], env)
+    elapsed = System.monotonic_time(:millisecond) - started
+
+    assert rc == 1, out
+    lines = String.split(out, "\n")
+    assert "cleanroom: FAIL docs step stuck timeout 2" in lines
+    assert last_line(out) == "cleanroom: result FAIL legs docs version 0.0.1"
+    refute out =~ "leg docs PASS"
+    assert elapsed < 20_000, "took #{elapsed} ms"
+
+    child = pidfile |> File.read!() |> String.trim()
+    assert child =~ ~r/^[0-9]+$/
+    assert wait_until_dead(child), "background child #{child} outlived its step"
+  end
+
+  test "docs leg: a host-generation command over the time bound is step host_setup timeout", %{
+    root: root
+  } do
+    base = write_docs(root, docs_readme(), docs_install())
+    stubs = Path.join(root, "slowmix")
+    File.mkdir_p!(stubs)
+    File.write!(Path.join(stubs, "mix"), "#!/bin/sh\nsleep 30\n")
+    File.chmod!(Path.join(stubs, "mix"), 0o755)
+
+    env =
+      docs_selftest_env(root, base, [
+        {"CLEANROOM_DOCS_STEP_TIMEOUT", "2"},
+        {"PATH", stubs <> ":" <> System.get_env("PATH", "")}
+      ])
+
+    started = System.monotonic_time(:millisecond)
+    {out, rc} = run(@script, ["0.0.1"], env)
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs step host_setup timeout 2" in String.split(out, "\n")
+    refute out =~ "leg docs PASS"
+    assert System.monotonic_time(:millisecond) - started < 20_000
+  end
+
+  defp port_env(env) do
+    for {k, v} <- @selftest_env ++ env do
+      {String.to_charlist(k), if(v, do: String.to_charlist(v), else: false)}
+    end
+  end
+
+  defp collect_port(port, acc, deadline) do
+    left = max(deadline - System.monotonic_time(:millisecond), 0)
+
+    receive do
+      {^port, {:data, data}} -> collect_port(port, acc <> data, deadline)
+      {^port, {:exit_status, status}} -> {acc, status}
+    after
+      left -> {acc, :timeout}
+    end
+  end
+
+  defp wait_for_file(path, tries \\ 150) do
+    cond do
+      File.exists?(path) and File.read!(path) != "" -> true
+      tries == 0 -> false
+      true -> Process.sleep(100) && wait_for_file(path, tries - 1)
+    end
+  end
+
+  test "docs leg: TERM while a step runs kills its group and ends interrupted, never 0", %{
+    root: root
+  } do
+    {pidfile, env} = stuck_env(root)
+
+    port =
+      Port.open({:spawn_executable, System.find_executable("bash")}, [
+        :binary,
+        :exit_status,
+        :stderr_to_stdout,
+        args: [@script, "0.0.1"],
+        env: port_env(env)
+      ])
+
+    {:os_pid, os_pid} = Port.info(port, :os_pid)
+    assert wait_for_file(pidfile), "the step never started"
+    {_, 0} = System.cmd("kill", ["-TERM", Integer.to_string(os_pid)])
+
+    {out, status} = collect_port(port, "", System.monotonic_time(:millisecond) + 20_000)
+
+    if status == :timeout, do: System.cmd("kill", ["-KILL", Integer.to_string(os_pid)])
+
+    assert status == 1, out
+    lines = String.split(out, "\n")
+    assert "cleanroom: FAIL docs step stuck interrupted" in lines
+    assert last_line(out) == "cleanroom: result FAIL legs docs version 0.0.1"
+    refute out =~ "leg docs PASS"
+
+    child = pidfile |> File.read!() |> String.trim()
+    assert wait_until_dead(child), "background child #{child} outlived the interrupted step"
+  end
+
+  test "an invalid step time bound exits 2 with the usage line before any fetch", %{root: root} do
+    base = write_docs(root, docs_readme(), docs_install())
+
+    for bad <- ["abc", "0", "-5", "1.5", "07"] do
+      {out, rc} =
+        run(
+          @script,
+          ["0.0.1"],
+          docs_selftest_env(root, base, [{"CLEANROOM_DOCS_STEP_TIMEOUT", bad}])
+        )
+
+      assert rc == 2, "#{bad}: #{out}"
+      assert out =~ "cleanroom: usage", "#{bad}: #{out}"
+      refute out =~ "docs source commit", "#{bad}: #{out}"
+    end
+
+    # A selector, not an override: the bad value is a usage error, not a refusal.
+    {out, rc} = run(@script, ["0.2.11"], [{"CLEANROOM_DOCS_STEP_TIMEOUT", "abc"}])
+    assert rc == 2
+    assert out =~ "cleanroom: usage"
+    refute out =~ "override refused"
+  end
+
+  test "the step time bound is a script constant and a selector, not a refused override" do
+    src = File.read!(@script)
+    assert src =~ ~r/^DOCS_STEP_TIMEOUT_DEFAULT=900$/m
+    [line] = Enum.filter(String.split(src, "\n"), &(&1 =~ ~s(if [ "$LEGS" != "$DEFAULT_LEGS" ])))
+    refute line =~ "CLEANROOM_DOCS_STEP_TIMEOUT"
+
+    # Every documented step and every host-generation command goes through the bound.
+    assert length(Regex.scan(~r/docs_bounded /, src)) >= 3
+    assert src =~ ~r/docs_bounded "\$id" docs_step_exec/
+    assert src =~ ~r/docs_bounded host_setup docs_setup_exec/
   end
 
   test "the script locates nothing relative to itself or a checkout" do

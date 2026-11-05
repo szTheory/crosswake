@@ -36,7 +36,9 @@
 #
 # CLEANROOM_DOCS_REF=<40-hex commit> is also a selector, not an override: it names which
 # public commit the docs leg reads, is accepted without CLEANROOM_SELFTEST, and a value
-# that is not 40 lowercase hex exits 2.
+# that is not 40 lowercase hex exits 2. CLEANROOM_DOCS_STEP_TIMEOUT=<seconds> is the same
+# class (a positive integer, default 900, otherwise exit 2): every documented step and every
+# host-generation command runs under that bound, because a bound can only turn a run red.
 #
 # Selftest overrides (honored only with CLEANROOM_SELFTEST=1; without it any
 # override exits 2): CLEANROOM_LEGS, CLEANROOM_MAVEN_BASE, CLEANROOM_HEX_API,
@@ -58,7 +60,9 @@
 #              docs    fetch <file>, parse <reason> (no_docs_source, unmarked_fence <file>,
 #                      unterminated_fence <file>, no_fences <file>, readme_scope_missing,
 #                      missing_id, bad_id, duplicate_id, unknown_attr, apply_unsupported),
-#                      step <id> exit <code>
+#                      step <id> exit <code>, step <id> timeout <secs>, step <id> interrupted
+#                      (the step's whole process group is killed; a host-generation command is
+#                      step host_setup)
 #   cleanroom: docs source commit <ref>
 #     Network calls carry --max-time, --retry and an https-only protocol pin.
 #   cleanroom: result PASS|FAIL|SELFTEST legs <list> version <version>
@@ -70,6 +74,7 @@ MAVEN_DEFAULT_BASE="https://repo1.maven.org/maven2"
 HEX_DEFAULT_API="https://hex.pm/api"
 DOCS_DEFAULT_BASE="https://raw.githubusercontent.com/szTheory/crosswake"
 PHX_NEW_VERSION="1.8.13"
+DOCS_STEP_TIMEOUT_DEFAULT=900
 CURL_MAX_TIME=120
 CURL_RETRY=2
 MIRROR_URL="https://github.com/szTheory/crosswake-shell-core-ios.git"
@@ -96,6 +101,10 @@ HEX_API="${CLEANROOM_HEX_API:-$HEX_DEFAULT_API}"
 DOCS_BASE="${CLEANROOM_DOCS_BASE:-$DOCS_DEFAULT_BASE}"
 DOCS_REF="${CLEANROOM_DOCS_REF:-}"
 if [ -n "$DOCS_REF" ] && ! [[ "$DOCS_REF" =~ ^[0-9a-f]{40}$ ]]; then
+  usage
+fi
+DOCS_STEP_TIMEOUT="${CLEANROOM_DOCS_STEP_TIMEOUT:-$DOCS_STEP_TIMEOUT_DEFAULT}"
+if ! [[ "$DOCS_STEP_TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
   usage
 fi
 
@@ -476,10 +485,92 @@ docs_env() {
   env -i "${vars[@]}" "$@"
 }
 
+DOCS_STEP_ID=""
+DOCS_STEP_PID=""
+DOCS_WATCHDOG_PID=""
+DOCS_BOUND_TIMEOUT=0
+
+# INT or TERM while a bounded command runs: kill its process group, name the step, end the
+# run as a failure. Never exits 0.
+docs_interrupt() {
+  trap '' INT TERM
+  if [ -n "$DOCS_WATCHDOG_PID" ]; then
+    kill -s KILL -- "-$DOCS_WATCHDOG_PID" 2>/dev/null
+    wait "$DOCS_WATCHDOG_PID" 2>/dev/null
+  fi
+  if [ -n "$DOCS_STEP_PID" ]; then
+    kill -s TERM -- "-$DOCS_STEP_PID" 2>/dev/null
+    sleep 1
+    kill -s KILL -- "-$DOCS_STEP_PID" 2>/dev/null
+    wait "$DOCS_STEP_PID" 2>/dev/null
+  fi
+  fail docs "step $DOCS_STEP_ID interrupted"
+  echo "cleanroom: result FAIL legs $LEGS version $VERSION"
+  exit 1
+}
+
+# docs_bounded <id> <cmd...>: run one command in its own process group (job control gives
+# the background job a group id equal to its pid) under the DOCS_STEP_TIMEOUT bound. A
+# watchdog in its own group sends TERM then, five seconds later, KILL to the command's whole
+# group. On timeout it prints `FAIL docs step <id> timeout <secs>`, sets DOCS_BOUND_TIMEOUT=1
+# and returns 1 (a command that exits 124 by itself is told apart by that variable). On INT
+# or TERM, docs_interrupt runs. Otherwise it returns the command's own exit status.
+docs_bounded() {
+  local id="$1" rc flag="$WORK/docs/timeout-$1.flag"
+  shift
+  DOCS_STEP_ID="$id"
+  DOCS_BOUND_TIMEOUT=0
+  trap docs_interrupt INT TERM
+  set -m
+  "$@" &
+  DOCS_STEP_PID=$!
+  (
+    sleep "$DOCS_STEP_TIMEOUT"
+    : >"$flag"
+    kill -s TERM -- "-$DOCS_STEP_PID" 2>/dev/null
+    sleep 5
+    kill -s KILL -- "-$DOCS_STEP_PID" 2>/dev/null
+  ) &
+  DOCS_WATCHDOG_PID=$!
+  set +m
+  wait "$DOCS_STEP_PID" 2>/dev/null
+  rc=$?
+  kill -s KILL -- "-$DOCS_WATCHDOG_PID" 2>/dev/null
+  wait "$DOCS_WATCHDOG_PID" 2>/dev/null
+  if [ -e "$flag" ]; then
+    kill -s KILL -- "-$DOCS_STEP_PID" 2>/dev/null
+    DOCS_BOUND_TIMEOUT=1
+  fi
+  trap - INT TERM
+  DOCS_STEP_PID=""
+  DOCS_WATCHDOG_PID=""
+  if [ "$DOCS_BOUND_TIMEOUT" -eq 1 ]; then
+    fail docs "step $id timeout $DOCS_STEP_TIMEOUT"
+    return 1
+  fi
+  return "$rc"
+}
+
+docs_setup_exec() { # cmd...: one host-generation command in the setup dir
+  (cd "$WORK/setup" && docs_env "$@") </dev/null >>"$WORK/docs.log" 2>&1
+}
+
+# docs_setup <cmd...>: bounded host-generation command (step id host_setup). A timeout has
+# already printed its FAIL line; any other failure is tool_unavailable.
+docs_setup() {
+  docs_bounded host_setup docs_setup_exec "$@"
+  local rc=$?
+  [ "$DOCS_BOUND_TIMEOUT" -eq 0 ] || return 1
+  if [ "$rc" -ne 0 ]; then
+    fail docs tool_unavailable
+    return 1
+  fi
+}
+
 # docs_make_host: a throwaway Phoenix host from a pinned phx_new (assets enabled, because
 # the documented esbuild flags need them), copied to one fresh host per doc file.
 docs_make_host() {
-  local setup="$WORK/setup" log="$WORK/docs.log" pinned=0
+  local setup="$WORK/setup" pinned=0
   mkdir -p "$WORK/home" "$WORK/mix_home" "$WORK/hex_home" "$setup" || { fail docs tool_unavailable; return 1; }
   if [ -n "${CLEANROOM_ELIXIR_VERSION:-}" ] && [ -n "${CLEANROOM_ERLANG_VERSION:-}" ]; then
     pinned=1
@@ -488,17 +579,11 @@ docs_make_host() {
   else
     echo "cleanroom: toolchain path"
   fi
-  if ! (
-    cd "$setup" &&
-      docs_env mix local.hex --force &&
-      docs_env mix local.rebar --force &&
-      docs_env mix archive.install hex phx_new "$PHX_NEW_VERSION" --force &&
-      docs_env mix phx.new "$WORK/host-template" --app clean_room_host --module CleanRoomHost \
-        --no-ecto --no-dashboard --no-mailer --no-gettext --no-install --no-version-check
-  ) </dev/null >>"$log" 2>&1; then
-    fail docs tool_unavailable
-    return 1
-  fi
+  docs_setup mix local.hex --force || return 1
+  docs_setup mix local.rebar --force || return 1
+  docs_setup mix archive.install hex phx_new "$PHX_NEW_VERSION" --force || return 1
+  docs_setup mix phx.new "$WORK/host-template" --app clean_room_host --module CleanRoomHost \
+    --no-ecto --no-dashboard --no-mailer --no-gettext --no-install --no-version-check || return 1
   if [ "$pinned" -eq 1 ]; then
     printf 'erlang %s\nelixir %s\n' "$CLEANROOM_ERLANG_VERSION" "$CLEANROOM_ELIXIR_VERSION" >"$WORK/host-template/.tool-versions"
   fi
@@ -509,12 +594,17 @@ docs_make_host() {
 # docs_run_step <id> <body file> <host dir>: the body runs verbatim under `bash -e` in the
 # host, scrubbed env, stdin closed (the caller reads the step list from a file). Output is
 # appended to docs.log and never echoed.
+docs_step_exec() { # host step
+  (cd "$1" && docs_env bash -e "$2") </dev/null >>"$WORK/docs.log" 2>&1
+}
+
 docs_run_step() {
   local id="$1" body="$2" host="$3" step rc
   step="$WORK/docs/steps/$id.sh"
   cp "$body" "$step" || { fail docs "step $id exit 1"; return 1; }
-  (cd "$host" && docs_env bash -e "$step") </dev/null >>"$WORK/docs.log" 2>&1
+  docs_bounded "$id" docs_step_exec "$host" "$step"
   rc=$?
+  [ "$DOCS_BOUND_TIMEOUT" -eq 0 ] || return 1
   if [ "$rc" -ne 0 ]; then
     fail docs "step $id exit $rc"
     return 1
