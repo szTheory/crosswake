@@ -9,9 +9,7 @@ import org.json.JSONObject
 internal object BridgeFixtures {
 
     fun bridgeVersion(): String {
-        val stream = BridgeFixtures::class.java.getResourceAsStream("/bridge_contract_vectors.json")
-            ?: throw AssertionError("CW-VECTOR-MISSING bridge_contract_vectors.json")
-        val text = stream.bufferedReader().use { it.readText() }
+        val text = VectorCorpus.loadVerifiedBytes().toString(Charsets.UTF_8)
         return JSONObject(text).getString("bridge_protocol_version")
     }
 
@@ -63,9 +61,7 @@ internal object BridgeFixtures {
 
     /** The wire commands listed in the shared vector corpus `commands` array. */
     fun vectorCommands(): Set<String> {
-        val stream = BridgeFixtures::class.java.getResourceAsStream("/bridge_contract_vectors.json")
-            ?: throw AssertionError("CW-VECTOR-MISSING bridge_contract_vectors.json")
-        val text = stream.bufferedReader().use { it.readText() }
+        val text = VectorCorpus.loadVerifiedBytes().toString(Charsets.UTF_8)
         val array = JSONObject(text).getJSONArray("commands")
         return (0 until array.length()).map { array.getString(it) }.toSet()
     }
