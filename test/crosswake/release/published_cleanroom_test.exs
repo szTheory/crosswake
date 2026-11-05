@@ -208,6 +208,120 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     refute out =~ "cleanroom: result SELFTEST"
   end
 
+  defp hex_selftest_env(api) do
+    [
+      {"CLEANROOM_SELFTEST", "1"},
+      {"CLEANROOM_LEGS", "hex"},
+      {"CLEANROOM_HEX_API", "file://" <> api}
+    ]
+  end
+
+  defp hex_release_path(api), do: Path.join([api, "packages", "crosswake", "releases", "0.0.1"])
+
+  # A PATH-first directory holding stubs for `git` and `swift` only; every other tool
+  # stays on the inherited PATH.
+  defp stub_path(root, git_body) do
+    stubs = Path.join(root, "stubs")
+    File.mkdir_p!(stubs)
+
+    for {name, body} <- [{"git", git_body}, {"swift", "exit 0\n"}] do
+      path = Path.join(stubs, name)
+      File.write!(path, "#!/bin/sh\n" <> body)
+      File.chmod!(path, 0o755)
+    end
+
+    stubs <> ":" <> System.get_env("PATH", "")
+  end
+
+  # The flags the network curl call must carry (WR-04). Returns the missing ones.
+  defp missing_curl_pins(src) do
+    lines = String.split(src, "\n")
+    network = Enum.filter(lines, &(&1 =~ ~r/^\s*code=\$\(curl /))
+    assert length(network) == 1, "expected exactly one network curl line, got #{inspect(network)}"
+    [line] = network
+
+    Enum.reject(
+      ["--max-time", "--retry", "--proto '=https'", "--proto-redir '=https'"],
+      &String.contains?(line, &1)
+    )
+  end
+
+  test "hex leg: a 200 response with no checksum is parse_failed, never not_published", %{
+    root: root
+  } do
+    api = Path.join(root, "hexapi")
+    File.mkdir_p!(Path.dirname(hex_release_path(api)))
+    File.write!(hex_release_path(api), "{}\n")
+
+    {out, rc} = run(@script, ["0.0.1"], hex_selftest_env(api))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL hex parse_failed"
+    refute out =~ "not_published"
+    refute out =~ "cleanroom: result PASS"
+    refute out =~ "cleanroom: result SELFTEST"
+  end
+
+  test "hex leg: a fixture path that exists but cannot be copied is resolve_failed", %{
+    root: root
+  } do
+    api = Path.join(root, "hexapi")
+    # A directory where the release file should be: present, but not copyable.
+    File.mkdir_p!(hex_release_path(api))
+
+    {out, rc} = run(@script, ["0.0.1"], hex_selftest_env(api))
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL hex resolve_failed"
+    refute out =~ "not_published"
+    refute out =~ "cleanroom: result PASS"
+  end
+
+  test "ios leg: a failing git ls-remote is resolve_failed, never not_published", %{root: root} do
+    path = stub_path(root, ~s(if [ "$1" = ls-remote ]; then exit 128; fi\nexit 0\n))
+
+    {out, rc} =
+      run(@script, ["0.0.1"], [
+        {"CLEANROOM_SELFTEST", "1"},
+        {"CLEANROOM_LEGS", "ios"},
+        {"PATH", path}
+      ])
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL ios resolve_failed"
+    refute out =~ "not_published"
+    refute out =~ "cleanroom: result PASS"
+  end
+
+  test "ios leg: a successful empty git ls-remote is not_published", %{root: root} do
+    path = stub_path(root, "exit 0\n")
+
+    {out, rc} =
+      run(@script, ["0.0.1"], [
+        {"CLEANROOM_SELFTEST", "1"},
+        {"CLEANROOM_LEGS", "ios"},
+        {"PATH", path}
+      ])
+
+    assert rc == 1, out
+    assert out =~ "cleanroom: FAIL ios not_published"
+    refute out =~ "resolve_failed"
+    refute out =~ "cleanroom: result PASS"
+  end
+
+  test "every network curl call is bounded and https-pinned (WR-04), with a removal control" do
+    src = File.read!(@script)
+    assert missing_curl_pins(src) == []
+
+    assert src =~ "CURL_MAX_TIME=120"
+    assert src =~ "CURL_RETRY=2"
+    refute src =~ "--retry-all-errors"
+
+    mutated = String.replace(src, " --proto-redir '=https'", "")
+    assert mutated != src
+    assert missing_curl_pins(mutated) == ["--proto-redir '=https'"]
+  end
+
   test "the script locates nothing relative to itself or a checkout" do
     src = File.read!(@script)
     refute src =~ "BASH_SOURCE"

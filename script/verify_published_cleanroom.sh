@@ -33,6 +33,14 @@
 # Output contract (parsed by later phases):
 #   cleanroom: leg <leg> PASS <version> <detail>
 #   cleanroom: FAIL <leg> <reason>
+#     reasons: any leg tool_unavailable
+#              hex     not_published (404 or no such release), resolve_failed (network or
+#                      resolve error), parse_failed (200 response with no checksum),
+#                      checksum_mismatch, compile_failed, vsn_mismatch
+#              maven   not_published, fetch_failed, checksum_mismatch, pom_mismatch
+#              ios     not_published (successful lookup, no tag), resolve_failed (git
+#                      ls-remote failed), clone_failed, build_failed
+#     Network calls carry --max-time, --retry and an https-only protocol pin.
 #   cleanroom: result PASS|FAIL|SELFTEST legs <list> version <version>
 
 set -uo pipefail
@@ -40,6 +48,8 @@ set -uo pipefail
 DEFAULT_LEGS="hex,maven,ios"
 MAVEN_DEFAULT_BASE="https://repo1.maven.org/maven2"
 HEX_DEFAULT_API="https://hex.pm/api"
+CURL_MAX_TIME=120
+CURL_RETRY=2
 MIRROR_URL="https://github.com/szTheory/crosswake-shell-core-ios.git"
 
 usage() {
@@ -107,16 +117,24 @@ sha256_of() { # file -> hex digest
 }
 
 # fetch <url> <dest>: 0 ok, 3 not published (404 / missing file), 4 other failure.
+# A file:// URL (selftest fixtures only) is answered locally first: a missing path is 3;
+# a path that exists but cannot be copied (a directory, or unreadable) is 4, never 3.
+# Every network URL is bounded (--max-time, --retry) and pinned to https, including after
+# redirects. Retry is not widened to every error class, so a 404 stays one fast answer.
 fetch() {
-  local url="$1" dest="$2" code rc
-  code=$(curl -sS -L -o "$dest" -w '%{http_code}' "$url" 2>/dev/null)
-  rc=$?
+  local url="$1" dest="$2" code rc path
   case "$url" in
     file://*)
-      [ "$rc" -eq 0 ] && [ -f "$dest" ] && return 0
-      return 3
+      path="${url#file://}"
+      [ -e "$path" ] || return 3
+      { [ -f "$path" ] && [ -r "$path" ]; } || return 4
+      curl -sS -L -o "$dest" "$url" >/dev/null 2>&1 || return 4
+      [ -f "$dest" ] && return 0
+      return 4
       ;;
   esac
+  code=$(curl -sS -L --max-time "$CURL_MAX_TIME" --retry "$CURL_RETRY" --proto '=https' --proto-redir '=https' -o "$dest" -w '%{http_code}' "$url" 2>/dev/null)
+  rc=$?
   [ "$rc" -eq 0 ] || return 4
   case "$code" in
     200) return 0 ;;
@@ -189,7 +207,7 @@ leg_hex() {
     registry=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1])).get("checksum") or "")' "$meta" 2>/dev/null)
   fi
   registry=$(printf '%s' "$registry" | tr 'A-F' 'a-f')
-  if [ -z "$registry" ]; then fail hex not_published; return; fi
+  if [ -z "$registry" ]; then fail hex parse_failed; return; fi
 
   if ! command -v mix >/dev/null 2>&1; then fail hex tool_unavailable; return; fi
   local host="$WORK/cleanroom_host"
@@ -233,8 +251,10 @@ leg_hex() {
 leg_ios() {
   need_tools ios git swift mktemp || return
   mk_work || { fail ios tool_unavailable; return; }
-  local refs
+  local refs lsrc
   refs=$(git ls-remote "$MIRROR_URL" "refs/tags/v$VERSION" 2>/dev/null)
+  lsrc=$?
+  if [ "$lsrc" -ne 0 ]; then fail ios resolve_failed; return; fi
   if [ -z "$refs" ]; then fail ios not_published; return; fi
   local clone="$WORK/ios-mirror" log="$WORK/ios.log"
   if ! git clone --quiet --depth 1 --branch "v$VERSION" "$MIRROR_URL" "$clone" >"$log" 2>&1; then
