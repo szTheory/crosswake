@@ -206,4 +206,161 @@ class BridgeChannelBoundaryTest {
         )
         assertTrue("CW-CONTROL-NOT-FOUND the echo search cannot see a known echo", echoed.contains(sentinel))
     }
+
+    @Test
+    fun `command near misses are denied with undeclared_capability`() {
+        val channel = baselineChannel()
+        assertBaselineOk(channel)
+        val base = BridgeFixtures.makeRequest()
+        var ran = 0
+        for (command in listOf("App.Info.Get", "app.info.get ", "", "app.info.get.x")) {
+            val reply = channel.evaluateForTesting(base.copy(command = command))
+            assertDenied("undeclared_capability", "command=[$command]", reply)
+            ran++
+        }
+        assertEquals("CW-COMMAND-CASES expected 4", 4, ran)
+    }
+
+    @Test
+    fun `command capability mismatch and aliases are enforced`() {
+        val channel = baselineChannel()
+        assertBaselineOk(channel)
+        val base = BridgeFixtures.makeRequest()
+
+        // The wire value is not the capability for files.pick; the alias is file_picker.
+        assertDenied(
+            "undeclared_capability",
+            "files.pick with capability files.pick",
+            channel.evaluateForTesting(base.copy(command = "files.pick", capability = "files.pick"))
+        )
+        assertDenied(
+            "undeclared_capability",
+            "app.info.get with capability haptics.impact",
+            channel.evaluateForTesting(base.copy(capability = "haptics.impact"))
+        )
+
+        // The alias spellings pass the capability-string gate; the session declares neither, so
+        // the next gate (capability availability) denies them with a different reason.
+        val aliasCases = listOf(
+            "files.pick" to "file_picker",
+            "notifications.token.get" to "notification_token"
+        )
+        var ran = 0
+        for ((command, capability) in aliasCases) {
+            val reply = channel.evaluateForTesting(base.copy(command = command, capability = capability))
+            assertDenied("unavailable_capability", "alias $command/$capability", reply)
+            ran++
+        }
+        assertEquals("CW-ALIAS-CASES expected 2", 2, ran)
+    }
+
+    private fun packSession(
+        required: List<String>,
+        installed: Map<String, String> = emptyMap()
+    ) = BridgeFixtures.makeSession(
+        capabilities = mapOf("app.info.get" to "1.0.0"),
+        installedPacks = installed,
+        routeRequiredPacks = required
+    )
+
+    @Test
+    fun `request claimed packs never satisfy route pack authority`() {
+        val base = BridgeFixtures.makeRequest()
+
+        // Positive control: the same shape with the pack installed in the SESSION is accepted.
+        val control = baselineChannel(session = packSession(listOf("test-pack@1.0.0"), mapOf("test-pack" to "1.0.0")))
+        assertBaselineOk(control)
+
+        val claimed = baselineChannel(session = packSession(listOf("test-pack@1.0.0")))
+        assertDenied(
+            "pack_incompatible",
+            "request claims test-pack 2.0.0, session has none",
+            claimed.evaluateForTesting(base.copy(installedPacks = mapOf("test-pack" to "2.0.0")))
+        )
+
+        val emptyDemand = baselineChannel(session = packSession(listOf("test-pack@"), mapOf("test-pack" to "1.0.0")))
+        assertDenied("pack_incompatible", "empty demand test-pack@", emptyDemand.evaluateForTesting(base))
+
+        val partial = baselineChannel(
+            session = packSession(listOf("a-pack@1.0.0", "b-pack@1.0.0"), mapOf("a-pack" to "1.0.0"))
+        )
+        assertDenied("pack_incompatible", "two requirements, one missing", partial.evaluateForTesting(base))
+
+        val unversioned = baselineChannel(session = packSession(listOf("test-pack"), mapOf("test-pack" to "0.0.1")))
+        assertBaselineOk(unversioned)
+    }
+
+    @Test
+    fun `capability gating denies when the session lacks or outranks the capability`() {
+        val base = BridgeFixtures.makeRequest()
+
+        val lacking = baselineChannel(session = BridgeFixtures.makeSession(capabilities = emptyMap()))
+        assertDenied("unavailable_capability", "session capabilities empty", lacking.evaluateForTesting(base))
+
+        val outranks = baselineChannel(
+            session = BridgeFixtures.makeSession(capabilities = mapOf("app.info.get" to "2.0.0"))
+        )
+        assertDenied(
+            "unavailable_capability",
+            "session requires 2.0.0, request provides 1.0.0",
+            outranks.evaluateForTesting(base)
+        )
+    }
+
+    @Test
+    fun `denial happens before side effects with a positive control`() {
+        val impacts = java.util.concurrent.atomic.AtomicInteger(0)
+        val haptics = object : HapticsDelegate {
+            override fun impact(style: String) {
+                impacts.incrementAndGet()
+            }
+        }
+        val channel = baselineChannel(
+            session = BridgeFixtures.makeSession(capabilities = mapOf("haptics.impact" to "1.0.0")),
+            config = CrosswakeShellConfig(hapticsDelegate = haptics)
+        )
+        val request = BridgeFixtures.makeRequest(
+            command = "haptics.impact",
+            capability = "haptics.impact",
+            capabilities = mapOf("haptics.impact" to "1.0.0")
+        )
+
+        val denied = channel.evaluateForTesting(request.copy(origin = "https://evil.test"))
+        assertDenied("origin_denied", "haptics from the wrong origin", denied)
+        assertEquals(0, impacts.get())
+
+        val allowed = channel.evaluateForTesting(request)
+        assertEquals("CW-CONTROL-NOT-OK $allowed", "ok", BridgeFixtures.status(allowed))
+        assertEquals(1, impacts.get())
+    }
+
+    @Test
+    fun `denial precedence follows the evaluation order`() {
+        val base = BridgeFixtures.makeRequest()
+        val channel = baselineChannel()
+        assertBaselineOk(channel)
+
+        assertDenied(
+            "compatibility_mismatch",
+            "wrong protocol, route and origin",
+            channel.evaluateForTesting(base.copy(protocol = "other", routeId = "settings", origin = "https://evil.test"))
+        )
+        assertDenied(
+            "inactive_route",
+            "wrong route and origin",
+            channel.evaluateForTesting(base.copy(routeId = "settings", origin = "https://evil.test"))
+        )
+        assertDenied(
+            "origin_denied",
+            "wrong origin and command",
+            channel.evaluateForTesting(base.copy(origin = "https://evil.test", command = "no.such.command"))
+        )
+
+        val missingPack = baselineChannel(session = packSession(listOf("test-pack@1.0.0")))
+        assertDenied(
+            "undeclared_capability",
+            "unknown command with a missing required pack",
+            missingPack.evaluateForTesting(base.copy(command = "no.such.command"))
+        )
+    }
 }
