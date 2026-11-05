@@ -6,3 +6,6 @@ privacy: rc 1
 # privacy scan run 2 (HEAD e4a25fb5, 92 changed files)
 privacy: clean files 92
 privacy: rc 0
+# privacy scan run 3 (HEAD e7825282, 96 files incl. PR body)
+privacy: clean files 96
+privacy: rc 0
