@@ -4,8 +4,8 @@ defmodule Mix.Tasks.Crosswake.Docs.Sync do
   @shortdoc "Synchronizes generated Crosswake documentation projections"
 
   @moduledoc """
-  Synchronizes the checked-in support and capability guides with their canonical
-  executable owners.
+  Synchronizes the checked-in support, capability and parity ledger guides with
+  their canonical executable owners.
 
       mix crosswake.docs.sync
       mix crosswake.docs.sync --check
@@ -15,6 +15,7 @@ defmodule Mix.Tasks.Crosswake.Docs.Sync do
   """
 
   alias Crosswake.CapabilityMap.Renderer, as: CapabilityRenderer
+  alias Crosswake.ParityLedger.Renderer, as: ParityLedgerRenderer
   alias Crosswake.SupportMatrix
   alias Crosswake.SupportMatrix.Renderer, as: SupportRenderer
 
@@ -93,6 +94,12 @@ defmodule Mix.Tasks.Crosswake.Docs.Sync do
         write: fn ->
           SupportRenderer.write("guides/support_matrix.md", SupportMatrix.canonical())
         end
+      },
+      %{
+        source: "lib/crosswake/parity_ledger.ex",
+        target: "guides/parity_ledger.md",
+        render: &ParityLedgerRenderer.render/0,
+        write: &ParityLedgerRenderer.write/0
       }
     ]
   end

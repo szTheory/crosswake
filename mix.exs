@@ -135,6 +135,7 @@ defmodule Crosswake.MixProject do
         "guides/troubleshooting.md",
         "guides/support_matrix.md",
         "guides/capability_map.md",
+        "guides/parity_ledger.md",
         "guides/adopter_profiles.md",
         "guides/adoption.md",
         "guides/user_flows.md",
@@ -200,6 +201,7 @@ defmodule Crosswake.MixProject do
           "guides/troubleshooting.md",
           "guides/support_matrix.md",
           "guides/capability_map.md",
+          "guides/parity_ledger.md",
           "guides/compatibility.md",
           "guides/android_uat.md"
         ],
