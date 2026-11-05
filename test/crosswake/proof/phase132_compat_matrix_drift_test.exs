@@ -20,6 +20,8 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
     - proof.compat_03.matrix_drift.<pkg>.missing_from_doc
     - proof.compat_03.matrix_drift.<pkg>.version_mismatch
     - proof.compat_03.matrix_drift.<pkg>.phantom_doc_row
+    - proof.compat_03.no_version_literal
+    - proof.compat_03.no_registry_state_words
   """
 
   use ExUnit.Case, async: true
@@ -30,10 +32,11 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   @package_glob "packages/crosswake_*/mix.exs"
   @install_path "guides/install.md"
   @runbook_path "docs/COMPANION-PUBLISH-RUNBOOK.md"
-  @published_versions %{
-    "crosswake_rulestead" => "0.1.0",
-    "crosswake_rindle" => "unpublished"
-  }
+
+  # A doc table row for a package looks like:
+  #   | `crosswake_rindle` | `:rindle` | link | `~> 0.2` | ... |
+  # We match a leading-pipe row whose first backticked cell is `crosswake_<name>`.
+  @row_regex ~r/^\|\s*`(crosswake_\w+)`\s*\|/m
 
   test "both extracted companion manifests and READMEs match the current core floor" do
     expected_floor = expected_core_floor()
@@ -82,9 +85,6 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
 
       assert package_row_cell(guide, package, "Requires `crosswake`") == "`#{manifest_floor}`"
 
-      assert package_row_cell(guide, package, "Current Version") ==
-               "`#{@published_versions[package]}`"
-
       assert runbook_floor(runbook, package) == manifest_floor
     end
   end
@@ -96,20 +96,20 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
     runbook = File.read!(@runbook_path)
 
     stale_guide =
-      Enum.reduce(Map.keys(@published_versions), guide, fn package, text ->
+      Enum.reduce(extracted_companion_packages(), guide, fn package, text ->
         replace_package_row_floor(text, package, "~> 0.1")
       end)
 
     stale_install = String.replace(install, expected_floor, "~> 0.1", global: false)
 
     stale_runbook =
-      Enum.reduce(Map.keys(@published_versions), runbook, fn package, text ->
+      Enum.reduce(extracted_companion_packages(), runbook, fn package, text ->
         replace_runbook_floor(text, package, "~> 0.1")
       end)
 
     refute readme_dependency_requirement(stale_install, "crosswake") == expected_floor
 
-    for package <- Map.keys(@published_versions) do
+    for package <- extracted_companion_packages() do
       refute package_row_cell(stale_guide, package, "Requires `crosswake`") ==
                "`#{expected_floor}`"
 
@@ -246,7 +246,7 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
              "guides/companion_compatibility.md header row (line matching `| Hex Package | ... |`)",
              "could not locate a header row with >= 2 columns — the matrix header was reshaped or removed",
              "guides/companion_compatibility.md",
-             "restore the `| Hex Package | Companion ID | Current Version | Requires `crosswake` | Engine Dependency | hexdocs |` header",
+             "restore the `| Hex Package | Companion ID | Latest on Hex | Requires `crosswake` | Engine Dependency |` header",
              :merge_blocking
            )
 
@@ -271,44 +271,134 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   end
 
   # ---------------------------------------------------------------------------
-  # SC#6 — version-cell FORMAT guard (D-08): each `Current Version` cell must be
-  # `unpublished` OR a bare backticked semver. Catches prose-creep / hand-edit
-  # mistakes WITHOUT fencing the value — the test asserts FORMAT only; hex.pm
-  # stays the version authority (no specific version literal is asserted).
+  # SC#6 — the matrix states no registry fact of its own (DOCS-02, D-10, D-11).
+  # A copied version literal or a hand-kept registry-state word goes stale the
+  # moment a release ships, so no table row may carry one; package presence is
+  # read from the live registry (`mix crosswake.release.status --live`), never
+  # pinned here. Each check has an injection control so it cannot pass vacuously.
   # ---------------------------------------------------------------------------
 
-  test "every Current Version cell is `unpublished` or a bare semver (format guard)" do
+  test "no matrix table row carries a three-part version literal" do
     doc = File.read!(@doc_path)
-    idx = current_version_column_index(doc)
 
-    assert is_integer(idx),
+    assert matrix_version_literals(doc) == [],
            ProofAssertions.stable_id_message(
-             "proof.compat_03.version_cell_format",
-             "the `Current Version` column must be locatable by its header cell",
-             "guides/companion_compatibility.md header row search for a `Current Version` cell",
-             "no `Current Version` header cell found — the column was renamed or removed",
+             "proof.compat_03.no_version_literal",
+             "the compat matrix must not carry a hand-copied package version",
+             "three-part version literals in the matrix table rows",
+             "matrix row(s) #{inspect(matrix_version_literals(doc))} carry a version literal that will drift from the registry",
              "guides/companion_compatibility.md",
-             "restore the `Current Version` header cell in the matrix table",
+             "remove the literal; the `Latest on Hex` link is the registry's own answer",
              :merge_blocking
            )
+  end
 
-    # Iterate the same `crosswake_*` data rows the existing @row_regex recognizes so
-    # the loop is non-vacuous (SC#2 guarantees >= 2 packages exist).
-    for pkg <- doc_package_rows(doc) do
-      line = package_row_line(doc, pkg)
-      cell = line |> row_cells() |> Enum.at(idx) |> to_string() |> String.trim()
+  test "an injected version literal turns the matrix check red (control)" do
+    doc = File.read!(@doc_path)
+    injected = String.replace(doc, "`:rindle` |", "`:rindle` 0.1.0 |", global: false)
 
-      assert cell == "`unpublished`" or String.match?(cell, ~r/^`\d+\.\d+\.\d+`$/),
-             ProofAssertions.stable_id_message(
-               "proof.compat_03.version_cell_format",
-               "the #{pkg} Current Version cell must be `unpublished` or a bare backticked semver",
-               "guides/companion_compatibility.md #{pkg} Current Version cell",
-               "#{pkg} Current Version cell is #{inspect(cell)} — neither `unpublished` nor a `X.Y.Z` semver literal",
-               "guides/companion_compatibility.md",
-               "set the #{pkg} Current Version cell to `unpublished` (pre-publish) or the confirmed hex.pm `X.Y.Z` semver post-publish",
-               :merge_blocking
-             )
-    end
+    refute injected == doc, "the injection must change the guide text"
+    assert matrix_version_literals(injected) == [{"crosswake_rindle", "0.1.0"}]
+  end
+
+  test "version literal matching is whole-literal: two-part requirements stay legal" do
+    row = "| `crosswake_x` | `:x` | link | `~> 0.2` | `{:x, \"~> 0.1\"}` |"
+    doc = "| Hex Package | A |\n|---|---|\n" <> row <> "\n"
+
+    assert matrix_version_literals(doc) == []
+
+    assert matrix_version_literals(String.replace(doc, "`~> 0.2`", "0.2.11")) ==
+             [{"crosswake_x", "0.2.11"}]
+  end
+
+  test "no matrix table row states a registry fact (unpublished, not yet, hexdocs)" do
+    doc = File.read!(@doc_path)
+
+    assert matrix_registry_state_words(doc) == [],
+           ProofAssertions.stable_id_message(
+             "proof.compat_03.no_registry_state_words",
+             "the compat matrix must not state registry or docs-hosting state by hand",
+             "`unpublished`, `not yet` and `hexdocs` in the matrix table rows (header included)",
+             "matrix row(s) #{inspect(matrix_registry_state_words(doc))} state a registry fact nothing checks",
+             "guides/companion_compatibility.md",
+             "remove the wording; presence is checked by the recorded `mix crosswake.release.status --live` run",
+             :merge_blocking
+           )
+  end
+
+  test "an injected registry-state word turns the matrix check red (control)" do
+    doc = File.read!(@doc_path)
+    injected = String.replace(doc, "`:rindle` |", "`:rindle` not yet on hexdocs |", global: false)
+
+    refute injected == doc, "the injection must change the guide text"
+
+    assert [{"crosswake_rindle", _words}] = matrix_registry_state_words(injected)
+
+    readded =
+      String.replace(doc, "| Engine Dependency |", "| Engine Dependency | hexdocs |",
+        global: false
+      )
+
+    refute readded == doc, "the header injection must change the guide text"
+    assert matrix_registry_state_words(readded) != []
+  end
+
+  test "the matrix has exactly the 5 extracted companion rows, in any order (non-vacuity floor)" do
+    doc = File.read!(@doc_path)
+    expected = MapSet.new(Path.wildcard(@package_glob), &package_name/1)
+
+    assert MapSet.size(expected) == 5
+    assert matrix_rows_check(doc, expected) == :ok
+  end
+
+  test "the row-set check is a set equality, not an inclusion or a count (controls)" do
+    doc = File.read!(@doc_path)
+
+    two_package = MapSet.new(extracted_companion_packages())
+    assert MapSet.size(two_package) == 2
+    assert matrix_rows_check(doc, two_package) == {:error, :row_set_mismatch}
+
+    expected = MapSet.new(Path.wildcard(@package_glob), &package_name/1)
+
+    no_rows =
+      doc
+      |> String.split("\n")
+      |> Enum.reject(&String.match?(&1, @row_regex))
+      |> Enum.join("\n")
+
+    refute no_rows == doc, "dropping the rows must change the guide text"
+    assert matrix_rows_check(no_rows, expected) == {:error, :row_set_mismatch}
+    assert matrix_rows_check("", expected) == {:error, :row_set_mismatch}
+
+    # one row dropped: fewer than the 5 extracted companions
+    one_short =
+      doc
+      |> String.split("\n")
+      |> Enum.reject(&String.match?(&1, ~r/^\|\s*`crosswake_threadline`\s*\|/))
+      |> Enum.join("\n")
+
+    refute one_short == doc
+    assert matrix_rows_check(one_short, expected) == {:error, :row_set_mismatch}
+  end
+
+  test "row order does not change the matrix verdict (control)" do
+    doc = File.read!(@doc_path)
+    expected = MapSet.new(Path.wildcard(@package_glob), &package_name/1)
+    lines = String.split(doc, "\n")
+
+    first = Enum.find_index(lines, &String.match?(&1, ~r/^\|\s*`crosswake_rulestead`\s*\|/))
+    last = Enum.find_index(lines, &String.match?(&1, ~r/^\|\s*`crosswake_threadline`\s*\|/))
+
+    reordered =
+      lines
+      |> List.replace_at(first, Enum.at(lines, last))
+      |> List.replace_at(last, Enum.at(lines, first))
+      |> Enum.join("\n")
+
+    refute reordered == doc, "the reorder must change the guide text"
+    assert matrix_rows_check(reordered, expected) == :ok
+    assert matrix_version_literals(reordered) == []
+    assert matrix_registry_state_words(reordered) == []
   end
 
   # ---------------------------------------------------------------------------
@@ -360,6 +450,58 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   defp extracted_companion_mix_files do
     ~w(crosswake_rulestead crosswake_rindle)
     |> Enum.map(&Path.join(["packages", &1, "mix.exs"]))
+  end
+
+  defp extracted_companion_packages do
+    extracted_companion_mix_files() |> Enum.map(&package_name/1)
+  end
+
+  # The matrix table: every line from the `Hex Package` header to the first
+  # non-table line (header and separator rows included).
+  defp matrix_table_rows(doc) do
+    doc
+    |> String.split("\n")
+    |> Enum.drop_while(&(not String.match?(&1, ~r/^\|.*Hex Package.*\|/)))
+    |> Enum.take_while(&String.starts_with?(&1, "|"))
+  end
+
+  defp row_label(line) do
+    line |> row_cells() |> List.first() |> to_string() |> String.trim("`")
+  end
+
+  # `{package, literal}` for every whole three-part version literal in a matrix
+  # row. Whole-literal matching: `0.2.11` is one literal, `~> 0.2` is none.
+  defp matrix_version_literals(doc) do
+    for line <- matrix_table_rows(doc),
+        [literal] <- Regex.scan(~r/\b\d+\.\d+\.\d+\b/, line) do
+      {row_label(line), literal}
+    end
+  end
+
+  # `{package, words}` for every matrix row (header included) that states
+  # registry or docs-hosting state by hand.
+  defp matrix_registry_state_words(doc) do
+    for line <- matrix_table_rows(doc),
+        words = List.flatten(Regex.scan(~r/unpublished|not yet|hexdocs/i, line)),
+        words != [] do
+      {row_label(line), words}
+    end
+  end
+
+  # Order-independent set equality of the `crosswake_*` package rows against the
+  # expected package set; an empty or short matrix is an error, not a pass.
+  defp matrix_rows_check(doc, expected_packages) do
+    packages =
+      for line <- matrix_table_rows(doc),
+          [_, pkg] <- [Regex.run(@row_regex, line)],
+          do: pkg
+
+    if packages != [] and length(packages) == MapSet.size(MapSet.new(packages)) and
+         MapSet.new(packages) == expected_packages do
+      :ok
+    else
+      {:error, :row_set_mismatch}
+    end
   end
 
   defp compatibility_surface_errors(manifest, readme, package, expected_floor) do
@@ -467,11 +609,6 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
   # HTML-comment column contract (D-12). No markdown-parser dependency.
   # ---------------------------------------------------------------------------
 
-  # A doc table row for a package looks like:
-  #   | `crosswake_rindle` | `:rindle` | `0.1.0` | `~> 0.1` | ... |
-  # We match a leading-pipe row whose first backticked cell is `crosswake_<name>`.
-  @row_regex ~r/^\|\s*`(crosswake_\w+)`\s*\|/m
-
   defp doc_package_rows(doc) do
     @row_regex
     |> Regex.scan(doc)
@@ -511,20 +648,6 @@ defmodule Crosswake.Proof.Phase132CompatMatrixDriftTest do
         Enum.find_index(cells, fn cell ->
           String.contains?(cell, "Requires") and String.contains?(cell, "crosswake")
         end)
-
-      _ ->
-        nil
-    end)
-  end
-
-  # Locate the zero-based column index of the "Current Version" header (D-08 format
-  # guard), keyed on the same header-detection idiom.
-  defp current_version_column_index(doc) do
-    doc
-    |> header_row_cells()
-    |> then(fn
-      cells when is_list(cells) ->
-        Enum.find_index(cells, &String.contains?(&1, "Current Version"))
 
       _ ->
         nil
