@@ -4,15 +4,15 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: Not started
 status: executing
-stopped_at: Phase 197 complete, ready to plan Phase 198
-last_updated: "2026-11-05T20:06:50.651Z"
-state_head: d81c110a2458294f9fb311892195667f91742572
+stopped_at: Completed 198-01-PLAN.md
+last_updated: "2026-11-05T22:28:09.031Z"
+state_head: c118ff37bd4b9527dc0fa7936bbc7ee8bf5cc338
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 3
-  total_plans: 62
-  completed_plans: 62
-  percent: 75
+  total_plans: 74
+  completed_plans: 63
+  percent: 60
 current_phase: 198
 current_phase_name: Android foreign-host proof
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: Not started
-Total Plans in Phase: 15
+Current Plan: 2
+Total Plans in Phase: 12
 
 ## Exact Next Action
 
-All 15 plans of Phase 197 are done on branch `docs/197-public-docs-truth`, pushed at `e49366372c41c2854520dc80985529ffb0a89dae` (PR 268, open). Last completed plan: 197-14 (real four-leg clean-room PASS against 0.2.11 with `:ios_host` a named Phase 199 deferral; PR 268 Crosswake CI green 38 of 38 on the synthetic merge `9d0aa1f0`, run 42089200558; the earlier red run was fixed by the separately merged PR 269 and a merge of main; full suite 3134/0 and docs-report remeasured at `35f18f93`). DOCS-01, DOCS-02 and DOCS-03 are marked complete. The 197-14 SUMMARY commit is local and not pushed. Phase 197 is ready for verification, but the merge of PR 268 to main needs a fresh one-use allow for the PR head at that time (not executor work; re-read the delete-branch-on-merge setting first, `false` on 2026-11-05). After the merge the exact next command is `/gsd-verify-work 197 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 1 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-01 (Kotlin JVM tests on the AOSP-derived android-json artifact, fail-closed envelope, listener extraction, SemVer digit-only hardening; 21 JVM tests green; decisions in 198-DECISIONS.md; AND-02 stays open until the later floor of 25 tests and remaining plans land). Exact next command: execute 198-02 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T19:18:36.737Z
-**Stopped at:** Phase 197 complete, ready to plan Phase 198
+**Last session:** 2026-11-05T22:28:08.713Z
+**Stopped at:** Completed 198-01-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -65,6 +65,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P15 | 25 min | 3 tasks | 11 files |
 | Phase 197 P13 | 75min | 2 tasks | 8 files |
 | Phase 197 P14 | about 1h 10m (second session; first session blocked at CI) | 2 tasks | 8 files |
+| Phase 198 P01 | 25min | 3 tasks | 9 files |
 
 ## Decisions
 
@@ -87,6 +88,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-15: qualifier sentences sit on one physical line and the guard reads heading plus body, so a wrapped or heading-only claim cannot slip past D-26
 - [Phase 197]: 197-13: ledger fix-forward regenerates the collection-assertion snapshot with the script classifier; D-07b literal mutation is rejected statically by required_step doctor, so a --router mutation is also run to reach the runtime doctor step
 - [Phase 197]: 197-14: dependency advisories fixed by separate PR 269 to main, then main merged into the branch; mix.lock is a measured input so suite and docs-report after-counts were remeasured; PR 268 green 38/38 on e4936637 (CI ran on synthetic merge 9d0aa1f0)
+- [Phase 198]: JVM tests use AOSP-derived android-json test artifact; production keeps platform org.json (D-09)
+- [Phase 198]: SemVer digit-only on Android; divergence from iOS Int(_:) recorded as debt row (e)
 
 ### Blockers
 

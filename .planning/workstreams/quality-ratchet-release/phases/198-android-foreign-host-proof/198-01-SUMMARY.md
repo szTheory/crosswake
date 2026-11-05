@@ -45,7 +45,7 @@ key-decisions:
   - "SemVer is digit-only on Android; divergence from iOS Int(_:) recorded as debt row (e)"
   - "Branch override: ran on orchestrator-provided test/198-android-foreign-host-proof, not feat/..."
 
-requirements-completed: [AND-02]
+requirements-completed: []  # AND-02 is only partly delivered here (21 of the 25-test floor); it closes in a later Phase 198 plan
 
 coverage:
   - id: D1

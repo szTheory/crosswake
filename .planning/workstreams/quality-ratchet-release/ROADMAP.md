@@ -298,10 +298,10 @@ Plans:
   3. A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on the Linux CI head commit as an advisory leg (required only after two clean runs), and a negative control with a wrong coordinate fails.
   4. No Android claim in the support matrix or capability map exceeds JVM-hermetic evidence (no device, emulator or feature-breadth claim).
 
-**Plans**: 12 plans (one checkout, sequential waves)
+**Plans**: 1/12 plans executed (one checkout, sequential waves)
 
 **Wave 1**
-- [ ] 198-01-PLAN.md — JSON-stack swap to AOSP-derived android-json, dead serialization removed, fail-closed envelope, listener extractions, SemVer hardening, decisions in writing (AND-02)
+- [x] 198-01-PLAN.md — JSON-stack swap to AOSP-derived android-json, dead serialization removed, fail-closed envelope, listener extractions, SemVer hardening, decisions in writing (AND-02)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 198-02-PLAN.md — BridgeChannel boundary tests for every D-12 group, suite at 37 or more (AND-02)
@@ -362,7 +362,7 @@ Plans:
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | In Progress | - |
-| 198. Android foreign-host proof | 0/12 | Planned | - |
+| 198. Android foreign-host proof | 1/12 | In Progress | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 
 <details>
