@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 9
+current_plan: 10
 status: executing
-stopped_at: Completed 197-08-PLAN.md
-last_updated: "2026-11-05T16:41:35.243Z"
-state_head: 6ad609a657151f204396fcf9822588cd178fadd3
+stopped_at: Completed 197-09-PLAN.md
+last_updated: "2026-11-05T16:52:00.700Z"
+state_head: b5e0768656d1d6726b4c850ba24b0e038977d0c6
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 62
-  completed_plans: 55
+  completed_plans: 56
   percent: 75
 current_phase: 197
 current_phase_name: Public docs truth
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 9
+Current Plan: 10
 Total Plans in Phase: 15
 
 ## Exact Next Action
 
-Phase 197 is executing on branch `docs/197-public-docs-truth` (cut from origin/main, planning commits cherry-picked; not pushed). Last completed plan: 197-01 (docs-report, shared `mix test` gate). Next: execute 197-02 via `/gsd-execute-phase 197 --ws quality-ratchet-release`. The merge to main needs a fresh one-use allow and is not executor work. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Phase 197 is executing on branch `docs/197-public-docs-truth` (cut from origin/main, planning commits cherry-picked; not pushed). Last completed plan: 197-09 (marker test, `DOCS_EXECUTED_FLOOR` pinned to 18, 0.2.11 reader audit, documented `:ios_host` values test). Next: execute 197-10 via `/gsd-execute-phase 197 --ws quality-ratchet-release`. The merge to main needs a fresh one-use allow and is not executor work. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T16:41:35.074Z
-**Stopped at:** Completed 197-08-PLAN.md
+**Last session:** 2026-11-05T16:52:00.534Z
+**Stopped at:** Completed 197-09-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -58,6 +58,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P06 | 75min | 2 tasks | 2 files |
 | Phase 197 P07 | 55min | 2 tasks | 2 files |
 | Phase 197 P08 | 45min | 2 tasks | 3 files |
+| Phase 197 P09 | 50min | 2 tasks | 5 files |
 
 ## Decisions
 
@@ -75,6 +76,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-05: CLEANROOM_DOCS_REF wins over the Hex tarball default; tarball members must be regular non-symlink files
 - [Phase 197]: 197-06: compile_warning names the leg-written host path; apply blocks and harness compile count in executed; apply structure and doctor requirement are validated at parse time
 - [Phase 197]: 197-07: required-step check is dynamic over executed bodies per file; :ios_host exemption is version-conditional on DOCS_IOS_HOST_SINCE=0.2.12; DOCS_EXECUTED_FLOOR=1 is a placeholder until 197-09
+- [Phase 197]: 197-09: DOCS_EXECUTED_FLOOR pinned to 18 (16 run/apply blocks without since= plus 2 harness compiles), asserted equal in the marker test
 
 ### Blockers
 
