@@ -548,6 +548,10 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
 
   @hook_body "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";\nconst liveSocket = new LiveSocket(\"/live\", Socket, {params, hooks: {CrosswakeBridge}});"
 
+  # The `:ios_host` declaration: read only by crosswake 0.2.12 and later, so the fixture marks it
+  # `since=0.2.12` (the D-04 amendment's single named deferral).
+  @ios_host_body "config :crosswake, :ios_host,\n  router: MyAppWeb.Router,\n  origin: \"https://study.crosswake.test\""
+
   # One apply block, optionally marked `since=`.
   defp wiring_block(id, mode, file, body, since \\ nil) do
     since_attr = if since, do: " since=#{since}", else: ""
@@ -570,7 +574,8 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
         "create",
         "lib/my_app_web/bridge_attach.ex",
         "defmodule MyAppWeb.BridgeAttach do\n  def mount, do: Crosswake.Bridge.attach()\nend"
-      )
+      ) <>
+      wiring_block("#{prefix}ios_host", "append", "config/config.exs", @ios_host_body, "0.2.12")
   end
 
   defp docs_readme do
@@ -777,7 +782,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert out =~ "cleanroom: docs source commit #{@zero_ref}"
 
     assert out =~
-             "cleanroom: leg docs PASS 0.0.1 executed=14 not_applicable=0 clone=2 shown=2 source=commit:#{@zero_ref} phx_new=1.8.13"
+             "cleanroom: leg docs PASS 0.0.1 executed=14 not_applicable=2 deferred=ios_host clone=2 shown=2 source=commit:#{@zero_ref} phx_new=1.8.13"
 
     assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
     refute out =~ "cleanroom: result PASS"
@@ -841,7 +846,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {out, rc, work} = apply_run(root, blocks, "since-above", version: "0.2.11")
 
     assert rc == 0, out
-    assert out =~ "executed=14 not_applicable=1 "
+    assert out =~ "executed=14 not_applicable=3 deferred=ios_host "
     refute host_file(work, "config/config.exs") =~ ":future"
     File.rm_rf!(work)
   end
@@ -863,7 +868,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {out, rc, work} = apply_run(root, at <> below, "since-at", version: "0.2.10")
 
     assert rc == 0, out
-    assert out =~ "executed=16 not_applicable=0 "
+    assert out =~ "executed=16 not_applicable=2 deferred=ios_host "
     cfg = host_file(work, "config/config.exs")
     assert cfg =~ ":at, true"
     assert cfg =~ ":below, true"
@@ -876,7 +881,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {out, rc, work} = apply_run(root, ten, "since-ten", version: "0.9.0")
 
     assert rc == 0, out
-    assert out =~ "executed=14 not_applicable=1 "
+    assert out =~ "executed=16 not_applicable=1 deferred=none "
     refute host_file(work, "config/config.exs") =~ ":ten"
     File.rm_rf!(work)
   end
@@ -894,7 +899,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     {out, rc} = run_docs(root, docs_readme(), mutated, "since-run")
 
     assert rc == 0, out
-    assert out =~ "executed=13 not_applicable=1 "
+    assert out =~ "executed=13 not_applicable=3 deferred=ios_host "
   end
 
   test "since: a value that is not three numeric components is parse bad_since", %{root: root} do
@@ -1014,6 +1019,122 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert rc == 1, out
     assert "cleanroom: FAIL docs step doctor exit 1" in String.split(out, "\n")
     refute out =~ "required_step bridge_hook"
+  end
+
+  test "ios_host deferral: below 0.2.12 a since=0.2.12 block is NOT_APPLICABLE, named, never executed",
+       %{root: root} do
+    {out, rc, work} = apply_run(root, "", "ios-deferred")
+
+    assert rc == 0, out
+    lines = String.split(out, "\n")
+    assert "cleanroom: docs deferred ios_host README.md since=0.2.12 version=0.0.1" in lines
+
+    assert "cleanroom: docs deferred ios_host guides/install.md since=0.2.12 version=0.0.1" in lines
+
+    assert Enum.count(lines, &String.starts_with?(&1, "cleanroom: docs deferred")) == 2
+
+    # 6 runs + 6 wiring applies + 2 harness compiles; the 2 deferred blocks are not counted
+    assert out =~ "executed=14 not_applicable=2 deferred=ios_host clone=2 "
+    refute host_file(work, "config/config.exs") =~ ":ios_host"
+    File.rm_rf!(work)
+  end
+
+  test "ios_host unread: below 0.2.12 a block carrying :ios_host without since=0.2.12 fails", %{
+    root: root
+  } do
+    install =
+      mutate!(
+        docs_install(),
+        "id=ios_host file=config/config.exs mode=append since=0.2.12 ",
+        "id=ios_host file=config/config.exs mode=append "
+      )
+
+    {out, rc} = run_docs(root, docs_readme(), install, "ios-unread")
+
+    assert_required_step(out, rc, "ios_host_unread", "guides/install.md")
+    refute out =~ "docs deferred ios_host guides/install.md"
+  end
+
+  test "ios_host wrong since: below 0.2.12 only since=0.2.12 is the exemption", %{root: root} do
+    install = mutate!(docs_install(), "since=0.2.12", "since=9.9.9")
+    {out, rc} = run_docs(root, docs_readme(), install, "ios-wrong-since")
+
+    assert_required_step(out, rc, "ios_host", "guides/install.md")
+    refute out =~ "ios_host_unread"
+    refute out =~ "docs deferred ios_host guides/install.md"
+  end
+
+  test "ios_host no exemption at 0.2.12: a NOT_APPLICABLE :ios_host step fails, a marked one executes",
+       %{root: root} do
+    install = mutate!(docs_install(), "since=0.2.12", "since=9.9.9")
+    {out, rc} = run_docs(root, docs_readme(), install, "ios-0212-na", "0.2.12")
+    assert_required_step(out, rc, "ios_host", "guides/install.md")
+    refute out =~ "docs deferred"
+
+    {out, rc} = run_docs(root, docs_readme(), docs_install(), "ios-0212-ok", "0.2.12")
+    assert rc == 0, out
+    assert out =~ "executed=16 not_applicable=0 deferred=none clone=2 "
+    refute out =~ "docs deferred"
+  end
+
+  test "ios_host no exemption at 0.3.0: a NOT_APPLICABLE :ios_host step fails, a marked one executes",
+       %{root: root} do
+    readme = mutate!(docs_readme(), "since=0.2.12", "since=9.9.9")
+    {out, rc} = run_docs(root, readme, docs_install(), "ios-030-na", "0.3.0")
+    assert_required_step(out, rc, "ios_host", "README.md")
+    refute out =~ "docs deferred"
+
+    {out, rc, work} = apply_run(root, "", "ios-030-ok", version: "0.3.0")
+    assert rc == 0, out
+    assert out =~ "executed=16 not_applicable=0 deferred=none clone=2 "
+    assert host_file(work, "config/config.exs") =~ "config :crosswake, :ios_host,"
+    File.rm_rf!(work)
+  end
+
+  test "ios_host absent: no block carrying :ios_host fails at any version", %{root: root} do
+    block = wiring_block("ios_host", "append", "config/config.exs", @ios_host_body, "0.2.12")
+    install = mutate!(docs_install(), block, "")
+
+    for version <- ["0.0.1", "0.2.12", "0.3.0"] do
+      {out, rc} = run_docs(root, docs_readme(), install, "ios-absent-#{version}", version)
+      assert_required_step(out, rc, "ios_host", "guides/install.md")
+    end
+  end
+
+  test "the ios_host exemption is the only one: a deferred other step still fails", %{root: root} do
+    install = mutate!(docs_install(), "id=hook ", "id=hook since=0.2.12 ")
+    {out, rc} = run_docs(root, docs_readme(), install, "only-ios", "0.0.1")
+
+    assert_required_step(out, rc, "bridge_hook", "guides/install.md")
+    refute out =~ "docs deferred bridge_hook"
+  end
+
+  test "executed_below_floor: a thin run is red, and the unmodified floor passes the same docs",
+       %{
+         root: root
+       } do
+    source = File.read!(@script)
+    copy = Path.join(root, "verify_floor_99.sh")
+    mutated = mutate!(source, "DOCS_EXECUTED_FLOOR=1\n", "DOCS_EXECUTED_FLOOR=99\n")
+    File.write!(copy, mutated)
+    File.chmod!(copy, 0o755)
+
+    base = write_docs(root, docs_readme(), docs_install(), "docs-floor")
+    {out, rc} = run(copy, ["0.0.1"], docs_selftest_env(root, base))
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs executed_below_floor 14 99" in String.split(out, "\n"), out
+    refute out =~ "leg docs PASS"
+
+    {out, rc} = run(@script, ["0.0.1"], docs_selftest_env(root, base))
+    assert rc == 0, out
+    assert out =~ "leg docs PASS"
+  end
+
+  test "the floor and the ios_host version are script constants with their documented values" do
+    src = File.read!(@script)
+    assert src =~ ~r/^DOCS_EXECUTED_FLOOR=[0-9]+$/m
+    assert src =~ ~r/^DOCS_IOS_HOST_SINCE="0\.2\.12"$/m
   end
 
   test "docs leg: a fence with no marker is parse unmarked_fence", %{root: root} do
@@ -1645,7 +1766,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     refute out =~ "docs source commit"
 
     assert out =~
-             "cleanroom: leg docs PASS 0.0.1 executed=14 not_applicable=0 clone=2 shown=2 source=tarball phx_new=1.8.13"
+             "cleanroom: leg docs PASS 0.0.1 executed=14 not_applicable=2 deferred=ios_host clone=2 shown=2 source=tarball phx_new=1.8.13"
 
     assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
     refute out =~ "cleanroom: result PASS"

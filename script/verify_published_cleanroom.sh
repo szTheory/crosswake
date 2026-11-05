@@ -55,6 +55,9 @@
 #
 # Output contract (parsed by later phases):
 #   cleanroom: leg <leg> PASS <version> <detail>
+#   cleanroom: docs deferred ios_host <file> since=0.2.12 version=<v>
+#     (below 0.2.12 only; the docs PASS line then names `deferred=ios_host`, otherwise
+#     `deferred=none`, right after `not_applicable=<m>`, and the block is not in `executed`)
 #   cleanroom: FAIL <leg> <reason>
 #     reasons: any leg tool_unavailable
 #              hex     not_published (404 or no such release), resolve_failed (network or
@@ -73,6 +76,10 @@
 #                      esbuild_esm|attach <file> (the file's executed blocks lack the step; a block
 #                      whose `since=` is above the version under test is NOT_APPLICABLE, skipped
 #                      and counted in `not_applicable=`, and never satisfies a step),
+#                      required_step ios_host <file> (absent, or NOT_APPLICABLE from 0.2.12 on, or a
+#                      `since=` other than 0.2.12 below it), required_step ios_host_unread <file>
+#                      (below 0.2.12 a block carrying :ios_host without since=0.2.12),
+#                      executed_below_floor <n> <floor>,
 #                      step <id> exit <code>, step <id> timeout <secs>, step <id> interrupted
 #                      (the step's whole process group is killed; a host-generation command is
 #                      step host_setup; step compile is the harness `mix compile` before a
@@ -90,6 +97,14 @@ HEX_REPO_DEFAULT="https://repo.hex.pm"
 DOCS_DEFAULT_BASE="https://raw.githubusercontent.com/szTheory/crosswake"
 PHX_NEW_VERSION="1.8.13"
 DOCS_STEP_TIMEOUT_DEFAULT=900
+# D-04 amendment (2026-10-29): `config :crosswake, :ios_host` is read only by crosswake versions
+# from this one on (it landed after 0.2.11). Below it the `:ios_host` step is the single named
+# deferral; at or above it there is no exemption (Phase 199 runs against 0.2.12 with none).
+DOCS_IOS_HOST_SINCE="0.2.12"
+# Executed-step floor (D-04). Pinned to the measured executed count of the marked docs, and the
+# marker test asserts the two are equal. 1 is a PLACEHOLDER (197-07), not phase evidence: 197-09
+# pins the real value, and 197-13 and 197-14 refuse to start while it is still 1.
+DOCS_EXECUTED_FLOOR=1
 CURL_MAX_TIME=120
 CURL_RETRY=2
 MIRROR_URL="https://github.com/szTheory/crosswake-shell-core-ios.git"
@@ -1035,6 +1050,9 @@ docs_compile() {
   fi
 }
 
+DOCS_IOS_HOST_TOKEN=":ios_host"
+DOCS_DEFERRED=""
+
 # docs_required_token <name>: the literal a required wiring step must contain (D-04).
 docs_required_token() {
   case "$1" in
@@ -1046,10 +1064,38 @@ docs_required_token() {
 }
 
 # docs_classify <tag> <attrs> <body>: decide one run or apply block before it is executed.
-# Returns 0 to execute it and 1 when it is NOT_APPLICABLE (`since=` above the version under
-# test: skipped, counted, never executed).
+# Returns 0 to execute it, 1 when it is NOT_APPLICABLE (`since=` above the version under test:
+# skipped, counted, never executed), 2 when it is the deferred `:ios_host` block (the same, and
+# named on a `docs deferred` line and in `deferred=`), 3 when it already failed (reported).
+# The `:ios_host` step is the only one with an exemption and it is version-conditional (D-04
+# amendment): below DOCS_IOS_HOST_SINCE a block carrying it must be marked exactly
+# `since=$DOCS_IOS_HOST_SINCE`; an unmarked one would run against a version that never reads the
+# key (ios_host_unread), any other `since=` is a plain miss. From that version on the ordinary
+# rules apply, with no exemption.
 docs_classify() {
-  docs_applicable "$2" || return 1
+  local tag="$1" attrs="$2" body="$3" since file
+  since=$(docs_attr "$attrs" since)
+  file=$(docs_display "$tag")
+  if grep -qF -- "$DOCS_IOS_HOST_TOKEN" "$body"; then
+    : >"$WORK/docs/ios-seen-$tag"
+    if ! docs_version_ge "$VERSION" "$DOCS_IOS_HOST_SINCE"; then
+      if [ "$since" = "$DOCS_IOS_HOST_SINCE" ]; then
+        echo "cleanroom: docs deferred ios_host $file since=$since version=$VERSION"
+        case ",$DOCS_DEFERRED," in
+          *,ios_host,*) ;;
+          *) DOCS_DEFERRED="${DOCS_DEFERRED:+$DOCS_DEFERRED,}ios_host" ;;
+        esac
+        return 2
+      fi
+      if [ -z "$since" ]; then
+        fail docs "required_step ios_host_unread $file"
+      else
+        fail docs "required_step ios_host $file"
+      fi
+      return 3
+    fi
+  fi
+  docs_applicable "$attrs" || return 1
   return 0
 }
 
@@ -1067,6 +1113,17 @@ docs_required_steps() {
       bad=1
     fi
   done
+  # `:ios_host`: from DOCS_IOS_HOST_SINCE on it must be in an executed block like the others;
+  # below it any block carrying it (deferred, or already failed above) is enough, none is a miss
+  if docs_version_ge "$VERSION" "$DOCS_IOS_HOST_SINCE"; then
+    if ! grep -qF -- "$DOCS_IOS_HOST_TOKEN" "$ex"; then
+      fail docs "required_step ios_host $file"
+      bad=1
+    fi
+  elif [ ! -e "$WORK/docs/ios-seen-$tag" ]; then
+    fail docs "required_step ios_host $file"
+    bad=1
+  fi
   [ "$bad" -eq 0 ]
 }
 
@@ -1078,10 +1135,10 @@ docs_run_all() {
         case "$failed_tags" in *" $tag "*) continue ;; esac
         docs_classify "$tag" "$attrs" "$body"
         rc=$?
-        if [ "$rc" -eq 1 ]; then
-          not_applicable=$((not_applicable + 1))
-          continue
-        fi
+        case "$rc" in
+          1 | 2) not_applicable=$((not_applicable + 1)); continue ;;
+          3) bad=1; failed_tags="$failed_tags$tag "; continue ;;
+        esac
         case "$compiled_tags" in
           *" $tag "*) ;;
           *)
@@ -1109,10 +1166,10 @@ docs_run_all() {
         case "$failed_tags" in *" $tag "*) continue ;; esac
         docs_classify "$tag" "$attrs" "$body"
         rc=$?
-        if [ "$rc" -eq 1 ]; then
-          not_applicable=$((not_applicable + 1))
-          continue
-        fi
+        case "$rc" in
+          1 | 2) not_applicable=$((not_applicable + 1)); continue ;;
+          3) bad=1; failed_tags="$failed_tags$tag "; continue ;;
+        esac
         if docs_apply_step "$tag" "$id" "$attrs" "$body" "$WORK/host-$tag"; then
           executed=$((executed + 1))
           cat "$WORK/docs/steps/$id.apply" >>"$WORK/docs/executed-$tag"
@@ -1131,8 +1188,12 @@ docs_run_all() {
     case "$failed_tags" in *" $tag "*) continue ;; esac
     docs_required_steps "$tag" || bad=1
   done
+  if [ "$executed" -lt "$DOCS_EXECUTED_FLOOR" ]; then
+    fail docs "executed_below_floor $executed $DOCS_EXECUTED_FLOOR"
+    bad=1
+  fi
   [ "$bad" -eq 0 ] || return 1
-  echo "cleanroom: leg docs PASS $VERSION executed=$executed not_applicable=$not_applicable clone=$clone shown=$shown source=$DOCS_SOURCE phx_new=$PHX_NEW_VERSION"
+  echo "cleanroom: leg docs PASS $VERSION executed=$executed not_applicable=$not_applicable deferred=${DOCS_DEFERRED:-none} clone=$clone shown=$shown source=$DOCS_SOURCE phx_new=$PHX_NEW_VERSION"
 }
 
 leg_docs() {
