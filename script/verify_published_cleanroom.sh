@@ -66,10 +66,13 @@
 #              docs    fetch <file>, fetch tarball, parse <reason> (unmarked_fence <file>,
 #                      unterminated_fence <file>, no_fences <file>, readme_scope_missing,
 #                      missing_id, bad_id, duplicate_id, unknown_attr, missing_mode,
-#                      unknown_mode, missing_file, bad_path),
+#                      unknown_mode, missing_file, bad_path, bad_since),
 #                      apply <id> <reason> (target_missing, anchor_missing, exists,
 #                      empty_body, write_failed), compile_warning <path>,
-#                      required_step doctor <file>,
+#                      required_step doctor <file>, required_step bridge_hook|esbuild_external|
+#                      esbuild_esm|attach <file> (the file's executed blocks lack the step; a block
+#                      whose `since=` is above the version under test is NOT_APPLICABLE, skipped
+#                      and counted in `not_applicable=`, and never satisfies a step),
 #                      step <id> exit <code>, step <id> timeout <secs>, step <id> interrupted
 #                      (the step's whole process group is killed; a host-generation command is
 #                      step host_setup; step compile is the harness `mix compile` before a
@@ -509,6 +512,49 @@ docs_parse() {
   docs_validate || return 1
 }
 
+# docs_version_ge <a> <b>: success when a >= b, comparing three numeric components
+# (0.2.9 < 0.2.10; a leading zero is never read as octal).
+docs_version_ge() {
+  local a="$1" b="$2" i x y
+  local -a av bv
+  IFS=. read -r -a av <<<"$a"
+  IFS=. read -r -a bv <<<"$b"
+  for i in 0 1 2; do
+    x=$((10#${av[$i]:-0}))
+    y=$((10#${bv[$i]:-0}))
+    if [ "$x" -gt "$y" ]; then return 0; fi
+    if [ "$x" -lt "$y" ]; then return 1; fi
+  done
+  return 0
+}
+
+# docs_attr <attrs> <key>: print the value of one `key=value` attribute of a steps.tsv attrs
+# field (`;`-joined, `-` when empty); nothing when the key is absent.
+docs_attr() {
+  local rest="$1" kv
+  while [ -n "$rest" ] && [ "$rest" != "-" ]; do
+    kv="${rest%%;*}"
+    if [ "$rest" = "$kv" ]; then rest=""; else rest="${rest#*;}"; fi
+    case "$kv" in
+      "$2="*) printf '%s' "${kv#"$2="}"; return 0 ;;
+    esac
+  done
+  return 0
+}
+
+# docs_applicable <attrs>: success when the block has no `since=` or the version under test is
+# at least it. A block above it is NOT_APPLICABLE: skipped, counted, never executed (D-04).
+docs_applicable() {
+  local since
+  since=$(docs_attr "$1" since)
+  [ -z "$since" ] || docs_version_ge "$VERSION" "$since"
+}
+
+# docs_display <tag>: the doc path as fetched, used in reasons.
+docs_display() {
+  if [ "$1" = readme ]; then printf 'README.md'; else printf 'guides/install.md'; fi
+}
+
 # docs_path_ok <file>: a `file=` path is relative, non-empty and has no `..` segment, so no
 # documented fragment can be written outside the throwaway host (T-197-14).
 docs_path_ok() {
@@ -523,12 +569,19 @@ docs_path_ok() {
 # bad_path), and each doc file carries a doctor run block (required_step doctor <file>,
 # D-02): the doctor is the one documented step that reads the whole install.
 docs_validate() {
-  local tag ord kind id attrs body mode file kv rest bad=0
+  local tag ord kind id attrs body mode file kv rest bad=0 since
   local doctor_readme=0 doctor_install=0
   while IFS=$'\t' read -r tag ord kind id attrs body; do
+    since=$(docs_attr "$attrs" since)
+    if [ -n "$since" ] && ! [[ "$since" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      fail docs "parse bad_since"
+      return 1
+    fi
     case "$kind" in
       run)
-        if grep -qF 'mix crosswake.doctor' "$body"; then
+        # a doctor block whose `since=` is above the version under test is NOT_APPLICABLE and
+        # does not satisfy the requirement
+        if grep -qF 'mix crosswake.doctor' "$body" && docs_applicable "$attrs"; then
           if [ "$tag" = readme ]; then doctor_readme=1; else doctor_install=1; fi
         fi
         ;;
@@ -982,12 +1035,53 @@ docs_compile() {
   fi
 }
 
+# docs_required_token <name>: the literal a required wiring step must contain (D-04).
+docs_required_token() {
+  case "$1" in
+    bridge_hook) printf '%s' 'CrosswakeBridge' ;;
+    esbuild_external) printf '%s' '--external:/crosswake/*' ;;
+    esbuild_esm) printf '%s' '--format=esm' ;;
+    attach) printf '%s' 'Crosswake.Bridge.attach()' ;;
+  esac
+}
+
+# docs_classify <tag> <attrs> <body>: decide one run or apply block before it is executed.
+# Returns 0 to execute it and 1 when it is NOT_APPLICABLE (`since=` above the version under
+# test: skipped, counted, never executed).
+docs_classify() {
+  docs_applicable "$2" || return 1
+  return 0
+}
+
+# docs_required_steps <tag>: the per-file required-step check (D-04) over the bodies that
+# actually executed, after substitution. A NOT_APPLICABLE block never reaches that file, so it
+# cannot satisfy a step. Returns 1 after reporting every missing step.
+docs_required_steps() {
+  local tag="$1" file name tok bad=0 ex="$WORK/docs/executed-$1"
+  file=$(docs_display "$tag")
+  : >>"$ex"
+  for name in bridge_hook esbuild_external esbuild_esm attach; do
+    tok=$(docs_required_token "$name")
+    if ! grep -qF -- "$tok" "$ex"; then
+      fail docs "required_step $name $file"
+      bad=1
+    fi
+  done
+  [ "$bad" -eq 0 ]
+}
+
 docs_run_all() {
-  local tag ord kind id attrs body failed_tags=" " compiled_tags=" " executed=0 clone=0 shown=0 bad=0
+  local tag ord kind id attrs body failed_tags=" " compiled_tags=" " executed=0 not_applicable=0 clone=0 shown=0 bad=0 rc
   while IFS=$'\t' read -r tag ord kind id attrs body; do
     case "$kind" in
       run)
         case "$failed_tags" in *" $tag "*) continue ;; esac
+        docs_classify "$tag" "$attrs" "$body"
+        rc=$?
+        if [ "$rc" -eq 1 ]; then
+          not_applicable=$((not_applicable + 1))
+          continue
+        fi
         case "$compiled_tags" in
           *" $tag "*) ;;
           *)
@@ -1005,6 +1099,7 @@ docs_run_all() {
         esac
         if docs_run_step "$id" "$body" "$WORK/host-$tag"; then
           executed=$((executed + 1))
+          cat "$body" >>"$WORK/docs/executed-$tag"
         else
           bad=1
           failed_tags="$failed_tags$tag "
@@ -1012,8 +1107,15 @@ docs_run_all() {
         ;;
       apply)
         case "$failed_tags" in *" $tag "*) continue ;; esac
+        docs_classify "$tag" "$attrs" "$body"
+        rc=$?
+        if [ "$rc" -eq 1 ]; then
+          not_applicable=$((not_applicable + 1))
+          continue
+        fi
         if docs_apply_step "$tag" "$id" "$attrs" "$body" "$WORK/host-$tag"; then
           executed=$((executed + 1))
+          cat "$WORK/docs/steps/$id.apply" >>"$WORK/docs/executed-$tag"
         else
           bad=1
           failed_tags="$failed_tags$tag "
@@ -1023,8 +1125,14 @@ docs_run_all() {
       show) shown=$((shown + 1)) ;;
     esac
   done <"$WORK/docs/steps.tsv"
+  # the required-step check runs only for a file whose steps all ran: a file that already
+  # failed is red, and its missing steps would only repeat that failure
+  for tag in readme install; do
+    case "$failed_tags" in *" $tag "*) continue ;; esac
+    docs_required_steps "$tag" || bad=1
+  done
   [ "$bad" -eq 0 ] || return 1
-  echo "cleanroom: leg docs PASS $VERSION executed=$executed not_applicable=0 clone=$clone shown=$shown source=$DOCS_SOURCE phx_new=$PHX_NEW_VERSION"
+  echo "cleanroom: leg docs PASS $VERSION executed=$executed not_applicable=$not_applicable clone=$clone shown=$shown source=$DOCS_SOURCE phx_new=$PHX_NEW_VERSION"
 }
 
 leg_docs() {

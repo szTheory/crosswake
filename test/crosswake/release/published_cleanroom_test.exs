@@ -546,6 +546,33 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
   @sentinel "cw-sentinel-197"
   @allowed_step_vars ~w(PATH LANG HOME MIX_HOME HEX_HOME MIX_ENV ASDF_DIR ASDF_DATA_DIR PWD OLDPWD SHLVL _)
 
+  @hook_body "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";\nconst liveSocket = new LiveSocket(\"/live\", Socket, {params, hooks: {CrosswakeBridge}});"
+
+  # One apply block, optionally marked `since=`.
+  defp wiring_block(id, mode, file, body, since \\ nil) do
+    since_attr = if since, do: " since=#{since}", else: ""
+
+    "<!-- cleanroom:apply id=#{id} file=#{file} mode=#{mode}#{since_attr} -->\n```text\n#{body}\n```\n\n"
+  end
+
+  # The wiring every documented install must carry (D-04): the bridge hook, the esbuild
+  # externals and format, and `Crosswake.Bridge.attach()`. Ids are prefixed per file.
+  defp wiring(prefix) do
+    wiring_block(
+      "#{prefix}esbuild",
+      "esbuild-args",
+      "config/config.exs",
+      "--external:/crosswake/* --format=esm"
+    ) <>
+      wiring_block("#{prefix}hook", "js-hook", "assets/js/app.js", @hook_body) <>
+      wiring_block(
+        "#{prefix}attach",
+        "create",
+        "lib/my_app_web/bridge_attach.ex",
+        "defmodule MyAppWeb.BridgeAttach do\n  def mount, do: Crosswake.Bridge.attach()\nend"
+      )
+  end
+
   defp docs_readme do
     """
     # Crosswake
@@ -572,6 +599,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     mix crosswake.install
     ```
 
+    #{wiring("readme_")}
     <!-- cleanroom:run id=readme_doctor -->
     ```bash
     mix crosswake.doctor
@@ -609,6 +637,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     mix crosswake.install
     ```
 
+    #{wiring("")}
     <!-- cleanroom:run id=doctor -->
     ```bash
     mix crosswake.doctor
@@ -748,7 +777,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert out =~ "cleanroom: docs source commit #{@zero_ref}"
 
     assert out =~
-             "cleanroom: leg docs PASS 0.0.1 executed=8 not_applicable=0 clone=2 shown=2 source=commit:#{@zero_ref} phx_new=1.8.13"
+             "cleanroom: leg docs PASS 0.0.1 executed=14 not_applicable=0 clone=2 shown=2 source=commit:#{@zero_ref} phx_new=1.8.13"
 
     assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
     refute out =~ "cleanroom: result PASS"
@@ -777,6 +806,214 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert Enum.count(lines, &String.starts_with?(&1, "cleanroom: FAIL")) == 1
     assert last_line(out) == "cleanroom: result FAIL legs docs version 0.0.1"
     refute out =~ "leg docs PASS"
+  end
+
+  # Runs both docs through the stub host at `version`; returns {out, rc}.
+  defp run_docs(root, readme, install, name, version \\ "0.0.1") do
+    base = write_docs(root, readme, install, "docs-#{name}")
+    run(@script, [version], docs_selftest_env(root, base))
+  end
+
+  defp assert_required_step(out, rc, name, file) do
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs required_step #{name} #{file}" in String.split(out, "\n"), out
+    refute out =~ "leg docs PASS"
+  end
+
+  defp mutate!(text, from, to) do
+    mutated = String.replace(text, from, to, global: false)
+    assert mutated != text, "mutation changed nothing: #{inspect(from)}"
+    mutated
+  end
+
+  test "since: a block above the version under test is NOT_APPLICABLE, skipped and counted", %{
+    root: root
+  } do
+    blocks =
+      wiring_block(
+        "future",
+        "append",
+        "config/config.exs",
+        "config :my_app, :future, true",
+        "0.3.0"
+      )
+
+    {out, rc, work} = apply_run(root, blocks, "since-above", version: "0.2.11")
+
+    assert rc == 0, out
+    assert out =~ "executed=14 not_applicable=1 "
+    refute host_file(work, "config/config.exs") =~ ":future"
+    File.rm_rf!(work)
+  end
+
+  test "since: a block at or below the version under test executes, compared numerically", %{
+    root: root
+  } do
+    at = wiring_block("at", "append", "config/config.exs", "config :my_app, :at, true", "0.2.10")
+
+    below =
+      wiring_block(
+        "below",
+        "append",
+        "config/config.exs",
+        "config :my_app, :below, true",
+        "0.2.9"
+      )
+
+    {out, rc, work} = apply_run(root, at <> below, "since-at", version: "0.2.10")
+
+    assert rc == 0, out
+    assert out =~ "executed=16 not_applicable=0 "
+    cfg = host_file(work, "config/config.exs")
+    assert cfg =~ ":at, true"
+    assert cfg =~ ":below, true"
+    File.rm_rf!(work)
+
+    # 0.10.0 is above 0.9.0 numerically (a string compare would say the opposite)
+    ten =
+      wiring_block("ten", "append", "config/config.exs", "config :my_app, :ten, true", "0.10.0")
+
+    {out, rc, work} = apply_run(root, ten, "since-ten", version: "0.9.0")
+
+    assert rc == 0, out
+    assert out =~ "executed=14 not_applicable=1 "
+    refute host_file(work, "config/config.exs") =~ ":ten"
+    File.rm_rf!(work)
+  end
+
+  test "since: a run block above the version under test is not executed", %{root: root} do
+    install = docs_install()
+
+    mutated =
+      mutate!(
+        install,
+        "<!-- cleanroom:run id=install -->\n```bash\nmix crosswake.install\n```",
+        "<!-- cleanroom:run id=install since=9.9.9 -->\n```bash\nmix crosswake.no_such_task\n```"
+      )
+
+    {out, rc} = run_docs(root, docs_readme(), mutated, "since-run")
+
+    assert rc == 0, out
+    assert out =~ "executed=13 not_applicable=1 "
+  end
+
+  test "since: a value that is not three numeric components is parse bad_since", %{root: root} do
+    install = mutate!(docs_install(), "id=deps -->", "id=deps since=latest -->")
+    {out, rc} = run_docs(root, docs_readme(), install, "bad-since")
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs parse bad_since" in String.split(out, "\n"), out
+  end
+
+  test "required_step: a doctor run block that is NOT_APPLICABLE does not satisfy the doctor requirement",
+       %{root: root} do
+    install = mutate!(docs_install(), "id=doctor -->", "id=doctor since=9.9.9 -->")
+    {out, rc} = run_docs(root, docs_readme(), install, "since-doctor")
+
+    assert_required_step(out, rc, "doctor", "guides/install.md")
+  end
+
+  test "required_step: a file with every wiring step in an executed block passes", %{root: root} do
+    {out, rc} = run_docs(root, docs_readme(), docs_install(), "wiring-ok")
+    assert rc == 0, out
+  end
+
+  test "required_step bridge_hook: no executed block naming CrosswakeBridge fails, per file", %{
+    root: root
+  } do
+    hook = wiring_block("hook", "js-hook", "assets/js/app.js", @hook_body)
+    install = mutate!(docs_install(), hook, "")
+    {out, rc} = run_docs(root, docs_readme(), install, "no-hook")
+
+    assert_required_step(out, rc, "bridge_hook", "guides/install.md")
+    refute out =~ "required_step bridge_hook README.md"
+
+    readme_hook = wiring_block("readme_hook", "js-hook", "assets/js/app.js", @hook_body)
+    readme = mutate!(docs_readme(), readme_hook, "")
+    {out, rc} = run_docs(root, readme, docs_install(), "no-hook-readme")
+
+    assert_required_step(out, rc, "bridge_hook", "README.md")
+    refute out =~ "required_step bridge_hook guides/install.md"
+  end
+
+  test "required_step esbuild_external: no --external:/crosswake/* in an executed block fails", %{
+    root: root
+  } do
+    install =
+      mutate!(
+        docs_install(),
+        "--external:/crosswake/* --format=esm",
+        "--format=esm"
+      )
+
+    {out, rc} = run_docs(root, docs_readme(), install, "no-external")
+
+    assert_required_step(out, rc, "esbuild_external", "guides/install.md")
+    refute out =~ "required_step esbuild_esm"
+  end
+
+  test "required_step esbuild_esm: no --format=esm in an executed block fails", %{root: root} do
+    install =
+      mutate!(
+        docs_install(),
+        "--external:/crosswake/* --format=esm",
+        "--external:/crosswake/*"
+      )
+
+    {out, rc} = run_docs(root, docs_readme(), install, "no-esm")
+
+    assert_required_step(out, rc, "esbuild_esm", "guides/install.md")
+    refute out =~ "required_step esbuild_external"
+  end
+
+  test "required_step attach: a `show` block carrying attach() does not count, only an executed one",
+       %{root: root} do
+    attach =
+      wiring_block(
+        "attach",
+        "create",
+        "lib/my_app_web/bridge_attach.ex",
+        "defmodule MyAppWeb.BridgeAttach do\n  def mount, do: Crosswake.Bridge.attach()\nend"
+      )
+
+    install = mutate!(docs_install(), attach, "")
+    # the fixture still shows Crosswake.Bridge.attach() in a `show` block
+    assert install =~ "Crosswake.Bridge.attach()"
+    {out, rc} = run_docs(root, docs_readme(), install, "no-attach")
+
+    assert_required_step(out, rc, "attach", "guides/install.md")
+  end
+
+  test "required_step: a NOT_APPLICABLE esbuild block (since=9.9.9) does not satisfy the step", %{
+    root: root
+  } do
+    install = mutate!(docs_install(), "id=esbuild ", "id=esbuild since=9.9.9 ")
+    {out, rc} = run_docs(root, docs_readme(), install, "since-esbuild")
+
+    assert_required_step(out, rc, "esbuild_external", "guides/install.md")
+
+    assert "cleanroom: FAIL docs required_step esbuild_esm guides/install.md" in String.split(
+             out,
+             "\n"
+           )
+  end
+
+  test "required_step: a file that already failed a step reports that failure, not missing steps",
+       %{root: root} do
+    install =
+      mutate!(
+        docs_install(),
+        "mix crosswake.doctor",
+        "mix crosswake.doctor\nmix crosswake.no_such_task"
+      )
+
+    hook = wiring_block("hook", "js-hook", "assets/js/app.js", @hook_body)
+    install = mutate!(install, hook, "")
+    {out, rc} = run_docs(root, docs_readme(), install, "failed-and-missing")
+
+    assert rc == 1, out
+    assert "cleanroom: FAIL docs step doctor exit 1" in String.split(out, "\n")
+    refute out =~ "required_step bridge_hook"
   end
 
   test "docs leg: a fence with no marker is parse unmarked_fence", %{root: root} do
@@ -878,7 +1115,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
       File.write!(skel, mutated)
     end
 
-    {out, rc} = run(@script, ["0.0.1"], env)
+    {out, rc} = run(@script, [Keyword.get(opts, :version, "0.0.1")], env)
 
     work =
       case Regex.run(~r/^cleanroom: work kept (.+)$/m, out) do
@@ -909,8 +1146,9 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert mix_exs =~ "  defp deps do\n    [\n      {:crosswake"
     refute mix_exs =~ "~> 0.2"
 
-    # the apply block counts as an executed step: README 3 runs + compile, install 3 runs + compile + apply
-    assert out =~ "executed=9 "
+    # the apply block counts as an executed step: README 3 runs + compile + 3 wiring applies,
+    # install 3 runs + compile + 3 wiring applies + this apply
+    assert out =~ "executed=15 "
     File.rm_rf!(work)
   end
 
@@ -1152,7 +1390,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert rc == 0, out
     cfg = host_file(work, "config/config.exs")
     assert length(String.split(cfg, "--external:/fonts/*")) == 2
-    assert cfg =~ "--external:/images/* --external:/other/*)"
+    assert cfg =~ "--external:/images/* --external:/other/*"
     File.rm_rf!(work)
   end
 
@@ -1167,8 +1405,6 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     assert_apply_fail(out, rc, "es_x", "anchor_missing")
     File.rm_rf!(work)
   end
-
-  @hook_body "import {CrosswakeBridge} from \"/crosswake/crosswake.esm.js\";\nconst liveSocket = new LiveSocket(\"/live\", Socket, {params, hooks: {CrosswakeBridge}});"
 
   test "apply mode js-hook: prepends the import and adds the hook once (idempotent)", %{
     root: root
@@ -1409,7 +1645,7 @@ defmodule Crosswake.Release.PublishedCleanroomTest do
     refute out =~ "docs source commit"
 
     assert out =~
-             "cleanroom: leg docs PASS 0.0.1 executed=8 not_applicable=0 clone=2 shown=2 source=tarball phx_new=1.8.13"
+             "cleanroom: leg docs PASS 0.0.1 executed=14 not_applicable=0 clone=2 shown=2 source=tarball phx_new=1.8.13"
 
     assert last_line(out) == "cleanroom: result SELFTEST legs docs version 0.0.1"
     refute out =~ "cleanroom: result PASS"
