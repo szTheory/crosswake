@@ -5,8 +5,8 @@ milestone_name: Truth and Release Train
 current_plan: 14
 status: executing
 stopped_at: Completed 197-13-PLAN.md
-last_updated: "2026-11-05T17:36:38.581Z"
-state_head: f80eb74c40519ae349aa4ba73bf14a1aedd01132
+last_updated: "2026-11-05T18:04:04.787Z"
+state_head: 22d56f695bb7330aa637e0e703e6231cf99c1594
 progress:
   total_phases: 4
   completed_phases: 3
@@ -88,9 +88,10 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ### Blockers
 
-None. The 196-16 halt is superseded (history in 196-EVIDENCE/196-16-halt-1-superseded.md).
+The 196-16 halt is superseded (history in 196-EVIDENCE/196-16-halt-1-superseded.md).
 
 Carried concerns from Phase 196 verification (non-blocking):
 - [Phase 196] The grammar receipt (`main-grammar.json`, blob e0891db6) is stale on main since PR 265 commit 94d2d788 changed `test/js/ci_secret_masking.test.mjs` (timing bound only; 207/207 pass). The snapshot tools refuse at HEAD by design (`stale_measured_blob`, `main_ref_mismatch`); any later re-verification of promotion at HEAD needs a recapture or an amendment.
 - [Phase 196] Two candidate runs each failed one child with no observed cause (`example-host-proof`; `root-core-suite` 1 of 2920); the runner keeps only output hashes, so a recurring flake would stay undiagnosed.
 - [Phase 196] T-196-37 partial: `gateReady` does not rerun the SPEC-04 prose scan (medium, below block_on). `measure-main.mjs self-test` rewrites the tracked `196-EVIDENCE/measurement-controls.json` on each run. `MUEX-DECISION.md` still says the deferral is proposed; ROADMAP and REQUIREMENTS are authoritative. `196-VALIDATION.md` is still draft (the Nyquist audit was not completed).
+- 197-14 blocked at CI: PR 268 red on proof-dependency-security (new advisories phoenix_html 4.3.0, ecto 3.13.6; needs mix.lock bumps outside the plan's fix targets) and e2e-proof (apt timeout, rerun). See 197-14-BLOCKED.md
