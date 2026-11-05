@@ -46,7 +46,7 @@ final class BridgeReplyLegTests: XCTestCase {
         try super.setUpWithError()
         let url = try XCTUnwrap(Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
                                 "CW-VECTOR-MISSING bridge_contract_vectors.json")
-        let data = try Data(contentsOf: url)
+        let data = try VectorCorpus.verifiedData(contentsOf: url)
         vectors = try JSONDecoder().decode(ReplyLegVectorsFile.self, from: data).replyLegVectors
         // Independently reviewed reply collection; stop before single-ID helpers on loss.
         _ = try XCTUnwrap(vectors.count == 2 ? true : nil, "CW-VECTOR-LOADED expected 2")
