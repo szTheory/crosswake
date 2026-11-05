@@ -59,7 +59,7 @@ Each requirement carries a persona/job tag: P1 study founder, P5 skeptical mobil
 ### Android proof (AND)
 
 - [ ] **AND-01** [P7]: A parity ledger is generated from `priv/contract_vectors/*.json` with an Android column, and a test asserts Swift and Kotlin reference the same vector-set hash.
-- [ ] **AND-02** [P7]: Kotlin core JVM tests rise from 12 to at least 25, including `BridgeChannel` boundary cases; `androidx.webkit` is removed if unused; the Android JSON-stack choice is decided in writing.
+- [x] **AND-02** [P7]: Kotlin core JVM tests rise from 12 to at least 25, including `BridgeChannel` boundary cases; `androidx.webkit` is removed if unused; the Android JSON-stack choice is decided in writing.
 - [ ] **AND-03** [P7]: A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on Linux CI (advisory leg, required only after two clean runs), with a negative control that a wrong coordinate fails.
 
 ## Future Requirements
@@ -113,7 +113,7 @@ Tracked in the rolling roadmap (NEXT/LATER), not in this milestone: v29 Android 
 | DOCS-02 | Phase 197 | Complete |
 | DOCS-03 | Phase 197 | Complete |
 | AND-01 | Phase 198 | Pending |
-| AND-02 | Phase 198 | Pending |
+| AND-02 | Phase 198 | Complete |
 | AND-03 | Phase 198 | Pending |
 
 **Coverage:**

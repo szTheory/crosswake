@@ -100,3 +100,5 @@ any ROADMAP or STATE conflict by keeping both sides' facts.
 | (e) SemVer parsing diverges between Android (digit-only, signs denied) and iOS `SemVer.swift` (`Int(_:)` accepts `+` and `-`) | Bridge contract maintainers (iOS and Android shell core) | The next phase that edits either `SemVer` or adds shared vectors | The v29 Android/bridge phase (same receiver as row a), which adds a shared version-parsing vector so both platforms are held to one rule |
 
 ## Appended by later plans
+
+- (Plan 03, D-13) The Kotlin JVM test floor is `script/check_kotlin_test_floor.py --run` (ratchet floor 25, derived XML-to-source equality, `BridgeChannelBoundaryTest` at least 10 testcases, seven load-bearing named tests, dependency-drift checks), with its fixture controls in `script/check_kotlin_test_floor_test.py`. Both run as separate steps in `android-package-unit`; the pinned `android-package-proof` stage argv is unchanged. Measured on the branch 2026-11-05: 37 XML tests, 37 source tests, 20 boundary testcases. Claim ceiling: JVM evidence only.
