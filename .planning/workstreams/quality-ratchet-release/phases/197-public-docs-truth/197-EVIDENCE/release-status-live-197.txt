@@ -1,0 +1,62 @@
+Crosswake release status
+
+status: OK
+live checks: enabled
+
+Core/native lockstep:
+- hex: manifest=0.2.11 configured=0.2.11 live_hex=ok
+- ios-core: manifest=0.2.11 configured=0.2.11 live_ios_mirror=ok
+- android-core: manifest=0.2.11 configured=0.2.11 live_maven=ok
+
+Companions:
+- crosswake_chimeway: manifest=0.1.2 configured=0.1.2 requires_crosswake=~> 0.2 live_hex=ok
+- crosswake_rindle: manifest=0.1.0 configured=0.1.0 requires_crosswake=~> 0.2 live_hex=ok
+- crosswake_rulestead: manifest=0.1.1 configured=0.1.1 requires_crosswake=~> 0.2 live_hex=ok
+- crosswake_sigra: manifest=0.1.3 configured=0.1.3 requires_crosswake=~> 0.2 live_hex=ok
+- crosswake_threadline: manifest=0.1.0 configured=0.1.0 requires_crosswake=~> 0.2 live_hex=ok
+
+Exact 0.2.11 candidate (read-only):
+- state: COMPLETE
+- next action: no action required; preserve the exact public receipt
+- REL-17 evidence: BLOCKED (missing_evidence)
+- REL-17 next step: gather fresh evidence and request a new gate
+- linked coordinates: hex:crosswake@0.2.11, swiftpm:crosswake-shell-core-ios@0.2.11, maven:io.github.sztheory:crosswake-shell-core-android:0.2.11
+- independent companions: crosswake_chimeway, crosswake_rindle, crosswake_rulestead, crosswake_sigra, crosswake_threadline
+- mirror baseline/public: refs/tags/v0.2.0 / refs/tags/v0.2.11
+- credentials exercised: false; external state changed: false
+
+Live registry state:
+- hex: manifest version=0.2.11 live registry state=ok source=hex
+- ios-core: manifest version=0.2.11 live registry state=ok source=ios_mirror
+- android-core: manifest version=0.2.11 live registry state=ok source=maven
+- crosswake_chimeway: manifest version=0.1.2 live registry state=ok source=hex
+- crosswake_rindle: manifest version=0.1.0 live registry state=ok source=hex
+- crosswake_rulestead: manifest version=0.1.1 live registry state=ok source=hex
+- crosswake_sigra: manifest version=0.1.3 live registry state=ok source=hex
+- crosswake_threadline: manifest version=0.1.0 live registry state=ok source=hex
+
+Checks:
+- OK release.lockstep_manifest: core/native manifest versions are 0.2.11
+- OK release.lockstep_config: core/native configured versions match manifest
+- OK release.workflow_path_gates: root/native publish jobs use exact paths_released gates
+- OK release.workflow_integrity: release workflow integrity scanner reported no failing checks
+- OK release.governance_queue_max: release workflow uses only supported concurrency keys and does not cancel in-progress runs
+- OK release.governance_behavioral_identity_gates: behavioral release jobs use exact path/component gates
+- OK release.governance_cleanup_after_proof: release-as cleanup waits for released companion publish and proof success
+- OK release.cleanroom_dependency_floor: clean-room proof uses Hex metadata floors and exact companion pins
+- OK release.live_registry_presence: all live registry probes found manifest versions
+- OK release.release_as_staleness: no release-as pin points at an existing local release tag
+- OK release.candidate_public_truth: all three linked 0.2.11 coordinates are public
+
+release.status: rc 0
+
+# comparison
+# matrix packages (guides/companion_compatibility.md) vs the live-registry lines above
+crosswake_rulestead: live state=ok manifest version=0.1.1 matrix row present=yes
+crosswake_rindle: live state=ok manifest version=0.1.0 matrix row present=yes
+crosswake_sigra: live state=ok manifest version=0.1.3 matrix row present=yes
+crosswake_chimeway: live state=ok manifest version=0.1.2 matrix row present=yes
+crosswake_threadline: live state=ok manifest version=0.1.0 matrix row present=yes
+# discussion-time values (D-12): rulestead 0.1.1, rindle 0.1.0, sigra 0.1.3, chimeway 0.1.2, threadline 0.1.0, crosswake 0.2.11
+# difference from D-12: none
+# note: the matrix carries no version literal; these versions are recorded here only as run evidence
