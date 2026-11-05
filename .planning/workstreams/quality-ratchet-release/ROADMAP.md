@@ -236,7 +236,7 @@ Plans:
   3. `mix docs` warnings, a relative link/anchor check and a public internal-code leak scan (`Phase N`, `TODO-`, `D-NN`, `v2x`) run in report mode with their counts recorded, and none is a required check.
   4. `android_uat.md` has no automated "Last verified" stamp and no phantom capability families, and a grep for "Android frozen" posture text in README, the support matrix and the native shell guide returns zero hits.
 
-**Plans**: 2/15 plans executed, 35 tasks; sequential waves 1–15 in one checkout on branch `docs/197-public-docs-truth`; one PR; the merge to main is a separate one-use allow (not executor work)
+**Plans**: 3/15 plans executed, 35 tasks; sequential waves 1–15 in one checkout on branch `docs/197-public-docs-truth`; one PR; the merge to main is a separate one-use allow (not executor work)
 
 Plans:
 **Wave 1**
@@ -246,7 +246,7 @@ Plans:
 - [x] 197-02-PLAN.md — mix docs warnings counter, not-in-CI guard, baseline on a main-equal tree before any doc edit; DOCS-01/02 and SC1/SC2 amended in place (DOCS-03, DOCS-01, DOCS-02)
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 197-03-PLAN.md — Carried clean-room fixes WR-04, WR-05, WR-06 (real-POM fixture) and IN-03 (every tool tested) (DOCS-01)
+- [x] 197-03-PLAN.md — Carried clean-room fixes WR-04, WR-05, WR-06 (real-POM fixture) and IN-03 (every tool tested) (DOCS-01)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 197-04-PLAN.md — docs leg tracer: commit-pinned docs, marker parser, pinned phx_new host, scrubbed env, per-step time bound, D-07a control (DOCS-01)
@@ -323,7 +323,7 @@ Plans:
 | 194. Bearings reset and ADR amendments | 9/9 | Complete | 2026-10-25 |
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
-| 197. Public docs truth | 2/15 | In Progress | - |
+| 197. Public docs truth | 3/15 | In Progress | - |
 | 198. Android foreign-host proof | 0/TBD | Not started | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 
