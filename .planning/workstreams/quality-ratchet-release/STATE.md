@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 198-04-PLAN.md
-last_updated: "2026-11-05T22:39:13.325Z"
-state_head: 7cbeec41746285a2159f8821d3041fddeec03b71
+stopped_at: Completed 198-05-PLAN.md
+last_updated: "2026-11-05T22:42:44.424Z"
+state_head: a0671f456bdf1304e67dd4e00b9ca958a6f439bc
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 74
-  completed_plans: 66
+  completed_plans: 67
   percent: 60
 current_phase: 198
 current_phase_name: Android foreign-host proof
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 5
+Current Plan: 6
 Total Plans in Phase: 12
 
 ## Exact Next Action
 
-Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 4 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-04 (generator emits `VectorSetHash.kt` from the one binary written to the three corpus copies; every Kotlin corpus load goes through `VectorCorpus.loadVerifiedBytes`, CW-VECTOR-HASH on mismatch; LF pins in `.gitattributes`; Kotlin floor now 39 tests; AND-01 Kotlin half only, still open until Plan 05 Swift and Plan 07 ledger). Exact next command: execute 198-05 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 5 of 12 plans done on branch `test/198-android-foreign-host-proof` (local, unpushed). Last completed plan: 198-05 (generator also emits `VectorSetHash.swift` from the same hex as Kotlin; all five Swift bridge-corpus suites verify bytes via CryptoKit, CW-VECTOR-HASH on mismatch; Swift 91 tests; one-time byte-flip turned both native suites red and was restored; AND-01 native half done, still open until the ledger in Plans 06/07). Exact next command: execute 198-06 via `/gsd-execute-phase 198 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T22:39:13.155Z
-**Stopped at:** Completed 198-04-PLAN.md
+**Last session:** 2026-11-05T22:42:44.255Z
+**Stopped at:** Completed 198-05-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -69,6 +69,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 198 P02 | 20min | 3 tasks | 2 files |
 | Phase 198 P03 | 15min | 3 tasks | 3 files |
 | Phase 198 P04 | 30min | 3 tasks | 11 files |
+| Phase 198 P05 | 25min | 3 tasks | 11 files |
 
 ## Decisions
 
@@ -96,6 +97,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 198]: Plan 02: BridgeChannel boundary tests run with counted near-miss loops and positive controls; every D-12 near miss denied fail closed, no finding. server.event.push and server.state.update ungated behavior is pinned as characterization only (debt row a)
 - [Phase 198]: Plan 03: Kotlin JVM test floor runs as separate android-package-unit steps (Option A, stage argv unchanged); floor 25 ratchet with derived XML-to-source equality, measured 37/37/20; selftest controls verified by mutation
 - [Phase 198]: Plan 04: generator hashes the one binary written to the three corpus copies and emits VectorSetHash.kt; every Kotlin corpus load goes through VectorCorpus.loadVerifiedBytes (CW-VECTOR-HASH); AND-01 stays open until Swift (Plan 05) and the ledger (Plan 07)
+- [Phase 198]: Plan 05: Swift constant generated from the same hex as Kotlin and outside Resources/; five Swift loaders verify via CryptoKit (CW-VECTOR-HASH); one-time byte-flip turned both native suites red; AND-01 stays open until the ledger (Plans 06/07)
 
 ### Blockers
 
