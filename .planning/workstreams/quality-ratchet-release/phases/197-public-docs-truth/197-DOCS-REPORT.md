@@ -106,3 +106,64 @@ All three counters stay report-only for one cycle. No counter is a required chec
 referenced from a CI workflow (decisions D-15, D-19, D-25). Promotion of any counter is decided
 from the recorded counts (this baseline and the after-counts), in a later cycle, never from a
 count taken here alone.
+
+## After (phase 197 head)
+
+| Item | Value |
+|---|---|
+| Measured at HEAD | `c224e0844423605aaf011d10e36a664631bb9e54` (`docs/197-public-docs-truth`) |
+| Last commit touching a measured input | `7a139f1e` (`docs(197): make changelog release claims registry-true`); every later commit, including the measured HEAD, changes none of README.md, CHANGELOG.md, LICENSE, guides/, lib/, mix.exs, mix.lock |
+| Measured-input tree | `git status --porcelain -- README.md CHANGELOG.md LICENSE guides lib mix.exs mix.lock` printed nothing |
+| Baseline-first order | `197-EVIDENCE/ordering-197.txt`: baseline `1782366b` is an ancestor of the first doc-touching commit `c1542d9f` (`merge-base --is-ancestor: rc 0`) |
+| Evidence | `197-EVIDENCE/docs-report-after-197.txt`, `docs-report-after-detail-197.txt` (both `docs-report: rc 0`, `docs-report: measured_at c224e084...`) |
+
+Counter lines, verbatim from `197-EVIDENCE/docs-report-after-197.txt`:
+
+```
+docs.warnings total=197 extras=2
+docs.links broken=0 checked=234 files=30
+docs.leaks hits=95 allowlisted=0 stale_allowlist=0 files=30
+docs-report: REPORT-ONLY (not a required check)
+```
+
+### Deltas against the baseline
+
+| Counter | Baseline | After | Delta |
+|---|---|---|---|
+| `docs.warnings` total | 197 | 197 | 0 |
+| `docs.warnings` in extras | 2 | 2 | 0 (same two files: `guides/support_matrix.md`, `guides/companion_contract.md`) |
+| `docs.links` broken | 0 | 0 | 0 |
+| `docs.links` checked | 232 | 234 | +2 (new relative links in the rewritten docs; none broken) |
+| `docs.leaks` hits | 95 | 95 | 0 |
+
+### Leak table, per pattern
+
+| Pattern | Baseline | After | Delta |
+|---|---|---|---|
+| `phase` | 68 | 68 | 0 |
+| `milestone` | 11 | 11 | 0 |
+| `decision` | 9 | 9 | 0 |
+| `todo` | 6 | 6 | 0 |
+| `seed` | 1 | 1 | 0 |
+| Total | 95 | 95 | 0 |
+
+The per-pattern counts and the per-file leaders (`guides/support_matrix.md` 21, `guides/companions.md` 13,
+`guides/capability_map.md` 10, ...) are unchanged. Comparing the sorted hit lines of the two detail
+files, exactly one hit differs: the `CHANGELOG.md` `milestone` hit on the line naming the v17.0
+companion packages. Its text changed only because plan 197-11 rewrote that line anyway to drop a
+false current-version claim (the sentence now ends "Companion package versions are listed on
+hex.pm."); the `v17.0` leak token on it remained, so the count did not move. No leak was removed on
+purpose and none was added: this phase's goal was registry truth and executed install steps (D-01,
+D-04, D-10), not removing internal-history references, so the leak counter is the same as the
+baseline (D-19, report-only for one cycle).
+
+The link counter checked two more links than at baseline and still reports `broken=0`. The warnings
+counter did not move: the 195 `lib/` warnings and the two extras warnings are the pre-existing
+hidden/undefined-reference warnings, which this phase did not touch (counted only this cycle).
+
+### Promotion
+
+Every counter stays report-only for one cycle with no required check, and none is referenced from a
+CI workflow (decisions D-15, D-19, D-25); an ExUnit test (`test/crosswake/docs_report_test.exs`)
+asserts that no workflow references the report. Promotion of any counter is decided later from the
+baseline and these after-counts together, never from either alone.

@@ -1,0 +1,6 @@
+docs.warnings total=197 extras=2
+docs.links broken=0 checked=234 files=30
+docs.leaks hits=95 allowlisted=0 stale_allowlist=0 files=30
+docs-report: REPORT-ONLY (not a required check)
+docs-report: rc 0
+docs-report: measured_at c224e0844423605aaf011d10e36a664631bb9e54
