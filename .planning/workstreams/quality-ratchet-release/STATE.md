@@ -2,25 +2,25 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: Not started
+current_plan: 1
 status: ready_to_plan
 stopped_at: Phase 197 context gathered
-last_updated: "2026-10-29T15:38:06.251Z"
-state_head: 5a4aae32035b1d92ffbc0e48228d664e61fab183
+last_updated: "2026-11-05T15:30:15.964Z"
+state_head: e82cbab3a3a84f1646a649f233920b39d51234fc
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 47
+  total_plans: 62
   completed_plans: 47
   percent: 75
-current_phase: 197
 current_phase_name: Public docs truth
+current_phase: 197
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
 ---
 
 ## Current Position
 
-Current Plan: Not started. Last completed phase: 196 (Spec and structure ratchet), 17/17 plans (196-14 retired, not executed to completion), completed 2026-10-29. It merged to main as PR 260 (`88c8bdd8`), the landed-tool fix PR 264 (`51a1885c`) and the evidence PR 266 (`26aae156`). The actual-main landed proof passed 40 of 40 on `51a1885c`. Phase verification on main `97ec5f7b`: 196-UAT.md 36/36 (zero-human, agent-run), 196-SECURITY.md 39/39 threats closed (threats_open 0, ASVS L1), 196-VERIFICATION.md passed 5/5, and the full core suite ran 2923 tests with 0 failures. SPEC-01, SPEC-02, SPEC-03, SPEC-05, ARCH-01, ARCH-02, ARCH-03 and GR-06 are complete; SPEC-04 is moved intact to v29.0. Active phase: 197 (Public docs truth), not started, no phase directory yet.
+Current Plan: 1
 
 ## Exact Next Action
 
