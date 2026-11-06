@@ -69,6 +69,10 @@ defmodule Crosswake.BearingsReportTest do
   @wt_key {"git", ["worktree", "list", "--porcelain"]}
   @stash_key {"git", ["stash", "list"]}
   @unlanded_key {"git", ["branch", "--no-merged", "origin/main", "--format=%(refname:short)"]}
+  @android_foreign_key {"bash", ["script/android_foreign_promotion.sh"]}
+  @android_foreign_head String.duplicate("e", 40)
+  @android_foreign_line "android_foreign: clean_runs=1/2 eligible=no head=#{@android_foreign_head} " <>
+                          "ci_ran_on=synthetic_merge"
 
   # Real captured fixtures for every read (the checkout's real unlanded branches and old PRs
   # make this map ATTENTION; exact-output tests use it as is).
@@ -78,7 +82,8 @@ defmodule Crosswake.BearingsReportTest do
       @pr_key => {:ok, fixture!("gh-pr-list.json")},
       @wt_key => {:ok, fixture!("git-worktree-porcelain.txt")},
       @stash_key => {:ok, fixture!("git-stash-list.txt")},
-      @unlanded_key => {:ok, fixture!("git-branch-no-merged.txt")}
+      @unlanded_key => {:ok, fixture!("git-branch-no-merged.txt")},
+      @android_foreign_key => {:ok, @android_foreign_line <> "\n"}
     })
   end
 
@@ -469,6 +474,34 @@ defmodule Crosswake.BearingsReportTest do
     end
   end
 
+  describe "android_foreign promotion readiness" do
+    test "android_foreign passes the derived promotion line through" do
+      {code, lines} = report(base_map())
+
+      assert code == 0
+
+      assert Enum.filter(lines, &String.starts_with?(&1, "android_foreign:")) == [
+               @android_foreign_line
+             ]
+    end
+
+    test "control: android_foreign is UNVERIFIED when the promotion script reports UNVERIFIED" do
+      map =
+        Map.put(
+          base_map(),
+          @android_foreign_key,
+          {:ok, "android_foreign: UNVERIFIED runs_unreadable\n"}
+        )
+
+      {code, [verdict | _] = lines} = report(map)
+
+      assert code == 2
+      assert verdict == "BEARINGS: UNVERIFIED (1 reads failed)"
+      assert "UNVERIFIED android_foreign: runs_unreadable" in lines
+      refute_line(lines, "clean_runs")
+    end
+  end
+
   describe "fixed fixture set" do
     test "renders byte-identical lines in a fixed order" do
       {code, lines} = report(fixture_map())
@@ -481,6 +514,7 @@ defmodule Crosswake.BearingsReportTest do
         "ci: success on #{short(pr_head())} (PR #247 head; main #{short(main_sha())} " <>
           "is its merge commit, tested only as a synthetic merge)",
         "ci: success on HEAD #{short(head_sha())}",
+        @android_foreign_line,
         "prs: open 7 (release-please 1, dependabot 5, feature 1)",
         "cap: .planning/ROADMAP-ROLLING.md 10/120 ok",
         "cap: .planning/BEARINGS.md 10/60 ok",

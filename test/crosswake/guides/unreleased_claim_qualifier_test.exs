@@ -27,7 +27,8 @@ defmodule Crosswake.Guides.UnreleasedClaimQualifierTest do
     {"guides/native_shell_upgrade.md", ":ios_host"},
     {"guides/native_shell_upgrade.md", "1.2.0"},
     {"guides/compatibility.md", "1.2.0"},
-    {"guides/architecture.md", "1.2.0"}
+    {"guides/architecture.md", "1.2.0"},
+    {"guides/parity_ledger.md", "vector-set hash"}
   ]
 
   describe "sections/1" do

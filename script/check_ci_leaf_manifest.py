@@ -62,7 +62,7 @@ FINAL_PROOF_LEAVES = (
 )
 FINAL_CONTROL_NODES = ("classify-change",)
 FINAL_NEEDS = tuple(sorted(FINAL_PROOF_LEAVES + FINAL_CONTROL_NODES))
-ADVISORY_JOBS = ("brand-visual",)
+ADVISORY_JOBS = ("android-foreign-host", "brand-visual")
 CLASSIFIER_IRRELEVANCE_REASON = "all_changed_paths_allowlisted"
 RELEASE_IRRELEVANCE_REASON = "release_inputs_unchanged"
 STAGE_COMMAND_PREFIX = "script/verify_repository.sh --stage "
@@ -318,17 +318,18 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
     for member in sorted(governed_jobs - expected):
         problems.append(Problem("extra_job", member, "workflow job is outside manifest authority"))
 
-    brand_visual = jobs.get("brand-visual")
-    if not isinstance(brand_visual, dict) or literal_name("brand-visual", brand_visual, problems) != "brand-visual":
-        problems.append(Problem("missing_advisory_job", "brand-visual", "literal advisory job is required"))
-    else:
-        visual_text = yaml.safe_dump(brand_visual, sort_keys=False)
-        if "continue-on-error" in visual_text or "|| true" in visual_text:
-            problems.append(Problem("advisory_success_coercion", "brand-visual", "visual failure must remain red"))
-        if "brand-visual" in set(needs):
-            problems.append(Problem("advisory_in_umbrella", "brand-visual", "advisory job cannot affect required authority"))
-        if any(row.get("needs_target") == "brand-visual" for row in legacy.values()):
-            problems.append(Problem("advisory_compatibility_projection", "brand-visual", "advisory job cannot back compatibility authority"))
+    for advisory_id in ADVISORY_JOBS:
+        advisory = jobs.get(advisory_id)
+        if not isinstance(advisory, dict) or literal_name(advisory_id, advisory, problems) != advisory_id:
+            problems.append(Problem("missing_advisory_job", advisory_id, "literal advisory job is required"))
+        else:
+            advisory_text = yaml.safe_dump(advisory, sort_keys=False)
+            if "continue-on-error" in advisory_text or "|| true" in advisory_text:
+                problems.append(Problem("advisory_success_coercion", advisory_id, "advisory failure must remain red"))
+            if advisory_id in set(needs):
+                problems.append(Problem("advisory_in_umbrella", advisory_id, "advisory job cannot affect required authority"))
+            if any(row.get("needs_target") == advisory_id for row in legacy.values()):
+                problems.append(Problem("advisory_compatibility_projection", advisory_id, "advisory job cannot back compatibility authority"))
 
     for identifier, row in {**proofs, **controls}.items():
         actual = literal_name(identifier, jobs.get(identifier), problems)
@@ -613,6 +614,32 @@ class ManifestSelfTest(unittest.TestCase):
             lambda m, _w: m["legacy_compatibility_contexts"].append(copy.deepcopy(retired)),
             "retired_compatibility_context",
             retired["job_id"],
+        )
+
+    def test_every_advisory_job_stays_outside_authority(self) -> None:
+        advisory_id = "android-foreign-host"
+        self.assertIn(advisory_id, ADVISORY_JOBS)
+        self.assert_problem(
+            lambda _m, w: w["jobs"].pop(advisory_id),
+            "missing_advisory_job",
+            advisory_id,
+        )
+        self.assert_problem(
+            lambda _m, w: w["jobs"][advisory_id].update({"continue-on-error": True}),
+            "advisory_success_coercion",
+            advisory_id,
+        )
+        self.assert_problem(
+            lambda _m, w: w["jobs"][advisory_id]["steps"].append(
+                {"name": "coerced", "run": "bash script/verify_android_foreign_host.sh || true"}
+            ),
+            "advisory_success_coercion",
+            advisory_id,
+        )
+        self.assert_problem(
+            lambda _m, w: w["jobs"][UMBRELLA_ID]["needs"].append(advisory_id),
+            "advisory_in_umbrella",
+            advisory_id,
         )
 
     def test_irrelevance_reason_must_match_classifier_exactly(self) -> None:

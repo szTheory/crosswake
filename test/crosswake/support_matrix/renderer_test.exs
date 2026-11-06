@@ -53,7 +53,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     guide = Renderer.render(SupportMatrix.canonical())
 
     assert guide =~
-             "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim."
+             Crosswake.SupportMatrix.android_boundary()
 
     assert guide =~ "| Android (existing contracts) |"
 
@@ -422,7 +422,7 @@ defmodule Crosswake.SupportMatrix.RendererTest do
     for claim <- [
           "bounded iOS-only compiled topology, typed stack protocol, UIKit host composition, marker/insets, and generated host proof are verified in Phase 161.1; fixture and simulator evidence remain advisory, TODO-002/adopter topology is unknown_blocking, and source-bound signed-device composition is required before physical or support promotion.",
           "Bounded iOS shell evidence excludes generic navigation, native leaf rendering, arbitrary restoration/modal breadth, and browser-history authority.",
-          "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.",
+          Crosswake.SupportMatrix.android_boundary(),
           "Android never gates the first adopter's physical-iPhone proof"
         ] do
       assert guide =~ claim

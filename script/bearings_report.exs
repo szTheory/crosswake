@@ -72,6 +72,7 @@ defmodule Crosswake.BearingsReport do
     render([
       sync_lines,
       check_ci(ctx, deps),
+      check_android_foreign(ctx, deps),
       check_prs(ctx, deps),
       check_local(ctx, deps),
       check_caps(ctx, deps),
@@ -537,6 +538,42 @@ defmodule Crosswake.BearingsReport do
       [ci_line(run, pr, main_sha) | head_lines(deps, head_sha, main_sha, pr.head_sha)]
     else
       {:error, reason} -> [unverified("ci", reason)]
+    end
+  end
+
+  # Promotion readiness of the Android foreign-host proof, derived by the script from CI run
+  # history and evidence artifacts (never stamped). The script's single derived line is passed
+  # through verbatim; anything else is UNVERIFIED with a fixed reason, never an OK or a zero.
+  @android_foreign_line ~r/\Aandroid_foreign: clean_runs=[0-2]\/2 eligible=(yes|no) head=([0-9a-f]{40}|none) ci_ran_on=synthetic_merge\z/
+  @android_foreign_reasons ~w(tool_unavailable repo_unreadable runs_unreadable jobs_unreadable
+                              artifact_unreadable evidence_unparseable)
+
+  def check_android_foreign(_ctx, deps) do
+    case deps.run.("bash", ["script/android_foreign_promotion.sh"]) do
+      {:ok, out} ->
+        case String.split(out, "\n", trim: true) do
+          [line] -> android_foreign_line(line)
+          _ -> [unverified("android_foreign", "unparseable promotion output")]
+        end
+
+      {:error, _} ->
+        [
+          unverified(
+            "android_foreign",
+            "promotion script exited non-zero (run it for the reason)"
+          )
+        ]
+    end
+  end
+
+  defp android_foreign_line(line) do
+    with false <- Regex.match?(@android_foreign_line, line),
+         [_, reason] when reason in @android_foreign_reasons <-
+           Regex.run(~r/\Aandroid_foreign: UNVERIFIED ([a-z_]+)\z/, line) do
+      [unverified("android_foreign", reason)]
+    else
+      true -> [{:info, line}]
+      _ -> [unverified("android_foreign", "unparseable promotion output")]
     end
   end
 

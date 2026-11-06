@@ -255,7 +255,10 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "Visual collateral is not correctness proof by itself.",
       "Device/provider evidence is not backend/session authority.",
       "Cached read-only is not offline mutation.",
-      "Bridge is not high-frequency or mutation authority."
+      "Bridge is not high-frequency or mutation authority.",
+      "",
+      "Android ceiling: #{Crosswake.SupportMatrix.android_boundary()}",
+      "Per-vector Android parity: [parity ledger](parity_ledger.md)."
     ]
     |> Enum.join("\n")
   end
@@ -377,7 +380,7 @@ defmodule Crosswake.SupportMatrix.Renderer do
       "| privacy-safe scoped replay | verification required | Opaque scope references, scope-partitioned outbox, logout/account-switch stops, endpoint reauthorization, and redacted evidence all pass. | The existing host-owned `gated_by` seam remains the server-side disablement authority; raw mutation payloads, account identifiers, media, transcripts, tokens, and stable device identifiers are never diagnostics. |",
       "| foreground iOS pronunciation pack | verification required | A host provider downloads real bytes, verifies expected size and SHA-256, and atomically installs one immutable archive before reporting available. | Current timed native pack transitions are simulated lifecycle evidence, not productionized native content-pack storage. |",
       "| physical-iPhone offline study | device evidence | Retained source-bound reference evidence remains dated and non-transferable. | It does not claim Android. It does not claim background replay or sync. It does not claim generic storage or sync. It does not claim multiple offline islands. It does not claim simulator substitution. It does not claim every iPhone. v20 is stopped/partial; it has no shipped support claim. |",
-      "| Android (existing contracts) | JVM hermetic proof and shared vectors | Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. | No new Android feature, template, emulator/device, or release requirement is active. |",
+      "| Android (existing contracts) | JVM hermetic proof and shared vectors | #{Crosswake.SupportMatrix.android_boundary()} | No new Android feature, template, emulator/device, or release requirement is active. |",
       "",
       "Generic sync is not claimed."
     ]

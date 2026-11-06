@@ -2,30 +2,30 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 15
+current_plan: 12
 status: executing
-stopped_at: Completed 197-14-PLAN.md
-last_updated: "2026-11-05T19:18:37.119Z"
-state_head: e49366372c41c2854520dc80985529ffb0a89dae
+stopped_at: Completed 198-11-PLAN.md
+last_updated: "2026-11-06T00:06:27.997Z"
+state_head: 392ffa6a44b4a7e87ec731df40168f006161a9a5
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 3
-  total_plans: 62
-  completed_plans: 62
-  percent: 75
-current_phase: 197
-current_phase_name: Public docs truth
+  total_plans: 74
+  completed_plans: 73
+  percent: 60
+current_phase: 198
+current_phase_name: Android foreign-host proof
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
 ---
 
 ## Current Position
 
-Current Plan: 15
-Total Plans in Phase: 15
+Current Plan: 12
+Total Plans in Phase: 12
 
 ## Exact Next Action
 
-All 15 plans of Phase 197 are done on branch `docs/197-public-docs-truth`, pushed at `e49366372c41c2854520dc80985529ffb0a89dae` (PR 268, open). Last completed plan: 197-14 (real four-leg clean-room PASS against 0.2.11 with `:ios_host` a named Phase 199 deferral; PR 268 Crosswake CI green 38 of 38 on the synthetic merge `9d0aa1f0`, run 42089200558; the earlier red run was fixed by the separately merged PR 269 and a merge of main; full suite 3134/0 and docs-report remeasured at `35f18f93`). DOCS-01, DOCS-02 and DOCS-03 are marked complete. The 197-14 SUMMARY commit is local and not pushed. Phase 197 is ready for verification, but the merge of PR 268 to main needs a fresh one-use allow for the PR head at that time (not executor work; re-read the delete-branch-on-merge setting first, `false` on 2026-11-05). After the merge the exact next command is `/gsd-verify-work 197 --ws quality-ratchet-release`. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 12 of 12 plans done on branch `feat/198-android-foreign-host-proof`, pushed, PR 270 open. Last completed plan: 198-12 (full local gates, privacy scan, PR 270 opened; Crosswake CI was green 39 of 39 on the earlier pushed head 01408a04; the head pushed last by plan 12 carries the evidence and handoff commits and its CI result is observed after that push, with the head SHA, the synthetic merge commit CI ran on and the run id recorded in the PR comment headed `198 CI record` and in 198-12-SUMMARY.md; the plan 12 SUMMARY commit is local and not pushed, so the PR head is the commit before it). Foreign-host outcome A: the advisory `android-foreign-host` job succeeded on Linux (published version 0.2.11, 2 tests, both D-18 control lines matched on Gradle 8.7); derived promotion line `android_foreign: clean_runs=2/2 eligible=yes`, promotion not attempted (D-20). AND-01, AND-02 and AND-03 are evidenced on the Linux CI head; their REQUIREMENTS ticks for AND-03 are left to verification. Exact next actions: (1) merging PR 270 to main needs a fresh one-use `allow` from the user for the PR head at that time (not executor work; re-read the delete-branch-on-merge setting first); (2) then `/gsd-verify-work 198 --ws quality-ratchet-release`; (3) promoting the foreign-host leg to required follows `bash script/android_foreign_promotion.sh` reporting `eligible=yes`, then a reviewed promotion PR (D-20); (4) open item for the user: the four Phase 197 closeout commits carried on this branch (see 198-DECISIONS.md, Open items for the user), keep them in PR 270 or land them as a separate docs PR. Earlier handoffs are in `history/phase-197-handoff.md`. The user's uncommitted `.planning/config.json` change stays uncommitted.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-05T19:18:36.737Z
-**Stopped at:** Completed 197-14-PLAN.md
+**Last session:** 2026-11-06T00:06:27.815Z
+**Stopped at:** Phase 198 plan 12 complete; PR open, merge awaits allow
 **Resume file:** None
 
 ## Accumulated Context
@@ -42,6 +42,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 ### Roadmap Evolution
 
 - Phase 196 edited: edited fields: requirements, success_criteria — SPEC-04 moved intact to v29.0 (overrun cut order, D-03/D-24); both attempts preserved
+- Phase 198 edited: AND-01 and SC1 corpus wording (D-01) and Phase 199 SC6 removal list gains guides/parity_ledger.md (D-08)
 
 ## Performance Metrics
 
@@ -65,6 +66,17 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 197 P15 | 25 min | 3 tasks | 11 files |
 | Phase 197 P13 | 75min | 2 tasks | 8 files |
 | Phase 197 P14 | about 1h 10m (second session; first session blocked at CI) | 2 tasks | 8 files |
+| Phase 198 P01 | 25min | 3 tasks | 9 files |
+| Phase 198 P02 | 20min | 3 tasks | 2 files |
+| Phase 198 P03 | 15min | 3 tasks | 3 files |
+| Phase 198 P04 | 30min | 3 tasks | 11 files |
+| Phase 198 P05 | 25min | 3 tasks | 11 files |
+| Phase 198 P06 | 20min | 3 tasks | 9 files |
+| Phase 198 P07 | 30min | 3 tasks | 10 files |
+| Phase 198 P08 | 40min | 3 tasks | 12 files |
+| Phase 198 P09 | 35min | 2 tasks | 3 files |
+| Phase 198 P10 | 50min | 3 tasks | 4 files |
+| Phase 198 P11 | 35min | 2 tasks | 3 files |
 
 ## Decisions
 
@@ -87,6 +99,18 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 197]: 197-15: qualifier sentences sit on one physical line and the guard reads heading plus body, so a wrapped or heading-only claim cannot slip past D-26
 - [Phase 197]: 197-13: ledger fix-forward regenerates the collection-assertion snapshot with the script classifier; D-07b literal mutation is rejected statically by required_step doctor, so a --router mutation is also run to reach the runtime doctor step
 - [Phase 197]: 197-14: dependency advisories fixed by separate PR 269 to main, then main merged into the branch; mix.lock is a measured input so suite and docs-report after-counts were remeasured; PR 268 green 38/38 on e4936637 (CI ran on synthetic merge 9d0aa1f0)
+- [Phase 198]: JVM tests use AOSP-derived android-json test artifact; production keeps platform org.json (D-09)
+- [Phase 198]: SemVer digit-only on Android; divergence from iOS Int(_:) recorded as debt row (e)
+- [Phase 198]: Plan 02: BridgeChannel boundary tests run with counted near-miss loops and positive controls; every D-12 near miss denied fail closed, no finding. server.event.push and server.state.update ungated behavior is pinned as characterization only (debt row a)
+- [Phase 198]: Plan 03: Kotlin JVM test floor runs as separate android-package-unit steps (Option A, stage argv unchanged); floor 25 ratchet with derived XML-to-source equality, measured 37/37/20; selftest controls verified by mutation
+- [Phase 198]: Plan 04: generator hashes the one binary written to the three corpus copies and emits VectorSetHash.kt; every Kotlin corpus load goes through VectorCorpus.loadVerifiedBytes (CW-VECTOR-HASH); AND-01 stays open until Swift (Plan 05) and the ledger (Plan 07)
+- [Phase 198]: Plan 05: Swift constant generated from the same hex as Kotlin and outside Resources/; five Swift loaders verify via CryptoKit (CW-VECTOR-HASH); one-time byte-flip turned both native suites red; AND-01 stays open until the ledger (Plans 06/07)
+- [Phase 198]: Plan 06: Android evidence ceiling typed at :jvm_hermetic (validate raises above it), only bounded-bridge-app-info carries JVM hermetic proof, boundary sentence single-sourced via android_boundary/0; native_shell.md is a pinned hand-written exemption; AND-01 stays open until the ledger (Plan 07)
+- [Phase 198]: Plan 07: ParityLedger reads both corpus locations at run time, computes the Android cell from reference checks plus a two-sided consumer registry (registry entries carry an executes scope), and ships as a third docs.sync projection with a tamper control; AND-01 floor met locally, wording amendment (Plan 08) and CI evidence (Plan 12) still owed
+- [Phase 198]: Plan 08: Android ceiling test derives its allowed set from the typed ceiling; prose backstop patterns measured at 0 unsuppressed hits after rewording 3 source lines; phase 170 collection ledger regenerated (290 sites) after Phase 198 test edits; AND-01 corpus wording amended on the record (D-01)
+- [Phase 198]: Plan 09: foreign-host proof picks the highest version on both Maven Central and Hex, proves non-vacuity three ways (host probe, runtime-jar code source, AAR sha256), and stops at the first failing leg; AND-03 stays open until Linux CI evidence (Plans 11/12)
+- [Phase 198]: Plan 10: promotion readiness is derived from CI history plus evidence content and the current script blob; each gh read is attempted twice (GitHub 502s), a double failure is UNVERIFIED never zero; AND-03 stays open until Linux CI evidence (Plans 11/12)
+- [Phase 198]: Plan 11: advisory android-foreign-host job outside required authority via ADVISORY_JOBS loop; cache key carries runner.os and arch (Phase 153.1 contract); sibling test avoids refute Enum.any? so the Phase 170 ledger and absence baseline are unchanged; AND-03 stays open until Linux CI evidence (Plan 12)
 
 ### Blockers
 

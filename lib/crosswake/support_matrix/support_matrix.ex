@@ -16,6 +16,20 @@ defmodule Crosswake.SupportMatrix do
   @statuses [:supported, :verification_required, :unsupported]
   @proof_classes [:merge_blocking, :advisory, :not_applicable]
   @diagnostic_severities [:error, :warning, :advisory]
+
+  # Android evidence ceiling (Phase 198, D-21). Order is ascending strength.
+  # `:emulator` and `:device` map to the older `verification_method` atoms
+  # `:emulator_advisory` and `:device_verified`. Raising the ceiling above
+  # `:jvm_hermetic` needs an ADR A1 amendment, not an edit here.
+  @android_evidence_order [:not_claimed, :jvm_hermetic, :emulator, :device]
+  @android_evidence_ceiling :jvm_hermetic
+  @android_evidence_labels %{
+    not_claimed: "not claimed",
+    jvm_hermetic: "JVM hermetic proof",
+    emulator: "emulator evidence",
+    device: "device evidence"
+  }
+  @android_boundary "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim."
   @commerce_corridor_prerequisite_taxonomy [
     :route_declaration,
     :backend_reconciliation,
@@ -443,7 +457,7 @@ defmodule Crosswake.SupportMatrix do
           proof_status: :supported,
           proof: "script/verify_generated_android_shell.sh",
           notes:
-            "Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim. Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.",
+            "#{@android_boundary} Checked-in Android host boot is `checked-in public-coordinate proof`; JVM hermetic CI evidence remains separate. Android never gates the first adopter's physical-iPhone proof: no new feature, template, emulator/device or release claim.",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -470,7 +484,7 @@ defmodule Crosswake.SupportMatrix do
           proof:
             "native-behavioral-proof-gate / android-generated-shell-unit; script/verify_generated_android_shell.sh",
           notes:
-            "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. Android proof and parity cover existing contracts only. Evidence is `JVM hermetic proof` and shared vectors; there is no emulator, device or new-feature claim.",
+            "Generated Android shell artifacts are supported based strictly on `JVM hermetic proof` via the merge-blocking android-generated-shell-unit CI lane (native-behavioral-proof-gate). JVM hermetic proof is not emulator evidence or physical-device proof. #{@android_boundary}",
           boundary_link: "guides/native_shell.md#boundary-warnings--rough-edges"
         )
       ],
@@ -502,6 +516,53 @@ defmodule Crosswake.SupportMatrix do
 
   @spec diagnostic_severities() :: [atom()]
   def diagnostic_severities, do: @diagnostic_severities
+
+  @doc """
+  Android evidence levels in ascending order.
+  """
+  @spec android_evidence_levels() :: [atom()]
+  def android_evidence_levels, do: @android_evidence_order
+
+  @doc """
+  The highest Android evidence level any claim may carry.
+  """
+  @spec android_evidence_ceiling() :: atom()
+  def android_evidence_ceiling, do: @android_evidence_ceiling
+
+  @doc """
+  Plain-language label for an Android evidence level. Raises for an unknown level.
+  """
+  @spec android_evidence_label(atom()) :: String.t()
+  def android_evidence_label(level) do
+    case Map.fetch(@android_evidence_labels, level) do
+      {:ok, label} -> label
+      :error -> raise ArgumentError, "invalid android evidence: unsupported_level"
+    end
+  end
+
+  @doc """
+  Validates an Android evidence level against the ceiling without echoing caller data.
+  """
+  @spec validate_android_evidence!(atom()) :: atom()
+  def validate_android_evidence!(level) when level in @android_evidence_order do
+    ceiling_index = Enum.find_index(@android_evidence_order, &(&1 == @android_evidence_ceiling))
+    level_index = Enum.find_index(@android_evidence_order, &(&1 == level))
+
+    if level_index > ceiling_index do
+      raise ArgumentError, "invalid android evidence: above_ceiling"
+    else
+      level
+    end
+  end
+
+  def validate_android_evidence!(_level),
+    do: raise(ArgumentError, "invalid android evidence: unsupported_level")
+
+  @doc """
+  The single canonical Android boundary sentence; every generated surface renders from it.
+  """
+  @spec android_boundary() :: String.t()
+  def android_boundary, do: @android_boundary
 
   @spec action_classes() :: [Types.ActionClassEntry.t()]
   def action_classes, do: action_class_entries()
@@ -1544,14 +1605,14 @@ defmodule Crosswake.SupportMatrix do
           "Demote to verification_required when Android JVM hermetic CI proof is stale, fails, or coverage drops below the freshness window. jvm_hermetic promotion MUST NOT be read as device_verified — CI-level evidence is not device/emulator evidence.",
         required_verification_method: :jvm_hermetic
       ),
-      # D-19: Android device-verified promotion criteria — GATED until Phases 67/68.
+      # D-19: Android promotion criteria for device-level proof — GATED until Phases 67/68.
       # Device/emulator proof is unavailable until Phase 67 (Android shell implementation)
       # and Phase 68 (Android verification closure and device-UAT).
       # jvm_hermetic promotion MUST NOT be read as device_verified.
       promotion_rule(
         claim_id: "shell.android.device_verified",
         claim_scope:
-          "Android shell device/emulator-verified proof promotion — GATED until Phases 67/68",
+          "Android shell emulator and device proof promotion — GATED until Phases 67/68",
         current_proof_class: :advisory,
         promotes_to: :merge_blocking,
         evidence_class: "device_verified",
@@ -1559,7 +1620,7 @@ defmodule Crosswake.SupportMatrix do
           "Android emulator advisory lane evidence (Phase 68)",
           "device-UAT checklist completion (Phase 68)",
           "capability-parity-locked device proof",
-          "docs-contract parity for Android device-verified runtime-line"
+          "docs-contract parity for Android device_verified runtime-line"
         ],
         minimum_consecutive_passes: 3,
         freshness_window: "current release branch, within 10 device-UAT runs",

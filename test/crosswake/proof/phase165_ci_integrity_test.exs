@@ -158,6 +158,52 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   end
 
   @tag :triggers
+  test "android foreign-host proof stays visibly red and outside required authority" do
+    workflow = File.read!(@crosswake_ci)
+    manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
+    foreign = job_body(workflow, "android-foreign-host")
+    umbrella = job_body(workflow, "merge-blocking-crosswake-ci")
+
+    assert foreign =~ "name: android-foreign-host"
+    assert foreign =~ "needs: [classify-change]"
+    assert foreign =~ "classification == 'full_proof'"
+    assert foreign =~ "runs-on: ubuntu-latest"
+    assert foreign =~ "verify_android_foreign_host.sh"
+    assert foreign =~ "Remediation:"
+    refute foreign =~ "continue-on-error"
+    refute foreign =~ ~r/\|\|\s*true/
+
+    job_if_lines = Regex.scan(~r/^    if: .*$/m, foreign) |> List.flatten()
+    refute Enum.empty?(job_if_lines)
+
+    for line <- job_if_lines do
+      refute line =~ "always()"
+    end
+
+    # Membership checks over derived id lists, each list proven non-empty first, so an empty
+    # manifest section cannot satisfy the absence claim.
+    leaf_ids = Enum.map(manifest["proof_leaves"], & &1["leaf_id"])
+    refute Enum.empty?(leaf_ids)
+    refute "android-foreign-host" in leaf_ids
+
+    control_ids = Enum.map(manifest["required_control_nodes"], & &1["node_id"])
+    refute Enum.empty?(control_ids)
+    refute "android-foreign-host" in control_ids
+
+    # The retired compatibility list is empty by design (v22.0 umbrella); the checker's
+    # retired_compatibility_context control keeps it that way, this only names the new job.
+    compatibility_ids =
+      Enum.flat_map(
+        manifest["legacy_compatibility_contexts"],
+        &[&1["job_id"], &1["needs_target"]]
+      )
+
+    refute "android-foreign-host" in compatibility_ids
+
+    refute umbrella =~ ~r/^      - android-foreign-host$/m
+  end
+
+  @tag :triggers
   @tag :runner_placement
   test "native and mixed proof moves once with exact platform ownership" do
     workflow = File.read!(@crosswake_ci)

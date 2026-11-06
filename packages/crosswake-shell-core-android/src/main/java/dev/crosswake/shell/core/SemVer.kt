@@ -33,6 +33,8 @@ internal object SemVer {
         }
     }
 
+    private val DIGITS_ONLY = Regex("^[0-9]+$")
+
     // --- Private helpers ---
 
     /**
@@ -50,11 +52,14 @@ internal object SemVer {
 
     /**
      * Parses a "MAJOR.MINOR.PATCH" string into a list of three Ints.
-     * Returns `null` if any component is non-numeric or the count != 3.
+     * Components are non-negative digit-only integers; a sign, whitespace or any
+     * other character is rejected (fail closed). Returns `null` if any component
+     * is not digit-only, overflows an Int, or the count != 3.
      */
     private fun parse(version: String): List<Int>? {
         val parts = version.split(".")
         if (parts.size != 3) return null
+        if (!parts.all { DIGITS_ONLY.matches(it) }) return null
         val ints = parts.mapNotNull { it.toIntOrNull() }
         if (ints.size != 3) return null
         return ints
@@ -66,7 +71,7 @@ internal object SemVer {
      */
     private fun compare(a: List<Int>, b: List<Int>): Int {
         for (i in 0..2) {
-            val diff = a[i] - b[i]
+            val diff = a[i].compareTo(b[i])
             if (diff != 0) return diff
         }
         return 0

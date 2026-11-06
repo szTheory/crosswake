@@ -28,9 +28,7 @@ class BridgeReplyLegTest {
 
     @Before
     fun loadVectors() {
-        val stream = javaClass.getResourceAsStream("/bridge_contract_vectors.json")
-            ?: throw AssertionError("CW-VECTOR-MISSING bridge_contract_vectors.json")
-        val text = stream.bufferedReader().use { it.readText() }
+        val text = VectorCorpus.loadVerifiedBytes().toString(Charsets.UTF_8)
         vectorsJson = JSONObject(text)
         bridgeVersion = vectorsJson.getString("bridge_protocol_version")
         val vectors = vectorsJson.getJSONArray("reply_leg_vectors")

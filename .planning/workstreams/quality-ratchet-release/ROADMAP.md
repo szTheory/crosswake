@@ -17,7 +17,7 @@
 - [x] **Phase 194: Bearings reset and ADR amendments** - Rolling roadmap, bearings, personas, a short STATE and a bearings report land, and the ADR amendments (Android unfrozen for parity; synthetic-profile reversal gate) change every rule text together (completed 2026-10-25)
 - [x] **Phase 195: Pipeline repair and hygiene** - The release PR goes green with no hand edits, the PR queue and CI schedules are clean, secrets are masked, the repository root and branches are tidy, and one clean-room command runs against real published artifacts (completed 2026-10-27)
 - [x] **Phase 196: Spec and structure ratchet** - Sensitive offline, policy and bridge specs can no longer pass empty, boundary and exhaustive policy specs exist, a Muex pilot decides adopt or drop, and compile-cycle, bare-rescue and dependency ratchets hold (completed 2026-10-29)
-- [ ] **Phase 197: Public docs truth** - The documented install path runs on a normal host, version and telemetry claims are true, "Android frozen" text is gone, and docs checks report counts
+- [x] **Phase 197: Public docs truth** - The documented install path runs on a normal host, version and telemetry claims are true, "Android frozen" text is gone, and docs checks report counts (completed 2026-11-05)
 - [ ] **Phase 198: Android foreign-host proof** - A generated parity ledger, a Kotlin test floor, and a fresh foreign Gradle project that resolves the published Maven coordinate and passes JVM tests on Linux CI
 - [ ] **Phase 199: Release 0.2.12** - One real release, core first, with a separate `allow` per merge, publish and tag, and a post-publish check that the iOS mirror tag equals the release version
 
@@ -293,12 +293,49 @@ Plans:
 **Depends on**: Phase 194 (ADR-01 unfreeze), Phase 196 (Kotlin vector count pins), Phase 195 (clean-room command shape)
 **Requirements**: AND-01, AND-02, AND-03
 **Success Criteria** (what must be TRUE):
-  1. A parity ledger with an Android column is generated from `priv/contract_vectors/*.json` (regenerating it produces no diff), and a test asserts Swift and Kotlin reference the same vector-set hash and fails on a mismatch.
+  1. A parity ledger with an Android column is generated from the bridge contract corpus (`test/fixtures/bridge_contract_vectors.json` and its two native copies) and `priv/contract_vectors/*.json` (regenerating it produces no diff), and a test asserts Swift and Kotlin reference the same vector-set hash and fails on a mismatch. (Amended 2026-11-05, CONTEXT D-01: the corpus Swift and Kotlin share lives under test/fixtures and is not moved.)
   2. The Kotlin core JVM test count is at least 25 (up from 12) and includes `BridgeChannel` boundary cases; `androidx.webkit` is absent from the build files if no source imports it; the Android JSON-stack choice is recorded in writing.
   3. A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on the Linux CI head commit as an advisory leg (required only after two clean runs), and a negative control with a wrong coordinate fails.
   4. No Android claim in the support matrix or capability map exceeds JVM-hermetic evidence (no device, emulator or feature-breadth claim).
 
-**Plans**: TBD
+**Plans**: 11/12 plans executed (one checkout, sequential waves)
+
+**Wave 1**
+- [x] 198-01-PLAN.md — JSON-stack swap to AOSP-derived android-json, dead serialization removed, fail-closed envelope, listener extractions, SemVer hardening, decisions in writing (AND-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 198-02-PLAN.md — BridgeChannel boundary tests for every D-12 group, suite at 37 or more (AND-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 198-03-PLAN.md — Kotlin test-floor checker with fixture controls, wired into android-package-unit (AND-02)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 198-04-PLAN.md — Generated Kotlin vector-set hash, verified Kotlin loaders, .gitattributes LF pins, declared output (AND-01)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 198-05-PLAN.md — Generated Swift vector-set hash, verified Swift loaders, one-time byte-flip evidence (AND-01)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 198-06-PLAN.md — Typed Android evidence ceiling, capability-map Android evidence column, single-sourced boundary sentence (AND-01, SC4)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 198-07-PLAN.md — Generated public parity ledger via docs.sync with computed Android cells, two-sided consumer registry and controls (AND-01)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 198-08-PLAN.md — Android claim-ceiling table test, measured prose backstop, ledger qualifier, recorded AND-01 wording amendment (AND-01, SC4)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 198-09-PLAN.md — Foreign-host script against the published Maven coordinate with wrong-coordinate control, hermetic selftest (AND-03)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 198-10-PLAN.md — Derived two-clean-runs promotion script and bearings report line (AND-03)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 198-11-PLAN.md — Advisory android-foreign-host CI job, ADVISORY_JOBS loop, selftests in the hermetic lane (AND-03)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 198-12-PLAN.md — Full gates, privacy scan, PR with CI green on head, first Linux foreign-host run, clean-run count, cost record (AND-01..03)
+
 **Research**: Needs `--research-phase` (Android build files, `androidx.webkit` and `org.json` usage, generator templates versus Gradle files were read at grep level only)
 
 ### Phase 199: Release 0.2.12
@@ -312,7 +349,7 @@ Plans:
   3. A post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch.
   4. `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close.
   5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
-  6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md` and `guides/architecture.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
+  6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md`, `guides/architecture.md` and `guides/parity_ledger.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
 
 **Plans**: TBD
 **Research**: Skip
@@ -325,7 +362,7 @@ Plans:
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | In Progress | - |
-| 198. Android foreign-host proof | 0/TBD | Not started | - |
+| 198. Android foreign-host proof | 12/12 | PR open, merge awaits allow | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 
 <details>

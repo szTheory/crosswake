@@ -13,7 +13,7 @@ final class OfflineIslandAdmissionTests: XCTestCase {
         try super.setUpWithError()
         let url = try XCTUnwrap(Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
                                 "CW-VECTOR-MISSING bridge_contract_vectors.json")
-        let corpus = try JSONDecoder().decode(BridgeVectorsFile.self, from: Data(contentsOf: url))
+        let corpus = try JSONDecoder().decode(BridgeVectorsFile.self, from: VectorCorpus.verifiedData(contentsOf: url))
         // Metadata availability/cardinality; behavioral scenarios below remain inline.
         _ = try XCTUnwrap(corpus.vectors.count == 15 ? true : nil, "CW-VECTOR-LOADED expected 15")
         bridgeVersion = corpus.bridgeProtocolVersion

@@ -14,7 +14,7 @@ final class Phase180TwinFeasibilityTests: XCTestCase {
         try super.setUpWithError()
         let url = try XCTUnwrap(Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
                                 "CW-VECTOR-MISSING bridge_contract_vectors.json")
-        let corpus = try JSONDecoder().decode(BridgeVectorsFile.self, from: Data(contentsOf: url))
+        let corpus = try JSONDecoder().decode(BridgeVectorsFile.self, from: VectorCorpus.verifiedData(contentsOf: url))
         // This owner reads metadata; its inline/exported scenarios are not corpus verdicts.
         _ = try XCTUnwrap(corpus.vectors.count == 15 ? true : nil, "CW-VECTOR-LOADED expected 15")
         metadataBridgeVersion = corpus.bridgeProtocolVersion

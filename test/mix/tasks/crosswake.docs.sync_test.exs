@@ -5,6 +5,7 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
 
   alias Crosswake.CapabilityMap
   alias Crosswake.CapabilityMap.Renderer, as: CapabilityRenderer
+  alias Crosswake.ParityLedger.Renderer, as: ParityLedgerRenderer
   alias Crosswake.SupportMatrix
   alias Crosswake.SupportMatrix.Renderer, as: SupportRenderer
 
@@ -26,23 +27,26 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
     {:ok, root: root}
   end
 
-  test "default mode writes both canonical projections and is idempotent", %{root: root} do
+  test "default mode writes all canonical projections and is idempotent", %{root: root} do
     in_root(root, fn -> run([]) end)
 
     capability_path = Path.join(root, "guides/capability_map.md")
     support_path = Path.join(root, "guides/support_matrix.md")
+    ledger_path = Path.join(root, "guides/parity_ledger.md")
 
     assert File.read!(capability_path) == CapabilityRenderer.render(CapabilityMap.canonical())
     assert File.read!(support_path) == SupportRenderer.render(SupportMatrix.canonical())
+    assert File.read!(ledger_path) == ParityLedgerRenderer.render()
 
-    before = metadata([capability_path, support_path])
+    before = metadata([capability_path, support_path, ledger_path])
     in_root(root, fn -> run([]) end)
-    assert metadata([capability_path, support_path]) == before
+    assert metadata([capability_path, support_path, ledger_path]) == before
 
     messages = shell_messages()
     assert messages =~ "crosswake.docs.sync complete"
     assert messages =~ "reused: guides/capability_map.md"
     assert messages =~ "reused: guides/support_matrix.md"
+    assert messages =~ "reused: guides/parity_ledger.md"
   end
 
   test "canonical iOS host setup guidance states the observed scope and limits" do
@@ -65,7 +69,7 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
     end
   end
 
-  test "check mode is observational when both projections match", %{root: root} do
+  test "check mode is observational when all projections match", %{root: root} do
     write_canonical_guides(root)
     paths = guide_paths(root)
     repo_snapshot = repository_snapshot()
@@ -83,8 +87,10 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
   } do
     capability_path = Path.join(root, "guides/capability_map.md")
     support_path = Path.join(root, "guides/support_matrix.md")
+    ledger_path = Path.join(root, "guides/parity_ledger.md")
     File.write!(capability_path, "CAPABILITY_SECRET")
     File.write!(support_path, "SUPPORT_SECRET")
+    File.write!(ledger_path, "LEDGER_SECRET")
 
     paths = guide_paths(root)
     before = %{bytes: bytes(paths), metadata: metadata(paths)}
@@ -99,24 +105,49 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
     assert error.message =~ "guides/capability_map.md"
     assert error.message =~ "lib/crosswake/support_matrix/support_matrix.ex"
     assert error.message =~ "guides/support_matrix.md"
+    assert error.message =~ "lib/crosswake/parity_ledger.ex"
+    assert error.message =~ "guides/parity_ledger.md"
     assert count(error.message, @remediation) == 1
     refute error.message =~ "CAPABILITY_SECRET"
     refute error.message =~ "SUPPORT_SECRET"
+    refute error.message =~ "LEDGER_SECRET"
 
     assert :binary.match(error.message, "guides/capability_map.md") <
              :binary.match(error.message, "guides/support_matrix.md")
+
+    assert :binary.match(error.message, "guides/support_matrix.md") <
+             :binary.match(error.message, "guides/parity_ledger.md")
   end
 
   test "check mode reports a missing projection without creating it", %{root: root} do
     capability_path = Path.join(root, "guides/capability_map.md")
     support_path = Path.join(root, "guides/support_matrix.md")
     File.write!(capability_path, CapabilityRenderer.render())
+    File.write!(Path.join(root, "guides/parity_ledger.md"), ParityLedgerRenderer.render())
     refute File.exists?(support_path)
 
     error = assert_raise Mix.Error, fn -> in_root(root, fn -> run(["--check"]) end) end
 
     refute File.exists?(support_path)
     assert error.message =~ "guides/support_matrix.md"
+    assert count(error.message, @remediation) == 1
+  end
+
+  test "control: a tampered parity ledger fails --check", %{root: root} do
+    write_canonical_guides(root)
+    in_root(root, fn -> run(["--check"]) end)
+    assert shell_messages() =~ "crosswake.docs.sync --check passed"
+
+    ledger_path = Path.join(root, "guides/parity_ledger.md")
+    original = File.read!(ledger_path)
+    File.write!(ledger_path, original <> "x")
+    refute File.read!(ledger_path) == original
+
+    error = assert_raise Mix.Error, fn -> in_root(root, fn -> run(["--check"]) end) end
+
+    assert error.message =~ "guides/parity_ledger.md"
+    refute error.message =~ "guides/capability_map.md"
+    refute error.message =~ "guides/support_matrix.md"
     assert count(error.message, @remediation) == 1
   end
 
@@ -141,12 +172,15 @@ defmodule Mix.Tasks.Crosswake.Docs.SyncTest do
       Path.join(root, "guides/support_matrix.md"),
       SupportRenderer.render(SupportMatrix.canonical())
     )
+
+    File.write!(Path.join(root, "guides/parity_ledger.md"), ParityLedgerRenderer.render())
   end
 
   defp guide_paths(root) do
     [
       Path.join(root, "guides/capability_map.md"),
-      Path.join(root, "guides/support_matrix.md")
+      Path.join(root, "guides/support_matrix.md"),
+      Path.join(root, "guides/parity_ledger.md")
     ]
   end
 

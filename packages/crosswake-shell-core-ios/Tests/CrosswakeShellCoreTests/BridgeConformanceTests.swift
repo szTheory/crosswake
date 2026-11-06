@@ -130,7 +130,7 @@ final class BridgeConformanceTests: XCTestCase {
             Bundle.module.url(forResource: "bridge_contract_vectors", withExtension: "json"),
             "CW-VECTOR-MISSING bridge_contract_vectors.json"
         )
-        let data = try Data(contentsOf: url)
+        let data = try VectorCorpus.verifiedData(contentsOf: url)
         vectorsFile = try JSONDecoder().decode(BridgeVectorsFile.self, from: data)
     }
 
