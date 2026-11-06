@@ -1,0 +1,37 @@
+# Phase 198 plan 12 local gates (2026-11-05, branch feat/198-android-foreign-host-proof)
+# Gate lines only; the raw suite output holds local absolute paths and is not committed.
+
+## Floor arithmetic
+baseline (Phase 197, 197-EVIDENCE/suite-197.txt): ran 3058, total 3134
+new Elixir tests per plan SUMMARY: 06 = 10 (9 android_evidence_test + 1 capability_map_test); 07 = 21 (5 + 15 parity_ledger_test + 1 docs.sync tamper control); 08 = 10 (8 claim-ceiling + 2 generated qualifier tests); 10 = 2 (bearings_report_test); 11 = 1 (phase165_ci_integrity_test); 01-05 and 09 = 0
+sum = 44; floors: --min 3102 (3058 + 44), --min-total 3178 (3134 + 44); the measured result equals both floors exactly
+
+## Full core suite, first run on 56bc7c18 (before fix commits)
+mix-test-gate: rc=2 total=3178 excluded=76 skipped=0 ran=3102 failures=3 invalid=0 min=3102 min_total=3178 verdict=FAIL reason=mix_rc
+failures (each real, none pre-existing on origin/main CI):
+  1) Crosswake.RepositoryRootAllowlistTest "live: root holds only allowlisted files": .gitattributes at the repo root (added by Plan 04) was not allowlisted
+  2) and 3) Crosswake.Proof.Phase52OperatorTruthTest "normalized publish-readiness json matches fixture" and its Phase135CiOpsProofTest wrapper: the doctor docs_extras list gained guides/parity_ledger.md (Plan 07) and the fixture did not
+note: Plan 08 and Plan 11 SUMMARY/deferred-items called phase52_operator_truth "pre-existing"; that was wrong, Plan 07 caused it. The two Phase175 tests do not fail in the full-suite run.
+fixes: 14942e8f (fixture + allowlist). Targeted rerun: mix-test-gate: rc=0 total=19 excluded=0 skipped=0 ran=19 failures=0 invalid=0 min=8 min_total=0 verdict=PASS
+
+## Full core suite, rerun on a05eaa54 (final local head before push)
+mix-test-gate: rc=0 total=3178 excluded=76 skipped=0 ran=3102 failures=0 invalid=0 min=3102 min_total=3178 verdict=PASS
+
+## Swift package suite (cd packages/crosswake-shell-core-ios && swift test), rc=0
+Executed 91 tests, with 2 tests skipped and 0 failures (0 unexpected)
+skipped: the two Phase180TwinFeasibilityTests that need PHASE180_EXPORT_DIR (environment-gated, unchanged by this phase)
+
+## Kotlin floor (JAVA_HOME=openjdk@17 python3 script/check_kotlin_test_floor.py --run), rc=0, rerun after the Kotlin edits in a05eaa54 and d1a60a66
+kotlin-floor: tests=39 source_tests=39 boundary=20 floor=25 verdict=PASS
+
+## Selftests
+script/check_kotlin_test_floor_test.py: Ran 13 tests, OK
+script/verify_android_foreign_host_test.py: Ran 21 tests, OK
+script/android_foreign_promotion_test.py: Ran 13 tests, OK
+script/check_ci_leaf_manifest.py --self-test: Ran 8 tests, OK, "ci leaf manifest self-test: pass"
+node --test test/js/repository_verification.test.mjs (edited file): pass 41, fail 0
+
+## Other exits (all rc 0)
+mix crosswake.docs.sync --check
+mix format --check-formatted
+mix compile --warnings-as-errors --force

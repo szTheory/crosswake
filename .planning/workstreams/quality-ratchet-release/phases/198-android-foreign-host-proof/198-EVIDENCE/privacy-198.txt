@@ -1,0 +1,4 @@
+# privacy scan run 1 (HEAD a05eaa54 plus the uncommitted suite-198.txt, 98 branch files plus the evidence file plus the draft PR body; 100 inputs)
+# earlier scan on 56bc7c18 found 12 hits (email-shaped literals, a local home path and account text in planning docs); fixed by d1a60a66 and a05eaa54 before any push
+privacy: clean files 100
+privacy: rc 0
