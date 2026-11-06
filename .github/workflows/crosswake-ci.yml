@@ -1209,7 +1209,18 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         working-directory: examples/phoenix_host
-        run: npx playwright install --with-deps
+        timeout-minutes: 12
+        run: |
+          # Bound each attempt: a stalled apt mirror held this step until the 20-minute job limit on
+          # two consecutive pull requests, with no test run. Fail the attempt and try again instead.
+          for attempt in 1 2 3; do
+            if timeout --kill-after=15 200 npx playwright install --with-deps; then
+              exit 0
+            fi
+            echo "::warning::playwright install attempt ${attempt} failed or timed out"
+          done
+          echo "::error::playwright install failed 3 times. Read the attempt output above before rerunning."
+          exit 1
       - name: Run Playwright tests
         run: script/verify_repository.sh --stage browser-proof
       - name: Upload E2E failure evidence
