@@ -351,7 +351,7 @@ Plans:
   5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
   6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md`, `guides/architecture.md` and `guides/parity_ledger.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
 
-**Plans**: 19 plans, sequential waves 1–19 in one checkout. Branch `ci/199-release-gates` (plans 01–07, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 08–19, one human closeout PR). Eight one-use gates (core merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md; Plan 01 asks the gate-design decision first, records the D-04 tag-granularity note on SC2 and REL-07, and stops the phase for re-planning if the recommended package is not chosen (any D-06 answer continues).
+**Plans**: 19 plans, sequential waves 1–19 in one checkout. Branch `ci/199-release-gates` (plans 01–07, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 08–19, one human closeout PR). Nine one-use gates (core Maven fire drill, merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md, the fire drill bound to one captured candidate head, so a new head needs a new allow; Plan 01 asks the gate-design decision first, records the D-04 tag-granularity note on SC2 and REL-07, and stops the phase for re-planning if the recommended package is not chosen (any D-06 answer continues).
 
 Plans:
 **Wave 1**
@@ -376,7 +376,7 @@ Plans:
 - [ ] 199-07-PLAN.md — Land the gate pipeline PR; proposal run flows with the hosted-runner preflight PASS; PR 236 green on its refreshed head with zero hand edits (REL-07)
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 199-08-PLAN.md — Core candidate capture, absences, ten secret names; Hex and iOS rehearsals; Maven fire drill validated then dropped under D-08; hosted receipt (REL-07)
+- [ ] 199-08-PLAN.md — Core candidate capture, absences, ten secret names; Hex and iOS rehearsals; gate core-maven-drill, then the Maven fire drill validated then dropped; hosted receipt (REL-07)
 
 **Wave 9** *(blocked on Wave 8 completion)*
 - [ ] 199-09-PLAN.md — Candidate docs rehearsed with REL-06; pre-merge capture and checked trailer (REL-07)
@@ -409,7 +409,7 @@ Plans:
 - [ ] 199-18-PLAN.md — Planning truth from evidence (REL-07 status, ROADMAP, STATE handoff) and AGENTS.md condensed to its cap (D-07) (REL-07)
 
 **Wave 19** *(blocked on Wave 18 completion)*
-- [ ] 199-19-PLAN.md — Closeout human PR recording 0.2.12 published; PR 258 per D-06; local cleanup; bearings-report exit 0 (SC4) (REL-07)
+- [ ] 199-19-PLAN.md — Closeout human PR recording 0.2.12 published; PR 258 per D-06, asked at a checkpoint if still open and 14 days old; local cleanup; bearings-report exit 0 (SC4) (REL-07)
 
 **Research**: Skip
 
