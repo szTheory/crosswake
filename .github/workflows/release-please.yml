@@ -1096,7 +1096,7 @@ jobs:
           REL17_POLICY_READ_TOKEN: ${{ secrets.BRANCH_PROTECTION_READ_TOKEN }}
         run: bash script/release_candidate/require_release_evidence.sh
 
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -1180,7 +1180,7 @@ jobs:
           version-file: .tool-versions
           version-type: strict
 
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
           java-version: '17'
           distribution: 'temurin'
