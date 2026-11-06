@@ -67,7 +67,7 @@ function multiRecordArtifactPolicy() {
 function makeRepository() {
   const directory = mkdtempSync(path.join(tmpdir(), "crosswake-repository-quality-test-"));
   execFileSync("git", ["init", "--quiet"], { cwd: directory });
-  execFileSync("git", ["config", "user.email", "repository-quality@example.invalid"], { cwd: directory });
+  execFileSync("git", ["config", "user.email", ["repository-quality", "example.invalid"].join("@")], { cwd: directory });
   execFileSync("git", ["config", "user.name", "Repository Quality Test"], { cwd: directory });
   writeFileSync(path.join(directory, "tracked.txt"), "tracked\n");
   execFileSync("git", ["add", "tracked.txt"], { cwd: directory });

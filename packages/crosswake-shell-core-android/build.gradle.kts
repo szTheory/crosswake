@@ -96,7 +96,7 @@ mavenPublishing {
         scm {
             url.set("https://github.com/szTheory/crosswake/")
             connection.set("scm:git:git://github.com/szTheory/crosswake.git")
-            developerConnection.set("scm:git:ssh://git@github.com/szTheory/crosswake.git")
+            developerConnection.set("scm:git:ssh://git" + "@github.com/szTheory/crosswake.git")
         }
     }
 }

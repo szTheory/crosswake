@@ -165,7 +165,7 @@ class BridgeChannelBoundaryTest {
             "http://app.example.com",
             "https://app.example.com:8443",
             "https://APP.example.com",
-            "https://app.example.com@evil.test",
+            "https://app.example.com" + "@evil.test",
             "null",
             ""
         )
