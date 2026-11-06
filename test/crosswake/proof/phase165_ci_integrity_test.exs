@@ -158,7 +158,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
   end
 
   @tag :triggers
-  test "android foreign-host proof stays visibly red and outside required authority" do
+  test "android foreign-host proof is a required leaf and its failures stay red" do
     workflow = File.read!(@crosswake_ci)
     manifest = @leaf_manifest |> File.read!() |> Jason.decode!()
     foreign = job_body(workflow, "android-foreign-host")
@@ -184,14 +184,14 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     # manifest section cannot satisfy the absence claim.
     leaf_ids = Enum.map(manifest["proof_leaves"], & &1["leaf_id"])
     refute Enum.empty?(leaf_ids)
-    refute "android-foreign-host" in leaf_ids
+    assert "android-foreign-host" in leaf_ids
 
     control_ids = Enum.map(manifest["required_control_nodes"], & &1["node_id"])
     refute Enum.empty?(control_ids)
     refute "android-foreign-host" in control_ids
 
     # The retired compatibility list is empty by design (v22.0 umbrella); the checker's
-    # retired_compatibility_context control keeps it that way, this only names the new job.
+    # retired_compatibility_context control keeps it that way, this only names the job.
     compatibility_ids =
       Enum.flat_map(
         manifest["legacy_compatibility_contexts"],
@@ -200,7 +200,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
 
     refute "android-foreign-host" in compatibility_ids
 
-    refute umbrella =~ ~r/^      - android-foreign-host$/m
+    assert umbrella =~ ~r/^      - android-foreign-host$/m
   end
 
   @tag :triggers
@@ -390,7 +390,7 @@ defmodule Crosswake.Proof.Phase165CiIntegrityTest do
     assert proof_ids == Enum.sort(proof_ids)
     assert control_ids == ["classify-change"]
     assert compatibility_ids == []
-    assert length(proof_ids) == 35
+    assert length(proof_ids) == 36
     assert length(compatibility_ids) == 0
 
     for id <- ["small-hermetic-proofs"] do

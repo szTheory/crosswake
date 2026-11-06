@@ -2,6 +2,13 @@
   "schema_version": 2,
   "proof_leaves": [
     {
+      "leaf_id": "android-foreign-host",
+      "display_name": "android-foreign-host",
+      "family": "native_android",
+      "remediation_command": "bash script/verify_android_foreign_host.sh",
+      "irrelevance_reason": "all_changed_paths_allowlisted"
+    },
+    {
       "leaf_id": "android-generated-shell-unit",
       "display_name": "android-generated-shell-unit",
       "family": "native_android",

@@ -24,6 +24,7 @@ UMBRELLA_NAME = "Crosswake CI"
 JOB_LIMIT = 256
 NEEDS_BYTE_LIMIT = 32 * 1024
 FINAL_PROOF_LEAVES = (
+    "android-foreign-host",
     "android-generated-shell-unit",
     "android-package-unit",
     "brand-structural",
@@ -62,7 +63,7 @@ FINAL_PROOF_LEAVES = (
 )
 FINAL_CONTROL_NODES = ("classify-change",)
 FINAL_NEEDS = tuple(sorted(FINAL_PROOF_LEAVES + FINAL_CONTROL_NODES))
-ADVISORY_JOBS = ("android-foreign-host", "brand-visual")
+ADVISORY_JOBS = ("brand-visual",)
 CLASSIFIER_IRRELEVANCE_REASON = "all_changed_paths_allowlisted"
 RELEASE_IRRELEVANCE_REASON = "release_inputs_unchanged"
 STAGE_COMMAND_PREFIX = "script/verify_repository.sh --stage "
@@ -617,7 +618,7 @@ class ManifestSelfTest(unittest.TestCase):
         )
 
     def test_every_advisory_job_stays_outside_authority(self) -> None:
-        advisory_id = "android-foreign-host"
+        advisory_id = "brand-visual"
         self.assertIn(advisory_id, ADVISORY_JOBS)
         self.assert_problem(
             lambda _m, w: w["jobs"].pop(advisory_id),

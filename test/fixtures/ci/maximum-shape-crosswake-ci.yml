@@ -7,6 +7,12 @@ on:
   pull_request:
 
 jobs:
+  android-foreign-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: "true"
+    name: android-foreign-host
   android-generated-shell-unit:
     name: android-generated-shell-unit
     runs-on: ubuntu-latest
@@ -238,6 +244,7 @@ jobs:
     name: Crosswake CI
     if: always()
     needs:
+      - android-foreign-host
       - android-generated-shell-unit
       - android-package-unit
       - brand-structural
