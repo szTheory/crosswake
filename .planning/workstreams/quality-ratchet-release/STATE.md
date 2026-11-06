@@ -2,30 +2,30 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 12
+current_plan: Not started
 status: executing
-stopped_at: "Phase 198 plan 12 complete; PR open, merge awaits allow"
-last_updated: "2026-11-06T01:57:38.342Z"
-state_head: 9b96b483a6bf6ea478e2a8a35dd9a245872b08a6
+stopped_at: Phase 198 complete, ready to plan Phase 199
+last_updated: "2026-11-06T02:21:21.529Z"
+state_head: d032c554b380fb0fb45ce183975c4ba6a08d082a
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 74
   completed_plans: 74
   percent: 60
-current_phase: 198
-current_phase_name: Android foreign-host proof
+current_phase: 199
+current_phase_name: Release 0.2.12
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
 ---
 
 ## Current Position
 
-Current Plan: 12
+Current Plan: Not started
 Total Plans in Phase: 12
 
 ## Exact Next Action
 
-Last completed phase: 197 (public docs truth, complete; PR 268 merged to main as 8d9ac9ac, closeout commits carried on the Phase 198 branch). Active phase: 198 (Android foreign-host proof), 12 of 12 plans done on branch `feat/198-android-foreign-host-proof`, pushed, PR 270 open. Last completed plan: 198-12 (full local gates, privacy scan, PR 270 opened; Crosswake CI was green 39 of 39 on the earlier pushed head 01408a04; the head pushed last by plan 12 carries the evidence and handoff commits and its CI result is observed after that push, with the head SHA, the synthetic merge commit CI ran on and the run id recorded in the PR comment headed `198 CI record` and in 198-12-SUMMARY.md; the plan 12 SUMMARY commit is local and not pushed, so the PR head is the commit before it). Foreign-host outcome A: the advisory `android-foreign-host` job succeeded on Linux (published version 0.2.11, 2 tests, both D-18 control lines matched on Gradle 8.7); derived promotion line `android_foreign: clean_runs=2/2 eligible=yes`, promotion not attempted (D-20). AND-01, AND-02 and AND-03 are evidenced on the Linux CI head; their REQUIREMENTS ticks for AND-03 are left to verification. Exact next actions: (1) merging PR 270 to main needs a fresh one-use `allow` from the user for the PR head at that time (not executor work; re-read the delete-branch-on-merge setting first); (2) then `/gsd-verify-work 198 --ws quality-ratchet-release`; (3) promoting the foreign-host leg to required follows `bash script/android_foreign_promotion.sh` reporting `eligible=yes`, then a reviewed promotion PR (D-20); (4) open item for the user: the four Phase 197 closeout commits carried on this branch (see 198-DECISIONS.md, Open items for the user), keep them in PR 270 or land them as a separate docs PR. Earlier handoffs are in `history/phase-197-handoff.md`. The user's uncommitted `.planning/config.json` change stays uncommitted.
+Last completed phase: 198 (Android foreign-host proof): 12 of 12 plans, verification passed 4 of 4, PR 270 merged to main as 00adfd23, closeout docs PR 271 merged as d032c554; AND-01, AND-02 and AND-03 complete. Phase 197 is also complete. Active phase: none open; the next milestone phase is 199 (Release 0.2.12), not yet planned. Exact next actions: (1) promote the foreign-host leg to a required check in its own reviewed PR (D-20): `bash script/android_foreign_promotion.sh` reported `clean_runs=2/2 eligible=yes` on head 9b96b483; the PR edits the final proof leaf list and the umbrella needs, and its merge needs a fresh one-use `allow`; (2) plan Phase 199 with `/gsd-plan-phase 199 --ws quality-ratchet-release`; every merge, publish and tag in 199 needs its own `allow`. Open items: Phase 198 has no SECURITY.md (secure-phase never ran; run `/gsd-secure-phase 198 --ws quality-ratchet-release` or record why it is not needed). Earlier handoffs are in `history/`.
 
 ## Carried debt
 
@@ -34,7 +34,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 ## Session
 
 **Last session:** 2026-11-06T01:57:38.147Z
-**Stopped at:** Phase 198 plan 12 complete; PR open, merge awaits allow
+**Stopped at:** Phase 198 complete, ready to plan Phase 199
 **Resume file:** None
 
 ## Accumulated Context
