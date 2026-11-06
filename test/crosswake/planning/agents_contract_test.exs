@@ -10,12 +10,12 @@ defmodule Crosswake.Planning.AgentsContractTest do
     "`allow`",
     "`hold`",
     "one-use",
-    "merges to `main`",
+    "merging a PR to `main` needs no gate",
     "merging the release PR",
     "Hex, Maven or iOS publish",
     "creating or pushing tags",
     "deleting a remote branch",
-    "never transfers to another attempt"
+    "never transfer to another attempt"
   ]
 
   defp collapse(text), do: String.replace(text, ~r/\s+/, " ")
