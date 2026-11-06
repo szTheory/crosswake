@@ -351,7 +351,54 @@ Plans:
   5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
   6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md`, `guides/architecture.md` and `guides/parity_ledger.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
 
-**Plans**: TBD
+**Plans**: 15 plans, sequential waves 1–15 in one checkout. Branch `ci/199-release-gates` (plans 01–06, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 07–15, one human closeout PR). Eight one-use gates (core merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md; Plan 01 asks the gate-design decision first and stops the phase for re-planning if the recommended package is not chosen.
+
+Plans:
+**Wave 1**
+- [ ] 199-01-PLAN.md — Post-publish mirror tag check proven on the real 0.2.11 mirror; release gate design decision (D-01..D-07) and gate protocol (REL-07)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 199-02-PLAN.md — Settle the non-release PR queue (252, 253, 258 per D-06) before the candidate is measured (REL-07)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 199-03-PLAN.md — Four protected approval environments and a credential-free preflight the release guard fails closed on (REL-07)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 199-04-PLAN.md — Tag gate and per-publisher environments, Hex then Maven then iOS order, scanner checks with seeded mutations (REL-07)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 199-05-PLAN.md — Companion receipt attestation for any companion package (threadline, D-03) (REL-07)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 199-06-PLAN.md — Land the gate pipeline PR; proposal run flows; PR 236 green on its refreshed head with zero hand edits (REL-07)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 199-07-PLAN.md — Core candidate preflight: identity, absences, three rehearsals, receipt, candidate docs on REL-06, pre-merge capture and trailer (REL-07)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 199-08-PLAN.md — Gates core-merge and core-tags (REL-07)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 199-09-PLAN.md — Gates core-hex and core-maven, each verified visible (REL-07)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 199-10-PLAN.md — Gate core-ios; SC3 mirror tag check both ways on live data; release run final state (REL-07)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 199-11-PLAN.md — Threadline 0.1.1 candidate preflight; gates companion-merge and companion-tags (REL-07)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 199-12-PLAN.md — Gate companion-hex; companion run final state (REL-07)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 199-13-PLAN.md — REL-06 clean-room against 0.2.12 from the Hex tarball, deferred=none (SC5) (REL-07)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 199-14-PLAN.md — D-26 qualifiers reworded through renderers and docs.sync, guard test removed, CHANGELOG truth (SC6) (REL-07)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 199-15-PLAN.md — Closeout human PR recording 0.2.12 published; caps; local cleanup; bearings-report exit 0 (SC4) (REL-07)
+
 **Research**: Skip
 
 ## Progress
@@ -363,7 +410,7 @@ Plans:
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | Complete (UAT complete, verification passed) | 2026-11-05 |
 | 198. Android foreign-host proof | 12/12 | Complete (verification 4/4, security 56/56; foreign-host leg promoted to required in PR 274) | 2026-11-05 |
-| 199. Release 0.2.12 | 0/TBD | Not started | - |
+| 199. Release 0.2.12 | 0/15 | Planned | - |
 
 <details>
 <summary>✅ v27.0 Land and Clean Up (Phases 189–193) — SHIPPED 2026-10-24</summary>
