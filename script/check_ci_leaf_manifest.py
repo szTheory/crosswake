@@ -616,6 +616,32 @@ class ManifestSelfTest(unittest.TestCase):
             retired["job_id"],
         )
 
+    def test_every_advisory_job_stays_outside_authority(self) -> None:
+        advisory_id = "android-foreign-host"
+        self.assertIn(advisory_id, ADVISORY_JOBS)
+        self.assert_problem(
+            lambda _m, w: w["jobs"].pop(advisory_id),
+            "missing_advisory_job",
+            advisory_id,
+        )
+        self.assert_problem(
+            lambda _m, w: w["jobs"][advisory_id].update({"continue-on-error": True}),
+            "advisory_success_coercion",
+            advisory_id,
+        )
+        self.assert_problem(
+            lambda _m, w: w["jobs"][advisory_id]["steps"].append(
+                {"name": "coerced", "run": "bash script/verify_android_foreign_host.sh || true"}
+            ),
+            "advisory_success_coercion",
+            advisory_id,
+        )
+        self.assert_problem(
+            lambda _m, w: w["jobs"][UMBRELLA_ID]["needs"].append(advisory_id),
+            "advisory_in_umbrella",
+            advisory_id,
+        )
+
     def test_irrelevance_reason_must_match_classifier_exactly(self) -> None:
         first_executable = next(
             row for row in self.manifest["proof_leaves"] if row["irrelevance_reason"] is not None
