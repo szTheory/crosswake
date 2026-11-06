@@ -1217,10 +1217,13 @@ jobs:
           # connection and retry by itself; (2) the attempt bound kills npx but not the root
           # apt-get it started, which keeps the dpkg lock and fails every retry within seconds
           # (exit 100, "Could not get lock"), so stop that apt-get and repair dpkg between attempts.
+          # (3) a slow mirror trickling data under the 30 s timeout: install Chromium's dependencies only,
+          # which is all the Playwright projects use (every project is Desktop Chrome), instead of the
+          # 181 packages (114 MB of media libraries) that a bare --with-deps pulls for every browser.
           printf 'Acquire::http::Timeout "30";\nAcquire::https::Timeout "30";\nAcquire::Retries "3";\n' \
             | sudo tee /etc/apt/apt.conf.d/99-ci-fail-fast >/dev/null
           for attempt in 1 2 3; do
-            if timeout --kill-after=15 200 npx playwright install --with-deps; then
+            if timeout --kill-after=15 200 npx playwright install --with-deps chromium; then
               exit 0
             fi
             echo "::warning::playwright install attempt ${attempt} failed or timed out"
@@ -1544,6 +1547,7 @@ jobs:
           if candidate_scope not in candidate_reasons or candidate_reason not in candidate_reasons[candidate_scope]:
               sys.exit("Crosswake CI: candidate scope or reason was missing or unknown")
           explicitly_irrelevant = {
+              "android-foreign-host",
               "android-generated-shell-unit",
               "android-package-unit",
               "brand-structural",

@@ -284,6 +284,28 @@ def validate(manifest: object, workflow: object, producer_records=None) -> list[
         problems.append(Problem("missing_umbrella", UMBRELLA_ID, "literal umbrella job is required"))
         return problems
 
+    # The umbrella accepts a skipped leaf on a documentation-only run only if the leaf is named in its
+    # embedded `explicitly_irrelevant` set. A promoted leaf missing from that set turns every
+    # documentation-only PR red (found when android-foreign-host was promoted), so derive the
+    # expected set from the manifest and compare both directions.
+    umbrella_runs = "\n".join(
+        str(step.get("run", "")) for step in umbrella.get("steps", []) if isinstance(step, dict)
+    )
+    skip_match = re.search(
+        r'explicitly_irrelevant = \{(.*?)\} if classification == "documentation_only"', umbrella_runs, re.S
+    )
+    if skip_match is None:
+        problems.append(Problem("umbrella_skip_set_missing", UMBRELLA_ID, "explicitly_irrelevant set not found in umbrella"))
+    else:
+        in_workflow = set(re.findall(r'"([^"]+)"', skip_match.group(1)))
+        in_manifest = {
+            leaf_id for leaf_id, row in proofs.items() if row["irrelevance_reason"] == CLASSIFIER_IRRELEVANCE_REASON
+        }
+        for leaf_id in sorted(in_manifest - in_workflow):
+            problems.append(Problem("umbrella_skip_set_missing_leaf", leaf_id, "documentation-only skip is not accepted by the umbrella"))
+        for leaf_id in sorted(in_workflow - in_manifest):
+            problems.append(Problem("umbrella_skip_set_extra_leaf", leaf_id, "umbrella accepts a skip the manifest does not authorize"))
+
     for leaf_id, row in proofs.items():
         job_text = yaml.safe_dump(jobs.get(leaf_id, {}), sort_keys=False)
         normalized_job = re.sub(r"\s+", " ", job_text)
@@ -596,6 +618,22 @@ class ManifestSelfTest(unittest.TestCase):
             "extra_job",
             "invented",
         )
+
+    def test_umbrella_skip_set_matches_the_manifest(self) -> None:
+        def drop_from_skip_set(_m, w):
+            for step in w["jobs"][UMBRELLA_ID]["steps"]:
+                if "explicitly_irrelevant" in str(step.get("run", "")):
+                    step["run"] = step["run"].replace('"android-foreign-host",', "", 1)
+
+        def add_to_skip_set(_m, w):
+            for step in w["jobs"][UMBRELLA_ID]["steps"]:
+                if "explicitly_irrelevant" in str(step.get("run", "")):
+                    step["run"] = step["run"].replace(
+                        'explicitly_irrelevant = {', 'explicitly_irrelevant = {\n"invented-leaf",', 1
+                    )
+
+        self.assert_problem(drop_from_skip_set, "umbrella_skip_set_missing_leaf", "android-foreign-host")
+        self.assert_problem(add_to_skip_set, "umbrella_skip_set_extra_leaf", "invented-leaf")
 
     def test_declaration_order_is_set_semantics(self) -> None:
         manifest = copy.deepcopy(self.manifest)
