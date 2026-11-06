@@ -1213,11 +1213,21 @@ jobs:
         run: |
           # Bound each attempt: a stalled apt mirror held this step until the 20-minute job limit on
           # two consecutive pull requests, with no test run. Fail the attempt and try again instead.
+          # Two observed failure modes: (1) a stalled download, so make apt give up on a silent
+          # connection and retry by itself; (2) the attempt bound kills npx but not the root
+          # apt-get it started, which keeps the dpkg lock and fails every retry within seconds
+          # (exit 100, "Could not get lock"), so stop that apt-get and repair dpkg between attempts.
+          printf 'Acquire::http::Timeout "30";\nAcquire::https::Timeout "30";\nAcquire::Retries "3";\n' \
+            | sudo tee /etc/apt/apt.conf.d/99-ci-fail-fast >/dev/null
           for attempt in 1 2 3; do
             if timeout --kill-after=15 200 npx playwright install --with-deps; then
               exit 0
             fi
             echo "::warning::playwright install attempt ${attempt} failed or timed out"
+            sudo pkill -TERM -x apt-get || true
+            sleep 5
+            sudo pkill -KILL -x apt-get || true
+            sudo dpkg --configure -a || true
           done
           echo "::error::playwright install failed 3 times. Read the attempt output above before rerunning."
           exit 1
