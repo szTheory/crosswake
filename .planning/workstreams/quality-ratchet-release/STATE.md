@@ -4,14 +4,14 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: 12
 status: executing
-stopped_at: Completed 198-11-PLAN.md
-last_updated: "2026-11-06T00:06:27.997Z"
-state_head: 392ffa6a44b4a7e87ec731df40168f006161a9a5
+stopped_at: "Phase 198 plan 12 complete; PR open, merge awaits allow"
+last_updated: "2026-11-06T01:57:38.342Z"
+state_head: 9b96b483a6bf6ea478e2a8a35dd9a245872b08a6
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 74
-  completed_plans: 73
+  completed_plans: 74
   percent: 60
 current_phase: 198
 current_phase_name: Android foreign-host proof
@@ -33,7 +33,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-06T00:06:27.815Z
+**Last session:** 2026-11-06T01:57:38.147Z
 **Stopped at:** Phase 198 plan 12 complete; PR open, merge awaits allow
 **Resume file:** None
 
@@ -77,6 +77,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 198 P09 | 35min | 2 tasks | 3 files |
 | Phase 198 P10 | 50min | 3 tasks | 4 files |
 | Phase 198 P11 | 35min | 2 tasks | 3 files |
+| Phase 198 P12 | about 3h 30m (two CI fix-forward cycles) | 3 tasks | 19 files |
 
 ## Decisions
 
@@ -111,6 +112,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 198]: Plan 09: foreign-host proof picks the highest version on both Maven Central and Hex, proves non-vacuity three ways (host probe, runtime-jar code source, AAR sha256), and stops at the first failing leg; AND-03 stays open until Linux CI evidence (Plans 11/12)
 - [Phase 198]: Plan 10: promotion readiness is derived from CI history plus evidence content and the current script blob; each gh read is attempted twice (GitHub 502s), a double failure is UNVERIFIED never zero; AND-03 stays open until Linux CI evidence (Plans 11/12)
 - [Phase 198]: Plan 11: advisory android-foreign-host job outside required authority via ADVISORY_JOBS loop; cache key carries runner.os and arch (Phase 153.1 contract); sibling test avoids refute Enum.any? so the Phase 170 ledger and absence baseline are unchanged; AND-03 stays open until Linux CI evidence (Plan 12)
+- [Phase 198]: Plan 12: PR 270 green 39/39 on final head 9b96b483 (CI ran on synthetic merge 0747b23f); advisory android-foreign-host job succeeded on Linux, outcome A, D-18 wording confirmed on Gradle 8.7, promotion derived 2/2 eligible=yes but not attempted (D-20); e2e-proof apt stall fixed forward with a bounded install retry, not rerun
 
 ### Blockers
 

@@ -298,7 +298,7 @@ Plans:
   3. A fresh foreign Gradle project built from `mix crosswake.gen.shell android` output resolves the published Maven coordinate and passes JVM tests on the Linux CI head commit as an advisory leg (required only after two clean runs), and a negative control with a wrong coordinate fails.
   4. No Android claim in the support matrix or capability map exceeds JVM-hermetic evidence (no device, emulator or feature-breadth claim).
 
-**Plans**: 11/12 plans executed (one checkout, sequential waves)
+**Plans**: 12/12 plans executed (one checkout, sequential waves)
 
 **Wave 1**
 - [x] 198-01-PLAN.md — JSON-stack swap to AOSP-derived android-json, dead serialization removed, fail-closed envelope, listener extractions, SemVer hardening, decisions in writing (AND-02)
@@ -334,7 +334,7 @@ Plans:
 - [x] 198-11-PLAN.md — Advisory android-foreign-host CI job, ADVISORY_JOBS loop, selftests in the hermetic lane (AND-03)
 
 **Wave 12** *(blocked on Wave 11 completion)*
-- [ ] 198-12-PLAN.md — Full gates, privacy scan, PR with CI green on head, first Linux foreign-host run, clean-run count, cost record (AND-01..03)
+- [x] 198-12-PLAN.md — Full gates, privacy scan, PR with CI green on head, first Linux foreign-host run, clean-run count, cost record (AND-01..03)
 
 **Research**: Needs `--research-phase` (Android build files, `androidx.webkit` and `org.json` usage, generator templates versus Gradle files were read at grep level only)
 
