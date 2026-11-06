@@ -8,6 +8,8 @@ defmodule Crosswake.RepositoryRootAllowlistTest do
     ".dockerignore",
     # mix format configuration
     ".formatter.exs",
+    # LF pins for hashed contract corpora (Phase 198)
+    ".gitattributes",
     # git ignore rules
     ".gitignore",
     # release-please version manifest
