@@ -1,0 +1,101 @@
+# Phase 198 plan 12: first green Crosswake CI run on PR 270, recorded 2026-11-05
+# A first run (id 42137231568, PR head 50e4d09c3a13663a5b76edf461ed4a15ae0bce33) went red on two checks, documentation-contracts and hex-page-proof, both routing.unclassified_path for the root .gitattributes file; fixed forward in 01408a04 and that run was cancelled by the next push. Its android-foreign-host job concluded success. Not retried, not rerun.
+# The run below is the first whose required checks are all green. ran_on is the synthetic merge commit (parents: origin/main 8d9ac9ac and the PR head); the workflow head_sha is the PR head.
+run: 42138656194
+pr: 270
+head: 01408a0420c6ddcfc31328eec4ad7c162575acee
+merge: 232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: Crosswake_CI success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: android-foreign-host success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: android-generated-shell-unit success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: android-package-unit success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: brand-structural success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: brand-visual success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: classify-change success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: collateral-binaries-guard success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: documentation-contracts success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: e2e-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: guard-01-contract-drift-test success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: guard-01-e2e-honesty success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: guard-02-generate-and-diff success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: guard-02-prod-route-absence success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: hex-page-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: ios-mirror-parity-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: ios-package-unit success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase10-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase130-companion-engine-absent-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase130-core-hermetic-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase132-companion-engine-absent-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase132-core-hermetic-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase18-elixir-android-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase18-ios-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase41-gating-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase5-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase58-auth-closeout-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase67-android-jvm-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase79-android-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase79-ios-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: phase96-threadline-docs-contract-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: proof-aggregator-negative-control success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: proof-dependency-security success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: proof-requires-example-host success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: release-as-staleness-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: release-candidate-fixtures success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: release-candidate-full-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: route-tour-proof success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+check: small-hermetic-proofs success ran_on=232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb
+foreign_host_outcome: success
+foreign_host_evidence: {"schema":1,"target_version":"0.2.11","head_sha":"01408a0420c6ddcfc31328eec4ad7c162575acee","ran_on":"232f9d20b80eb73a0b8ac5c44b06e4101d73cfeb","tests":2,"control_reason":"could_not_find","script_blob":"25191dd4448d4ce3cafb88e2bc74193374140201","result":"PASS","generator":"published","reason":""}
+control_lines: > Could not find io.github.sztheory:crosswake-shell-core-android-negctl:0.2.11. | > Could not resolve all files for configuration ':app:debugRuntimeClasspath'.
+gradle: 8.7 (gradle-8.7-bin) on ubuntu-latest, job android-foreign-host 2.0 min (2 billable)
+promotion: android_foreign: clean_runs=2/2 eligible=yes head=01408a0420c6ddcfc31328eec4ad7c162575acee ci_ran_on=synthetic_merge
+# script/ci_cost_report.sh 42138656194
+Crosswake CI run 42138656194: completed/success head 01408a04 attempt 1
+
+minutes  billable  runner          job
+18.5     19        ubuntu-latest   phase130-core-hermetic-proof
+15.3     16        ubuntu-latest   proof-requires-example-host
+5.7      6         ubuntu-latest   release-candidate-full-proof
+4.3      5         ubuntu-latest   phase130-companion-engine-absent-proof
+4.3      5         ubuntu-latest   phase132-companion-engine-absent-proof
+3.9      4         ubuntu-latest   phase18-elixir-android-proof
+3.7      4         ubuntu-latest   phase79-android-proof
+3.3      4         ubuntu-latest   android-generated-shell-unit
+2.7      3         ubuntu-latest   android-package-unit
+2.4      3         ubuntu-latest   route-tour-proof
+2.1      3         ubuntu-latest   phase58-auth-closeout-proof
+2        3         ubuntu-latest   e2e-proof
+2        3         ubuntu-latest   phase67-android-jvm-proof
+2        2         ubuntu-latest   android-foreign-host
+1.6      2         ubuntu-latest   release-candidate-fixtures
+1.5      2         ubuntu-latest   phase41-gating-proof
+1.5      20        macos-15        phase79-ios-proof
+1.5      20        macos-latest    ios-package-unit
+1.3      2         ubuntu-latest   phase96-threadline-docs-contract-proof
+1.3      2         ubuntu-latest   small-hermetic-proofs
+1.3      2         ubuntu-latest   phase5-proof
+1.1      2         ubuntu-latest   guard-01-e2e-honesty
+1.1      2         ubuntu-latest   hex-page-proof
+1        1         ubuntu-latest   phase10-proof
+0.9      1         ubuntu-latest   guard-02-prod-route-absence
+0.9      1         ubuntu-latest   documentation-contracts
+0.9      1         ubuntu-latest   phase132-core-hermetic-proof
+0.6      1         ubuntu-latest   brand-structural
+0.5      1         ubuntu-latest   brand-visual
+0.4      1         ubuntu-latest   guard-02-generate-and-diff
+0.4      1         ubuntu-latest   proof-dependency-security
+0.4      1         ubuntu-latest   guard-01-contract-drift-test
+0.3      1         ubuntu-latest   collateral-binaries-guard
+0.2      10        macos-15        phase18-ios-proof
+0.1      1         ubuntu-latest   classify-change
+0.1      1         ubuntu-latest   release-as-staleness-proof
+0.1      1         ubuntu-latest   ios-mirror-parity-proof
+0.1      1         ubuntu-latest   proof-aggregator-negative-control
+0.1      1         ubuntu-latest   Crosswake CI
+
+total billable minutes   : 159  (baseline about 250)
+wall clock               : 20.3 min  (baseline 20-44 min)
+critical-path job        : phase130-core-hermetic-proof 18.5 min
+jobs with a full-suite step: 2  (baseline about 10; step-name heuristic)
+advisory only: flag new duplicated full-suite runs or jobs with no dependency cache; never a merge gate.
+cost_comparison: total billable 159 min versus the ~250 baseline (lower, 91 min under); wall clock 20.3 min (baseline 20-44); android-foreign-host 2 billable min (2.0 measured, the plan expected 8-12); full-suite-step jobs 2 versus baseline ~10; no new duplicated full-suite run; android-foreign-host intentionally caches only the Gradle distribution because the proof must resolve published artifacts from the registries; advisory, never a gate
