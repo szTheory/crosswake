@@ -2,3 +2,9 @@
 # earlier scan on 56bc7c18 found 12 hits (email-shaped literals, a local home path and account text in planning docs); fixed by d1a60a66 and a05eaa54 before any push
 privacy: clean files 100
 privacy: rc 0
+# privacy scan run 2 (HEAD 01408a04, before the first fix-forward push; 101 inputs)
+privacy: clean files 101
+privacy: rc 0
+# privacy scan run 3 (HEAD 6f2eb234 with the CI record, decisions, validation and handoff commits; 103 branch files plus the PR body; 104 inputs)
+privacy: clean files 104
+privacy: rc 0
