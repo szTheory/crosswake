@@ -8,3 +8,6 @@ privacy: rc 0
 # privacy scan run 3 (HEAD 6f2eb234 with the CI record, decisions, validation and handoff commits; 103 branch files plus the PR body; 104 inputs)
 privacy: clean files 104
 privacy: rc 0
+# privacy scan run 4 (HEAD e824659e with the e2e-proof install fix and its decisions note; 103 branch files plus the PR body; 104 inputs)
+privacy: clean files 104
+privacy: rc 0
