@@ -362,7 +362,7 @@ Plans:
 | 195. Pipeline repair and hygiene | 21/21 | Complete | 2026-10-27 |
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | In Progress | - |
-| 198. Android foreign-host proof | 11/12 | In Progress | - |
+| 198. Android foreign-host proof | 12/12 | PR open, merge awaits allow | - |
 | 199. Release 0.2.12 | 0/TBD | Not started | - |
 
 <details>
