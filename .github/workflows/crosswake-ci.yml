@@ -1544,6 +1544,7 @@ jobs:
           if candidate_scope not in candidate_reasons or candidate_reason not in candidate_reasons[candidate_scope]:
               sys.exit("Crosswake CI: candidate scope or reason was missing or unknown")
           explicitly_irrelevant = {
+              "android-foreign-host",
               "android-generated-shell-unit",
               "android-package-unit",
               "brand-structural",
