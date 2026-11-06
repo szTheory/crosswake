@@ -385,6 +385,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
         "mix.lock",
         "package.json",
         ".formatter.exs",
+        ".gitattributes",
         ".gitignore",
         ".tool-versions"
       ] or
