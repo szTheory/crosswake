@@ -944,7 +944,7 @@ jobs:
         if: always()
         run: |
           {
-            echo 'android-foreign-host is visible advisory evidence and is intentionally outside Crosswake CI required authority.'
+            echo 'android-foreign-host is a required leaf of Crosswake CI (promoted after two clean runs, Phase 198 D-20).'
             echo 'It proves the published generator output and the published Maven Central version, not the version at this head.'
             echo 'CI ran on the pull request synthetic merge commit; the evidence records the pull request head SHA.'
             echo 'Remediation: bash script/verify_android_foreign_host.sh'
@@ -1461,6 +1461,7 @@ jobs:
     name: Crosswake CI
     if: always()
     needs:
+      - android-foreign-host
       - android-generated-shell-unit
       - android-package-unit
       - brand-structural
