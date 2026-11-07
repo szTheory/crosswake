@@ -351,7 +351,7 @@ Plans:
   5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
   6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md`, `guides/architecture.md` and `guides/parity_ledger.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
 
-**Plans**: 5/19 plans executed, sequential waves 1–19 in one checkout. Branch `ci/199-release-gates` (plans 01–07, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 08–19, one human closeout PR). Nine one-use gates (core Maven fire drill, merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md, the fire drill bound to one captured candidate head, so a new head needs a new allow; Plan 01 asks the gate-design decision first, records the D-04 tag-granularity note on SC2 and REL-07, and stops the phase for re-planning if the recommended package is not chosen (any D-06 answer continues).
+**Plans**: 6/19 plans executed, sequential waves 1–19 in one checkout. Branch `ci/199-release-gates` (plans 01–07, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 08–19, one human closeout PR). Nine one-use gates (core Maven fire drill, merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md, the fire drill bound to one captured candidate head, so a new head needs a new allow; Plan 01 asks the gate-design decision first, records the D-04 tag-granularity note on SC2 and REL-07, and stops the phase for re-planning if the recommended package is not chosen (any D-06 answer continues).
 
 Plans:
 **Wave 1**
@@ -370,7 +370,7 @@ Plans:
 - [x] 199-05-PLAN.md — Tag gate with the `!cancelled()` release-please condition; incident and companion runbooks name the per-step gates; read-only post-publish `release-mirror-tag-check` job so the SC3 mirror-tag check runs on every iOS release (REL-07)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 199-06-PLAN.md — Companion receipt attestation for any companion package (threadline, D-03), plus the companion trailer renderer and checker (REL-07)
+- [x] 199-06-PLAN.md — Companion receipt attestation for any companion package (threadline, D-03), plus the companion trailer renderer and checker (REL-07)
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 199-07-PLAN.md — Land the gate pipeline PR; proposal run flows with the hosted-runner preflight PASS; release-PR-head predicate proven against controls; PR 236 green on its refreshed head with zero hand edits by that predicate (REL-07)
@@ -422,7 +422,7 @@ Plans:
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | Complete (UAT complete, verification passed) | 2026-11-05 |
 | 198. Android foreign-host proof | 12/12 | Complete (verification 4/4, security 56/56; foreign-host leg promoted to required in PR 274) | 2026-11-05 |
-| 199. Release 0.2.12 | 5/19 | In Progress | - |
+| 199. Release 0.2.12 | 6/19 | In Progress | - |
 
 <details>
 <summary>✅ v27.0 Land and Clean Up (Phases 189–193) — SHIPPED 2026-10-24</summary>
