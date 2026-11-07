@@ -4,28 +4,28 @@ milestone: v28.0
 milestone_name: Truth and Release Train
 current_plan: Not started
 status: executing
-stopped_at: Phase 198 complete, ready to plan Phase 199
-last_updated: "2026-11-06T02:21:21.529Z"
-state_head: d032c554b380fb0fb45ce183975c4ba6a08d082a
+stopped_at: Phase 199 planned (19 plans), ready to execute
+last_updated: "2026-11-07T01:22:31.625Z"
+state_head: 543d7f1eb144c1220593a59f6ae5ee16c9b3e975
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 3
-  total_plans: 74
+  total_plans: 93
   completed_plans: 74
-  percent: 60
-current_phase: 199
+  percent: 50
 current_phase_name: Release 0.2.12
+current_phase: 199
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
 ---
 
 ## Current Position
 
 Current Plan: Not started
-Total Plans in Phase: 12
+Total Plans in Phase: 19
 
 ## Exact Next Action
 
-Last completed phase: 198 (Android foreign-host proof): verified 4 of 4, security verified (56 of 56 threats closed, 198-SECURITY.md), AND-01..03 complete. Merged: PR 270, 271 and 272 (closeout), PR 273 (security and standing merge rule), PR 274 (android-foreign-host promoted to a required Crosswake CI leaf, D-20; 39 of 39 CI green on its head), PR 275 (e2e-proof Playwright install recovers from an orphaned apt-get), PR 277 (umbrella accepts the promoted leaf as skippable on docs-only runs, with a checker guard that derives the skip set from the manifest; e2e-proof now installs Chromium dependencies only). Active phase: none open; Phase 199 (Release 0.2.12) is not yet planned. Exact next action: `/gsd-plan-phase 199 --ws quality-ratchet-release`. Every merge to main of a green-CI PR needs no gate (user decision 2026-11-05, AGENTS.md); the release-please PR, every Hex/Maven/iOS publish, every tag and any remote-branch deletion each need their own one-use `allow`. Open items: harden `release-candidate-full-proof`, which interpolates the PR base SHA directly in a `run:` body (informational, predates 198); phase 170 ledger and leaf-count pins now need a bump whenever a CI leaf is added (35 required leaves plus classify-change). Earlier handoffs are in `history/`.
+Last completed phase: 198 (Android foreign-host proof): verified 4 of 4, security verified (56 of 56 threats closed, 198-SECURITY.md), AND-01..03 complete. Merged: PR 270, 271 and 272 (closeout), PR 273 (security and standing merge rule), PR 274 (android-foreign-host promoted to a required Crosswake CI leaf, D-20; 39 of 39 CI green on its head), PR 275 (e2e-proof Playwright install recovers from an orphaned apt-get), PR 277 (umbrella accepts the promoted leaf as skippable on docs-only runs, with a checker guard that derives the skip set from the manifest; e2e-proof now installs Chromium dependencies only). Active phase: 199 (Release 0.2.12), planned: 19 plans. The last plan-checker pass found 0 blockers and 1 warning (release-PR-head predicate gaps); the fix was verified by 19 of 19 controls under two bash versions, not by a further checker pass. The first gated step is the decision checkpoint in 199-01 Task 2 (D-01 to D-08; D-06 has no recommendation, so the user picks it). Exact next action: `/gsd-execute-phase 199 --ws quality-ratchet-release`. Every merge to main of a green-CI PR needs no gate (user decision 2026-11-05, AGENTS.md); the release-please PR, every Hex/Maven/iOS publish, every tag and any remote-branch deletion each need their own one-use `allow`. Open items: harden `release-candidate-full-proof`, which interpolates the PR base SHA directly in a `run:` body (informational, predates 198); phase 170 ledger and leaf-count pins now need a bump whenever a CI leaf is added (35 required leaves plus classify-change). Earlier handoffs are in `history/`.
 
 ## Carried debt
 

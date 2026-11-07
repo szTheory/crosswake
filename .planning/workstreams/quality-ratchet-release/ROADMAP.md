@@ -367,13 +367,13 @@ Plans:
 - [ ] 199-04-PLAN.md — Per-publisher environments, Hex then Maven then iOS order, scanner checks with seeded mutations (REL-07)
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 199-05-PLAN.md — Tag gate with the `!cancelled()` release-please condition; incident and companion runbooks name the per-step gates (REL-07)
+- [ ] 199-05-PLAN.md — Tag gate with the `!cancelled()` release-please condition; incident and companion runbooks name the per-step gates; read-only post-publish `release-mirror-tag-check` job so the SC3 mirror-tag check runs on every iOS release (REL-07)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 199-06-PLAN.md — Companion receipt attestation for any companion package (threadline, D-03) (REL-07)
+- [ ] 199-06-PLAN.md — Companion receipt attestation for any companion package (threadline, D-03), plus the companion trailer renderer and checker (REL-07)
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 199-07-PLAN.md — Land the gate pipeline PR; proposal run flows with the hosted-runner preflight PASS; PR 236 green on its refreshed head with zero hand edits (REL-07)
+- [ ] 199-07-PLAN.md — Land the gate pipeline PR; proposal run flows with the hosted-runner preflight PASS; release-PR-head predicate proven against controls; PR 236 green on its refreshed head with zero hand edits by that predicate (REL-07)
 
 **Wave 8** *(blocked on Wave 7 completion)*
 - [ ] 199-08-PLAN.md — Core candidate capture, absences, ten secret names; Hex and iOS rehearsals; gate core-maven-drill, then the Maven fire drill validated then dropped; hosted receipt (REL-07)
