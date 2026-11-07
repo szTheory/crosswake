@@ -13,3 +13,17 @@ publishers: pinned checks updated (existing scanner checks whose old posture the
 publishers: pinned test files updated: test/crosswake/release_candidate/workflow_test.exs (linked publication test: refute environment: replaced by an exact environment assertion per core publisher); test/crosswake/proof/phase199_release_gates_test.exs (roster size 99 to 104)
 publishers: run: line check: git diff f97da474 -- .github/workflows/release-please.yml changes only environment:, needs: and if: job keys on eight publisher jobs; no run: line changed
 publishers: no publish, tag, merge, dispatch or push was performed
+tag_gate: recorded 2026-11-07 on branch ci/199-release-gates by plan 199-05
+tag_gate: [crosswake] DONE: 105 of 105 roster checks emitted; 0 failed.
+tag_gate: mix-test-gate: rc=0 total=18 excluded=0 skipped=0 ran=18 failures=0 invalid=0 min=16 min_total=0 verdict=PASS (test/crosswake/proof/phase199_release_gates_test.exs)
+tag_gate: actionlint .github/workflows/release-please.yml -> exit 0, no findings
+DONE: 105 of 105 roster checks emitted; 0 failed.
+environment_keys: 9
+tag_gate: job release-tag-gate: environment release-tags, needs approved-release-guard, if rel17_context != '' with no status-check function, permissions contents: read only, no secrets, no checkout
+tag_gate: release-please: needs [approved-release-guard, release-tag-gate]; if starts with !cancelled(), requires github.event_name == 'push' and needs.approved-release-guard.result == 'success', then (rel17_context == '' and gate skipped) or (rel17_context != '' and gate success); no always()
+tag_gate: scanner check added: release.gate.tag_gate (roster 104 to 105)
+tag_gate: seeded mutations (5 new tests, 18 in file): need on the gate dropped; gate-success requirement dropped (non-empty context accepts a skipped gate); !cancelled() dropped; !cancelled() swapped for always(); guard-success requirement dropped
+tag_gate: pinned checks and tests updated (existing pins on the old release-please if, rewritten to the new truth with the same push-only strictness): scanner maven_fire_drill_isolated (was exact equality with the old if; now requires the !cancelled() && github.event_name == 'push' prefix, refutes always( and workflow_dispatch); test/crosswake/proof/phase175_release_recovery_test.exs (dispatch mutation); test/crosswake/planning/release_please_config_test.exs (condition assertion)
+tag_gate: runbooks: docs/RELEASE-INCIDENT-RESPONSE.md gains ## Per-step approval gates; docs/COMPANION-PUBLISH-RUNBOOK.md section 7 rewritten (release-tags, publish-hex, publish-maven, publish-ios-mirror); release_boundaries_test.exs: three pins on the old one-approval wording replaced by per-step pins
+tag_gate: collection-assertion ledger: script/collection_assertion_ledger.json regenerated with --emit-snapshot; only the display lines of three release_boundaries_test.exs rows moved (129, 188, 700 by the inserted lines), --check prints OK 290 sites
+tag_gate: no publish, tag, merge, dispatch or push was performed
