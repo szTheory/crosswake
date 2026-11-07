@@ -173,6 +173,57 @@ defmodule Crosswake.Proof.Phase175Rel17PublishPathsTest do
     assert result.output =~ "candidate_version=0.2.1"
   end
 
+  test "an unprotected approval environment only warns on an ordinary push" do
+    result =
+      run_version_classifier_fixture(
+        fn root ->
+          mix_path = Path.join(root, "mix.exs")
+
+          File.write!(
+            mix_path,
+            String.replace(File.read!(mix_path), "test_paths: []", "test_paths: [\"test\"]")
+          )
+        end,
+        preflight_rc: 1
+      )
+
+    assert result.status == 0, result.output
+
+    assert result.output =~
+             "::warning::REL-17 ADVISORY reason=release_environment_unprotected rc=1"
+
+    refute result.output =~ "REL-17 BLOCKED"
+  end
+
+  test "an unprotected approval environment blocks a linked release before any output" do
+    result =
+      run_version_classifier_fixture(
+        fn root ->
+          mix_path = Path.join(root, "mix.exs")
+          manifest_path = Path.join(root, ".release-please-manifest.json")
+          android_path = Path.join(root, "packages/crosswake-shell-core-android/build.gradle.kts")
+
+          File.write!(mix_path, String.replace(File.read!(mix_path), "0.2.0", "0.2.1"))
+          File.write!(android_path, String.replace(File.read!(android_path), "0.2.0", "0.2.1"))
+
+          manifest =
+            manifest_path
+            |> File.read!()
+            |> Jason.decode!()
+            |> Map.update!(".", fn _ -> "0.2.1" end)
+            |> Map.update!("packages/crosswake-shell-core-ios", fn _ -> "0.2.1" end)
+            |> Map.update!("packages/crosswake-shell-core-android", fn _ -> "0.2.1" end)
+
+          File.write!(manifest_path, Jason.encode!(manifest))
+        end,
+        preflight_rc: 1
+      )
+
+    assert result.status != 0
+    assert result.output =~ "REL-17 BLOCKED reason=release_environment_unprotected"
+    refute result.output =~ "candidate_operation="
+  end
+
   test "a manifest-and-source companion version update is classified independently" do
     result =
       run_version_classifier_fixture(fn root ->
@@ -228,7 +279,11 @@ defmodule Crosswake.Proof.Phase175Rel17PublishPathsTest do
     assert output =~ "FAIL: #{id}", output
   end
 
-  defp run_version_classifier_fixture(mutate_release_candidate) do
+  # `opts[:preflight_rc]` is the exit status of the stand-in for the Phase 199 approval-environment
+  # preflight (the real script reads live GitHub, which a classifier fixture must not do).
+  defp run_version_classifier_fixture(mutate_release_candidate, opts \\ []) do
+    preflight_rc = Keyword.get(opts, :preflight_rc, 0)
+
     root =
       Path.join(
         System.tmp_dir!(),
@@ -236,6 +291,12 @@ defmodule Crosswake.Proof.Phase175Rel17PublishPathsTest do
       )
 
     File.mkdir_p!(Path.join(root, "packages/crosswake-shell-core-android"))
+    File.mkdir_p!(Path.join(root, "script/release_candidate"))
+
+    File.write!(
+      Path.join(root, "script/release_candidate/check_release_environments.sh"),
+      "#!/usr/bin/env bash\necho \"release-env: stand-in rc=#{preflight_rc}\"\nexit #{preflight_rc}\n"
+    )
 
     on_exit(fn -> File.rm_rf!(root) end)
 

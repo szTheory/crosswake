@@ -107,6 +107,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.rel17.ios_final_boundary
     release.rel17.maven_final_boundary
     release.candidate.receipt_attestation
+    release.gate.environments_preflight
     release.chimeway.component_gate
     release.chimeway.proof_gate
     release.ci.candidate_matrix
@@ -333,6 +334,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         receipt_exact_authority(jobs),
         approved_release_runbook_guard(jobs),
         rel17_approved_guard(jobs),
+        release_gate_environments_preflight(jobs),
         rel17_roster_exact(),
         rel17_release_creation_guard(jobs),
         rel17_publisher_job_guard(
@@ -1784,6 +1786,33 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         length(Enum.uniq(@rel17_guard_roster)) == length(@rel17_guard_roster) and
         Enum.all?(@rel17_guard_roster, &(&1 in @roster_ids)),
       "the independently declared REL-17 guard roster has exactly 17 unique named checks, all enforced by the scanner's exact emitted roster"
+    )
+  end
+
+  # Phase 199 (D-01): a gate named in YAML for an environment that does not exist fails open,
+  # because GitHub creates an unprotected one. The guard must therefore run the credential-free
+  # preflight on every push, before the first early return and before any output is emitted,
+  # keep its status, warn on an ordinary push and block a linked or companion release.
+  defp release_gate_environments_preflight(jobs) do
+    block = job_block(jobs, "approved-release-guard")
+    call = "bash script/release_candidate/check_release_environments.sh"
+    call_at = index_of(block, call)
+    first_exit_at = index_of(block, "exit 0")
+    output_at = index_of(block, ~s(emit_output "approved_head=))
+    merge_check_at = index_of(block, ~s([ "$parent_count" -eq 3 ]))
+    blocked = "REL-17 BLOCKED reason=release_environment_unprotected"
+    blocked_at = index_of(block, blocked)
+
+    check(
+      "release.gate.environments_preflight",
+      is_integer(call_at) and is_integer(first_exit_at) and is_integer(output_at) and
+        is_integer(merge_check_at) and is_integer(blocked_at) and
+        call_at < first_exit_at and call_at < output_at and
+        blocked_at > call_at and blocked_at < merge_check_at and blocked_at < output_at and
+        includes?(block, "env_preflight_rc=$?") and
+        includes?(block, "::warning::REL-17 ADVISORY reason=release_environment_unprotected") and
+        includes?(block, ~s([ "$env_preflight_rc" -eq 0 ] ||)),
+      "approved-release-guard must run the credential-free approval-environment preflight before its first early return and before any output, keep its status, only warn on an ordinary push, and block a linked or companion release with #{blocked}"
     )
   end
 

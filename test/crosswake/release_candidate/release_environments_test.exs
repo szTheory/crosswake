@@ -207,7 +207,9 @@ defmodule Crosswake.ReleaseCandidate.ReleaseEnvironmentsTest do
   defp verdict(output) do
     line = output |> String.trim_trailing() |> String.split("\n") |> List.last()
 
-    case Regex.run(~r/^release-env: (verdict=\S+(?: reason=\S+)?)$/, line, capture: :all_but_first) do
+    case Regex.run(~r/^release-env: (verdict=\S+(?: reason=\S+)?)$/, line,
+           capture: :all_but_first
+         ) do
       [tokens] -> tokens
       nil -> "no verdict on last line: #{line}"
     end

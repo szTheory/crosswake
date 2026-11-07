@@ -72,13 +72,28 @@ jobs:
         run: |
           set -euo pipefail
           emit_output() { printf '%s\n' "$1" >> "$GITHUB_OUTPUT"; }
+
+          # Approval-environment preflight (Phase 199, D-01). It reads the four release
+          # environments without a credential and runs on every push, so each proposal
+          # push exercises the hosted-runner read. An ordinary push only warns; a linked or
+          # companion release blocks below, before Release Please can create a tag.
+          env_preflight_rc=0
+          bash script/release_candidate/check_release_environments.sh || env_preflight_rc=$?
+          env_preflight_advisory() {
+            [ "$env_preflight_rc" -eq 0 ] ||
+              echo "::warning::REL-17 ADVISORY reason=release_environment_unprotected rc=$env_preflight_rc"
+          }
+
           emit_output "linked_release=false"
 
           # Proposal-refresh pushes remain reversible. The strict gate activates only
           # for a merged candidate with source and manifest version changes.
           parent_line=$(git rev-list --parents -n 1 "$RUN_HEAD")
           parent_count=$(printf '%s\n' "$parent_line" | awk '{print NF}')
-          [ "$parent_count" -ge 2 ] || exit 0
+          [ "$parent_count" -ge 2 ] || {
+            env_preflight_advisory
+            exit 0
+          }
           first_parent=$(printf '%s\n' "$parent_line" | awk '{print $2}')
           mix_version_at() {
             matches=$(git show "$1:$2" | sed -nE 's/^[[:space:]]*@version[[:space:]]+"([^"]+)".*/\1/p')
@@ -211,8 +226,15 @@ jobs:
             echo "REL-17 BLOCKED reason=unclassified_release_version_change" >&2
             exit 1
           else
+            env_preflight_advisory
             exit 0
           fi
+
+          # A linked or companion release needs all four approval environments protected.
+          [ "$env_preflight_rc" -eq 0 ] || {
+            echo "REL-17 BLOCKED reason=release_environment_unprotected" >&2
+            exit 1
+          }
 
           # A linked release must be a two-parent merge. The approved Release Please
           # head is the second parent; its tree must be byte-identical to the merge.
