@@ -10,6 +10,7 @@ import urllib.error
 import urllib.request
 
 REPOSITORY = "szTheory/crosswake"
+COMPANION_PACKAGES = ("crosswake_rulestead", "crosswake_rindle", "crosswake_sigra", "crosswake_chimeway", "crosswake_threadline")
 
 
 def gh(path):
@@ -21,7 +22,8 @@ def canonical(value):
 
 
 def validate(candidate, ci, hex_run, ci_receipt, rehearsal, rows, selectors):
-    head, tree, base, pr, ci_id, hex_id, version = selectors
+    head, tree, base, pr, ci_id, hex_id, version, package = selectors
+    assert package in COMPANION_PACKAGES
     assert candidate == {"pr": pr, "base_oid": base, "head_oid": head, "tree_oid": tree, "ci_run_id": ci_id}
     for run, number, name in [(ci, ci_id, "Crosswake CI"), (hex_run, hex_id, "Hex candidate rehearsal and recovery")]:
         assert run["id"] == number and run["head_sha"] == head
@@ -35,8 +37,8 @@ def validate(candidate, ci, hex_run, ci_receipt, rehearsal, rows, selectors):
     assert int(rehearsal["run_id"]) == hex_id and rehearsal["run_head"] == head
     assert rehearsal["run_conclusion"] == "success" and rehearsal["external_state_changed"] is False
     assert rehearsal["package_count"] == 6
-    assert [row["package"] for row in rows] == ["crosswake", "crosswake_rulestead", "crosswake_rindle", "crosswake_sigra", "crosswake_chimeway", "crosswake_threadline"]
-    selected = [row for row in rows if row["package"] == "crosswake_chimeway"]
+    assert [row["package"] for row in rows] == ["crosswake", *COMPANION_PACKAGES]
+    selected = [row for row in rows if row["package"] == package]
     assert len(selected) == 1
     row = selected[0]
     assert row["version"] == version and row["candidate_ref"] == head
@@ -50,6 +52,8 @@ def main():
     for value in [head, tree, base]:
         assert re.fullmatch(r"[0-9a-f]{40}", value)
     version = os.environ["CANDIDATE_VERSION"]
+    package = os.environ["CANDIDATE_PACKAGE"]
+    assert package in COMPANION_PACKAGES
     assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version)
     pr, ci_id, hex_id = [int(os.environ[key]) for key in ["CANDIDATE_PR", "CANDIDATE_CI_RUN_ID", "HEX_RUN_ID"]]
     assert pr > 0 and ci_id > 0 and hex_id > 0
@@ -72,18 +76,18 @@ def main():
     manifest_bytes = (root / "hex/packages/artifacts.json").read_bytes()
     assert hashlib.sha256(manifest_bytes).hexdigest() == rehearsal["package_artifacts_sha256"]
     assert hashlib.sha256(pathlib.Path(".github/workflows/hex-publish.yml").read_bytes()).hexdigest() == rehearsal["workflow_sha256"]
-    row = validate(candidate, ci, hex_run, ci_receipt, rehearsal, json.loads(manifest_bytes), (head, tree, base, pr, ci_id, hex_id, version))
-    declared = pathlib.Path("packages/crosswake_chimeway/mix.exs").read_text()
+    row = validate(candidate, ci, hex_run, ci_receipt, rehearsal, json.loads(manifest_bytes), (head, tree, base, pr, ci_id, hex_id, version, package))
+    declared = pathlib.Path(f"packages/{package}/mix.exs").read_text()
     assert re.search(r'@version\s+"([^"]+)"', declared).group(1) == version
     try:
-        response = urllib.request.urlopen(f"https://hex.pm/api/packages/crosswake_chimeway/releases/{version}", timeout=30)
+        response = urllib.request.urlopen(f"https://hex.pm/api/packages/{package}/releases/{version}", timeout=30)
     except urllib.error.HTTPError as error:
         assert error.code == 404
     else:
         response.close()
         raise AssertionError("companion target is already public")
     projected_ci = {"run_id": ci_id, "head_oid": head, "conclusion": "success"}
-    projected_hex = {"run_id": hex_id, "head_oid": head, "package": "crosswake_chimeway", "version": version, "external_state_changed": False, "target_absent": True}
+    projected_hex = {"run_id": hex_id, "head_oid": head, "package": package, "version": version, "external_state_changed": False, "target_absent": True}
     facts = {"candidate": candidate, "ci": projected_ci, "hex_rehearsal": projected_hex, "package_row": row}
     sources = {}
     for key, value in facts.items():
@@ -91,7 +95,7 @@ def main():
         data = canonical(value)
         (root / name).write_text(data)
         sources[key] = {"path": name, "bytes": data}
-    payload = {"package": "crosswake_chimeway", "version": version, **facts, "sources": sources}
+    payload = {"package": package, "version": version, **facts, "sources": sources}
     (root / "input.json").write_text(canonical(payload))
     # Re-read mutable candidate pointers after acquisition; never preserve account fields.
     latest = gh(f"pulls/{pr}")
