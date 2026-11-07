@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 7
+current_plan: 8
 status: executing
-stopped_at: Completed 199-06-PLAN.md
-last_updated: "2026-11-07T15:05:43.300Z"
-state_head: f849e11206a9a7819edf4283e2e14211166c431b
+stopped_at: Completed 199-07-PLAN.md
+last_updated: "2026-11-07T16:09:18.851Z"
+state_head: 6a391652e1a166c41162c0a5e2307048736bd025
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 93
-  completed_plans: 80
+  completed_plans: 81
   percent: 50
 current_phase: 199
 current_phase_name: Release 0.2.12
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 7
+Current Plan: 8
 Total Plans in Phase: 19
 
 ## Exact Next Action
 
-Last completed phase: 198 (Android foreign-host proof): verified 4 of 4, security verified (56 of 56 threats closed, 198-SECURITY.md), AND-01..03 complete. Merged: PR 270, 271 and 272 (closeout), PR 273 (security and standing merge rule), PR 274 (android-foreign-host promoted to a required Crosswake CI leaf, D-20; 39 of 39 CI green on its head), PR 275 (e2e-proof Playwright install recovers from an orphaned apt-get), PR 277 (umbrella accepts the promoted leaf as skippable on docs-only runs, with a checker guard that derives the skip set from the manifest; e2e-proof now installs Chromium dependencies only). Active phase: 199 (Release 0.2.12), 6 of 19 plans done (199-01 to 199-06 complete 2026-11-07, branch `ci/199-release-gates`, nothing pushed). 199-06 generalized the hosted companion receipt attestation to all five companions (`CANDIDATE_PACKAGE`) and added `script/release_candidate/companion_publish_authorization.sh render|check`, proven against the real release-please guard predicate and context loader; nothing was dispatched, so the hosted job is first exercised for threadline in 199-13. The gate design is in 199-DECISIONS.md (D-01..D-08). No Stop section, so plans 199-07..199-19 run as written. Exact next action: `/gsd-execute-phase 199 --ws quality-ratchet-release` (next plan 199-07). Every merge to main of a green-CI PR needs no gate (user decision 2026-11-05, AGENTS.md); the release-please PR, every Hex/Maven/iOS publish, every tag and any remote-branch deletion each need their own one-use `allow`. Open items: harden `release-candidate-full-proof`, which interpolates the PR base SHA directly in a `run:` body (informational, predates 198); phase 170 ledger and leaf-count pins now need a bump whenever a CI leaf is added (35 required leaves plus classify-change). Earlier handoffs are in `history/`.
+Last completed phase: 198 (Android foreign-host proof): verified 4 of 4, security verified (56 of 56 threats closed, 198-SECURITY.md), AND-01..03 complete. Merged: PR 270, 271 and 272 (closeout), PR 273 (security and standing merge rule), PR 274 (android-foreign-host promoted to a required Crosswake CI leaf, D-20; 39 of 39 CI green on its head), PR 275 (e2e-proof Playwright install recovers from an orphaned apt-get), PR 277 (umbrella accepts the promoted leaf as skippable on docs-only runs, with a checker guard that derives the skip set from the manifest; e2e-proof now installs Chromium dependencies only). Active phase: 199 (Release 0.2.12), 7 of 19 plans done (199-01 to 199-07 complete 2026-11-07). 199-07 landed the gate pipeline on main (PR 278, merge commit a9c4ff74, CI green on head 04e8160a, ran on synthetic merge 40e9cbf9); the first post-merge Release Please run (42387805006) flowed with the hosted environment preflight PASS and no pending deployment; the phase-local predicate `scripts/release-pr-head-199.sh` passes its 19 controls and 11 mutants, and PR 236 (head efbc7912, 0.2.12) and PR 262 (head 76aee3f3, threadline 0.1.1) pass it with CI green. Still uncommitted on local branch `ci/199-release-gates` (now behind main by the PR 278 merge): `ci-pipeline-199.txt`, `proposal-run-199.txt`, privacy rescan lines in `privacy-199.txt` and the two scripts; 199-08 commits them. Nothing was tagged, published or approved, and PRs 236 and 262 were only read. The gate design is in 199-DECISIONS.md (D-01..D-08). No Stop section, so plans 199-08..199-19 run as written. Exact next action: `/gsd-execute-phase 199 --ws quality-ratchet-release` (next plan 199-08). Every merge to main of a green-CI PR needs no gate (user decision 2026-11-05, AGENTS.md); the release-please PR, every Hex/Maven/iOS publish, every tag and any remote-branch deletion each need their own one-use `allow`. Open items: harden `release-candidate-full-proof`, which interpolates the PR base SHA directly in a `run:` body (informational, predates 198); phase 170 ledger and leaf-count pins now need a bump whenever a CI leaf is added (35 required leaves plus classify-change). Earlier handoffs are in `history/`.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-07T15:05:42.953Z
-**Stopped at:** Completed 199-06-PLAN.md
+**Last session:** 2026-11-07T16:09:18.605Z
+**Stopped at:** Completed 199-07-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -84,6 +84,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 199 P04 | 19 min | 3 tasks | 7 files |
 | Phase 199 P05 | 43min | 3 tasks | 10 files |
 | Phase 199 P06 | 14 min | 3 tasks | 6 files |
+| Phase 199 P07 | about 1h 20m (second session; first stopped on a safety-check denial) | 3 tasks | 7 files |
 
 ## Decisions
 
@@ -126,6 +127,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 199]: Anonymous environment reads include protection_rules and required reviewers, so the preflight needs no token; environment reads are cached 60s publicly
 - [Phase 199]: 199-04: iOS mirror waits only on publish-android-core (Hex, then Maven, then iOS); scanner pins release.ios.independent_publication and release.approval.linked_graph to the D-01/D-02 wiring
 - [Phase 199]: 199-06: companion receipt attestation takes any of the five companions via CANDIDATE_PACKAGE; companion_publish_authorization.sh render|check derives and verifies the companion REL-17 trailer (closed six-reason BLOCKED set, envelope content cross-check), proven on the real guard predicate and loader
+- [Phase 199]: 199-07: PR 278 merged (a9c4ff74) after green CI on head 04e8160a (ran on synthetic merge 40e9cbf9); first post-merge Release Please run flowed with hosted env preflight PASS; release-PR-head predicate proven by 19 controls and 11 mutants, PR 236 (0.2.12) and PR 262 (0.1.1) pass it with CI green; privacy scan scoped for five pre-existing email-shaped files by orchestrator decision
 
 ### Blockers
 
