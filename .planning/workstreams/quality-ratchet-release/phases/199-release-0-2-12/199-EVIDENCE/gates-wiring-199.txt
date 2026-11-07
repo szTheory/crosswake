@@ -1,0 +1,15 @@
+publishers: recorded 2026-11-07 on branch ci/199-release-gates by plan 199-04 (the tag gate is appended by 199-05)
+publishers: [crosswake] DONE: 104 of 104 roster checks emitted; 0 failed.
+publishers: mix-test-gate: rc=0 total=13 excluded=0 skipped=0 ran=13 failures=0 invalid=0 min=12 min_total=0 verdict=PASS (test/crosswake/proof/phase199_release_gates_test.exs)
+publishers: release suites mix-test-gate: rc=0 total=1180 excluded=67 skipped=0 ran=1113 failures=0 invalid=0 min=100 (test/crosswake/proof, test/crosswake/release_candidate, planning/release_please_config_test.exs, mix/tasks/crosswake_release_status_test.exs)
+publishers: actionlint .github/workflows/release-please.yml -> exit 0, no findings
+DONE: 104 of 104 roster checks emitted; 0 failed.
+environment_keys: 8
+publishers: environments: publish-hex x6 (core Hex + five companions), publish-maven x1 (publish-android-core), publish-ios-mirror x1 (publish-ios-core)
+publishers: order: publish-android-core needs publish-hex and requires needs.publish-hex.result == 'success'; publish-ios-core needs publish-android-core and requires needs.publish-android-core.result == 'success'; no publisher if: uses a status-check function
+publishers: scanner checks added: release.gate.publish_hex_environment, release.gate.publish_maven_environment, release.gate.publish_ios_mirror_environment, release.gate.companion_environments, release.gate.core_order (roster 99 to 104)
+publishers: seeded mutations: 9 new tests in phase199_release_gates_test.exs (13 in file): hex key deleted, hex environment renamed, maven key deleted, iOS key deleted, one companion key deleted, Maven need on Hex dropped, iOS success condition dropped, plus two positive tests on the real workflow
+publishers: pinned checks updated (existing scanner checks whose old posture the D-01/D-02 design supersedes): release.approval.linked_graph (was: core publishers must NOT have an environment key; now: each has its exact environment), release.ios.independent_publication (was: iOS must not need publish-android-core; now: iOS must need it and still must not need publish-hex directly)
+publishers: pinned test files updated: test/crosswake/release_candidate/workflow_test.exs (linked publication test: refute environment: replaced by an exact environment assertion per core publisher); test/crosswake/proof/phase199_release_gates_test.exs (roster size 99 to 104)
+publishers: run: line check: git diff f97da474 -- .github/workflows/release-please.yml changes only environment:, needs: and if: job keys on eight publisher jobs; no run: line changed
+publishers: no publish, tag, merge, dispatch or push was performed

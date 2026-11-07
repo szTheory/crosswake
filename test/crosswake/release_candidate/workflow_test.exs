@@ -84,11 +84,16 @@ defmodule Crosswake.ReleaseCandidate.WorkflowTest do
     assert guard =~ "READY FOR APPROVAL"
     assert guard =~ ".external_state.changed == false"
 
-    for job <- ~w(publish-hex publish-ios-core publish-android-core) do
+    # Phase 199 D-01: each core publisher waits for its own approval environment.
+    for {job, environment} <- [
+          {"publish-hex", "publish-hex"},
+          {"publish-ios-core", "publish-ios-mirror"},
+          {"publish-android-core", "publish-maven"}
+        ] do
       block = job_block(workflow, job)
       assert block =~ "approved-release-guard"
       assert block =~ "needs.approved-release-guard.outputs.approved_version"
-      refute block =~ "environment:"
+      assert block =~ "    environment: #{environment}\n"
     end
   end
 
