@@ -10,3 +10,20 @@ ci: run=42168186565 conclusion=failure ran_on=synthetic_merge (pull_request even
 cause: not stale (branch parent is current main 0a9ba2913c37); real cause: test/crosswake/proof/phase165_ci_integrity_test.exs "all setup-java uses share the official immutable v6 commit" asserts de7274f081f3 and the bump changes it to b843ebf9b913 (v6.1.0)
 bot_authors: dependabot[bot] only (no agent commit on the branch)
 action: closed reason="CI red on the exact head for a real cause: repo pin guard asserts the single setup-java v6 commit de7274f0; accepting b843ebf9 needs a deliberate guard change in a separate reviewed change. Dependabot reopens monthly; reopenable." at=2026-11-07T13:26:38Z
+
+pr: 253 title="chore(collateral): refresh See It Run assets" created=2026-10-26 head=25428301a832d6b85ed4da81228b3e00a561e851
+ci: run=41401898229 conclusion=action_required ran_on=none (no check ran on the head; statusCheckRollup is empty; the earlier run 40328488899 was for superseded head c8d774f865e5, also action_required)
+looked: brandbook/collateral/see-it-run/web-home.png ok "Lesson Library page: title, Crosswake Lessons card, three lesson rows on cream background; 1280x720, renders cleanly"
+looked: brandbook/collateral/see-it-run/web-offline.png ok "Offline Study Island: Saved answers paused banner, card 2 of 3 (Phoenix), Flip Card, answer box, Save answer, Play pronunciation, Audio unavailable; 1280x883, renders cleanly; layout differs from main's older image, which is the point of the refresh"
+looked: brandbook/collateral/see-it-run/web-bridge-proof.png ok "Bridge Proof page: Share button, Shell declined shell_unreachable message, JSON envelope with origin example.crosswake.invalid and no real identifiers; 1280x720, renders cleanly"
+looked: brandbook/collateral/see-it-run/see-it-run.gif ok "960x720, 37 frames (main's has 39): typed bin/see-it-run.sh, then bin/see-it-run.sh --web-only --no-open, then per-runtime next-commands output; text legible, no blank or corrupted frames sampled at frames 12, 24 and 36"
+merge_blocked: CI never ran green on the exact head (action_required, no checks), so the standing merge condition is unmet; the plan's alternative is to close with a reason
+close_attempt: gh pr close 253 at=2026-11-07T13:27:48Z was DENIED by the Claude Code permission classifier (External System Writes); not retried and not worked around
+action: left_to_user reason="Plan says close PR 253 (images look right, no CI ran on the head). The close command was denied by the permission system, so PR 253 is still OPEN and untouched. Needs the user to close it (gh pr close 253) or allow the agent to; the weekly See It Run Collateral workflow opens a fresh refresh." at=2026-11-07T13:27:48Z
+
+pr: 258 title="chore(gsd): switch Crosswake to Codex with explicit tier efforts" created=2026-10-27 head=5f33db295d8b765ab678225dbc053d3c6c91fbad
+ci: run=none conclusion=not_applicable ran_on=none (D-06 B close; only file changed is .planning/config.json; no merge attempted)
+decision: D-06 B (user, 2026-11-07T13:21:47Z)
+action: closed reason="Local GSD Codex model-routing switch not wanted while the project runs on Claude; reopenable." at=2026-11-07T13:27:48Z
+
+main_after_queue: 0a9ba2913c371f7671f534060d9c8154629de5a0
