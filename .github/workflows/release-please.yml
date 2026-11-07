@@ -619,6 +619,7 @@ jobs:
     # companion on every core-only release. `rulestead_release_created` is set only when
     # release-please cuts a crosswake_rulestead release PR.
     if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rulestead' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -692,6 +693,7 @@ jobs:
     # companion on every core-only release. `rindle_release_created` is set only when
     # release-please cuts a crosswake_rindle release PR.
     if: ${{ needs.release-please.outputs.rindle_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rindle' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -765,6 +767,7 @@ jobs:
     # companion on every core-only release. `sigra_release_created` is set only when
     # release-please cuts a crosswake_sigra release PR.
     if: ${{ needs.release-please.outputs.sigra_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_sigra' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -838,6 +841,7 @@ jobs:
     # companion on every core-only release. `chimeway_release_created` is set only when
     # release-please cuts a crosswake_chimeway release PR.
     if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_chimeway' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -911,6 +915,7 @@ jobs:
     # observer on every core-only release. `threadline_release_created` is set only when
     # release-please cuts a crosswake_threadline release PR (THREAD-03).
     if: ${{ needs.release-please.outputs.threadline_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_threadline' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -979,8 +984,9 @@ jobs:
 
   publish-ios-core:
     name: Mirror iOS core to split repo
-    needs: [approved-release-guard, release-please]
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
+    needs: [approved-release-guard, release-please, publish-android-core]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') && needs.publish-android-core.result == 'success' }}
+    environment: publish-ios-mirror
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -1053,8 +1059,9 @@ jobs:
 
   publish-android-core:
     name: Publish Android core to Maven Central
-    needs: [approved-release-guard, release-please]
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
+    needs: [approved-release-guard, release-please, publish-hex]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') && needs.publish-hex.result == 'success' }}
+    environment: publish-maven
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

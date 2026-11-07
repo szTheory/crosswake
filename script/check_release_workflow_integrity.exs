@@ -109,6 +109,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.candidate.receipt_attestation
     release.gate.environments_preflight
     release.gate.publish_hex_environment
+    release.gate.publish_maven_environment
+    release.gate.publish_ios_mirror_environment
+    release.gate.companion_environments
+    release.gate.core_order
     release.chimeway.component_gate
     release.chimeway.proof_gate
     release.ci.candidate_matrix
@@ -337,6 +341,10 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         rel17_approved_guard(jobs),
         release_gate_environments_preflight(jobs),
         release_gate_publish_hex_environment(jobs),
+        release_gate_publish_maven_environment(jobs),
+        release_gate_publish_ios_mirror_environment(jobs),
+        release_gate_companion_environments(jobs),
+        release_gate_core_order(jobs),
         rel17_roster_exact(),
         rel17_release_creation_guard(jobs),
         rel17_publisher_job_guard(
@@ -1838,6 +1846,73 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  defp release_gate_publish_maven_environment(jobs) do
+    check(
+      "release.gate.publish_maven_environment",
+      job_environment(jobs, "publish-android-core") == "publish-maven",
+      "publish-android-core must run in the publish-maven approval environment so the Maven Central publish waits for its own approval"
+    )
+  end
+
+  defp release_gate_publish_ios_mirror_environment(jobs) do
+    check(
+      "release.gate.publish_ios_mirror_environment",
+      job_environment(jobs, "publish-ios-core") == "publish-ios-mirror",
+      "publish-ios-core must run in the publish-ios-mirror approval environment so the iOS mirror push waits for its own approval"
+    )
+  end
+
+  defp release_gate_companion_environments(jobs) do
+    offenders =
+      Enum.reject(@components, fn component ->
+        job_environment(jobs, "publish-hex-#{component}") == "publish-hex"
+      end)
+
+    check(
+      "release.gate.companion_environments",
+      offenders == [],
+      if(offenders == [],
+        do:
+          "all #{length(@components)} companion publish jobs run in the publish-hex approval environment",
+        else:
+          "companion publish job(s) without the publish-hex approval environment: #{Enum.join(offenders, ", ")}"
+      )
+    )
+  end
+
+  # D-02: the core run publishes Hex, then Maven, then the iOS mirror. Each link is a `needs`
+  # edge plus an explicit success condition, and no publisher `if` may use a status-check
+  # function (always(), failure(), cancelled(), success()), which would let a held or failed
+  # earlier publisher stop gating the next one.
+  defp release_gate_core_order(jobs) do
+    publishers =
+      ["publish-hex", "publish-android-core", "publish-ios-core"] ++
+        Enum.map(@components, &"publish-hex-#{&1}")
+
+    status_function = ~r/\b(always|success|failure|cancelled)\s*\(/
+
+    chained? =
+      job_needs?(jobs, "publish-android-core", "publish-hex") and
+        includes?(job_if(jobs, "publish-android-core"), "needs.publish-hex.result == 'success'") and
+        job_needs?(jobs, "publish-ios-core", "publish-android-core") and
+        includes?(
+          job_if(jobs, "publish-ios-core"),
+          "needs.publish-android-core.result == 'success'"
+        )
+
+    status_free? =
+      Enum.all?(publishers, fn job ->
+        expression = job_if(jobs, job)
+        expression != "" and not Regex.match?(status_function, expression)
+      end)
+
+    check(
+      "release.gate.core_order",
+      chained? and status_free?,
+      "the core run must publish Hex, then Maven, then the iOS mirror: publish-android-core needs publish-hex and publish-ios-core needs publish-android-core, each with an explicit success condition, and no publisher if: may use a status-check function"
+    )
+  end
+
   defp rel17_release_creation_guard(jobs) do
     block = job_block(jobs, "release-please")
     loader = index_of(block, "bash script/release_candidate/load_release_evidence_context.sh")
@@ -2005,8 +2080,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       Enum.all?(
         [
           {"publish-hex", "publish-hex"},
-          {"publish-ios-core", ""},
-          {"publish-android-core", ""}
+          {"publish-ios-core", "publish-ios-mirror"},
+          {"publish-android-core", "publish-maven"}
         ],
         fn {job, environment} ->
           job_needs?(jobs, job, "approved-release-guard") and
@@ -2169,8 +2244,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       job_needs?(jobs, "publish-ios-core", "release-please") and
         job_needs?(jobs, "publish-ios-core", "approved-release-guard") and
         not job_needs?(jobs, "publish-ios-core", "publish-hex") and
-        not job_needs?(jobs, "publish-ios-core", "publish-android-core"),
-      "the guarded iOS publication must remain independent of sibling registry outcomes so partial public truth is observable"
+        job_needs?(jobs, "publish-ios-core", "publish-android-core"),
+      "the guarded iOS publication follows only the Maven publish (Phase 199 D-02), never Hex directly and never a rollup, so a held or failed earlier publisher leaves it skipped and the rollups record the partial public truth"
     )
   end
 

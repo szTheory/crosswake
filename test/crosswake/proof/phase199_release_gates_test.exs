@@ -14,6 +14,11 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
   @call "bash script/release_candidate/check_release_environments.sh || env_preflight_rc=$?"
   @blocked "REL-17 BLOCKED reason=release_environment_unprotected"
   @hex_id "release.gate.publish_hex_environment"
+  @maven_id "release.gate.publish_maven_environment"
+  @ios_id "release.gate.publish_ios_mirror_environment"
+  @companion_id "release.gate.companion_environments"
+  @order_id "release.gate.core_order"
+  @publisher_ids [@hex_id, @maven_id, @ios_id, @companion_id, @order_id]
 
   test "the real workflow passes the environment preflight check" do
     {output, status} = Scanner.run_fixture_set(%{release_workflow: File.read!(@release_workflow)})
@@ -21,7 +26,7 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
     assert status == 0, output
     assert output =~ "OK: #{@preflight_id}"
     refute output =~ "FAIL: #{@preflight_id}"
-    assert output =~ "DONE: 100 of 100 roster checks emitted; 0 failed."
+    assert output =~ "DONE: 104 of 104 roster checks emitted; 0 failed."
   end
 
   test "deleting the preflight call turns the scanner red with the check id" do
@@ -90,6 +95,87 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
       )
 
     assert_scanner_failure(mutated, @hex_id)
+  end
+
+  test "the real workflow passes every publisher gate check" do
+    {output, status} = Scanner.run_fixture_set(%{release_workflow: File.read!(@release_workflow)})
+
+    assert status == 0, output
+
+    for id <- @publisher_ids do
+      assert output =~ "OK: #{id}"
+      refute output =~ "FAIL: #{id}"
+    end
+  end
+
+  test "deleting the publish-android-core environment turns the scanner red with the check id" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        "publish-android-core",
+        "    environment: publish-maven\n",
+        ""
+      )
+
+    assert_scanner_failure(mutated, @maven_id)
+  end
+
+  test "deleting the publish-ios-core environment turns the scanner red with the check id" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        "publish-ios-core",
+        "    environment: publish-ios-mirror\n",
+        ""
+      )
+
+    assert_scanner_failure(mutated, @ios_id)
+  end
+
+  test "dropping the environment from one companion publisher turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        "publish-hex-threadline",
+        "    environment: publish-hex\n",
+        ""
+      )
+
+    assert_scanner_failure(mutated, @companion_id)
+  end
+
+  test "dropping the Maven need on Hex turns the scanner red with the check id" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        "publish-android-core",
+        "needs: [approved-release-guard, release-please, publish-hex]",
+        "needs: [approved-release-guard, release-please]"
+      )
+
+    assert_scanner_failure(mutated, @order_id)
+  end
+
+  test "dropping the iOS success condition on Maven turns the scanner red with the check id" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        "publish-ios-core",
+        " && needs.publish-android-core.result == 'success'",
+        ""
+      )
+
+    assert_scanner_failure(mutated, @order_id)
   end
 
   defp assert_scanner_failure(mutated, id \\ @preflight_id) do
