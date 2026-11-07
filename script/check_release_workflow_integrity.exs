@@ -113,6 +113,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.gate.publish_ios_mirror_environment
     release.gate.companion_environments
     release.gate.core_order
+    release.gate.tag_gate
     release.chimeway.component_gate
     release.chimeway.proof_gate
     release.ci.candidate_matrix
@@ -345,6 +346,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         release_gate_publish_ios_mirror_environment(jobs),
         release_gate_companion_environments(jobs),
         release_gate_core_order(jobs),
+        release_gate_tag_gate(jobs),
         rel17_roster_exact(),
         rel17_release_creation_guard(jobs),
         rel17_publisher_job_guard(
@@ -664,8 +666,19 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp maven_fire_drill_isolated(release_workflow, maven_workflow) do
     release_jobs = job_blocks(release_workflow)
 
+    # Phase 199 (D-04): release-please now carries a status-check function and the tag-gate
+    # conditions, so the old exact-equality pin no longer holds. It stays push-only: the
+    # condition must start with `!cancelled()` and contain the `github.event_name == 'push'`
+    # conjunct, must not use `always()`, and must name no manual-dispatch event.
+    release_please_if = job_if(release_jobs, "release-please")
+
     release_please_push_only =
-      job_if(release_jobs, "release-please") == "${{ github.event_name == 'push' }}"
+      Regex.match?(
+        ~r/^\$\{\{ !cancelled\(\) && github\.event_name == 'push' && /,
+        release_please_if
+      ) and
+        not includes?(release_please_if, "always(") and
+        not includes?(release_please_if, "workflow_dispatch")
 
     lockstep_truth_manual_only =
       job_if(release_jobs, "lockstep-truth") == "${{ github.event_name == 'workflow_dispatch' }}"
@@ -1910,6 +1923,73 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       "release.gate.core_order",
       chained? and status_free?,
       "the core run must publish Hex, then Maven, then the iOS mirror: publish-android-core needs publish-hex and publish-ios-core needs publish-android-core, each with an explicit success condition, and no publisher if: may use a status-check function"
+    )
+  end
+
+  # Phase 199 (D-01, D-04): tag creation waits for its own approval environment, but an ordinary
+  # proposal push must still reach Release Please. GitHub skips a job whose needs include a skipped
+  # job unless its `if` starts with a status-check function, so release-please carries `!cancelled()`
+  # (never `always()`: a cancelled run must not go on to create tags), still requires the guard's
+  # success, accepts a skipped gate only when the REL-17 context is empty, and requires the gate's
+  # success whenever the context is non-empty. The `if` text is parsed term by term so equivalent
+  # spacing passes and each missing term is named.
+  defp release_gate_tag_gate(jobs) do
+    gate = job_block(jobs, "release-tag-gate")
+    gate_if = job_if(jobs, "release-tag-gate")
+    rp_if = job_if(jobs, "release-please")
+    status_function = ~r/\b(always|success|failure|cancelled)\s*\(/
+
+    skipped_terms = Regex.scan(~r/needs\.release-tag-gate\.result == 'skipped'/, rp_if)
+
+    problems =
+      [
+        {gate != "", "job release-tag-gate is missing"},
+        {job_environment(jobs, "release-tag-gate") == "release-tags",
+         "release-tag-gate must run in the release-tags approval environment"},
+        {job_needs?(jobs, "release-tag-gate", "approved-release-guard"),
+         "release-tag-gate must need approved-release-guard"},
+        {includes?(gate_if, "needs.approved-release-guard.outputs.rel17_context != ''"),
+         "release-tag-gate if: must key on a non-empty REL-17 context"},
+        {gate_if != "" and not Regex.match?(status_function, gate_if),
+         "release-tag-gate if: must not use a status-check function, so the guard's success is required"},
+        {not includes?(gate, "secrets."), "release-tag-gate must not reference any secret"},
+        {not includes?(gate, "actions/checkout"), "release-tag-gate must not check out code"},
+        {job_needs?(jobs, "release-please", "release-tag-gate"),
+         "release-please must need release-tag-gate"},
+        {job_needs?(jobs, "release-please", "approved-release-guard"),
+         "release-please must need approved-release-guard"},
+        {Regex.match?(~r/^\$\{\{ !cancelled\(\) && /, rp_if),
+         "release-please if: must start with the status-check function !cancelled()"},
+        {not includes?(rp_if, "always("),
+         "release-please if: must not use always(), so a cancelled run cannot create tags"},
+        {includes?(rp_if, "github.event_name == 'push'"),
+         "release-please if: must keep the push-only condition"},
+        {includes?(rp_if, "needs.approved-release-guard.result == 'success'"),
+         "release-please if: must require needs.approved-release-guard.result == 'success'"},
+        {Regex.match?(
+           ~r/needs\.approved-release-guard\.outputs\.rel17_context != '' && needs\.release-tag-gate\.result == 'success'/,
+           rp_if
+         ),
+         "release-please if: must require the tag gate's success whenever the REL-17 context is non-empty"},
+        {length(skipped_terms) == 1 and
+           Regex.match?(
+             ~r/needs\.approved-release-guard\.outputs\.rel17_context == '' && needs\.release-tag-gate\.result == 'skipped'/,
+             rp_if
+           ),
+         "release-please if: may accept a skipped tag gate only when the REL-17 context is empty"}
+      ]
+      |> Enum.reject(fn {ok?, _message} -> ok? end)
+      |> Enum.map(&elem(&1, 1))
+
+    check(
+      "release.gate.tag_gate",
+      problems == [],
+      if(problems == [],
+        do:
+          "release-tag-gate waits for the release-tags approval environment on linked and companion runs and is skipped on proposal pushes; release-please needs it, starts with !cancelled(), requires the guard's success, and requires the gate's success whenever the REL-17 context is non-empty",
+        else:
+          Enum.join(problems, "; ") <> "; run elixir script/check_release_workflow_integrity.exs"
+      )
     )
   end
 

@@ -421,10 +421,54 @@ jobs:
           emit_output "rel17_package=$candidate_package"
           emit_output "rel17_context=$rel17_context"
 
+  # Tag creation waits for its own one-use approval (Phase 199 D-01, D-04). The gate runs only
+  # when the guard accepted a linked or companion release (a non-empty REL-17 context), so an
+  # ordinary proposal push skips it. It has no checkout and no secret: it only writes the scope
+  # a reviewer is about to approve to the job summary.
+  release-tag-gate:
+    name: "release: approve tag creation"
+    needs: approved-release-guard
+    if: ${{ needs.approved-release-guard.outputs.rel17_context != '' }}
+    environment: release-tags
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Display the tag creation scope
+        env:
+          OPERATION: ${{ needs.approved-release-guard.outputs.rel17_operation }}
+          PACKAGE: ${{ needs.approved-release-guard.outputs.rel17_package }}
+          VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: |
+          set -euo pipefail
+          if [ "$OPERATION" = "linked_release" ]; then
+            tags="hex-v${VERSION}, ios-core-v${VERSION}, android-core-v${VERSION}"
+          else
+            tags="${PACKAGE}-v${VERSION}"
+          fi
+          {
+            echo "### Approve tag creation"
+            echo
+            echo "- Operation: ${OPERATION}"
+            echo "- Package: ${PACKAGE}"
+            echo "- Version: ${VERSION}"
+            echo "- Merge commit: ${MERGE_OID}"
+            echo "- Tags and GitHub Releases Release Please will create: ${tags}"
+            echo
+            echo "Tags and releases cannot be undone from this workflow. Approving this step lets the Release Please step create exactly these."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   release-please:
     name: Release Please
-    needs: approved-release-guard
-    if: ${{ github.event_name == 'push' }}
+    needs: [approved-release-guard, release-tag-gate]
+    # A skipped gate (ordinary proposal push, empty REL-17 context) must not skip this job, so the
+    # condition starts with a status-check function. It is the cancellation-aware one, never the
+    # unconditional one, so a cancelled run stays cancelled and cannot go on to create tags. A
+    # skipped gate is accepted only when the context is empty; with a context the gate must have
+    # succeeded (been approved).
+    if: ${{ !cancelled() && github.event_name == 'push' && needs.approved-release-guard.result == 'success' && ((needs.approved-release-guard.outputs.rel17_context == '' && needs.release-tag-gate.result == 'skipped') || (needs.approved-release-guard.outputs.rel17_context != '' && needs.release-tag-gate.result == 'success')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:

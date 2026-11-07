@@ -48,8 +48,8 @@ defmodule Crosswake.Proof.Phase175ReleaseRecoveryTest do
       Fixtures.replace_in_job(
         release,
         "release-please",
-        "if: ${{ github.event_name == 'push' }}",
-        "if: ${{ always() }}"
+        "if: ${{ !cancelled() && github.event_name == 'push' && ",
+        "if: ${{ always() && "
       )
 
     assert_failure!(@isolation, release_workflow: dispatched_proposal)

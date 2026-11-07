@@ -18,7 +18,9 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
   @ios_id "release.gate.publish_ios_mirror_environment"
   @companion_id "release.gate.companion_environments"
   @order_id "release.gate.core_order"
-  @publisher_ids [@hex_id, @maven_id, @ios_id, @companion_id, @order_id]
+  @tag_gate_id "release.gate.tag_gate"
+  @gate_ids [@hex_id, @maven_id, @ios_id, @companion_id, @order_id, @tag_gate_id]
+  @release_please_job "release-please"
 
   test "the real workflow passes the environment preflight check" do
     {output, status} = Scanner.run_fixture_set(%{release_workflow: File.read!(@release_workflow)})
@@ -26,7 +28,7 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
     assert status == 0, output
     assert output =~ "OK: #{@preflight_id}"
     refute output =~ "FAIL: #{@preflight_id}"
-    assert output =~ "DONE: 104 of 104 roster checks emitted; 0 failed."
+    assert output =~ "DONE: 105 of 105 roster checks emitted; 0 failed."
   end
 
   test "deleting the preflight call turns the scanner red with the check id" do
@@ -97,12 +99,12 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
     assert_scanner_failure(mutated, @hex_id)
   end
 
-  test "the real workflow passes every publisher gate check" do
+  test "the real workflow passes every release gate check" do
     {output, status} = Scanner.run_fixture_set(%{release_workflow: File.read!(@release_workflow)})
 
     assert status == 0, output
 
-    for id <- @publisher_ids do
+    for id <- @gate_ids do
       assert output =~ "OK: #{id}"
       refute output =~ "FAIL: #{id}"
     end
@@ -176,6 +178,66 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
       )
 
     assert_scanner_failure(mutated, @order_id)
+  end
+
+  test "dropping the release-please need on the tag gate turns the scanner red with the check id" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        @release_please_job,
+        "needs: [approved-release-guard, release-tag-gate]",
+        "needs: approved-release-guard"
+      )
+
+    assert_scanner_failure(mutated, @tag_gate_id)
+  end
+
+  test "accepting a skipped tag gate when a REL-17 context exists turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        @release_please_job,
+        "(needs.approved-release-guard.outputs.rel17_context != '' && needs.release-tag-gate.result == 'success')",
+        "(needs.approved-release-guard.outputs.rel17_context != '' && needs.release-tag-gate.result == 'skipped')"
+      )
+
+    assert_scanner_failure(mutated, @tag_gate_id)
+  end
+
+  test "dropping the status-check function from release-please turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(workflow, @release_please_job, "!cancelled() && ", "")
+
+    assert_scanner_failure(mutated, @tag_gate_id)
+  end
+
+  test "swapping !cancelled() for always() in release-please turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(workflow, @release_please_job, "!cancelled() && ", "always() && ")
+
+    assert_scanner_failure(mutated, @tag_gate_id)
+  end
+
+  test "dropping the guard-success requirement from release-please turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        @release_please_job,
+        "needs.approved-release-guard.result == 'success' && ",
+        ""
+      )
+
+    assert_scanner_failure(mutated, @tag_gate_id)
   end
 
   defp assert_scanner_failure(mutated, id \\ @preflight_id) do
