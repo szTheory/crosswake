@@ -27,3 +27,15 @@ tag_gate: pinned checks and tests updated (existing pins on the old release-plea
 tag_gate: runbooks: docs/RELEASE-INCIDENT-RESPONSE.md gains ## Per-step approval gates; docs/COMPANION-PUBLISH-RUNBOOK.md section 7 rewritten (release-tags, publish-hex, publish-maven, publish-ios-mirror); release_boundaries_test.exs: three pins on the old one-approval wording replaced by per-step pins
 tag_gate: collection-assertion ledger: script/collection_assertion_ledger.json regenerated with --emit-snapshot; only the display lines of three release_boundaries_test.exs rows moved (129, 188, 700 by the inserted lines), --check prints OK 290 sites
 tag_gate: no publish, tag, merge, dispatch or push was performed
+mirror_tag_check: recorded 2026-11-07 on branch ci/199-release-gates by plan 199-05 Task 3
+mirror_tag_check: [crosswake] DONE: 106 of 106 roster checks emitted; 0 failed.
+mirror_tag_check: mix-test-gate: rc=0 total=23 excluded=0 skipped=0 ran=23 failures=0 invalid=0 min=21 min_total=0 verdict=PASS (test/crosswake/proof/phase199_release_gates_test.exs)
+mirror_tag_check: actionlint .github/workflows/release-please.yml -> exit 0, no findings
+DONE: 106 of 106 roster checks emitted; 0 failed.
+environment_keys: 9
+mirror_tag_check: job release-mirror-tag-check (name "release: ios mirror tag check", lowercase after the prefix because test/crosswake/proof/phase169_check_name_uniqueness_test.exs requires it): needs [release-please, publish-ios-core]; if needs.publish-ios-core.result == 'success'; permissions contents: read only; no environment key, no secret, persist-credentials: false; VERSION from needs.release-please.outputs.version passed only through env; runs bash script/check_ios_mirror_release_tag.sh --version "$VERSION"
+mirror_tag_check: release-failure-alert needs release-mirror-tag-check and echoes needs.release-mirror-tag-check.result (2 mentions in the alert block); both rollups, exact-public-proof, the guard, release-tag-gate and every publisher are unchanged
+mirror_tag_check: scanner check added: release.gate.mirror_tag_check (roster 105 to 106)
+mirror_tag_check: seeded mutations (5 new tests, 23 in file): script call deleted; environment publish-ios-mirror added; contents: read widened to write; publish-ios-core need dropped; release-failure-alert need dropped
+mirror_tag_check: release suites on the final tree: mix-test-gate total=1206 excluded=67 ran=1139 failures=1 (phase161_1_navigation_gate_integrity_test.exs "a zero-exit host run with passed names..." hit the 60000ms ExUnit timeout under full-suite load; the same file run alone: rc=0 ran=2 failures=0; it passed in the earlier full run and is not touched by this plan). Every other test passed, including phase169 name uniqueness and the phase170 ledger tests; 'elixir script/inventory_collection_assertions.exs --check' prints OK 290 sites
+mirror_tag_check: no publish, tag, merge, dispatch or push was performed

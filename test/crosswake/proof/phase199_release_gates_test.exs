@@ -19,7 +19,10 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
   @companion_id "release.gate.companion_environments"
   @order_id "release.gate.core_order"
   @tag_gate_id "release.gate.tag_gate"
-  @gate_ids [@hex_id, @maven_id, @ios_id, @companion_id, @order_id, @tag_gate_id]
+  @mirror_tag_id "release.gate.mirror_tag_check"
+  @gate_ids [@hex_id, @maven_id, @ios_id, @companion_id, @order_id, @tag_gate_id, @mirror_tag_id]
+  @mirror_tag_job "release-mirror-tag-check"
+  @mirror_tag_call ~s(run: bash script/check_ios_mirror_release_tag.sh --version "$VERSION")
   @release_please_job "release-please"
 
   test "the real workflow passes the environment preflight check" do
@@ -28,7 +31,7 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
     assert status == 0, output
     assert output =~ "OK: #{@preflight_id}"
     refute output =~ "FAIL: #{@preflight_id}"
-    assert output =~ "DONE: 105 of 105 roster checks emitted; 0 failed."
+    assert output =~ "DONE: 106 of 106 roster checks emitted; 0 failed."
   end
 
   test "deleting the preflight call turns the scanner red with the check id" do
@@ -238,6 +241,71 @@ defmodule Crosswake.Proof.Phase199ReleaseGatesTest do
       )
 
     assert_scanner_failure(mutated, @tag_gate_id)
+  end
+
+  test "deleting the mirror tag check call turns the scanner red with the check id" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(workflow, @mirror_tag_job, @mirror_tag_call, "run: echo skipped")
+
+    assert_scanner_failure(mutated, @mirror_tag_id)
+  end
+
+  test "adding an approval environment to the mirror tag check turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        @mirror_tag_job,
+        "    timeout-minutes: 10\n",
+        "    timeout-minutes: 10\n    environment: publish-ios-mirror\n"
+      )
+
+    assert_scanner_failure(mutated, @mirror_tag_id)
+  end
+
+  test "widening the mirror tag check permissions turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        @mirror_tag_job,
+        "      contents: read\n",
+        "      contents: write\n"
+      )
+
+    assert_scanner_failure(mutated, @mirror_tag_id)
+  end
+
+  test "dropping the publish-ios-core need from the mirror tag check turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        @mirror_tag_job,
+        "needs: [release-please, publish-ios-core]",
+        "needs: [release-please]"
+      )
+
+    assert_scanner_failure(mutated, @mirror_tag_id)
+  end
+
+  test "dropping the mirror tag check from release-failure-alert turns the scanner red" do
+    workflow = File.read!(@release_workflow)
+
+    mutated =
+      Scanner.replace_in_job(
+        workflow,
+        "release-failure-alert",
+        "      - release-mirror-tag-check\n",
+        ""
+      )
+
+    assert_scanner_failure(mutated, @mirror_tag_id)
   end
 
   defp assert_scanner_failure(mutated, id \\ @preflight_id) do

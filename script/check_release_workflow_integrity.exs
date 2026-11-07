@@ -114,6 +114,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.gate.companion_environments
     release.gate.core_order
     release.gate.tag_gate
+    release.gate.mirror_tag_check
     release.chimeway.component_gate
     release.chimeway.proof_gate
     release.ci.candidate_matrix
@@ -347,6 +348,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         release_gate_companion_environments(jobs),
         release_gate_core_order(jobs),
         release_gate_tag_gate(jobs),
+        release_gate_mirror_tag_check(jobs),
         rel17_roster_exact(),
         rel17_release_creation_guard(jobs),
         rel17_publisher_job_guard(
@@ -1987,6 +1989,61 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       if(problems == [],
         do:
           "release-tag-gate waits for the release-tags approval environment on linked and companion runs and is skipped on proposal pushes; release-please needs it, starts with !cancelled(), requires the guard's success, and requires the gate's success whenever the REL-17 context is non-empty",
+        else:
+          Enum.join(problems, "; ") <> "; run elixir script/check_release_workflow_integrity.exs"
+      )
+    )
+  end
+
+  # Phase 199 (SC3): the mirror tag check is a recurring post-publish gate, not a one-off. The job
+  # runs after the iOS mirror publish succeeded, is read-only (no approval environment, no secret,
+  # no write scope, no persisted credential), takes the released version only through an environment
+  # variable, and is wired into release-failure-alert so a non-zero exit opens a tracking issue.
+  # The `if` text is parsed, so equivalent spacing passes and each missing term is named.
+  defp release_gate_mirror_tag_check(jobs) do
+    job = "release-mirror-tag-check"
+    block = job_block(jobs, job)
+    condition = job_if(jobs, job)
+    status_function = ~r/\b(always|success|failure|cancelled)\s*\(/
+    alert = job_block(jobs, "release-failure-alert")
+
+    problems =
+      [
+        {block != "", "job #{job} is missing"},
+        {job_needs?(jobs, job, "release-please"), "#{job} must need release-please"},
+        {job_needs?(jobs, job, "publish-ios-core"), "#{job} must need publish-ios-core"},
+        {includes?(condition, "needs.publish-ios-core.result == 'success'"),
+         "#{job} if: must require needs.publish-ios-core.result == 'success'"},
+        {condition != "" and not Regex.match?(status_function, condition),
+         "#{job} if: must not use a status-check function"},
+        {job_key(block, "environment") == "" and not Regex.match?(~r/environment\s*:/, block),
+         "#{job} must not carry an approval environment key"},
+        {not includes?(block, "secrets."), "#{job} must not reference any secret"},
+        {not Regex.match?(~r/:\s*write\b/, block), "#{job} must not grant any write permission"},
+        {block |> job_key("permissions") |> normalize_expression() == "contents: read",
+         "#{job} permissions must be exactly contents: read"},
+        {includes?(block, "VERSION: ${{ needs.release-please.outputs.version }}"),
+         "#{job} must take VERSION from needs.release-please.outputs.version"},
+        {Regex.match?(
+           ~r/^\s*run:\s*bash script\/check_ios_mirror_release_tag\.sh --version "\$VERSION"\s*$/m,
+           block
+         ), "#{job} must run script/check_ios_mirror_release_tag.sh --version \"$VERSION\""},
+        {Regex.match?(~r/persist-credentials:\s*false/, block),
+         "#{job} checkout must set persist-credentials: false"},
+        {job_needs?(jobs, "release-failure-alert", job),
+         "release-failure-alert must need #{job}"},
+        {includes?(alert, "needs.#{job}.result"),
+         "release-failure-alert must echo needs.#{job}.result"}
+      ]
+      |> Enum.reject(fn {ok?, _message} -> ok? end)
+      |> Enum.map(&elem(&1, 1))
+
+    check(
+      "release.gate.mirror_tag_check",
+      problems == [],
+      if(problems == [],
+        do:
+          "#{job} runs the iOS mirror tag check after a successful mirror publish, read-only, from the released version, and release-failure-alert pages on its failure",
         else:
           Enum.join(problems, "; ") <> "; run elixir script/check_release_workflow_integrity.exs"
       )

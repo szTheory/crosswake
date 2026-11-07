@@ -1101,6 +1101,30 @@ jobs:
           --expected-old-ref "$(git ls-remote git@github.com:szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')"
           --expected-new-ref "$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)"
 
+  # SC3 as a recurring post-publish gate (Phase 199): after the iOS mirror publish succeeds, the
+  # mirror tag must equal the released version and the released iOS package tree. Read-only by
+  # design: it holds no approval, no secret and no write scope, and reads the public mirror
+  # anonymously. A non-zero exit fails the job and release-failure-alert opens a tracking issue.
+  release-mirror-tag-check:
+    name: "release: ios mirror tag check"
+    needs: [release-please, publish-ios-core]
+    if: ${{ needs.publish-ios-core.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Assert the mirror tag equals the released version and tree
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: bash script/check_ios_mirror_release_tag.sh --version "$VERSION"
+
   publish-android-core:
     name: Publish Android core to Maven Central
     needs: [approved-release-guard, release-please, publish-hex]
@@ -1915,6 +1939,7 @@ jobs:
       - publish-hex-threadline
       - clean-room-proof-threadline
       - publish-ios-core
+      - release-mirror-tag-check
       - clean-room-proof-ios
       - publish-android-core
       - clean-room-proof-android
@@ -1951,6 +1976,7 @@ jobs:
             echo "- publish-hex-threadline: ${{ needs.publish-hex-threadline.result }}"
             echo "- clean-room-proof-threadline: ${{ needs.clean-room-proof-threadline.result }}"
             echo "- publish-ios-core: ${{ needs.publish-ios-core.result }}"
+            echo "- release-mirror-tag-check: ${{ needs.release-mirror-tag-check.result }}"
             echo "- clean-room-proof-ios: ${{ needs.clean-room-proof-ios.result }}"
             echo "- publish-android-core: ${{ needs.publish-android-core.result }}"
             echo "- clean-room-proof-android: ${{ needs.clean-room-proof-android.result }}"
