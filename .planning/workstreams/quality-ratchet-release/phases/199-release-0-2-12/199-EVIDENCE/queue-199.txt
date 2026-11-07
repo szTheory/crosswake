@@ -1,0 +1,12 @@
+# queue-199.txt: pre-release PR queue dispositions (plan 199-02)
+# read at 2026-11-07T13:26:38Z by the agent; repo szTheory/crosswake
+delete_branch_on_merge: false
+main_before_queue: 0a9ba2913c371f7671f534060d9c8154629de5a0
+release: PR 236 handled by plans 199-08..199-14 (not touched here)
+release: PR 262 handled by plans 199-08..199-14 (not touched here)
+
+pr: 252 title="chore(deps): bump actions/setup-java from 6.0.1 to 6.1.0 in the actions group across 1 directory" created=2026-10-26 head=956e4094344e3beb7751497d9549bb96c6a21c68
+ci: run=42168186565 conclusion=failure ran_on=synthetic_merge (pull_request event; failed jobs: phase130-core-hermetic-proof, proof-requires-example-host; phase130-companion-engine-absent-proof cancelled; aggregate Crosswake CI failure)
+cause: not stale (branch parent is current main 0a9ba2913c37); real cause: test/crosswake/proof/phase165_ci_integrity_test.exs "all setup-java uses share the official immutable v6 commit" asserts de7274f081f3 and the bump changes it to b843ebf9b913 (v6.1.0)
+bot_authors: dependabot[bot] only (no agent commit on the branch)
+action: closed reason="CI red on the exact head for a real cause: repo pin guard asserts the single setup-java v6 commit de7274f0; accepting b843ebf9 needs a deliberate guard change in a separate reviewed change. Dependabot reopens monthly; reopenable." at=2026-11-07T13:26:38Z
