@@ -517,6 +517,7 @@ jobs:
     name: Publish to Hex.pm
     needs: [approved-release-guard, release-please]
     if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

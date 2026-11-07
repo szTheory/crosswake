@@ -108,6 +108,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.rel17.maven_final_boundary
     release.candidate.receipt_attestation
     release.gate.environments_preflight
+    release.gate.publish_hex_environment
     release.chimeway.component_gate
     release.chimeway.proof_gate
     release.ci.candidate_matrix
@@ -335,6 +336,7 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         approved_release_runbook_guard(jobs),
         rel17_approved_guard(jobs),
         release_gate_environments_preflight(jobs),
+        release_gate_publish_hex_environment(jobs),
         rel17_roster_exact(),
         rel17_release_creation_guard(jobs),
         rel17_publisher_job_guard(
@@ -1816,6 +1818,26 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  # Phase 199 (D-01): each publisher waits for its own approval environment. The key may be a
+  # plain string or a map whose `name` is the environment; anything else (absent, renamed,
+  # an expression) reads as "" or a different name and fails the check.
+  defp job_environment(jobs, job) do
+    value = jobs |> job_block(job) |> job_key("environment")
+
+    case Regex.run(~r/^\s*name:\s*['"]?([A-Za-z0-9_-]+)['"]?\s*$/m, value) do
+      [_, name] -> name
+      _ -> value |> String.trim() |> String.trim("'") |> String.trim("\"")
+    end
+  end
+
+  defp release_gate_publish_hex_environment(jobs) do
+    check(
+      "release.gate.publish_hex_environment",
+      job_environment(jobs, "publish-hex") == "publish-hex",
+      "publish-hex must run in the publish-hex approval environment so the core Hex publish waits for its own approval"
+    )
+  end
+
   defp rel17_release_creation_guard(jobs) do
     block = job_block(jobs, "release-please")
     loader = index_of(block, "bash script/release_candidate/load_release_evidence_context.sh")
@@ -1980,20 +2002,25 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     exact_public = job_block(jobs, "exact-public-proof")
 
     guarded_children? =
-      Enum.all?(~w(publish-hex publish-ios-core publish-android-core), fn job ->
-        block = job_block(jobs, job)
-
-        job_needs?(jobs, job, "approved-release-guard") and
-          includes?(
-            job_if(jobs, job),
-            "needs.approved-release-guard.outputs.linked_release == 'true'"
-          ) and
-          includes?(
-            job_if(jobs, job),
-            "needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version"
-          ) and
-          not includes?(block, "environment:")
-      end)
+      Enum.all?(
+        [
+          {"publish-hex", "publish-hex"},
+          {"publish-ios-core", ""},
+          {"publish-android-core", ""}
+        ],
+        fn {job, environment} ->
+          job_needs?(jobs, job, "approved-release-guard") and
+            includes?(
+              job_if(jobs, job),
+              "needs.approved-release-guard.outputs.linked_release == 'true'"
+            ) and
+            includes?(
+              job_if(jobs, job),
+              "needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version"
+            ) and
+            job_environment(jobs, job) == environment
+        end
+      )
 
     graph_children =
       ~w(publish-hex publish-ios-core publish-android-core clean-room-proof-ios clean-room-proof-android exact-public-proof)
