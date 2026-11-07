@@ -1,0 +1,8 @@
+api_shape: GET /repos/szTheory/crosswake/environments unauthenticated -> {"total_count":0,"environments":0} (HTTP 200); GET .../environments/<name> unauthenticated -> 404 while no environment exists
+before: release-env: release-tags reviewer_rule=absent branch_policy=none verdict=FAIL reason=environment_missing
+before: release-env: publish-hex reviewer_rule=absent branch_policy=none verdict=FAIL reason=environment_missing
+before: release-env: publish-maven reviewer_rule=absent branch_policy=none verdict=FAIL reason=environment_missing
+before: release-env: publish-ios-mirror reviewer_rule=absent branch_policy=none verdict=FAIL reason=environment_missing
+before: [crosswake] What to do next: create or repair the named environment (required reviewer plus protected branches only) before any release.
+before: release-env: verdict=FAIL reason=environment_missing
+before: rc=1 release-env: verdict=FAIL reason=environment_missing
