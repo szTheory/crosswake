@@ -345,7 +345,7 @@ Plans:
 **Requirements**: REL-07
 **Success Criteria** (what must be TRUE):
   1. The release-please PR is green on its head commit with zero hand edits and is merged only after its own `allow`.
-  2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven.
+  2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven. (Amended 2026-11-07, Phase 199 D-04: the three linked source tags hex-v, ios-core-v and android-core-v and their GitHub Releases are created by one Release Please step and follow one shared one-use allow that names all three; the mirror tag v<version> is pushed by the iOS mirror publish and follows that publish's allow; a companion tag follows its own allow. Per-tag gating would need Release Please's tag creation replaced.) (Amended 2026-11-07, Phase 199 D-02: the core release run publishes Hex core, then Maven, then the iOS mirror, each behind its own allow; companions publish afterwards in their own release run, because release runs are serialized; companions still follow core.)
   3. A post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch.
   4. `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close.
   5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
