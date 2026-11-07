@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 199-01-PLAN.md
-last_updated: "2026-11-07T13:24:24.014Z"
-state_head: 3e590066a4f38a90f2b8d1a6d88109d78aecd76a
+stopped_at: Completed 199-02-PLAN.md
+last_updated: "2026-11-07T13:28:37.221Z"
+state_head: 64ed5d2aaea7dc41488caf2a470aba0a9e0e9e4c
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 93
-  completed_plans: 75
+  completed_plans: 76
   percent: 50
 current_phase: 199
 current_phase_name: Release 0.2.12
@@ -20,7 +20,7 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 19
 
 ## Exact Next Action
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-07T13:24:23.775Z
-**Stopped at:** Completed 199-01-PLAN.md
+**Last session:** 2026-11-07T13:28:36.973Z
+**Stopped at:** Completed 199-02-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -79,6 +79,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 198 P11 | 35min | 2 tasks | 3 files |
 | Phase 198 P12 | about 3h 30m (two CI fix-forward cycles) | 3 tasks | 19 files |
 | Phase 199 P01 | wall clock 8h 58m incl. user decision wait | 3 tasks | 6 files |
+| Phase 199 P02 | 5 min | 3 tasks | 1 files |
 
 ## Decisions
 
@@ -117,6 +118,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 199]: D-01 to D-05, D-07, D-08 recommended package chosen by the user (2026-11-07): four protected environments, Hex then Maven then iOS in the core run, threadline 0.1.1 included, one allow per tag-creating step, AGENTS.md condensed, Maven fire drill gated as core-maven-drill
 - [Phase 199]: D-06 option B: PR 258 is closed with a recorded reason by plan 199-02 Task 3 (user, 2026-11-07)
 - [Phase 199]: SC3 evidence command is bash script/check_ios_mirror_release_tag.sh --version V; proven on real 0.2.11 PASS and 0.2.10 newer_mirror_tag
+- [Phase 199]: 199-02: PR 252 closed (CI red for real cause: setup-java pin guard); PR 258 closed per D-06 B; PR 253 left open for the user (no CI on head, close denied by permission system)
 
 ### Blockers
 
