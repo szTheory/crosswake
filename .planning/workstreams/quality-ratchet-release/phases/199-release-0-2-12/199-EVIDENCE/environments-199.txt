@@ -6,3 +6,21 @@ before: release-env: publish-ios-mirror reviewer_rule=absent branch_policy=none 
 before: [crosswake] What to do next: create or repair the named environment (required reviewer plus protected branches only) before any release.
 before: release-env: verdict=FAIL reason=environment_missing
 before: rc=1 release-env: verdict=FAIL reason=environment_missing
+reviewer: maintainer account (id read live, not recorded)
+created: release-tags http=200
+created: publish-hex http=200
+created: publish-maven http=200
+created: publish-ios-mirror http=200
+readback: release-tags reviewer_rule=present branch_policy=protected (unauthenticated read)
+readback: publish-hex reviewer_rule=present branch_policy=protected (unauthenticated read)
+readback: publish-maven reviewer_rule=present branch_policy=protected (unauthenticated read)
+readback: publish-ios-mirror reviewer_rule=present branch_policy=protected (unauthenticated read)
+api_shape_env: protection_rules=present required_reviewers=present reviewers_array=present
+known_limit: the anonymous read proves the rule exists and lists the reviewer entries; each gate still checks current_user_can_approve before an approval
+known_limit: environment reads are publicly cached for 60 seconds (cache-control: public, max-age=60); the first read after creation returned the earlier 404 from cache, so a read within a minute of creating or editing an environment can be stale
+after: release-env: release-tags reviewer_rule=present branch_policy=protected verdict=PASS
+after: release-env: publish-hex reviewer_rule=present branch_policy=protected verdict=PASS
+after: release-env: publish-maven reviewer_rule=present branch_policy=protected verdict=PASS
+after: release-env: publish-ios-mirror reviewer_rule=present branch_policy=protected verdict=PASS
+after: release-env: verdict=PASS
+after: rc=0 release-env: verdict=PASS
