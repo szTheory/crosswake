@@ -1,0 +1,141 @@
+# 199-07 Task 1 local gates for ci/199-release-gates head c897b689fe05b21cf68c9533885b4b9dd88761e0 (restart, started 2026-11-07T15:30Z)
+# floor arithmetic: Phase 198 baseline ran 3102 total 3178 + 46 new Elixir tests (199-01: 9, 199-03: 9+3, 199-04: 9, 199-05: 4+5, 199-06: 7) = min 3148 ran, min_total 3224
+# the full suite ran earlier at this same HEAD; its verdict line is copied below from the gate output file (script/mix_test_gate.sh --min 3148 --min-total 3224 --out $TMPDIR/199-07-suite.txt)
+mix-test-gate: rc=0 total=3231 excluded=76 skipped=0 ran=3155 failures=0 invalid=0 min=3148 min_total=3224 verdict=PASS
+floor: 3102 + 46 = 3148 ran (got 3155); 3178 + 46 = 3224 total (got 3231)
+## scanner: elixir script/check_release_workflow_integrity.exs
+[crosswake] ROSTER: 106 recovery.hex.already_live_success_continues,recovery.hex.component_input,recovery.hex.exact_ref_only,recovery.hex.package_map_complete,recovery.ios.exact_identity_gate,release.recovery.fire_drill_shares_proof_body,release.recovery.proof_applicability_lane_gated,release.recovery.proof_record_fails_closed,release.recovery.publication_record_identical,release.aggregate_gate.behavioral_jobs_absent,release.android.path_gate,release.android.ordinary_receipt_chain,release.android.recovery_identity_scope,release.android_proof.decoupled,release.approval.linked_graph,release.approval.merge_tree_guard,release.approval.runbook_ancestry_guard,release.rel17.approved_guard,release.rel17.roster_exact,release.rel17.release_creation_guard,release.rel17.core_hex_job_guard,release.rel17.core_ios_job_guard,release.rel17.core_maven_job_guard,release.rel17.recovery_hex_job_guard,release.rel17.recovery_ios_job_guard,release.rel17.recovery_maven_job_guard,release.rel17.legacy_ios_job_guard,release.rel17.companion_rulestead_job_guard,release.rel17.companion_rindle_job_guard,release.rel17.companion_sigra_job_guard,release.rel17.companion_chimeway_job_guard,release.rel17.companion_threadline_job_guard,release.rel17.hex_final_boundary,release.rel17.ios_final_boundary,release.rel17.maven_final_boundary,release.candidate.receipt_attestation,release.gate.environments_preflight,release.gate.publish_hex_environment,release.gate.publish_maven_environment,release.gate.publish_ios_mirror_environment,release.gate.companion_environments,release.gate.core_order,release.gate.tag_gate,release.gate.mirror_tag_check,release.chimeway.component_gate,release.chimeway.proof_gate,release.ci.candidate_matrix,release.cleanroom.exact_companion_pin,release.cleanroom.hex_metadata_floor,release.cleanroom.lockfile_postcondition,release.cleanroom.package_matrix_complete,release.cleanroom.package_profiles_preserved,release.cleanup.after_publish_and_proof,release.cleanup.deduped,release.cleanup.pr_only,release.concurrency.no_true_cancellation,release.concurrency.not_cancelled,release.concurrency.queue_max,release.doctor.app_config_requirement,release.doctor.fresh_router_loaded,release.hex_publish.already_live_preflight,release.hex_publish.no_replace,release.hex_publish.shared_helper,release.ios.checkout_ref_pinned,release.ios.ordinary_mix_setup,release.ios.independent_publication,release.ios.ordinary_atomic_push,release.ios.path_gate,release.ios.ssh_transport,release.ios_mirror.four_modes,release.ios_proof.decoupled,release.outputs.paths_released,release.partial.exact_ref_recovery,release.partial.phase168_recovery_routes,release.publish_gate.no_bare_version_literal,release.rehearsal.exact_identity,release.rehearsal.hex_candidate,release.rehearsal.ios_candidate,release.rehearsal.no_mutation,release.rehearsal.maven_isolated,release.recovery.receipt_exact_authority,release.recovery.no_retry_or_bypass,release.rindle.component_gate,release.rindle.proof_gate,release.root_hex.path_gate,release.rulestead.component_gate,release.rulestead.proof_gate,release.scanner.roster_exact,release.sigra.component_gate,release.sigra.proof_gate,release.threadline.component_gate,release.threadline.proof_gate,release.version_graph.companion_floors_honest,release.version_graph.companions_independent,release.version_graph.lockstep_core_native_only,release.workflow.aggregate_gate.behavioral_jobs_absent,release.workflow.companion_floors_honest,release.workflow.concurrency_queue_max,release.workflow.doctor_proof_unmasked,release.workflow.native_proof_decoupled,release.workflow.native_rollup_fails_closed,release.workflow.native_rollup_summary,release.workflow.native_status_artifact,release.workflow.no_cancel_in_progress_true,release.workflow.proof_after_publish,release.workflow.release_failure_alert_native
+[crosswake] OK: release.concurrency.not_cancelled - release workflow publish/proof jobs must keep cancel-in-progress: false; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.concurrency.queue_max - release workflow concurrency must use only GitHub-supported keys; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.concurrency.no_true_cancellation - release workflow must not combine release preservation with cancel-in-progress: true; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.outputs.paths_released - release-please must expose paths_released for path-specific publish gates; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.root_hex.path_gate - publish-hex must gate on paths_released exact path .; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.ios.path_gate - publish-ios-core must gate on paths_released exact path packages/crosswake-shell-core-ios; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.android.path_gate - publish-android-core must gate on paths_released exact path packages/crosswake-shell-core-android; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.aggregate_gate.behavioral_jobs_absent - behavioral jobs must not gate on aggregate releases_created; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.ios_proof.decoupled - iOS clean-room proof must depend on iOS publish and not Android publish; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.android_proof.decoupled - Android clean-room proof must depend on Android publish and not iOS mirror; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.aggregate_gate.behavioral_jobs_absent - .github/workflows/release-please.yml behavioral jobs must not gate on aggregate releases_created; rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.proof_after_publish - every clean-room-proof-* companion job in .github/workflows/release-please.yml must gate on its component release output and need its matching publish-hex-* job; rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.native_proof_decoupled - native clean-room proofs in .github/workflows/release-please.yml must depend only on their own native publish job plus root Hex publish; rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.native_rollup_summary - native-release-rollup must always summarize native publish/proof results, ignore proposal-only paths unless the exact linked-release guard passed, expose partial native_core state, and give a next safe action
+[crosswake] OK: release.workflow.native_status_artifact - native-release-rollup must write native-release-status.json and always upload it as the native-release-status artifact, failing closed if absent
+[crosswake] OK: release.ios.ssh_transport - publish-ios-core must authenticate over SSH via MIRROR_DEPLOY_KEY with persist-credentials: false, an ssh-keyscan known_hosts step, and a fail-fast preflight, never an HTTPS URL-embedded token; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.approval.merge_tree_guard - Release Please must run only after exact approved-head parentage, identical tree, and READY receipt validation
+[crosswake] OK: release.approval.linked_graph - the fixed postapproval graph must contain only guarded Hex/iOS/Android children gated on approved_version, exact-public proof, and a closed linked rollup
+[crosswake] OK: release.ios.ordinary_atomic_push - ordinary iOS publication must delegate to the exact approved adapter and contain no force path
+[crosswake] OK: release.ios.checkout_ref_pinned - publish-ios-core must checkout at the release tag with full history, not the retroactive github.sha; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.ios.ordinary_mix_setup - publish-ios-core must install the pinned Beam runtime and locked Mix dependencies after exact tag checkout and before mirror publication
+[crosswake] OK: release.android.ordinary_receipt_chain - publish-android-core must download and validate the exact guard-selected receipt before Maven credentials and pass the file/digest to the publication adapter
+[crosswake] OK: release.android.recovery_identity_scope - Phase 168's four identity pins must apply only to recovery; ordinary mode must verify the supplied exact receipt
+[crosswake] OK: release.ios.independent_publication - the guarded iOS publication follows only the Maven publish (Phase 199 D-02), never Hex directly and never a rollup, so a held or failed earlier publisher leaves it skipped and the rollups record the partial public truth
+[crosswake] OK: release.partial.exact_ref_recovery - partial rollup must retain fixed child truth and allow only exact-ref/idempotent or forward-fix recovery without replacement
+[crosswake] OK: release.partial.phase168_recovery_routes - Phase 168 partial recovery must bind Hex, Maven, and atomic iOS publication to the approved immutable b780/1051/ecf/359 identity, correct public coordinates, and no tag movement or package replacement
+[crosswake] OK: recovery.ios.exact_identity_gate - .github/workflows/ios-mirror-backfill.yml job recover-ios-mirror must validate the exact approved Phase 168 identity as its first step, before actions/checkout of the supplied ref and before the MIRROR_DEPLOY_KEY load, pinning the merge OID, approved head, tree, base, candidate receipt, and mirror split, and shape-constraining expected_old_ref to a 40-hex id distinct from expected_new_ref; re-run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.publish_gate.no_bare_version_literal - no publish-gating if: clause compares against a bare version literal
+[crosswake] OK: release.workflow.native_rollup_fails_closed - native-release-rollup must exit 1 when a native platform released this run without proving complete, and its artifact upload must still run via if: ${{ always() }}; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.release_failure_alert_native - release-failure-alert must need the four native jobs plus native-release-rollup and echo each of their results, so a mirror-push or native proof failure opens a tracking issue; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.ios_mirror.four_modes - the iOS adapter must retain separate baseline, candidate, ordinary publication, and exact-ref recovery modes
+[crosswake] OK: release.rehearsal.hex_candidate - trusted Hex candidate rehearsal must build exactly six packages without any publication path
+[crosswake] OK: release.rehearsal.ios_candidate - mirror baseline must be credential-free and candidate rehearsal must use the scoped deploy key only for an exact dry-run
+[crosswake] OK: release.candidate.receipt_attestation - the trusted workflow must generate and independently attest one exact-head receipt from CI, Hex, iOS, Maven, and mirror evidence without caller payload or release-mutation authority
+[crosswake] OK: release.rehearsal.exact_identity - all trusted rehearsal artifacts must bind the exact candidate and run identity; Maven must attest its validated-then-dropped disposable coordinate
+[crosswake] OK: release.rehearsal.no_mutation - candidate rehearsal must fail closed without registry, ref, tag, or package mutation authority
+[crosswake] OK: release.rehearsal.maven_isolated - Release Please proposal must be push-only while its lockstep assertion remains manual-only; the separate Maven drill must be manual-only VALIDATED-to-DROP and free of Release Please, PR/issue, cleanup, and ordinary publish machinery
+[crosswake] OK: release.recovery.receipt_exact_authority - approved-release-guard must require exactly one unexpired canonical receipt bound to exact head, tree, and base identity
+[crosswake] OK: release.approval.runbook_ancestry_guard - approved-release-guard must fail closed unless the recorded runbook commit and path are ancestors of the exact base, approved head, and merge OIDs before publishing
+[crosswake] OK: release.rel17.approved_guard - approved-release-guard must consume one exact typed trailer, bind the linked Hex leg ID to its authorization phrase, bind the live merge, candidate, receipt, CI, runbook and policy selectors, then expose its context only after a fresh shared-gate pass
+[crosswake] OK: release.gate.environments_preflight - approved-release-guard must run the credential-free approval-environment preflight before its first early return and before any output, keep its status, only warn on an ordinary push, and block a linked or companion release with REL-17 BLOCKED reason=release_environment_unprotected
+[crosswake] OK: release.gate.publish_hex_environment - publish-hex must run in the publish-hex approval environment so the core Hex publish waits for its own approval
+[crosswake] OK: release.gate.publish_maven_environment - publish-android-core must run in the publish-maven approval environment so the Maven Central publish waits for its own approval
+[crosswake] OK: release.gate.publish_ios_mirror_environment - publish-ios-core must run in the publish-ios-mirror approval environment so the iOS mirror push waits for its own approval
+[crosswake] OK: release.gate.companion_environments - all 5 companion publish jobs run in the publish-hex approval environment
+[crosswake] OK: release.gate.core_order - the core run must publish Hex, then Maven, then the iOS mirror: publish-android-core needs publish-hex and publish-ios-core needs publish-android-core, each with an explicit success condition, and no publisher if: may use a status-check function
+[crosswake] OK: release.gate.tag_gate - release-tag-gate waits for the release-tags approval environment on linked and companion runs and is skipped on proposal pushes; release-please needs it, starts with !cancelled(), requires the guard's success, and requires the gate's success whenever the REL-17 context is non-empty
+[crosswake] OK: release.gate.mirror_tag_check - release-mirror-tag-check runs the iOS mirror tag check after a successful mirror publish, read-only, from the released version, and release-failure-alert pages on its failure
+[crosswake] OK: release.rel17.roster_exact - the independently declared REL-17 guard roster has exactly 17 unique named checks, all enforced by the scanner's exact emitted roster
+[crosswake] OK: release.rel17.release_creation_guard - Release Please must load and re-fetch the exact consumed REL-17 context before its release-creation action
+[crosswake] OK: release.rel17.core_hex_job_guard - publish-hex must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.core_ios_job_guard - publish-ios-core must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.core_maven_job_guard - publish-android-core must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.recovery_hex_job_guard - publish must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.recovery_maven_job_guard - recover-android-core must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.recovery_ios_job_guard - recover-ios-mirror must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.legacy_ios_job_guard - publish-ios-mirror must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.companion_rulestead_job_guard - publish-hex-rulestead must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.companion_rindle_job_guard - publish-hex-rindle must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.companion_sigra_job_guard - publish-hex-sigra must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.companion_chimeway_job_guard - publish-hex-chimeway must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.companion_threadline_job_guard - publish-hex-threadline must fetch full Git history, bind its exact operation, package, version and merge, then freshly re-fetch REL-17 before the credentialed mutation step
+[crosswake] OK: release.rel17.hex_final_boundary - the common Hex helper must re-fetch the package-bound REL-17 context from trusted tooling immediately before every Hex publish command
+[crosswake] OK: release.rel17.ios_final_boundary - iOS ordinary atomic publication and exact-ref recovery must each pass the operation-bound live gate immediately before their push
+[crosswake] OK: release.rel17.maven_final_boundary - Android ordinary publication and recovery must pass the operation-bound live gate at the final boundary before Maven Central upload
+[crosswake] OK: release.recovery.no_retry_or_bypass - ordinary receipt authority must expose no dispatch, rerun, retry, or individual-registry bypass around the approved-release guard
+[crosswake] OK: release.workflow.concurrency_queue_max - .github/workflows/release-please.yml concurrency must use only supported group and cancel-in-progress keys; rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.no_cancel_in_progress_true - .github/workflows/release-please.yml must not set cancel-in-progress: true for release publish/proof runs; rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.cleanup.after_publish_and_proof - release-as-cleanup must need every companion publish/proof job and require success for released components; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.cleanup.pr_only - release-as-cleanup must push a branch and open a PR, never push directly to main; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.cleanup.deduped - release-as-cleanup must check for an already-open cleanup PR before gh pr create, and bail instead of opening a duplicate; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.hex_publish.already_live_preflight - guarded Hex helper must parse exact Hex release JSON and report already-live package/version as success
+[crosswake] OK: release.hex_publish.no_replace - normal publish and recovery paths must not use routine registry replacement syntax
+[crosswake] OK: release.hex_publish.shared_helper - all automatic Hex jobs must call script/guarded_hex_publish.sh and avoid direct publish commands
+[crosswake] OK: recovery.hex.component_input - manual Hex recovery must expose package/ref/release_version inputs for exactly the Hex package family
+[crosswake] OK: recovery.hex.exact_ref_only - manual Hex recovery must reject mutable/bare refs, require package-scoped release tags, and print the checked-out SHA
+[crosswake] OK: recovery.hex.package_map_complete - guarded helper and manual recovery options must cover root Hex plus all five companion Hex packages
+[crosswake] OK: recovery.hex.already_live_success_continues - already-live package/version state must exit successfully with proof continuation state
+[crosswake] OK: release.recovery.fire_drill_shares_proof_body - job recovery-fire-drill reaches the proof through the same reusable workflow reference as recovery-exact-public-proof, reads no registry credential, invokes no guarded publish helper, and does not depend on the publish job
+[crosswake] OK: release.recovery.publication_record_identical - all 2 declared lanes (ordinary, recovery) emit the publication record through script/write_publication_record.sh with identical flags, upload it under the declared artifact template, grant actions: read, and reach the one reusable proof at ./.github/workflows/exact-public-proof.yml
+[crosswake] OK: release.recovery.proof_record_fails_closed - the shared proof body both lanes (ordinary, recovery) call always runs, asserts the record without swallowing failure, takes its expected triple from its own inputs, and inherits no secrets
+[crosswake] OK: release.recovery.proof_applicability_lane_gated - the not-applicable branch of the shared proof body is reachable from the ordinary lane only; the recovery lane refuses with PROOF_APPLICABILITY_UNDETERMINED rather than skipping the proof
+[crosswake] OK: release.cleanroom.hex_metadata_floor - clean-room proof must derive the core floor from exact Hex metadata requirements.crosswake.requirement and fail closed on bad package/version/release metadata
+[crosswake] OK: release.cleanroom.exact_companion_pin - clean-room proof must install the companion under test as == VERSION, not a range or env fallback
+[crosswake] OK: release.cleanroom.lockfile_postcondition - clean-room proof must assert mix.lock selected the exact companion and a crosswake version matching the derived floor
+[crosswake] OK: release.cleanroom.package_profiles_preserved - clean-room proof must preserve all five package profiles, Chimeway/Sigra absence, and Threadline observer non-registration
+[crosswake] OK: release.doctor.app_config_requirement - mix crosswake.doctor must require app.config and must not require app.start before loading host routers
+[crosswake] OK: release.doctor.fresh_router_loaded - clean-room proof must rely on mix crosswake.doctor --router CleanRoomHost.Router without a separate router preload
+[crosswake] OK: release.cleanroom.package_matrix_complete - release-please.yml and script/verify_companion_cleanroom.sh must cover all five package proof jobs, Release Please version args, chimeway/threadline sibling absence, and threadline observer non-registration; rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.companion_floors_honest - package mix.exs files must match the independently owned current core floors; inspect packages/crosswake_*/mix.exs and rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.workflow.doctor_proof_unmasked - lib/mix/tasks/crosswake.doctor.ex must own app.config readiness and script/verify_companion_cleanroom.sh must not preload CleanRoomHost.Router before the doctor command; rerun elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.version_graph.lockstep_core_native_only - Release Please linked-versions group must contain only hex, ios-core, and android-core
+[crosswake] OK: release.version_graph.companions_independent - all crosswake_* companions must remain separately versioned Release Please components
+[crosswake] OK: release.version_graph.companion_floors_honest - companion crosswake_dep floors must match the independently owned current core requirements
+[crosswake] OK: release.ci.candidate_matrix - Crosswake CI must always run stable fixtures and fail open to exact-head non-vacuous full candidate proof without credentials
+[crosswake] OK: release.rulestead.component_gate - publish-hex-rulestead must gate on rulestead_release_created, not aggregate releases_created; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.rindle.component_gate - publish-hex-rindle must gate on rindle_release_created, not aggregate releases_created; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.sigra.component_gate - publish-hex-sigra must gate on sigra_release_created, not aggregate releases_created; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.chimeway.component_gate - publish-hex-chimeway must gate on chimeway_release_created, not aggregate releases_created; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.threadline.component_gate - publish-hex-threadline must gate on threadline_release_created, not aggregate releases_created; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.rulestead.proof_gate - clean-room-proof-rulestead must gate on rulestead_release_created and need publish-hex-rulestead; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.rindle.proof_gate - clean-room-proof-rindle must gate on rindle_release_created and need publish-hex-rindle; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.sigra.proof_gate - clean-room-proof-sigra must gate on sigra_release_created and need publish-hex-sigra; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.chimeway.proof_gate - clean-room-proof-chimeway must gate on chimeway_release_created and need publish-hex-chimeway; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.threadline.proof_gate - clean-room-proof-threadline must gate on threadline_release_created and need publish-hex-threadline; run elixir script/check_release_workflow_integrity.exs
+[crosswake] OK: release.scanner.roster_exact - emitted 106 check IDs match the declared @roster_ids exactly
+[crosswake] DONE: 106 of 106 roster checks emitted; 0 failed.
+rc=0
+## actionlint .github/workflows/*.yml
+.github/workflows/crosswake-ci.yml:869:9: shellcheck reported issue in this script: SC2129:style:1:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]
+    |
+869 |         run: |
+    |         ^~~~
+actionlint_rc: 1
+actionlint_rc: 1 (pre-existing SC2129 at crosswake-ci.yml:869, same on origin/main; branch-scoped lint with -ignore SC2129 rc=0)
+## shellcheck three new scripts
+shellcheck_rc: 0
+## python3 test/support/companion_attestation_check.py
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.000s
+
+OK
+companion_attestation_rc: 0
+## mix format --check-formatted
+format_rc: 0
+## mix compile --warnings-as-errors
+compile_rc: 0
+## mix crosswake.docs.sync --check
+crosswake.docs.sync --check passed
+docs_sync_rc: 0
+## HEAD note: after the gates above (all measured at c897b689), commit 19ff7859 changed only the fixture git identity values in test/crosswake/release_candidate/mirror_release_tag_test.exs (privacy email class). Only that file is affected, so only it was rerun:
+mix-test-gate: rc=0 total=11 excluded=0 skipped=0 ran=11 failures=0 invalid=0 min=11 min_total=0 verdict=PASS
+format_rc: 0 (mix format --check-formatted on that file)
