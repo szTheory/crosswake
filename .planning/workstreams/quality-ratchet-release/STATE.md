@@ -2,16 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 199-03-PLAN.md
-last_updated: "2026-11-07T13:42:44.081Z"
-state_head: 7c697ed31c9f42d30982c6b6924d155122c446cf
+stopped_at: Completed 199-04-PLAN.md
+last_updated: "2026-11-07T14:03:23.179Z"
+state_head: 3aede58ee5080da585c904f193b81e465d7cb302
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 93
-  completed_plans: 77
+  completed_plans: 78
   percent: 50
 current_phase: 199
 current_phase_name: Release 0.2.12
@@ -20,7 +20,7 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: 4
+Current Plan: 5
 Total Plans in Phase: 19
 
 ## Exact Next Action
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-07T13:42:43.861Z
-**Stopped at:** Completed 199-03-PLAN.md
+**Last session:** 2026-11-07T14:03:22.862Z
+**Stopped at:** Completed 199-04-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -81,6 +81,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 199 P01 | wall clock 8h 58m incl. user decision wait | 3 tasks | 6 files |
 | Phase 199 P02 | 5 min | 3 tasks | 1 files |
 | Phase 199 P03 | 10 min | 3 tasks | 7 files |
+| Phase 199 P04 | 19 min | 3 tasks | 7 files |
 
 ## Decisions
 
@@ -121,6 +122,7 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 199]: SC3 evidence command is bash script/check_ios_mirror_release_tag.sh --version V; proven on real 0.2.11 PASS and 0.2.10 newer_mirror_tag
 - [Phase 199]: 199-02: PR 252 closed (CI red for real cause: setup-java pin guard); PR 258 closed per D-06 B; PR 253 left open for the user (no CI on head, close denied by permission system)
 - [Phase 199]: Anonymous environment reads include protection_rules and required reviewers, so the preflight needs no token; environment reads are cached 60s publicly
+- [Phase 199]: 199-04: iOS mirror waits only on publish-android-core (Hex, then Maven, then iOS); scanner pins release.ios.independent_publication and release.approval.linked_graph to the D-01/D-02 wiring
 
 ### Blockers
 

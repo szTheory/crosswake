@@ -132,7 +132,7 @@ status: complete
 - **Files modified:** test/crosswake/release_candidate/workflow_test.exs
 - **Committed in:** `1e4f6ade`
 
-**4. [Plan variance] 9 new tests, not 9 by the plan's arithmetic exactly.** The file already held 4 tests from 199-03 (the plan counted 3), so it ends at 13, not 12. Floor 12 holds.
+**4. [Plan variance] 13 tests in the phase199 file, not 12.** The file already held 4 tests from 199-03 (the plan counted 3), and this plan added 9. Floor 12 holds.
 
 ---
 
