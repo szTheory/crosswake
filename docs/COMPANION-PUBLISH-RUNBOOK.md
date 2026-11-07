@@ -125,10 +125,16 @@ private URLs.
 
 ### 7. Approve one exact-head merge
 
-The Release Please merge is the single approval boundary. Approve only when the receipt says
-`READY FOR APPROVAL` and the pull-request head still equals the captured 40-SHA. That approval
-authorizes the fixed post-merge linked graph; it does not authorize companion releases, ref
-replacement, unrelated recovery, or a second approval shortcut.
+The Release Please merge is the first of several one-use approval gates. Approve the merge only
+when the receipt says `READY FOR APPROVAL` and the pull-request head still equals the captured
+40-SHA. That allow lets `approved-release-guard` accept the run; it creates no tag and publishes
+nothing. The run then waits at the `release-tags` environment before Release Please may create tags
+and releases, and then at `publish-hex` before the Hex publish, each for its own separate allow. A
+linked core release also waits at `publish-maven` and then at `publish-ios-mirror`, in that order.
+An allow is never standing and never transfers to another gate, attempt or run. The merge approval
+does not authorize companion releases, ref replacement, unrelated recovery, or a second approval
+shortcut. The per-step gates are described in
+[Per-step approval gates](RELEASE-INCIDENT-RESPONSE.md#per-step-approval-gates).
 
 ## Five states and one correction
 

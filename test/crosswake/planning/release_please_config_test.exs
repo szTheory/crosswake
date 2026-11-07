@@ -86,7 +86,13 @@ defmodule Crosswake.Planning.ReleasePleaseConfigTest do
           "['release-please', 'android-publish-fire-drill', 'lockstep-truth']}"
       )
 
-    assert conditions["release-please"] == "${{ github.event_name == 'push' }}"
+    # Phase 199 (D-04): release-please also waits on the tag gate, so its condition starts with
+    # the status-check function !cancelled() (never always()) and keeps the push-only term.
+    assert conditions["release-please"] =~
+             ~r/^\$\{\{ !cancelled\(\) && github\.event_name == 'push' && /
+
+    refute conditions["release-please"] =~ "always("
+    refute conditions["release-please"] =~ "workflow_dispatch"
 
     refute Map.has_key?(conditions, "android-publish-fire-drill")
 

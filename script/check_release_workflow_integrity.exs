@@ -107,6 +107,14 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     release.rel17.ios_final_boundary
     release.rel17.maven_final_boundary
     release.candidate.receipt_attestation
+    release.gate.environments_preflight
+    release.gate.publish_hex_environment
+    release.gate.publish_maven_environment
+    release.gate.publish_ios_mirror_environment
+    release.gate.companion_environments
+    release.gate.core_order
+    release.gate.tag_gate
+    release.gate.mirror_tag_check
     release.chimeway.component_gate
     release.chimeway.proof_gate
     release.ci.candidate_matrix
@@ -333,6 +341,14 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
         receipt_exact_authority(jobs),
         approved_release_runbook_guard(jobs),
         rel17_approved_guard(jobs),
+        release_gate_environments_preflight(jobs),
+        release_gate_publish_hex_environment(jobs),
+        release_gate_publish_maven_environment(jobs),
+        release_gate_publish_ios_mirror_environment(jobs),
+        release_gate_companion_environments(jobs),
+        release_gate_core_order(jobs),
+        release_gate_tag_gate(jobs),
+        release_gate_mirror_tag_check(jobs),
         rel17_roster_exact(),
         rel17_release_creation_guard(jobs),
         rel17_publisher_job_guard(
@@ -652,8 +668,19 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
   defp maven_fire_drill_isolated(release_workflow, maven_workflow) do
     release_jobs = job_blocks(release_workflow)
 
+    # Phase 199 (D-04): release-please now carries a status-check function and the tag-gate
+    # conditions, so the old exact-equality pin no longer holds. It stays push-only: the
+    # condition must start with `!cancelled()` and contain the `github.event_name == 'push'`
+    # conjunct, must not use `always()`, and must name no manual-dispatch event.
+    release_please_if = job_if(release_jobs, "release-please")
+
     release_please_push_only =
-      job_if(release_jobs, "release-please") == "${{ github.event_name == 'push' }}"
+      Regex.match?(
+        ~r/^\$\{\{ !cancelled\(\) && github\.event_name == 'push' && /,
+        release_please_if
+      ) and
+        not includes?(release_please_if, "always(") and
+        not includes?(release_please_if, "workflow_dispatch")
 
     lockstep_truth_manual_only =
       job_if(release_jobs, "lockstep-truth") == "${{ github.event_name == 'workflow_dispatch' }}"
@@ -1787,6 +1814,242 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     )
   end
 
+  # Phase 199 (D-01): a gate named in YAML for an environment that does not exist fails open,
+  # because GitHub creates an unprotected one. The guard must therefore run the credential-free
+  # preflight on every push, before the first early return and before any output is emitted,
+  # keep its status, warn on an ordinary push and block a linked or companion release.
+  defp release_gate_environments_preflight(jobs) do
+    block = job_block(jobs, "approved-release-guard")
+    call = "bash script/release_candidate/check_release_environments.sh"
+    call_at = index_of(block, call)
+    first_exit_at = index_of(block, "exit 0")
+    output_at = index_of(block, ~s(emit_output "approved_head=))
+    merge_check_at = index_of(block, ~s([ "$parent_count" -eq 3 ]))
+    blocked = "REL-17 BLOCKED reason=release_environment_unprotected"
+    blocked_at = index_of(block, blocked)
+
+    check(
+      "release.gate.environments_preflight",
+      is_integer(call_at) and is_integer(first_exit_at) and is_integer(output_at) and
+        is_integer(merge_check_at) and is_integer(blocked_at) and
+        call_at < first_exit_at and call_at < output_at and
+        blocked_at > call_at and blocked_at < merge_check_at and blocked_at < output_at and
+        includes?(block, "env_preflight_rc=$?") and
+        includes?(block, "::warning::REL-17 ADVISORY reason=release_environment_unprotected") and
+        includes?(block, ~s([ "$env_preflight_rc" -eq 0 ] ||)),
+      "approved-release-guard must run the credential-free approval-environment preflight before its first early return and before any output, keep its status, only warn on an ordinary push, and block a linked or companion release with #{blocked}"
+    )
+  end
+
+  # Phase 199 (D-01): each publisher waits for its own approval environment. The key may be a
+  # plain string or a map whose `name` is the environment; anything else (absent, renamed,
+  # an expression) reads as "" or a different name and fails the check.
+  defp job_environment(jobs, job) do
+    value = jobs |> job_block(job) |> job_key("environment")
+
+    case Regex.run(~r/^\s*name:\s*['"]?([A-Za-z0-9_-]+)['"]?\s*$/m, value) do
+      [_, name] -> name
+      _ -> value |> String.trim() |> String.trim("'") |> String.trim("\"")
+    end
+  end
+
+  defp release_gate_publish_hex_environment(jobs) do
+    check(
+      "release.gate.publish_hex_environment",
+      job_environment(jobs, "publish-hex") == "publish-hex",
+      "publish-hex must run in the publish-hex approval environment so the core Hex publish waits for its own approval"
+    )
+  end
+
+  defp release_gate_publish_maven_environment(jobs) do
+    check(
+      "release.gate.publish_maven_environment",
+      job_environment(jobs, "publish-android-core") == "publish-maven",
+      "publish-android-core must run in the publish-maven approval environment so the Maven Central publish waits for its own approval"
+    )
+  end
+
+  defp release_gate_publish_ios_mirror_environment(jobs) do
+    check(
+      "release.gate.publish_ios_mirror_environment",
+      job_environment(jobs, "publish-ios-core") == "publish-ios-mirror",
+      "publish-ios-core must run in the publish-ios-mirror approval environment so the iOS mirror push waits for its own approval"
+    )
+  end
+
+  defp release_gate_companion_environments(jobs) do
+    offenders =
+      Enum.reject(@components, fn component ->
+        job_environment(jobs, "publish-hex-#{component}") == "publish-hex"
+      end)
+
+    check(
+      "release.gate.companion_environments",
+      offenders == [],
+      if(offenders == [],
+        do:
+          "all #{length(@components)} companion publish jobs run in the publish-hex approval environment",
+        else:
+          "companion publish job(s) without the publish-hex approval environment: #{Enum.join(offenders, ", ")}"
+      )
+    )
+  end
+
+  # D-02: the core run publishes Hex, then Maven, then the iOS mirror. Each link is a `needs`
+  # edge plus an explicit success condition, and no publisher `if` may use a status-check
+  # function (always(), failure(), cancelled(), success()), which would let a held or failed
+  # earlier publisher stop gating the next one.
+  defp release_gate_core_order(jobs) do
+    publishers =
+      ["publish-hex", "publish-android-core", "publish-ios-core"] ++
+        Enum.map(@components, &"publish-hex-#{&1}")
+
+    status_function = ~r/\b(always|success|failure|cancelled)\s*\(/
+
+    chained? =
+      job_needs?(jobs, "publish-android-core", "publish-hex") and
+        includes?(job_if(jobs, "publish-android-core"), "needs.publish-hex.result == 'success'") and
+        job_needs?(jobs, "publish-ios-core", "publish-android-core") and
+        includes?(
+          job_if(jobs, "publish-ios-core"),
+          "needs.publish-android-core.result == 'success'"
+        )
+
+    status_free? =
+      Enum.all?(publishers, fn job ->
+        expression = job_if(jobs, job)
+        expression != "" and not Regex.match?(status_function, expression)
+      end)
+
+    check(
+      "release.gate.core_order",
+      chained? and status_free?,
+      "the core run must publish Hex, then Maven, then the iOS mirror: publish-android-core needs publish-hex and publish-ios-core needs publish-android-core, each with an explicit success condition, and no publisher if: may use a status-check function"
+    )
+  end
+
+  # Phase 199 (D-01, D-04): tag creation waits for its own approval environment, but an ordinary
+  # proposal push must still reach Release Please. GitHub skips a job whose needs include a skipped
+  # job unless its `if` starts with a status-check function, so release-please carries `!cancelled()`
+  # (never `always()`: a cancelled run must not go on to create tags), still requires the guard's
+  # success, accepts a skipped gate only when the REL-17 context is empty, and requires the gate's
+  # success whenever the context is non-empty. The `if` text is parsed term by term so equivalent
+  # spacing passes and each missing term is named.
+  defp release_gate_tag_gate(jobs) do
+    gate = job_block(jobs, "release-tag-gate")
+    gate_if = job_if(jobs, "release-tag-gate")
+    rp_if = job_if(jobs, "release-please")
+    status_function = ~r/\b(always|success|failure|cancelled)\s*\(/
+
+    skipped_terms = Regex.scan(~r/needs\.release-tag-gate\.result == 'skipped'/, rp_if)
+
+    problems =
+      [
+        {gate != "", "job release-tag-gate is missing"},
+        {job_environment(jobs, "release-tag-gate") == "release-tags",
+         "release-tag-gate must run in the release-tags approval environment"},
+        {job_needs?(jobs, "release-tag-gate", "approved-release-guard"),
+         "release-tag-gate must need approved-release-guard"},
+        {includes?(gate_if, "needs.approved-release-guard.outputs.rel17_context != ''"),
+         "release-tag-gate if: must key on a non-empty REL-17 context"},
+        {gate_if != "" and not Regex.match?(status_function, gate_if),
+         "release-tag-gate if: must not use a status-check function, so the guard's success is required"},
+        {not includes?(gate, "secrets."), "release-tag-gate must not reference any secret"},
+        {not includes?(gate, "actions/checkout"), "release-tag-gate must not check out code"},
+        {job_needs?(jobs, "release-please", "release-tag-gate"),
+         "release-please must need release-tag-gate"},
+        {job_needs?(jobs, "release-please", "approved-release-guard"),
+         "release-please must need approved-release-guard"},
+        {Regex.match?(~r/^\$\{\{ !cancelled\(\) && /, rp_if),
+         "release-please if: must start with the status-check function !cancelled()"},
+        {not includes?(rp_if, "always("),
+         "release-please if: must not use always(), so a cancelled run cannot create tags"},
+        {includes?(rp_if, "github.event_name == 'push'"),
+         "release-please if: must keep the push-only condition"},
+        {includes?(rp_if, "needs.approved-release-guard.result == 'success'"),
+         "release-please if: must require needs.approved-release-guard.result == 'success'"},
+        {Regex.match?(
+           ~r/needs\.approved-release-guard\.outputs\.rel17_context != '' && needs\.release-tag-gate\.result == 'success'/,
+           rp_if
+         ),
+         "release-please if: must require the tag gate's success whenever the REL-17 context is non-empty"},
+        {length(skipped_terms) == 1 and
+           Regex.match?(
+             ~r/needs\.approved-release-guard\.outputs\.rel17_context == '' && needs\.release-tag-gate\.result == 'skipped'/,
+             rp_if
+           ),
+         "release-please if: may accept a skipped tag gate only when the REL-17 context is empty"}
+      ]
+      |> Enum.reject(fn {ok?, _message} -> ok? end)
+      |> Enum.map(&elem(&1, 1))
+
+    check(
+      "release.gate.tag_gate",
+      problems == [],
+      if(problems == [],
+        do:
+          "release-tag-gate waits for the release-tags approval environment on linked and companion runs and is skipped on proposal pushes; release-please needs it, starts with !cancelled(), requires the guard's success, and requires the gate's success whenever the REL-17 context is non-empty",
+        else:
+          Enum.join(problems, "; ") <> "; run elixir script/check_release_workflow_integrity.exs"
+      )
+    )
+  end
+
+  # Phase 199 (SC3): the mirror tag check is a recurring post-publish gate, not a one-off. The job
+  # runs after the iOS mirror publish succeeded, is read-only (no approval environment, no secret,
+  # no write scope, no persisted credential), takes the released version only through an environment
+  # variable, and is wired into release-failure-alert so a non-zero exit opens a tracking issue.
+  # The `if` text is parsed, so equivalent spacing passes and each missing term is named.
+  defp release_gate_mirror_tag_check(jobs) do
+    job = "release-mirror-tag-check"
+    block = job_block(jobs, job)
+    condition = job_if(jobs, job)
+    status_function = ~r/\b(always|success|failure|cancelled)\s*\(/
+    alert = job_block(jobs, "release-failure-alert")
+
+    problems =
+      [
+        {block != "", "job #{job} is missing"},
+        {job_needs?(jobs, job, "release-please"), "#{job} must need release-please"},
+        {job_needs?(jobs, job, "publish-ios-core"), "#{job} must need publish-ios-core"},
+        {includes?(condition, "needs.publish-ios-core.result == 'success'"),
+         "#{job} if: must require needs.publish-ios-core.result == 'success'"},
+        {condition != "" and not Regex.match?(status_function, condition),
+         "#{job} if: must not use a status-check function"},
+        {job_key(block, "environment") == "" and not Regex.match?(~r/environment\s*:/, block),
+         "#{job} must not carry an approval environment key"},
+        {not includes?(block, "secrets."), "#{job} must not reference any secret"},
+        {not Regex.match?(~r/:\s*write\b/, block), "#{job} must not grant any write permission"},
+        {block |> job_key("permissions") |> normalize_expression() == "contents: read",
+         "#{job} permissions must be exactly contents: read"},
+        {includes?(block, "VERSION: ${{ needs.release-please.outputs.version }}"),
+         "#{job} must take VERSION from needs.release-please.outputs.version"},
+        {Regex.match?(
+           ~r/^\s*run:\s*bash script\/check_ios_mirror_release_tag\.sh --version "\$VERSION"\s*$/m,
+           block
+         ), "#{job} must run script/check_ios_mirror_release_tag.sh --version \"$VERSION\""},
+        {Regex.match?(~r/persist-credentials:\s*false/, block),
+         "#{job} checkout must set persist-credentials: false"},
+        {job_needs?(jobs, "release-failure-alert", job),
+         "release-failure-alert must need #{job}"},
+        {includes?(alert, "needs.#{job}.result"),
+         "release-failure-alert must echo needs.#{job}.result"}
+      ]
+      |> Enum.reject(fn {ok?, _message} -> ok? end)
+      |> Enum.map(&elem(&1, 1))
+
+    check(
+      "release.gate.mirror_tag_check",
+      problems == [],
+      if(problems == [],
+        do:
+          "#{job} runs the iOS mirror tag check after a successful mirror publish, read-only, from the released version, and release-failure-alert pages on its failure",
+        else:
+          Enum.join(problems, "; ") <> "; run elixir script/check_release_workflow_integrity.exs"
+      )
+    )
+  end
+
   defp rel17_release_creation_guard(jobs) do
     block = job_block(jobs, "release-please")
     loader = index_of(block, "bash script/release_candidate/load_release_evidence_context.sh")
@@ -1951,20 +2214,25 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
     exact_public = job_block(jobs, "exact-public-proof")
 
     guarded_children? =
-      Enum.all?(~w(publish-hex publish-ios-core publish-android-core), fn job ->
-        block = job_block(jobs, job)
-
-        job_needs?(jobs, job, "approved-release-guard") and
-          includes?(
-            job_if(jobs, job),
-            "needs.approved-release-guard.outputs.linked_release == 'true'"
-          ) and
-          includes?(
-            job_if(jobs, job),
-            "needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version"
-          ) and
-          not includes?(block, "environment:")
-      end)
+      Enum.all?(
+        [
+          {"publish-hex", "publish-hex"},
+          {"publish-ios-core", "publish-ios-mirror"},
+          {"publish-android-core", "publish-maven"}
+        ],
+        fn {job, environment} ->
+          job_needs?(jobs, job, "approved-release-guard") and
+            includes?(
+              job_if(jobs, job),
+              "needs.approved-release-guard.outputs.linked_release == 'true'"
+            ) and
+            includes?(
+              job_if(jobs, job),
+              "needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version"
+            ) and
+            job_environment(jobs, job) == environment
+        end
+      )
 
     graph_children =
       ~w(publish-hex publish-ios-core publish-android-core clean-room-proof-ios clean-room-proof-android exact-public-proof)
@@ -2113,8 +2381,8 @@ defmodule Crosswake.ReleaseWorkflowIntegrity do
       job_needs?(jobs, "publish-ios-core", "release-please") and
         job_needs?(jobs, "publish-ios-core", "approved-release-guard") and
         not job_needs?(jobs, "publish-ios-core", "publish-hex") and
-        not job_needs?(jobs, "publish-ios-core", "publish-android-core"),
-      "the guarded iOS publication must remain independent of sibling registry outcomes so partial public truth is observable"
+        job_needs?(jobs, "publish-ios-core", "publish-android-core"),
+      "the guarded iOS publication follows only the Maven publish (Phase 199 D-02), never Hex directly and never a rollup, so a held or failed earlier publisher leaves it skipped and the rollups record the partial public truth"
     )
   end
 

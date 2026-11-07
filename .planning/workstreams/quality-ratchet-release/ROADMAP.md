@@ -345,13 +345,72 @@ Plans:
 **Requirements**: REL-07
 **Success Criteria** (what must be TRUE):
   1. The release-please PR is green on its head commit with zero hand edits and is merged only after its own `allow`.
-  2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven.
+  2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven. (Amended 2026-11-07, Phase 199 D-04: the three linked source tags hex-v, ios-core-v and android-core-v and their GitHub Releases are created by one Release Please step and follow one shared one-use allow that names all three; the mirror tag v<version> is pushed by the iOS mirror publish and follows that publish's allow; a companion tag follows its own allow. Per-tag gating would need Release Please's tag creation replaced.) (Amended 2026-11-07, Phase 199 D-02: the core release run publishes Hex core, then Maven, then the iOS mirror, each behind its own allow; companions publish afterwards in their own release run, because release runs are serialized; companions still follow core.)
   3. A post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch.
   4. `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close.
   5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
   6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md`, `guides/architecture.md` and `guides/parity_ledger.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
 
-**Plans**: TBD
+**Plans**: 6/19 plans executed, sequential waves 1–19 in one checkout. Branch `ci/199-release-gates` (plans 01–07, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 08–19, one human closeout PR). Nine one-use gates (core Maven fire drill, merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md, the fire drill bound to one captured candidate head, so a new head needs a new allow; Plan 01 asks the gate-design decision first, records the D-04 tag-granularity note on SC2 and REL-07, and stops the phase for re-planning if the recommended package is not chosen (any D-06 answer continues).
+
+Plans:
+**Wave 1**
+- [x] 199-01-PLAN.md — Post-publish mirror tag check proven on the real 0.2.11 mirror; release gate design decision (D-01..D-08), gate protocol, D-04/D-02 notes on SC2 and REL-07 (REL-07)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 199-02-PLAN.md — Settle the non-release PR queue (252, 253, 258 per D-06) before the candidate is measured (REL-07)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 199-03-PLAN.md — Four protected approval environments; credential-free preflight with bounded rate-limit wait, run by the guard on every push (REL-07)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 199-04-PLAN.md — Per-publisher environments, Hex then Maven then iOS order, scanner checks with seeded mutations (REL-07)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 199-05-PLAN.md — Tag gate with the `!cancelled()` release-please condition; incident and companion runbooks name the per-step gates; read-only post-publish `release-mirror-tag-check` job so the SC3 mirror-tag check runs on every iOS release (REL-07)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 199-06-PLAN.md — Companion receipt attestation for any companion package (threadline, D-03), plus the companion trailer renderer and checker (REL-07)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 199-07-PLAN.md — Land the gate pipeline PR; proposal run flows with the hosted-runner preflight PASS; release-PR-head predicate proven against controls; PR 236 green on its refreshed head with zero hand edits by that predicate (REL-07)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 199-08-PLAN.md — Core candidate capture, absences, ten secret names; Hex and iOS rehearsals; gate core-maven-drill, then the Maven fire drill validated then dropped; hosted receipt (REL-07)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 199-09-PLAN.md — Candidate docs rehearsed with REL-06; pre-merge capture and checked trailer (REL-07)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 199-10-PLAN.md — Gates core-merge and core-tags (REL-07)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 199-11-PLAN.md — Gates core-hex and core-maven, each verified visible (REL-07)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 199-12-PLAN.md — Gate core-ios; SC3 mirror tag check both ways on live data; release run final state (REL-07)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 199-13-PLAN.md — Threadline 0.1.1 candidate preflight; gates companion-merge and companion-tags (REL-07)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 199-14-PLAN.md — Gate companion-hex; companion run final state (REL-07)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 199-15-PLAN.md — REL-06 clean-room against 0.2.12 from the Hex tarball, deferred=none (SC5) (REL-07)
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [ ] 199-16-PLAN.md — D-26 qualifiers reworded in the three renderers through docs.sync; qualifier guard test removed (SC6) (REL-07)
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [ ] 199-17-PLAN.md — D-26 qualifiers reworded in the four hand-written guides; CHANGELOG truth (SC6) (REL-07)
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [ ] 199-18-PLAN.md — Planning truth from evidence (REL-07 status, ROADMAP, STATE handoff) and AGENTS.md condensed to its cap (D-07) (REL-07)
+
+**Wave 19** *(blocked on Wave 18 completion)*
+- [ ] 199-19-PLAN.md — Closeout human PR recording 0.2.12 published; PR 258 per D-06, asked at a checkpoint if still open and 14 days old; local cleanup; bearings-report exit 0 (SC4) (REL-07)
+
 **Research**: Skip
 
 ## Progress
@@ -363,7 +422,7 @@ Plans:
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | Complete (UAT complete, verification passed) | 2026-11-05 |
 | 198. Android foreign-host proof | 12/12 | Complete (verification 4/4, security 56/56; foreign-host leg promoted to required in PR 274) | 2026-11-05 |
-| 199. Release 0.2.12 | 0/TBD | Not started | - |
+| 199. Release 0.2.12 | 6/19 | In Progress | - |
 
 <details>
 <summary>✅ v27.0 Land and Clean Up (Phases 189–193) — SHIPPED 2026-10-24</summary>

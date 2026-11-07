@@ -1,0 +1,14 @@
+# Phase 199 plan 01 Task 1: real mirror tag check runs (read-only; nothing written to any remote)
+# captured 2026-11-07T04:24:59Z on branch ci/199-release-gates
+$ git fetch -q --tags origin
+rc=0
+$ bash script/check_ios_mirror_release_tag.sh --version 0.2.11
+mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+mirror-tag: version 0.2.11 source_tag ios-core-v0.2.11 source_tree b80f3bf00ef6 mirror_tag v0.2.11 mirror_commit 424ab96ede1b mirror_tree b80f3bf00ef6 newest v0.2.11 verdict=PASS
+rc=0
+$ bash script/check_ios_mirror_release_tag.sh --version 0.2.10   # real negative control: expected exit 1 newer_mirror_tag
+mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+[crosswake] What to do next: the mirror already carries v0.2.11, newer than v0.2.10; this check is for the release just published.
+mirror-tag: version 0.2.10 source_tag ios-core-v0.2.10 source_tree b80f3bf00ef6 mirror_tag v0.2.10 mirror_commit 424ab96ede1b mirror_tree b80f3bf00ef6 newest v0.2.11 verdict=FAIL reason=newer_mirror_tag
+rc=1
+control_0.2.10: reached newest-tag rule on real data (reason=newer_mirror_tag)

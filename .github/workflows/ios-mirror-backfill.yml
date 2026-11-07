@@ -20,13 +20,17 @@ on:
           - recovery
           - tag-repair
       package:
-        description: 'Core receipt or the planned Chimeway companion receipt.'
+        description: 'Core receipt or one companion receipt (Rulestead, Rindle, Sigra, Chimeway or Threadline).'
         required: false
         default: crosswake
         type: choice
         options:
           - crosswake
+          - crosswake_rulestead
+          - crosswake_rindle
+          - crosswake_sigra
           - crosswake_chimeway
+          - crosswake_threadline
       candidate_pr:
         description: 'Exact open companion release PR number, for companion receipt attestation only.'
         required: false
@@ -204,7 +208,7 @@ jobs:
 
   attest-companion-receipt:
     name: Attest planned companion receipt without publication credentials
-    if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' && inputs.package == 'crosswake_chimeway' }}
+    if: ${{ github.event.inputs.operation == 'candidate-receipt-attestation' && (inputs.package == 'crosswake_rulestead' || inputs.package == 'crosswake_rindle' || inputs.package == 'crosswake_sigra' || inputs.package == 'crosswake_chimeway' || inputs.package == 'crosswake_threadline') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -215,6 +219,7 @@ jobs:
       CANDIDATE_TREE: "${{ inputs.candidate_tree }}"
       CANDIDATE_BASE: "${{ inputs.candidate_base }}"
       CANDIDATE_VERSION: "${{ inputs.version }}"
+      CANDIDATE_PACKAGE: "${{ inputs.package }}"
       CANDIDATE_PR: "${{ inputs.candidate_pr }}"
       CANDIDATE_CI_RUN_ID: "${{ inputs.candidate_ci_run_id }}"
       HEX_RUN_ID: "${{ inputs.hex_run_id }}"

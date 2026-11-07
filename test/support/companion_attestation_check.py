@@ -10,7 +10,7 @@ spec.loader.exec_module(a)
 
 
 class AttestationTest(unittest.TestCase):
-    def fixture(self):
+    def fixture(self, package="crosswake_chimeway"):
         head, tree, base = "a" * 40, "b" * 40, "c" * 40
         candidate = dict(pr=115, base_oid=base, head_oid=head, tree_oid=tree, ci_run_id=100)
         ci = dict(id=100, head_sha=head, status="completed", conclusion="success", name="Crosswake CI")
@@ -21,7 +21,7 @@ class AttestationTest(unittest.TestCase):
         rows = [dict(package=name, version="0.1.1", candidate_ref=head, outer_checksum="d"*64,
                      metadata_digest="e"*64, payload_digest="f"*64) for name in
                 ["crosswake", "crosswake_rulestead", "crosswake_rindle", "crosswake_sigra", "crosswake_chimeway", "crosswake_threadline"]]
-        return [candidate, ci, hex_run, receipt, rehearsal, rows, (head, tree, base, 115, 100, 200, "0.1.1")]
+        return [candidate, ci, hex_run, receipt, rehearsal, rows, (head, tree, base, 115, 100, 200, "0.1.1", package)]
 
     def test_exact_sources_pass(self):
         row = a.validate(*self.fixture())
@@ -42,6 +42,31 @@ class AttestationTest(unittest.TestCase):
                 facts=self.fixture(); facts[5][4][key]=value
                 with self.assertRaises(AssertionError): a.validate(*facts)
         facts=self.fixture();facts[5].pop()
+        with self.assertRaises(AssertionError): a.validate(*facts)
+
+    def test_threadline_valid_facts_pass(self):
+        row = a.validate(*self.fixture("crosswake_threadline"))
+        self.assertEqual(row["package"], "crosswake_threadline")
+        self.assertEqual(row["run_id"], 200)
+
+    def test_threadline_unknown_package_blocks(self):
+        for package in ["crosswake", "crosswake_other", "", "CROSSWAKE_THREADLINE"]:
+            with self.assertRaises(AssertionError):
+                a.validate(*self.fixture(package))
+
+    def test_threadline_missing_row_blocks(self):
+        facts = self.fixture("crosswake_threadline")
+        facts[5].pop()
+        with self.assertRaises(AssertionError): a.validate(*facts)
+
+    def test_threadline_duplicated_row_blocks(self):
+        facts = self.fixture("crosswake_threadline")
+        facts[5].append(dict(facts[5][5]))
+        with self.assertRaises(AssertionError): a.validate(*facts)
+
+    def test_threadline_version_mismatch_blocks(self):
+        facts = self.fixture("crosswake_threadline")
+        facts[5][5]["version"] = "0.9.0"
         with self.assertRaises(AssertionError): a.validate(*facts)
 
     def test_canonical_source_bytes_match_release_guard_projection(self):

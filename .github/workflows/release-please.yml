@@ -72,13 +72,28 @@ jobs:
         run: |
           set -euo pipefail
           emit_output() { printf '%s\n' "$1" >> "$GITHUB_OUTPUT"; }
+
+          # Approval-environment preflight (Phase 199, D-01). It reads the four release
+          # environments without a credential and runs on every push, so each proposal
+          # push exercises the hosted-runner read. An ordinary push only warns; a linked or
+          # companion release blocks below, before Release Please can create a tag.
+          env_preflight_rc=0
+          bash script/release_candidate/check_release_environments.sh || env_preflight_rc=$?
+          env_preflight_advisory() {
+            [ "$env_preflight_rc" -eq 0 ] ||
+              echo "::warning::REL-17 ADVISORY reason=release_environment_unprotected rc=$env_preflight_rc"
+          }
+
           emit_output "linked_release=false"
 
           # Proposal-refresh pushes remain reversible. The strict gate activates only
           # for a merged candidate with source and manifest version changes.
           parent_line=$(git rev-list --parents -n 1 "$RUN_HEAD")
           parent_count=$(printf '%s\n' "$parent_line" | awk '{print NF}')
-          [ "$parent_count" -ge 2 ] || exit 0
+          [ "$parent_count" -ge 2 ] || {
+            env_preflight_advisory
+            exit 0
+          }
           first_parent=$(printf '%s\n' "$parent_line" | awk '{print $2}')
           mix_version_at() {
             matches=$(git show "$1:$2" | sed -nE 's/^[[:space:]]*@version[[:space:]]+"([^"]+)".*/\1/p')
@@ -211,8 +226,15 @@ jobs:
             echo "REL-17 BLOCKED reason=unclassified_release_version_change" >&2
             exit 1
           else
+            env_preflight_advisory
             exit 0
           fi
+
+          # A linked or companion release needs all four approval environments protected.
+          [ "$env_preflight_rc" -eq 0 ] || {
+            echo "REL-17 BLOCKED reason=release_environment_unprotected" >&2
+            exit 1
+          }
 
           # A linked release must be a two-parent merge. The approved Release Please
           # head is the second parent; its tree must be byte-identical to the merge.
@@ -399,10 +421,54 @@ jobs:
           emit_output "rel17_package=$candidate_package"
           emit_output "rel17_context=$rel17_context"
 
+  # Tag creation waits for its own one-use approval (Phase 199 D-01, D-04). The gate runs only
+  # when the guard accepted a linked or companion release (a non-empty REL-17 context), so an
+  # ordinary proposal push skips it. It has no checkout and no secret: it only writes the scope
+  # a reviewer is about to approve to the job summary.
+  release-tag-gate:
+    name: "release: approve tag creation"
+    needs: approved-release-guard
+    if: ${{ needs.approved-release-guard.outputs.rel17_context != '' }}
+    environment: release-tags
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Display the tag creation scope
+        env:
+          OPERATION: ${{ needs.approved-release-guard.outputs.rel17_operation }}
+          PACKAGE: ${{ needs.approved-release-guard.outputs.rel17_package }}
+          VERSION: ${{ needs.approved-release-guard.outputs.approved_version }}
+          MERGE_OID: ${{ needs.approved-release-guard.outputs.merge_oid }}
+        run: |
+          set -euo pipefail
+          if [ "$OPERATION" = "linked_release" ]; then
+            tags="hex-v${VERSION}, ios-core-v${VERSION}, android-core-v${VERSION}"
+          else
+            tags="${PACKAGE}-v${VERSION}"
+          fi
+          {
+            echo "### Approve tag creation"
+            echo
+            echo "- Operation: ${OPERATION}"
+            echo "- Package: ${PACKAGE}"
+            echo "- Version: ${VERSION}"
+            echo "- Merge commit: ${MERGE_OID}"
+            echo "- Tags and GitHub Releases Release Please will create: ${tags}"
+            echo
+            echo "Tags and releases cannot be undone from this workflow. Approving this step lets the Release Please step create exactly these."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   release-please:
     name: Release Please
-    needs: approved-release-guard
-    if: ${{ github.event_name == 'push' }}
+    needs: [approved-release-guard, release-tag-gate]
+    # A skipped gate (ordinary proposal push, empty REL-17 context) must not skip this job, so the
+    # condition starts with a status-check function. It is the cancellation-aware one, never the
+    # unconditional one, so a cancelled run stays cancelled and cannot go on to create tags. A
+    # skipped gate is accepted only when the context is empty; with a context the gate must have
+    # succeeded (been approved).
+    if: ${{ !cancelled() && github.event_name == 'push' && needs.approved-release-guard.result == 'success' && ((needs.approved-release-guard.outputs.rel17_context == '' && needs.release-tag-gate.result == 'skipped') || (needs.approved-release-guard.outputs.rel17_context != '' && needs.release-tag-gate.result == 'success')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -495,6 +561,7 @@ jobs:
     name: Publish to Hex.pm
     needs: [approved-release-guard, release-please]
     if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), '.') }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -596,6 +663,7 @@ jobs:
     # companion on every core-only release. `rulestead_release_created` is set only when
     # release-please cuts a crosswake_rulestead release PR.
     if: ${{ needs.release-please.outputs.rulestead_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rulestead' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -669,6 +737,7 @@ jobs:
     # companion on every core-only release. `rindle_release_created` is set only when
     # release-please cuts a crosswake_rindle release PR.
     if: ${{ needs.release-please.outputs.rindle_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_rindle' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -742,6 +811,7 @@ jobs:
     # companion on every core-only release. `sigra_release_created` is set only when
     # release-please cuts a crosswake_sigra release PR.
     if: ${{ needs.release-please.outputs.sigra_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_sigra' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -815,6 +885,7 @@ jobs:
     # companion on every core-only release. `chimeway_release_created` is set only when
     # release-please cuts a crosswake_chimeway release PR.
     if: ${{ needs.release-please.outputs.chimeway_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_chimeway' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -888,6 +959,7 @@ jobs:
     # observer on every core-only release. `threadline_release_created` is set only when
     # release-please cuts a crosswake_threadline release PR (THREAD-03).
     if: ${{ needs.release-please.outputs.threadline_release_created == 'true' && needs.approved-release-guard.outputs.rel17_operation == 'companion_publish' && needs.approved-release-guard.outputs.rel17_package == 'crosswake_threadline' }}
+    environment: publish-hex
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -956,8 +1028,9 @@ jobs:
 
   publish-ios-core:
     name: Mirror iOS core to split repo
-    needs: [approved-release-guard, release-please]
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') }}
+    needs: [approved-release-guard, release-please, publish-android-core]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-ios') && needs.publish-android-core.result == 'success' }}
+    environment: publish-ios-mirror
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -1028,10 +1101,35 @@ jobs:
           --expected-old-ref "$(git ls-remote git@github.com:szTheory/crosswake-shell-core-ios.git refs/heads/main | awk '{print $1}')"
           --expected-new-ref "$(git subtree split --prefix=packages/crosswake-shell-core-ios '${{ needs.approved-release-guard.outputs.merge_oid }}' | tail -1)"
 
+  # SC3 as a recurring post-publish gate (Phase 199): after the iOS mirror publish succeeds, the
+  # mirror tag must equal the released version and the released iOS package tree. Read-only by
+  # design: it holds no approval, no secret and no write scope, and reads the public mirror
+  # anonymously. A non-zero exit fails the job and release-failure-alert opens a tracking issue.
+  release-mirror-tag-check:
+    name: "release: ios mirror tag check"
+    needs: [release-please, publish-ios-core]
+    if: ${{ needs.publish-ios-core.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Assert the mirror tag equals the released version and tree
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: bash script/check_ios_mirror_release_tag.sh --version "$VERSION"
+
   publish-android-core:
     name: Publish Android core to Maven Central
-    needs: [approved-release-guard, release-please]
-    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') }}
+    needs: [approved-release-guard, release-please, publish-hex]
+    if: ${{ needs.approved-release-guard.outputs.linked_release == 'true' && needs.release-please.outputs.version == needs.approved-release-guard.outputs.approved_version && contains(fromJSON(needs.release-please.outputs.paths_released), 'packages/crosswake-shell-core-android') && needs.publish-hex.result == 'success' }}
+    environment: publish-maven
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -1841,6 +1939,7 @@ jobs:
       - publish-hex-threadline
       - clean-room-proof-threadline
       - publish-ios-core
+      - release-mirror-tag-check
       - clean-room-proof-ios
       - publish-android-core
       - clean-room-proof-android
@@ -1877,6 +1976,7 @@ jobs:
             echo "- publish-hex-threadline: ${{ needs.publish-hex-threadline.result }}"
             echo "- clean-room-proof-threadline: ${{ needs.clean-room-proof-threadline.result }}"
             echo "- publish-ios-core: ${{ needs.publish-ios-core.result }}"
+            echo "- release-mirror-tag-check: ${{ needs.release-mirror-tag-check.result }}"
             echo "- clean-room-proof-ios: ${{ needs.clean-room-proof-ios.result }}"
             echo "- publish-android-core: ${{ needs.publish-android-core.result }}"
             echo "- clean-room-proof-android: ${{ needs.clean-room-proof-android.result }}"

@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: Not started
+current_plan: 7
 status: executing
-stopped_at: Phase 198 complete, ready to plan Phase 199
-last_updated: "2026-11-06T02:21:21.529Z"
-state_head: d032c554b380fb0fb45ce183975c4ba6a08d082a
+stopped_at: Completed 199-06-PLAN.md
+last_updated: "2026-11-07T15:05:43.300Z"
+state_head: f849e11206a9a7819edf4283e2e14211166c431b
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 3
-  total_plans: 74
-  completed_plans: 74
-  percent: 60
+  total_plans: 93
+  completed_plans: 80
+  percent: 50
 current_phase: 199
 current_phase_name: Release 0.2.12
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
@@ -20,12 +20,12 @@ last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, secu
 
 ## Current Position
 
-Current Plan: Not started
-Total Plans in Phase: 12
+Current Plan: 7
+Total Plans in Phase: 19
 
 ## Exact Next Action
 
-Last completed phase: 198 (Android foreign-host proof): verified 4 of 4, security verified (56 of 56 threats closed, 198-SECURITY.md), AND-01..03 complete. Merged: PR 270, 271 and 272 (closeout), PR 273 (security and standing merge rule), PR 274 (android-foreign-host promoted to a required Crosswake CI leaf, D-20; 39 of 39 CI green on its head), PR 275 (e2e-proof Playwright install recovers from an orphaned apt-get), PR 277 (umbrella accepts the promoted leaf as skippable on docs-only runs, with a checker guard that derives the skip set from the manifest; e2e-proof now installs Chromium dependencies only). Active phase: none open; Phase 199 (Release 0.2.12) is not yet planned. Exact next action: `/gsd-plan-phase 199 --ws quality-ratchet-release`. Every merge to main of a green-CI PR needs no gate (user decision 2026-11-05, AGENTS.md); the release-please PR, every Hex/Maven/iOS publish, every tag and any remote-branch deletion each need their own one-use `allow`. Open items: harden `release-candidate-full-proof`, which interpolates the PR base SHA directly in a `run:` body (informational, predates 198); phase 170 ledger and leaf-count pins now need a bump whenever a CI leaf is added (35 required leaves plus classify-change). Earlier handoffs are in `history/`.
+Last completed phase: 198 (Android foreign-host proof): verified 4 of 4, security verified (56 of 56 threats closed, 198-SECURITY.md), AND-01..03 complete. Merged: PR 270, 271 and 272 (closeout), PR 273 (security and standing merge rule), PR 274 (android-foreign-host promoted to a required Crosswake CI leaf, D-20; 39 of 39 CI green on its head), PR 275 (e2e-proof Playwright install recovers from an orphaned apt-get), PR 277 (umbrella accepts the promoted leaf as skippable on docs-only runs, with a checker guard that derives the skip set from the manifest; e2e-proof now installs Chromium dependencies only). Active phase: 199 (Release 0.2.12), 6 of 19 plans done (199-01 to 199-06 complete 2026-11-07, branch `ci/199-release-gates`, nothing pushed). 199-06 generalized the hosted companion receipt attestation to all five companions (`CANDIDATE_PACKAGE`) and added `script/release_candidate/companion_publish_authorization.sh render|check`, proven against the real release-please guard predicate and context loader; nothing was dispatched, so the hosted job is first exercised for threadline in 199-13. The gate design is in 199-DECISIONS.md (D-01..D-08). No Stop section, so plans 199-07..199-19 run as written. Exact next action: `/gsd-execute-phase 199 --ws quality-ratchet-release` (next plan 199-07). Every merge to main of a green-CI PR needs no gate (user decision 2026-11-05, AGENTS.md); the release-please PR, every Hex/Maven/iOS publish, every tag and any remote-branch deletion each need their own one-use `allow`. Open items: harden `release-candidate-full-proof`, which interpolates the PR base SHA directly in a `run:` body (informational, predates 198); phase 170 ledger and leaf-count pins now need a bump whenever a CI leaf is added (35 required leaves plus classify-change). Earlier handoffs are in `history/`.
 
 ## Carried debt
 
@@ -33,8 +33,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-06T01:57:38.147Z
-**Stopped at:** Phase 198 complete, ready to plan Phase 199
+**Last session:** 2026-11-07T15:05:42.953Z
+**Stopped at:** Completed 199-06-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -78,6 +78,12 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 198 P10 | 50min | 3 tasks | 4 files |
 | Phase 198 P11 | 35min | 2 tasks | 3 files |
 | Phase 198 P12 | about 3h 30m (two CI fix-forward cycles) | 3 tasks | 19 files |
+| Phase 199 P01 | wall clock 8h 58m incl. user decision wait | 3 tasks | 6 files |
+| Phase 199 P02 | 5 min | 3 tasks | 1 files |
+| Phase 199 P03 | 10 min | 3 tasks | 7 files |
+| Phase 199 P04 | 19 min | 3 tasks | 7 files |
+| Phase 199 P05 | 43min | 3 tasks | 10 files |
+| Phase 199 P06 | 14 min | 3 tasks | 6 files |
 
 ## Decisions
 
@@ -113,6 +119,13 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 198]: Plan 10: promotion readiness is derived from CI history plus evidence content and the current script blob; each gh read is attempted twice (GitHub 502s), a double failure is UNVERIFIED never zero; AND-03 stays open until Linux CI evidence (Plans 11/12)
 - [Phase 198]: Plan 11: advisory android-foreign-host job outside required authority via ADVISORY_JOBS loop; cache key carries runner.os and arch (Phase 153.1 contract); sibling test avoids refute Enum.any? so the Phase 170 ledger and absence baseline are unchanged; AND-03 stays open until Linux CI evidence (Plan 12)
 - [Phase 198]: Plan 12: PR 270 green 39/39 on final head 9b96b483 (CI ran on synthetic merge 0747b23f); advisory android-foreign-host job succeeded on Linux, outcome A, D-18 wording confirmed on Gradle 8.7, promotion derived 2/2 eligible=yes but not attempted (D-20); e2e-proof apt stall fixed forward with a bounded install retry, not rerun
+- [Phase 199]: D-01 to D-05, D-07, D-08 recommended package chosen by the user (2026-11-07): four protected environments, Hex then Maven then iOS in the core run, threadline 0.1.1 included, one allow per tag-creating step, AGENTS.md condensed, Maven fire drill gated as core-maven-drill
+- [Phase 199]: D-06 option B: PR 258 is closed with a recorded reason by plan 199-02 Task 3 (user, 2026-11-07)
+- [Phase 199]: SC3 evidence command is bash script/check_ios_mirror_release_tag.sh --version V; proven on real 0.2.11 PASS and 0.2.10 newer_mirror_tag
+- [Phase 199]: 199-02: PR 252 closed (CI red for real cause: setup-java pin guard); PR 258 closed per D-06 B; PR 253 left open for the user (no CI on head, close denied by permission system)
+- [Phase 199]: Anonymous environment reads include protection_rules and required reviewers, so the preflight needs no token; environment reads are cached 60s publicly
+- [Phase 199]: 199-04: iOS mirror waits only on publish-android-core (Hex, then Maven, then iOS); scanner pins release.ios.independent_publication and release.approval.linked_graph to the D-01/D-02 wiring
+- [Phase 199]: 199-06: companion receipt attestation takes any of the five companions via CANDIDATE_PACKAGE; companion_publish_authorization.sh render|check derives and verifies the companion REL-17 trailer (closed six-reason BLOCKED set, envelope content cross-check), proven on the real guard predicate and loader
 
 ### Blockers
 

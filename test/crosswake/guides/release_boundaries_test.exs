@@ -76,7 +76,8 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
     assert runbook =~ "exact Release Please head, tree, merge base"
     assert runbook =~ "must not push either ref"
     assert runbook =~ "READY FOR APPROVAL"
-    assert runbook =~ "single approval boundary"
+    assert runbook =~ "first of several one-use approval gates"
+    refute runbook =~ "single approval boundary"
     assert runbook =~ "does not publish"
   end
 
@@ -190,7 +191,7 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
            end)
   end
 
-  test "candidate runbook fixes the seven-step sequence and single approval boundary" do
+  test "candidate runbook fixes the seven-step sequence and per-step approval gates" do
     runbook = File.read!(repo_path("docs/COMPANION-PUBLISH-RUNBOOK.md"))
 
     steps = [
@@ -229,7 +230,13 @@ defmodule Crosswake.Guides.ReleaseBoundariesTest do
       assert runbook =~ token
     end
 
-    assert length(Regex.scan(~r/approval boundary/, runbook)) == 1
+    # Section 7 names the per-step gates exactly once; the old one-approval phrase is gone.
+    [_, section_seven] = Regex.run(~r/(?ms)^### 7\..*?\n(.*?)(?=^## )/, runbook)
+
+    assert section_seven =~ "release-tags"
+    assert section_seven =~ "publish-hex"
+    assert length(Regex.scan(~r/first of several one-use approval gates/, runbook)) == 1
+    refute runbook =~ "single approval boundary"
   end
 
   test "guide surfaces link rebuild guidance to canonical promotion and non-claim truth" do

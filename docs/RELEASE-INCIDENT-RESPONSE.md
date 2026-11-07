@@ -20,6 +20,33 @@ that line it is on.
 | **iOS SwiftPM mirror** | **No, not fully.** A mirror tag can be re-pointed and `main` can be corrected, but that only changes what a *new* SwiftPM resolution sees. | Re-point the tag / correct `main` through the mirror's own recovery operation. Consumers who already resolved the old commit through SwiftPM's resolved-package cache are unaffected by the re-point — they keep the old commit until they explicitly re-resolve. |
 | **Maven Central** | **No.** A coordinate is permanent the instant it reaches the `PUBLISHED` state. There is no delete, no retire, no overwrite. | Publish a new superseding version and document the defective one. A rehearsal deployment that only reached `VALIDATED` is the one exception — that state is safely `DROP`-able, but a real publish never stops at `VALIDATED`. |
 
+## Per-step approval gates
+
+A release run is not approved once. The Release Please merge is the first one-use gate, and every
+later irreversible step waits in its own protected GitHub environment for its own approval. Each
+approval covers exactly one step of one run and is never standing.
+
+| Environment | What it guards |
+|---|---|
+| `release-tags` | Release Please creating tags and GitHub Releases: the three linked source tags (`hex-v`, `ios-core-v`, `android-core-v`) and their releases share this one gate because one Release Please step creates them. A companion release run uses the same gate for the companion tag. |
+| `publish-hex` | The Hex publish: the core `crosswake` package in a linked run, and each companion package in its own run. |
+| `publish-maven` | The Maven Central publish of the Android core coordinate, only after the Hex publish succeeded. |
+| `publish-ios-mirror` | The push of the iOS mirror refs, including the mirror tag, only after the Maven publish succeeded. |
+
+How to read a run that is waiting or stopped:
+
+- A step that is not yet approved stays pending. Holding makes no call, and every later job that needs
+  it is skipped, so a held gate cannot publish anything downstream.
+- The release rollups record the partial state: they say which steps ran, which were skipped and which
+  failed. Read them, and the registries, before deciding anything.
+- Never re-run a failed publisher job. A publisher that failed or whose outcome is uncertain is read and
+  reconciled against the registry first (see the tables below); it is not re-run, and a used approval is
+  never re-approved for a second attempt.
+- A later approval is a new attempt with its own displayed scope. Recovery after a failed publisher
+  needs a new plan, not a retry.
+- An ordinary push to `main` never reaches a gate: the tag gate runs only when the merge guard accepted
+  a linked or companion release, so proposal pushes still refresh the release pull requests.
+
 ## Mid-sequence partial failure
 
 Every Detect cell below names a live registry response, a run conclusion, or a remote ref listing —
