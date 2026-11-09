@@ -148,6 +148,20 @@ defmodule Crosswake.Shell.IOSHostGeneration do
   defp render_settings(config) do
     signing = config.device_signing
 
+    evaluate_settings(
+      config.app_bundle_id,
+      if(signing.mode == :automatic, do: "Automatic", else: "Manual"),
+      signing.team_id
+    )
+  end
+
+  @doc false
+  # The default path (no :ios_host declaration) still writes a project that references the
+  # settings file, so it gets the same template with unconfigured placeholder values. The
+  # bundle id is the one the 0.2.11 project template carried as a literal.
+  def render_default_settings, do: evaluate_settings("dev.crosswake.shell", "Automatic", "")
+
+  defp evaluate_settings(app_bundle_id, code_sign_style, team_id) do
     template =
       Application.app_dir(
         :crosswake,
@@ -156,9 +170,9 @@ defmodule Crosswake.Shell.IOSHostGeneration do
 
     EEx.eval_file(template,
       assigns: [
-        app_bundle_id: config.app_bundle_id,
-        code_sign_style: if(signing.mode == :automatic, do: "Automatic", else: "Manual"),
-        team_id: signing.team_id
+        app_bundle_id: app_bundle_id,
+        code_sign_style: code_sign_style,
+        team_id: team_id
       ]
     )
   end

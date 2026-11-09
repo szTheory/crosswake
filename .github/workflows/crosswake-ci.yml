@@ -1116,10 +1116,13 @@ jobs:
           CROSSWAKE_IOS_PROJECT_ROOT: tmp/ios_shell/native/ios/crosswake_shell
           CROSSWAKE_IOS_LAUNCH_SIMULATOR: "0"
           CROSSWAKE_IOS_BUILD_FOR_TESTING: "0"
+      - name: Build default-generated iOS project (pre-release gate)
+        run: bash script/verify_default_ios_generation_build.sh
       - name: Summarize Phase 79 iOS proof
         if: always()
         run: |
           echo 'Remediation: CROSSWAKE_IOS_PROJECT_ROOT=tmp/ios_shell/native/ios/crosswake_shell ./script/verify_generated_ios_shell.sh' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Remediation: bash script/verify_default_ios_generation_build.sh' >> "$GITHUB_STEP_SUMMARY"
 
   guard-01-e2e-honesty:
     name: guard-01-e2e-honesty

@@ -631,6 +631,16 @@ defmodule Mix.Tasks.Crosswake.Gen.Shell do
 
     ensure_file(readme, shell_readme("ios", origin_mode))
     render_ios_templates(root, capabilities, local, origin_mode)
+
+    # The project always references this file. A declared :ios_host publishes it as a managed
+    # output; without a declaration it is a host-owned scaffold, written once.
+    if is_nil(host_outputs) do
+      ensure_file(
+        Path.join(root, "CrosswakeHostSettings.xcconfig"),
+        IOSHostGeneration.render_default_settings()
+      )
+    end
+
     reconcile_origin_plist(root, origin_mode)
     managed_paths = if host_outputs, do: Map.keys(host_outputs.managed_outputs), else: []
 
