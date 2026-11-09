@@ -41,15 +41,15 @@ is active.
 - Do not re-open the stop list in `.planning/BEARINGS.md` (`Do not re-open`) unless the governing
   ADR's reversal condition is met.
 - For a just-displayed, one-use approval gate, accept a plain-language `allow` or `hold`, bound
-  to that attempt and its displayed scope. The gate is required for any Hex, Maven or iOS publish,
-  a Maven fire-drill dispatch and remote-branch deletion. Feature-branch commits and pushes need
-  no gate. The user never copies hashes. Gate approvals are never standing and never transfer.
+  to that attempt and its displayed scope. The gate is required for a Maven fire-drill dispatch
+  and remote-branch deletion. Feature-branch commits and pushes need no gate. The user never
+  copies hashes. Gate approvals are never standing and never transfer, except as stated below.
 - Standing exceptions (user decisions, 2026-11-05 and 2026-11-09): merging a PR to `main`, the
-  release PR included, and approving the release-tags step need no gate. Merge only with Crosswake
-  CI green on the exact head, as a merge commit pinned to it (`--match-head-commit`), saying which
-  commit CI ran on. Every release precheck, receipt check and drift recheck still runs, and a
-  failed or uncertain step is never retried under an earlier approval. Publishes, fire-drill
-  dispatches and remote-branch deletion keep their own gate.
+  release PR included, approving the release-tags step, and the Hex, Maven and iOS mirror
+  publishes need no gate. Merge only with Crosswake CI green on the exact head, as a merge commit
+  pinned to it (`--match-head-commit`), saying which commit CI ran on. Every release precheck,
+  receipt check and drift recheck still runs, and a failed or uncertain step is never retried
+  under an earlier approval. Fire-drill dispatches and remote-branch deletion keep their own gate.
 
 ## Sensitive Data Rules
 
