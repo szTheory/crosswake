@@ -49,6 +49,197 @@ defmodule Crosswake.ReleaseCandidate.ArtifactRealTarballTest do
     assert public.metadata_digest == rebuild.metadata_digest
   end
 
+  # -- shape: build_env is validated fail-closed for every package -------------------------------
+
+  test "shape: a companion build_env whose version is not semver is rejected" do
+    assert_raise ArgumentError, fn ->
+      observe!(
+        @public_rulestead,
+        "crosswake_rulestead",
+        "0.1.1",
+        put_build_env([{"hex", "not-semver"}])
+      )
+    end
+  end
+
+  test "shape: a companion build_env with a second tuple is rejected" do
+    version = fixture_hex_version!(@rebuild_rulestead)
+
+    assert_raise ArgumentError, fn ->
+      observe!(
+        @public_rulestead,
+        "crosswake_rulestead",
+        "0.1.1",
+        put_build_env([{"hex", version}, {"mix", "prod"}])
+      )
+    end
+  end
+
+  test "shape: a companion build_env that is a bare binary rather than a list is rejected" do
+    version = fixture_hex_version!(@rebuild_rulestead)
+
+    assert_raise ArgumentError, fn ->
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", put_build_env(version))
+    end
+  end
+
+  test "shape: an empty companion build_env list is rejected" do
+    assert_raise ArgumentError, fn ->
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", put_build_env([]))
+    end
+  end
+
+  test "shape: a companion build_env keyed by something other than hex is rejected" do
+    version = fixture_hex_version!(@rebuild_rulestead)
+
+    assert_raise ArgumentError, fn ->
+      observe!(
+        @public_rulestead,
+        "crosswake_rulestead",
+        "0.1.1",
+        put_build_env([{"mix", version}])
+      )
+    end
+  end
+
+  test "shape: the core build_env is validated too, a non-semver version is rejected" do
+    assert_raise ArgumentError, fn ->
+      observe!(@public_core, "crosswake", "0.2.13", put_build_env([{"hex", "not-semver"}]))
+    end
+  end
+
+  # -- companion build_env: toolchain provenance, not package identity ----------------------------
+
+  test "companion build_env: injecting the rebuild's own build_env into the public tarball changes no digest" do
+    version = fixture_hex_version!(@rebuild_rulestead)
+
+    public = observe!(@public_rulestead, "crosswake_rulestead", "0.1.1")
+
+    injected =
+      observe!(
+        @public_rulestead,
+        "crosswake_rulestead",
+        "0.1.1",
+        put_build_env([{"hex", version}])
+      )
+
+    assert injected.metadata_digest == public.metadata_digest
+    assert injected.payload_digest == public.payload_digest
+  end
+
+  test "companion build_env: a different valid semver changes no digest" do
+    other = other_semver(fixture_hex_version!(@rebuild_rulestead))
+
+    public = observe!(@public_rulestead, "crosswake_rulestead", "0.1.1")
+
+    changed =
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", put_build_env([{"hex", other}]))
+
+    assert changed.metadata_digest == public.metadata_digest
+    assert changed.payload_digest == public.payload_digest
+  end
+
+  # -- core build_env: still part of the core's digest (user decision 2026-11-09) ------------------
+
+  test "core build_env: changing it to another valid semver changes the core metadata digest only" do
+    other = other_semver(fixture_hex_version!(@public_core))
+
+    public = observe!(@public_core, "crosswake", "0.2.13")
+    changed = observe!(@public_core, "crosswake", "0.2.13", put_build_env([{"hex", other}]))
+
+    assert changed.metadata_digest != public.metadata_digest
+    assert changed.payload_digest == public.payload_digest
+  end
+
+  test "core build_env: removing it changes the core metadata digest" do
+    public = observe!(@public_core, "crosswake", "0.2.13")
+    removed = observe!(@public_core, "crosswake", "0.2.13", drop_build_env())
+
+    assert removed.metadata_digest != public.metadata_digest
+  end
+
+  # -- content controls: what the digest must keep seeing -----------------------------------------
+
+  test "control description: a changed description changes the metadata digest only" do
+    public = observe!(@public_rulestead, "crosswake_rulestead", "0.1.1")
+
+    changed =
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", fn root ->
+        rewrite_metadata!(root, fn terms ->
+          Enum.map(terms, fn
+            {"description", description} -> {"description", description <> " (changed)"}
+            other -> other
+          end)
+        end)
+      end)
+
+    assert changed.metadata_digest != public.metadata_digest
+    assert changed.payload_digest == public.payload_digest
+  end
+
+  test "control requirement: a changed requirement string changes the metadata digest" do
+    public = observe!(@public_rulestead, "crosswake_rulestead", "0.1.1")
+
+    changed =
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", fn root ->
+        rewrite_metadata!(root, fn terms ->
+          Enum.map(terms, fn
+            {"requirements", [first | rest]} ->
+              widened =
+                Enum.map(first, fn
+                  {"requirement", requirement} -> {"requirement", requirement <> " or ~> 9.9"}
+                  other -> other
+                end)
+
+              {"requirements", [widened | rest]}
+
+            other ->
+              other
+          end)
+        end)
+      end)
+
+    assert changed.metadata_digest != public.metadata_digest
+  end
+
+  test "control links: an added link changes the metadata digest" do
+    public = observe!(@public_rulestead, "crosswake_rulestead", "0.1.1")
+
+    changed =
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", fn root ->
+        rewrite_metadata!(root, fn terms ->
+          Enum.map(terms, fn
+            {"links", links} -> {"links", links ++ [{"Extra", "https://example.invalid/extra"}]}
+            other -> other
+          end)
+        end)
+      end)
+
+    assert changed.metadata_digest != public.metadata_digest
+  end
+
+  test "control payload byte: one flipped payload byte changes the payload digest only" do
+    public = observe!(@public_rulestead, "crosswake_rulestead", "0.1.1")
+
+    changed =
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", fn root ->
+        [file | _rest] = root |> Path.join("lib/**/*.ex") |> Path.wildcard() |> Enum.sort()
+        <<byte, rest::binary>> = File.read!(file)
+        File.write!(file, <<Bitwise.bxor(byte, 1), rest::binary>>)
+      end)
+
+    assert changed.payload_digest != public.payload_digest
+    assert changed.metadata_digest == public.metadata_digest
+  end
+
+  test "unknown key: an unknown top-level metadata key is still rejected" do
+    assert_raise ArgumentError, fn ->
+      observe!(@public_rulestead, "crosswake_rulestead", "0.1.1", fn root ->
+        rewrite_metadata!(root, fn terms -> terms ++ [{"build_env_extra", "x"}] end)
+      end)
+    end
+  end
+
   # -- helpers ---------------------------------------------------------------------------------
 
   defp fixture_path(name),
@@ -134,6 +325,12 @@ defmodule Crosswake.ReleaseCandidate.ArtifactRealTarballTest do
     fn root ->
       rewrite_metadata!(root, fn terms -> Enum.reject(terms, &match?({"build_env", _}, &1)) end)
     end
+  end
+
+  # A valid semver different from `version`, derived from it (no literal): the next minor.
+  defp other_semver(version) do
+    parsed = Version.parse!(version)
+    to_string(%{parsed | minor: parsed.minor + 1})
   end
 
   # Reads V from the fixture's own `{"build_env", [{"hex", V}]}`.
