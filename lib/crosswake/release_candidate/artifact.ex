@@ -96,6 +96,8 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
         artifacts: artifacts
       })
 
+    Enum.each(observations, &IO.puts(:stderr, provenance_line(&1)))
+
     manifest = Path.expand(manifest_path)
     ensure_within!(manifest, output_root)
     File.write!(manifest, Jason.encode!(observations) <> "\n", [:binary, :exclusive])
@@ -114,6 +116,29 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
     File.Error -> invalid!()
     MatchError -> invalid!()
     KeyError -> invalid!()
+  end
+
+  @doc false
+  @spec provenance_line(observation()) :: String.t()
+  def provenance_line(%{package: package, version: version, unpacked_root: unpacked_root}) do
+    # The metadata file was already validated by `inspect_metadata!/3`, so `build_env` is nil or
+    # exactly `[{"hex", semver}]` here. The line carries only these public fields.
+    {:ok, terms} =
+      unpacked_root
+      |> Path.join("hex_metadata.config")
+      |> String.to_charlist()
+      |> :file.consult()
+
+    {hex, present?} =
+      case List.keyfind(terms, "build_env", 0) do
+        {"build_env", [{"hex", hex_version}]} -> {hex_version, true}
+        _absent -> {"none", false}
+      end
+
+    digested = if present? and package not in @build_env_excluded_packages, do: "yes", else: "no"
+
+    "artifact-provenance: package=#{package} version=#{version} " <>
+      "build_env_hex=#{hex} build_env_digested=#{digested}"
   end
 
   defp inspect_artifact!(artifact, output_root) do

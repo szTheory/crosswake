@@ -240,6 +240,31 @@ defmodule Crosswake.ReleaseCandidate.ArtifactRealTarballTest do
     end
   end
 
+  # -- provenance: the proof logs name each artifact's builder Hex version -----------------------
+
+  test "provenance: the public rulestead line names no Hex version and no digested build_env" do
+    public = observe!(@public_rulestead, "crosswake_rulestead", "0.1.1")
+
+    assert Artifact.provenance_line(public) ==
+             "artifact-provenance: package=crosswake_rulestead version=0.1.1 build_env_hex=none build_env_digested=no"
+  end
+
+  test "provenance: the rulestead rebuild line names its own Hex version and is not digested" do
+    version = fixture_hex_version!(@rebuild_rulestead)
+    rebuild = observe!(@rebuild_rulestead, "crosswake_rulestead", "0.1.1")
+
+    assert Artifact.provenance_line(rebuild) ==
+             "artifact-provenance: package=crosswake_rulestead version=0.1.1 build_env_hex=#{version} build_env_digested=no"
+  end
+
+  test "provenance: the public core line names its own Hex version and is digested" do
+    version = fixture_hex_version!(@public_core)
+    core = observe!(@public_core, "crosswake", "0.2.13")
+
+    assert Artifact.provenance_line(core) ==
+             "artifact-provenance: package=crosswake version=0.2.13 build_env_hex=#{version} build_env_digested=yes"
+  end
+
   # -- helpers ---------------------------------------------------------------------------------
 
   defp fixture_path(name),
