@@ -22,9 +22,14 @@ that line it is on.
 
 ## Per-step approval gates
 
-A release run is not approved once. The Release Please merge is the first one-use gate, and every
-later irreversible step waits in its own protected GitHub environment for its own approval. Each
-approval covers exactly one step of one run and is never standing.
+A release run is not approved once. The Release Please merge is the first gate; under the standing
+merge exception in AGENTS.md (user decisions 2026-11-05 and 2026-11-09) the agent gives it for a
+CI-green release PR pinned to its head. Every later irreversible step waits in its own protected
+GitHub environment for its own approval. Each approval covers exactly one step of one run and never
+transfers to another step, attempt or run. Who may give it is set by the approval rules in
+AGENTS.md: under the same standing exceptions the agent approves the release-tags, publish-hex,
+publish-maven and publish-ios-mirror steps itself, each once and in order; the Maven fire-drill
+dispatch and remote-branch deletion still need a one-use allow.
 
 | Environment | What it guards |
 |---|---|
