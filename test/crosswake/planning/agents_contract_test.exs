@@ -10,12 +10,14 @@ defmodule Crosswake.Planning.AgentsContractTest do
     "`allow`",
     "`hold`",
     "one-use",
-    "merging a PR to `main` needs no gate",
-    "merging the release PR",
-    "Hex, Maven or iOS publish",
-    "creating or pushing tags",
-    "deleting a remote branch",
-    "never transfer to another attempt"
+    "Maven fire-drill dispatch",
+    "remote-branch deletion",
+    "the release PR included",
+    "approving the release-tags step",
+    "Hex, Maven and iOS mirror publishes need no gate",
+    "`--match-head-commit`",
+    "never retried under an earlier approval",
+    "keep their own gate"
   ]
 
   defp collapse(text), do: String.replace(text, ~r/\s+/, " ")
@@ -38,6 +40,19 @@ defmodule Crosswake.Planning.AgentsContractTest do
 
     assert gate_ok?(text)
     assert String.contains?(text, @adr)
+  end
+
+  test "BEARINGS invariant 4 names the gated steps and the standing exceptions" do
+    line =
+      File.read!(@bearings)
+      |> String.split("\n")
+      |> Enum.find(&String.starts_with?(&1, "4. "))
+
+    assert is_binary(line), "BEARINGS has no invariant 4 line"
+    assert String.contains?(line, "one-use allow")
+    assert String.contains?(line, "Maven fire-drill dispatch")
+    assert String.contains?(line, "remote-branch deletion")
+    assert String.contains?(line, "standing exceptions")
   end
 
   test "BEARINGS is the first Project Context item" do
