@@ -171,6 +171,13 @@ production inputs cannot be silently replaced by those flags. Use only non-produ
 example values in documentation and tests; a first adopter's real host values belong
 in that host's private configuration.
 
+Without the declaration, generation also writes `CrosswakeHostSettings.xcconfig` once,
+with the placeholder identity `dev.crosswake.shell` and unsigned simulator builds, so
+the default project builds. On this path the file is a host-owned scaffold, not a
+managed output, so `--check` does not track it and a later generation never overwrites
+your edits. Declare `:crosswake, :ios_host` to have Crosswake own the identity and
+signing settings.
+
 When you generate shells with the default non-local path, the proof label is
 `generated public-coordinate proof`. When you generate with `--local`, the proof
 label is `local-dev proof`.
