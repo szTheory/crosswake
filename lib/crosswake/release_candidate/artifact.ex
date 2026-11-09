@@ -105,6 +105,16 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
 
   def inspect_cli!(_args), do: invalid!()
 
+  @doc false
+  @spec inspect_single!(map(), String.t()) :: observation()
+  def inspect_single!(artifact, output_root) do
+    inspect_artifact!(artifact, regular_directory!(output_root))
+  rescue
+    File.Error -> invalid!()
+    MatchError -> invalid!()
+    KeyError -> invalid!()
+  end
+
   defp inspect_artifact!(artifact, output_root) do
     unless exact_map?(artifact, @artifact_keys), do: invalid!()
     unless artifact.source == "built_tarball", do: invalid!()
