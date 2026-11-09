@@ -1,0 +1,54 @@
+pr: 278
+head: 04e8160a38e2a06724a1f574791ffe32b207448e
+base: 0a9ba2913c371f7671f534060d9c8154629de5a0
+run: 42386280292 (Crosswake CI, pull_request, attempt 1)
+merge_ran_on: 40e9cbf94d0b5b61849dee2e98cb4bc90653853b (GitHub's synthetic merge of the head into the base, checked out by the run: 'Merge 04e8160a... into 0a9ba291'); the head itself is 04e8160a, which is different
+delete_branch_on_merge: false
+check: Crosswake CI SUCCESS
+check: android-foreign-host SUCCESS
+check: android-generated-shell-unit SUCCESS
+check: android-package-unit SUCCESS
+check: brand-structural SUCCESS
+check: brand-visual SUCCESS
+check: classify-change SUCCESS
+check: collateral-binaries-guard SUCCESS
+check: documentation-contracts SUCCESS
+check: e2e-proof SUCCESS
+check: guard-01-contract-drift-test SUCCESS
+check: guard-01-e2e-honesty SUCCESS
+check: guard-02-generate-and-diff SUCCESS
+check: guard-02-prod-route-absence SUCCESS
+check: hex-page-proof SUCCESS
+check: ios-mirror-parity-proof SUCCESS
+check: ios-package-unit SUCCESS
+check: phase10-proof SUCCESS
+check: phase130-companion-engine-absent-proof SUCCESS
+check: phase130-core-hermetic-proof SUCCESS
+check: phase132-companion-engine-absent-proof SUCCESS
+check: phase132-core-hermetic-proof SUCCESS
+check: phase18-elixir-android-proof SUCCESS
+check: phase18-ios-proof SUCCESS
+check: phase41-gating-proof SUCCESS
+check: phase5-proof SUCCESS
+check: phase58-auth-closeout-proof SUCCESS
+check: phase67-android-jvm-proof SUCCESS
+check: phase79-android-proof SUCCESS
+check: phase79-ios-proof SUCCESS
+check: phase96-threadline-docs-contract-proof SUCCESS
+check: proof-aggregator-negative-control SUCCESS
+check: proof-dependency-security SUCCESS
+check: proof-requires-example-host SUCCESS
+check: release-as-staleness-proof SUCCESS
+check: release-candidate-fixtures SUCCESS
+check: release-candidate-full-proof SUCCESS
+check: route-tour-proof SUCCESS
+check: small-hermetic-proofs SUCCESS
+cost_report (script/ci_cost_report.sh 42386280292, advisory):
+  
+  total billable minutes   : 154  (baseline about 250)
+  wall clock               : 18 min  (baseline 20-44 min)
+  critical-path job        : proof-requires-example-host 17.7 min
+  jobs with a full-suite step: 2  (baseline about 10; step-name heuristic)
+  advisory only: flag new duplicated full-suite runs or jobs with no dependency cache; never a merge gate.
+cost_flags: none (154 billable min vs baseline about 250; 18 min wall vs 20-44; 2 full-suite jobs vs about 10; no new duplicated full-suite run, no uncached job flagged by the report)
+merged: a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9 at=2026-11-07T15:44:03Z (merge commit, --match-head-commit 04e8160a38e2a06724a1f574791ffe32b207448e; CI ran on synthetic merge 40e9cbf9; branch not deleted)

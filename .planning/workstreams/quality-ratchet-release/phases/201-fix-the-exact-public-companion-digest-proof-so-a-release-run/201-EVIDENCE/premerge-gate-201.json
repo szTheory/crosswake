@@ -1,0 +1,38 @@
+{
+  "authorized": false,
+  "candidate": {
+    "base_oid": "fdc218f94851676b925c4e3042e3567baf5b8391",
+    "head_oid": "407398160bb5761d90ade7182676dd76691617be",
+    "merge_oid": null,
+    "package": "crosswake",
+    "pr": 283,
+    "tree_oid": "16aca5ebc43d52ed69e32feb55f683218540ad29",
+    "version": "0.2.14"
+  },
+  "consumed": false,
+  "evidence": {
+    "envelope_sha256": "3ae238b2c5645581db1d2f8f791fb045317215039017cbadb1fe09b22e897488",
+    "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-result-201.json",
+    "verdict": "PASS"
+  },
+  "hex_rehearsal_run_id": 42706539601,
+  "identity": {
+    "leg_run_id": 42706539601,
+    "operation": "linked_release",
+    "receipt_digest": "aecf5b14bb3e1aa91705bee3b28eb10f263ca3c49eea2f89cae2e962b96ba5d8"
+  },
+  "operation": "linked_release",
+  "pending_authorization": {
+    "candidate_head": "407398160bb5761d90ade7182676dd76691617be",
+    "candidate_package": "crosswake",
+    "leg_run_id": 42706539601,
+    "operation": "linked_release",
+    "receipt_digest": "aecf5b14bb3e1aa91705bee3b28eb10f263ca3c49eea2f89cae2e962b96ba5d8",
+    "stage": "pre_merge",
+    "state": "PENDING",
+    "authorized": false
+  },
+  "schema_version": 1,
+  "stage": "pre_merge",
+  "state": "PENDING"
+}

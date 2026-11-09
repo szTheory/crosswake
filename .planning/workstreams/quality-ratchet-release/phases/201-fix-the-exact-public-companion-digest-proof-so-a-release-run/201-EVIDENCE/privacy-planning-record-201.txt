@@ -1,0 +1,17 @@
+plan-record: .planning/workstreams/quality-ratchet-release/ROADMAP.md hits=0 classes=none
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-01-PLAN.md hits=0 classes=none
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-02-PLAN.md hits=1 classes=email
+plan-record-disposition: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-02-PLAN.md classes=email disposition=not-identifying reason=the only match is the generic SSH clone-URL form git@github.com, a class 199-09 and 200-05 already dispositioned not-identifying (no person or account)
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-03-PLAN.md hits=0 classes=none
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-04-PLAN.md hits=1 classes=email
+plan-record-disposition: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-04-PLAN.md classes=email disposition=not-identifying reason=the only match is the generic SSH clone-URL form git@github.com, a class 199-09 and 200-05 already dispositioned not-identifying (no person or account)
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-05-PLAN.md hits=0 classes=none
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-06-PLAN.md hits=1 classes=email
+plan-record-disposition: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-06-PLAN.md classes=email disposition=not-identifying reason=the only match is the generic SSH clone-URL form git@github.com, a class 199-09 and 200-05 already dispositioned not-identifying (no person or account)
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-07-PLAN.md hits=0 classes=none
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-08-PLAN.md hits=0 classes=none
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-RESEARCH.md hits=0 classes=none
+plan-record: .planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-VALIDATION.md hits=0 classes=none
+plan-record: total files=11 with_hits=3
+plan-record-body: hits=0 rc=0
+plan-record-messages: head=e0ecb99155e7abd4b61bef272d75113723247b32 commits=1 hits=0 classes=none rc=0

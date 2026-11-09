@@ -1,0 +1,58 @@
+{
+  "pr": 283,
+  "head_oid": "407398160bb5761d90ade7182676dd76691617be",
+  "base_oid": "fdc218f94851676b925c4e3042e3567baf5b8391",
+  "tree_oid": "16aca5ebc43d52ed69e32feb55f683218540ad29",
+  "version": "0.2.14",
+  "ci_run_id": 42703531929,
+  "ci_conclusion": "success",
+  "ci_ran_on": "a53bf4af8b42d9154f0b5838fd835e98e9ecfa61",
+  "release_pr_head": {
+    "verdict": "PASS",
+    "head": "407398160bb5761d90ade7182676dd76691617be",
+    "line": "release-pr-head: pr=283 head=407398160bb5761d90ade7182676dd76691617be base=fdc218f94851676b925c4e3042e3567baf5b8391 commits=1 authors=szTheory paths=10 managed=13 verdict=PASS"
+  },
+  "authors": [
+    "szTheory"
+  ],
+  "absent": {
+    "hex": 404,
+    "mirror_tag": "absent",
+    "maven_pom": 404,
+    "source_tags": "absent"
+  },
+  "capture_digest": "d2827cd43f0a6e12f28ef82e741da243777d02c99bb275f5a2c15d78afcabe81",
+  "secrets_present": [
+    "BRANCH_PROTECTION_READ_TOKEN",
+    "HEX_API_KEY",
+    "MIRROR_DEPLOY_KEY",
+    "MIRROR_PUSH_TOKEN",
+    "ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD",
+    "ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYID",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD",
+    "RELEASE_PLEASE_TOKEN"
+  ],
+  "delete_branch_on_merge": false,
+  "env_preflight_rc": 0,
+  "captured_at": "2026-11-09T21:51:08Z",
+  "fix_merge_oid": "fdc218f94851676b925c4e3042e3567baf5b8391",
+  "contains_fix": true,
+  "approvals_merge_oid": "44e2f69b09afded59088e7b7a891b248a9a068a6",
+  "contains_approvals": true,
+  "default_ios_build_line": "default-ios-build: mode=local project=generated generator=a53bf4af8b42d9154f0b5838fd835e98e9ecfa61 generator_dirty=no remote_from=- remote_min=- resolved=- build_rc=0 build_seconds=20 control_rc=65 control=detected verdict=PASS first_error=none",
+  "hex_latest": "2.7.0",
+  "notes": {
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "CLEAN",
+    "ci_checks": "39 of 39 success",
+    "ci_ran_on_is_synthetic_merge": true,
+    "authors_are_informational_only": true,
+    "ci_created_at": "2026-11-09T21:32:57Z",
+    "poll": "READY at read 2 (2 minutes); first read saw head 1068230b on base 0aa18470 without either merge",
+    "base_equals_origin_main": true
+  }
+}

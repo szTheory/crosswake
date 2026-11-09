@@ -19,3 +19,27 @@
 # index 47: test/crosswake/proof/phase175_release_recovery_test.exs pre-existing; hits head=1 origin/main=1 new_hit_classes=0; added lines 2 scan rc 0: ok
 # scoped scan result: clean
 privacy: rc 0
+# privacy scan run 2 (after the evidence commit) (HEAD 04e8160a, 56 inputs)
+# SCOPED SCAN, by orchestrator decision: whole-file scan of all inputs is recorded first for the record.
+# Five pre-existing files that are already on origin/main contain email-shaped text this branch did not add
+# (a public SSH remote URL for the mirror repository, and example.invalid git-config fixtures).
+# Rule: (a) every file new on this branch scans clean over the whole file; (b) for each pre-existing file with a
+# whole-file hit, its hit set is no larger than on origin/main's copy and the lines this branch adds to it scan clean.
+# whole-file scan of all inputs (informational):
+#   privacy: hit email file 1
+#   privacy: hit email file 2
+#   privacy: hit email file 41
+#   privacy: hit email file 48
+#   privacy: hit email file 49
+#   privacy: hits 5
+# whole-file rc 1
+# index 1: .github/workflows/ios-mirror-backfill.yml pre-existing; hits head=1 origin/main=1 new_hit_classes=0; added lines 7 scan rc 0: ok
+# index 2: .github/workflows/release-please.yml pre-existing; hits head=1 origin/main=1 new_hit_classes=0; added lines 101 scan rc 0: ok
+# index 41: script/check_release_workflow_integrity.exs pre-existing; hits head=1 origin/main=1 new_hit_classes=0; added lines 263 scan rc 0: ok
+# index 48: test/crosswake/proof/phase175_rel17_publish_paths_test.exs pre-existing; hits head=1 origin/main=1 new_hit_classes=0; added lines 50 scan rc 0: ok
+# index 49: test/crosswake/proof/phase175_release_recovery_test.exs pre-existing; hits head=1 origin/main=1 new_hit_classes=0; added lines 2 scan rc 0: ok
+# scoped scan result: clean
+privacy: rc 0
+# PR body scan (1 input, plain whole-file scan, before PR creation; HEAD 04e8160a)
+privacy: clean files 1
+privacy: rc 0

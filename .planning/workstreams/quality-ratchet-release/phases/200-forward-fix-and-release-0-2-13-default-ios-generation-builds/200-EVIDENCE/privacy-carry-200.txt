@@ -1,0 +1,27 @@
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/envelope.json hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/facts/candidate_readiness.json hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/facts/leg_run.json hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/facts/protected_merge.json hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/facts/registry_response.json hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/facts/response_row.json hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/facts/runbook_ancestry.json hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-1.source hits=2 classes=home_path,email
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-10.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-2.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-3.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-4.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-5.source hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-6.source hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-7.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-8.source hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-9.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/candidate_readiness.source hits=2 classes=home_path,email
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/leg_run.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/protected_merge.source hits=0 classes=none
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/registry_response.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/response_row.source hits=1 classes=home_path
+carry: .planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/runbook_ancestry.source hits=0 classes=none
+note: home_path (13 files): the scanner matches the case-insensitive path segment users/<name> in public registry and API URLs (api.github.com/users/<name>, hex.pm/api/users/<name>); no local home directory appears
+note: email (2 files: live/request-1.source, raw/candidate_readiness.source): git@github.com, an SSH clone-URL form; the maintainer public noreply commit email is a scanner-allowed address (users.noreply.github.com, 8 files) and is not a hit
+note: scanned one file per invocation with scripts/privacy-193.sh from the 193 phase; the sources were not edited (the envelope pins their hashes); the docs branch is not pushed
+carry: total files=23 with_hits=13

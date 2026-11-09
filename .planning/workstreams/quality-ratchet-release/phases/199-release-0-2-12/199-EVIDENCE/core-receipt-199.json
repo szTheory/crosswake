@@ -1,0 +1,40 @@
+{
+  "attestation_dispatch": {
+    "workflow": "ios-mirror-backfill.yml",
+    "dispatch_ref": "release-please--branches--main",
+    "prior_max_run_id": 42390232440,
+    "intent_at_utc": "2026-11-08T05:33:57Z",
+    "inputs": {
+      "operation": "candidate-receipt-attestation",
+      "package": "crosswake",
+      "version": "0.2.12",
+      "release_ref": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+      "candidate_head": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+      "candidate_tree": "5cce613d376760ae16c5c6c7809845d88e3de660",
+      "candidate_base": "a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9",
+      "candidate_ci_run_id": "42388086844",
+      "hex_run_id": "42390193460",
+      "ios_run_id": "42390232440",
+      "maven_run_id": "42450991698"
+    },
+    "dispatch_attempted": true,
+    "delivery": "ACCEPTED",
+    "dispatch_exit_code": 0,
+    "run_id": 42451279582
+  },
+  "attestation_run_id": 42451279582,
+  "attestation_run_head_sha": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+  "attestation_run_conclusion": "success",
+  "artifact_id": 13605577821,
+  "artifact_name": "phase168-candidate-receipt-efbc79124e99f5e60f8b85cbad1a507d4763e476",
+  "expires_at": "2026-11-22T05:35:11Z",
+  "receipt_sha256": "a77cb446a51de5404e21abd6e0acdeed0d25b5e2a57f769f9fb79e335634d69b",
+  "state": "READY FOR APPROVAL",
+  "checks_passed": 13,
+  "checks_total": 13,
+  "publication": "NONE",
+  "external_state_changed": false,
+  "identity_bound_equals_observed": true,
+  "next_action": "approve_exact_candidate",
+  "unexpired_artifacts_for_head": 1
+}

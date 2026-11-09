@@ -1,0 +1,57 @@
+{
+  "pr": 280,
+  "head_oid": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+  "base_oid": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+  "tree_oid": "4605bb05edf60b04f7330058a6c38675c064e746",
+  "version": "0.2.13",
+  "ci_run_id": 42556235341,
+  "ci_conclusion": "success",
+  "ci_ran_on": "ccb950d5c481a238b5dace9167fd71e0e28e4800",
+  "release_pr_head": {
+    "verdict": "PASS",
+    "head": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+    "line": "release-pr-head: pr=280 head=5a6a752185cc557af30b0f87244b8088ac83ff93 base=e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c commits=1 authors=szTheory paths=10 managed=13 verdict=PASS"
+  },
+  "authors": [
+    "szTheory"
+  ],
+  "absent": {
+    "hex": 404,
+    "mirror_tag": "absent",
+    "maven_pom": 404,
+    "source_tags": "absent"
+  },
+  "capture_digest": "eeed64caf141fe37a60804329848c0ba683ec9ec49166fb9020d37c5890bd347",
+  "secrets_present": [
+    "BRANCH_PROTECTION_READ_TOKEN",
+    "HEX_API_KEY",
+    "MIRROR_DEPLOY_KEY",
+    "MIRROR_PUSH_TOKEN",
+    "ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD",
+    "ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYID",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD",
+    "RELEASE_PLEASE_TOKEN"
+  ],
+  "delete_branch_on_merge": false,
+  "env_preflight_rc": 0,
+  "captured_at": "2026-11-09T03:45:41Z",
+  "fix_merge_oid": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+  "contains_fix": true,
+  "default_ios_build_line": "default-ios-build: mode=local project=generated generator=ccb950d5c481a238b5dace9167fd71e0e28e4800 generator_dirty=no remote_from=- remote_min=- resolved=- build_rc=0 build_seconds=23 control_rc=65 control=detected verdict=PASS first_error=none",
+  "notes": {
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "CLEAN",
+    "ci_checks": "39 of 39 success",
+    "ci_ran_on_is_synthetic_merge": true,
+    "authors_are_informational_only": true,
+    "prior_stale_candidate": {
+      "head_oid": "9ce07d20da5669ea1c6e398714d9e870c8908255",
+      "base_oid": "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c",
+      "status": "superseded by Release Please refresh after the fix merge; CI run 42496226997 was red"
+    }
+  }
+}

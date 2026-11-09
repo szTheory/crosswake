@@ -1,0 +1,23 @@
+{
+  "pr": 280,
+  "merge_commit": "0aa184704009c5baf9c3550cf7cf7fde9228f2b8",
+  "merge_oid": "0aa184704009c5baf9c3550cf7cf7fde9228f2b8",
+  "parents": [
+    "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+    "5a6a752185cc557af30b0f87244b8088ac83ff93"
+  ],
+  "tree": "4605bb05edf60b04f7330058a6c38675c064e746",
+  "tree_equal": true,
+  "trailer_lines": 1,
+  "merge_method": "merge",
+  "match_head_commit": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+  "release_run_id": 42639651064,
+  "delivery": "accepted",
+  "gate_id": "core-merge",
+  "gate_attempt": 1,
+  "recorded_at": "2026-11-09T14:58:18Z",
+  "merged_at": "2026-11-09T14:56:48Z",
+  "delete_branch_on_merge_read": false,
+  "delete_branch_on_merge_read_at": "2026-11-09T14:56:42Z",
+  "shape_note": "fields merged_at, delivery (lowercase), delete_branch_on_merge_read added in the 200-06 continuation to match the plan-declared schema; values re-read live and from gates-200.txt"
+}

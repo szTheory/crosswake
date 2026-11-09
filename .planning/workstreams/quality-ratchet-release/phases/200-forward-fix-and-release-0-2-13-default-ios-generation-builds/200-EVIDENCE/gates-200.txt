@@ -1,0 +1,41 @@
+precheck: core-maven-drill at=2026-11-09T03:49:34Z result=PASS prior_max_run=42450991698 head=5a6a752185cc557af30b0f87244b8088ac83ff93
+precheck: core-maven-drill at=2026-11-09T03:50:12Z result=PASS prior_max_run=42450991698 head=5a6a752185cc557af30b0f87244b8088ac83ff93
+precheck: core-maven-drill at=2026-11-09T03:51:09Z result=PASS prior_max_run=42450991698 head=5a6a752185cc557af30b0f87244b8088ac83ff93
+gate: core-maven-drill attempt=1 displayed=2026-11-09T03:51:18Z scope="crosswake-shell-core-android 0.2.13 fire drill, maven-publish-fire-drill.yml on release-please--branches--main" head=5a6a752185cc557af30b0f87244b8088ac83ff93
+precheck: core-maven-drill at=2026-11-09T14:13:54Z result=PASS prior_max_run=42450991698 head=5a6a752185cc557af30b0f87244b8088ac83ff93
+decision: core-maven-drill attempt=1 allow at=2026-11-09T14:13:56Z head=5a6a752185cc557af30b0f87244b8088ac83ff93
+applied: core-maven-drill attempt=1 at=2026-11-09T14:17:19Z result=validated_then_dropped head=5a6a752185cc557af30b0f87244b8088ac83ff93
+precheck: core-merge at=2026-11-09T14:32:20Z result=PASS base=e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c tree=4605bb05edf60b04f7330058a6c38675c064e746 ci_run=42556235341 receipt_expires=2026-11-23T14:19:07Z hex_0.2.13=404 maven_pom_0.2.13=404 mirror_tag=absent source_tags=absent delete_branch_on_merge=false env_preflight=0 guard_run=42555894094 guard_line=verdict=PASS default_ios_build=PASS remote_form=PASS trailer_check=PASS head=5a6a752185cc557af30b0f87244b8088ac83ff93
+gate: core-merge attempt=1 displayed=2026-11-09T14:33:33Z scope="merge release PR 280 (crosswake 0.2.13) pinned to its head; no release run yet, it starts after the merge and waits at the tag gate" head=5a6a752185cc557af30b0f87244b8088ac83ff93
+precheck: core-merge at=2026-11-09T14:56:42Z result=PASS base=e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c tree=4605bb05edf60b04f7330058a6c38675c064e746 ci_run=42556235341 receipt_expires=2026-11-23T14:19:07Z hex_0.2.13=404 maven_pom_0.2.13=404 mirror_tag=absent source_tags=absent delete_branch_on_merge=false env_preflight=0 guard_run=42555894094 guard_line=verdict=PASS default_ios_build=PASS remote_form=PASS trailer_check=PASS head=5a6a752185cc557af30b0f87244b8088ac83ff93
+# note: user reply 2026-11-09: "Yes, I allow it." for this attempt; the same reply also stated a broader standing wish about merging when CI is green, which is NOT treated as an approval for any other gate
+decision: core-merge attempt=1 allow at=2026-11-09T14:56:44Z head=5a6a752185cc557af30b0f87244b8088ac83ff93
+applied: core-merge attempt=1 at=2026-11-09T14:58:18Z result=merged merge_commit=0aa184704009c5baf9c3550cf7cf7fde9228f2b8 head=5a6a752185cc557af30b0f87244b8088ac83ff93
+precheck: core-tags at=2026-11-09T14:58:36Z result=PASS env=26568191383 guard=success pending=1 hex=404 run=42639651064
+gate: core-tags attempt=1 displayed=2026-11-09T14:58:37Z scope="approve the release-tags step: Release Please creates hex-v0.2.13, ios-core-v0.2.13 and android-core-v0.2.13 with their GitHub Releases at merge commit 0aa184704009c5baf9c3550cf7cf7fde9228f2b8, one shared allow" run=42639651064
+precheck: core-tags at=2026-11-09T15:00:09Z result=PASS env=26568191383 guard=success pending=1 hex=404 run=42639651064
+# note: user reply 2026-11-09: "Yes, I allow it" for this attempt, plus a stated standing wish not to be asked again for this type of step; the standing scope is recorded separately and is not used to skip any display here
+decision: core-tags attempt=1 allow at=2026-11-09T15:00:11Z run=42639651064
+applied: core-tags attempt=1 at=2026-11-09T15:05:56Z result=tags_created run=42639651064
+precheck: core-hex at=2026-11-09T15:09:17Z result=PASS env=26568191797 pending=1 hex=404 run=42639651064
+gate: core-hex attempt=1 displayed=2026-11-09T15:09:19Z scope="approve the publish-hex step: publish crosswake 0.2.13 and its docs to hex.pm" run=42639651064
+precheck: core-hex at=2026-11-09T15:17:56Z result=PASS env=26568191797 pending=1 hex=404 run=42639651064
+# note: user reply 2026-11-09: allow this attempt AND publishes (Hex, Maven, iOS mirror) are standing approvals from now on; fire-drill dispatch and remote-branch deletion stay gated
+decision: core-hex attempt=1 allow at=2026-11-09T15:17:58Z run=42639651064
+applied: core-hex attempt=1 at=2026-11-09T15:32:47Z result=published run=42639651064
+precheck: core-maven at=2026-11-09T15:33:13Z result=PASS env=26568192162 hex=200 pom=404 pending=1 run=42639651064
+# note: 2026-11-09 standing approval (user, core-hex gate) covers Maven publishes; scope was stated in chat at this step, not asked as a question
+gate: core-maven attempt=1 displayed=2026-11-09T15:33:13Z scope="approve the publish-maven step: sign and publish io.github.sztheory:crosswake-shell-core-android 0.2.13 to Maven Central" run=42639651064
+precheck: core-maven at=2026-11-09T15:33:13Z result=PASS env=26568192162 hex=200 pom=404 pending=1 run=42639651064
+decision: core-maven attempt=1 allow at=2026-11-09T15:33:13Z run=42639651064
+applied: core-maven attempt=1 at=2026-11-09T15:48:02Z result=published run=42639651064
+pre: mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+pre: [crosswake] What to do next: the mirror has no refs/tags/v0.2.13; the iOS mirror publish did not create it. Read the publish run before anything else.
+pre: mirror-tag: version 0.2.13 source_tag ios-core-v0.2.13 source_tree 75dcd5039028 verdict=FAIL reason=mirror_tag_missing
+pre: rc=1
+precheck: core-ios at=2026-11-09T15:48:22Z result=PASS env=26568192607 hex=200 pom=200 mirror_tag=absent run=42639651064
+# note: 2026-11-09 standing approval (user, core-hex gate) covers iOS mirror publishes; scope stated in chat at this step, not asked as a question
+gate: core-ios attempt=1 displayed=2026-11-09T15:48:22Z scope="approve the publish-ios-mirror step: fast-forward main and create tag v0.2.13 on the public mirror szTheory/crosswake-shell-core-ios" run=42639651064
+precheck: core-ios at=2026-11-09T15:48:22Z result=PASS env=26568192607 hex=200 pom=200 mirror_tag=absent run=42639651064
+decision: core-ios attempt=1 allow at=2026-11-09T15:48:22Z run=42639651064
+applied: core-ios attempt=1 at=2026-11-09T16:02:40Z result=published run=42639651064

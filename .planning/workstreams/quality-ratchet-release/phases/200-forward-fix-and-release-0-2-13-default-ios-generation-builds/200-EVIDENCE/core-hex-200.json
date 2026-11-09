@@ -1,0 +1,25 @@
+{
+  "run_id": 42639651064,
+  "run_url": "https://github.com/szTheory/crosswake/actions/runs/42639651064",
+  "gate_id": "core-hex",
+  "gate_attempt": 1,
+  "environment_id": 26568191797,
+  "environment_name": "publish-hex",
+  "approval_comment": "200 core-hex attempt 1",
+  "approved_at_utc": "2026-11-09T15:17:58Z",
+  "job_conclusion": "success",
+  "job_started_at": "2026-11-09T15:18:01Z",
+  "job_completed_at": "2026-11-09T15:32:18Z",
+  "hex_status": 200,
+  "hex_version": "0.2.13",
+  "hex_has_docs": true,
+  "publication_record_artifact": {
+    "name": "publication-record-crosswake-5a6a752185cc557af30b0f87244b8088ac83ff93",
+    "id": 13686714976
+  },
+  "pending_after": [
+    "publish-maven"
+  ],
+  "standing_note": "approved under the 2026-11-09 standing publish decision after a displayed gate",
+  "recorded_at": "2026-11-09T15:32:47Z"
+}

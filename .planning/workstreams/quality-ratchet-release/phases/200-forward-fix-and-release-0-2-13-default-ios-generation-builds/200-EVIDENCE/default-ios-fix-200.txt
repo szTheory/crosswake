@@ -1,0 +1,12 @@
+source: base=1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c lib_priv_equal_hex-v0.2.12=yes
+declared-baseline: mix-test-gate: rc=0 total=61 excluded=0 skipped=0 ran=61 failures=0 invalid=0 min=1 min_total=0 verdict=PASS
+red: test mix-test-gate: rc=2 total=5 excluded=0 skipped=0 ran=5 failures=5 invalid=0 min=1 min_total=0 verdict=FAIL reason=mix_rc
+red: refs baseConfigurationReference=4 xcconfig_mentions=6 xcconfig=absent
+red: xcodebuild rc=65 first_error=<work>/t/native/ios/crosswake_shell/CrosswakeShell.xcodeproj: error: Unable to open base configuration reference file '<work>/t/native/ios/crosswake_shell/CrosswakeHostSettings.xcconfig'. (in target 'CrosswakeShell' from project 'CrosswakeShell')
+green: test mix-test-gate: rc=0 total=5 excluded=0 skipped=0 ran=5 failures=0 invalid=0 min=1 min_total=0 verdict=PASS
+green: xcodebuild rc=0 seconds=8
+declared-after: mix-test-gate: rc=0 total=61 excluded=0 skipped=0 ran=61 failures=0 invalid=0 min=1 min_total=0 verdict=PASS
+note: the project holds 4 baseConfigurationReference entries (two targets, Debug and Release) and 6 mentions of CrosswakeHostSettings.xcconfig (4 base configuration references, 1 file reference, 1 group child); the plan text called all 6 mentions base configuration references
+guides: mix-test-gate: rc=0 total=263 excluded=5 skipped=0 ran=258 failures=0 invalid=0 min=1 min_total=0 verdict=PASS
+format: rc=0
+compile: rc=0

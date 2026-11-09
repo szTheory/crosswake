@@ -1,0 +1,36 @@
+{
+  "run_id": 42494651844,
+  "gate_id": "core-tags",
+  "gate_attempt": 1,
+  "approval": {
+    "environment_ids": [
+      26568191383
+    ],
+    "environment_name": "release-tags",
+    "comment": "199 core-tags attempt 1",
+    "approved_at_utc": "2026-11-08T15:38:47Z"
+  },
+  "tags": [
+    "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c",
+    "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c",
+    "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c"
+  ],
+  "tag_names": [
+    "hex-v0.2.12",
+    "ios-core-v0.2.12",
+    "android-core-v0.2.12"
+  ],
+  "merge_oid": "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c",
+  "releases_exist": true,
+  "mirror_tag_exists": false,
+  "publish_hex_state": "waiting",
+  "pending_after": [
+    {
+      "environment": "publish-hex",
+      "id": 26568191797
+    }
+  ],
+  "publishers_started": 0,
+  "hex_status": 404,
+  "recorded_at": "2026-11-08T15:43:43Z"
+}

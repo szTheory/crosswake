@@ -1,0 +1,6 @@
+# privacy scan run 1 (before the push of the fix branch; PR body scratch file included)
+# inputs: 7 changed paths in the worktree (git diff --name-only --diff-filter=AMR origin/main...HEAD) plus the PR body file
+# whole-file scan of every input, no scoped rule needed
+privacy: run=1 head=3696f38cd8e4e158a6339eca1984d7b63dd03403 inputs=8 rc=0
+# privacy scan run 2 (issue 281 comment body, before posting; whole-file scan of one scratch file; head of the fix branch unchanged)
+privacy: run=2 head=3696f38cd8e4e158a6339eca1984d7b63dd03403 inputs=1 rc=0

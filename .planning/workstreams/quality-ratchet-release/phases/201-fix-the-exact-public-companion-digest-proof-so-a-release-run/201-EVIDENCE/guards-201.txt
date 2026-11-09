@@ -1,0 +1,7 @@
+suite-floor: base=196 new=22 min=218
+guard: absence rc=0
+guard: absence last=[crosswake] collections mode=enforce files=334 findings=84 delta=0
+guard: ownership rc=0
+guard: ownership last=[crosswake] OK: all intended ExUnit files are owned by a merge-blocking class.
+guard: phase170-ledger rc=0
+guard: phase170-ledger last=mix-test-gate: rc=0 total=21 excluded=0 skipped=0 ran=21 failures=0 invalid=0 min=1 min_total=0 verdict=PASS

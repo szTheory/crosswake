@@ -1,0 +1,78 @@
+{
+  "old_ref": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+  "inspector_head": "be335acc4580a7191fdd3fa5733331482b437f0c",
+  "hex_versions": {
+    "h27": "2.7.0",
+    "h25": "2.5.1"
+  },
+  "m1": {
+    "metadata_equal": 1,
+    "payload_equal": 6,
+    "rc": 1,
+    "equal_package": "crosswake"
+  },
+  "m1b": {
+    "metadata_equal": 6,
+    "payload_equal": 6,
+    "rc": 0
+  },
+  "m2": {
+    "metadata_equal": 6,
+    "payload_equal": 6,
+    "rc": 0
+  },
+  "m3": {
+    "metadata_equal": 5,
+    "payload_equal": 6,
+    "rc": 1,
+    "differ_packages": [
+      "crosswake"
+    ]
+  },
+  "m3_old": {
+    "metadata_equal": 0,
+    "payload_equal": 6,
+    "rc": 1
+  },
+  "m2_provenance": {
+    "lines": 12,
+    "digested_yes_packages": [
+      "crosswake"
+    ]
+  },
+  "m4": [
+    {
+      "run": "28675522926",
+      "release": "0.2.0",
+      "hex": "n/a",
+      "result": "skipped",
+      "cause": "proof-did-not-exist-yet-backfilled-ledger-row"
+    },
+    {
+      "run": "38155320492",
+      "release": "0.2.11",
+      "hex": "2.5.1",
+      "result": "COMPLETE",
+      "cause": "none failed_packages=[] ledger=success"
+    },
+    {
+      "run": "42494651844",
+      "release": "0.2.12",
+      "hex": "n/a",
+      "result": "not-reached",
+      "cause": "ios-clean-room-failed-first-exact-public-job-skipped"
+    },
+    {
+      "run": "42639651064",
+      "release": "0.2.13",
+      "hex": "2.7.0-candidate-vs-pre-2.6-companions",
+      "result": "BLOCKED",
+      "cause": "build_env-digest_mismatch-on-five-companions core-proven"
+    }
+  ],
+  "ci_hex_lines": [
+    "* creating /home/runner/.mix/archives/hex-2.7.0",
+    "* creating /home/runner/.mix/archives/hex-2.5.1"
+  ],
+  "verdict": "PASS"
+}

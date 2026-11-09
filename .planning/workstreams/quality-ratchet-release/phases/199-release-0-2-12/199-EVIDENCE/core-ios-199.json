@@ -1,0 +1,29 @@
+{
+  "run_id": 42494651844,
+  "gate_id": "core-ios",
+  "gate_attempt": 1,
+  "approval": {
+    "environment_ids": [
+      26568192607
+    ],
+    "environment_name": "publish-ios-mirror",
+    "comment": "199 core-ios attempt 1",
+    "approved_at_utc": "2026-11-08T17:14:20Z"
+  },
+  "job_name": "Mirror iOS core to split repo",
+  "job_conclusion": "success",
+  "job_started_at": "2026-11-08T17:14:23Z",
+  "job_completed_at": "2026-11-08T17:16:27Z",
+  "mirror_remote": "https://github.com/szTheory/crosswake-shell-core-ios.git",
+  "mirror_main": "095267ea23c94cf397b620ab5015a7bf19377660",
+  "mirror_tag_v0_2_12": "095267ea23c94cf397b620ab5015a7bf19377660",
+  "source_tree": "75dcd5039028",
+  "mirror_tree": "75dcd5039028",
+  "checks": {
+    "post_rc": 0,
+    "post_older_rc": 1,
+    "post_older_reason": "newer_mirror_tag",
+    "parity_rc": 0
+  },
+  "recorded_at": "2026-11-08T17:16:54Z"
+}

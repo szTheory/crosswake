@@ -1,0 +1,69 @@
+{
+  "pr": 286,
+  "branch": "docs/201-planning-record",
+  "source_branch": "docs/199-release-0-2-12",
+  "source_oid": "ec56e97c9d5f9a9ec5e1134aa441324f0cd649ca",
+  "paths": [
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-01-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-02-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-03-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-04-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-05-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-06-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-07-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-08-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-RESEARCH.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-VALIDATION.md"
+  ],
+  "redaction": {
+    "rule": "HOME prefix replaced by ~",
+    "files_changed": 11
+  },
+  "roadmap": {
+    "added_lines": 83,
+    "removed_lines": 0
+  },
+  "planning_tests_line": "mix-test-gate: rc=0 total=95 excluded=0 skipped=0 ran=95 failures=0 invalid=0 min=1 min_total=0 verdict=PASS",
+  "head_oid": "e0ecb99155e7abd4b61bef272d75113723247b32",
+  "ci_run_id": 42686945166,
+  "ci_conclusion": "success",
+  "ci_ran_on": "0749391d873bb8c1b9e7d3f77af7b833acfbf59f",
+  "ci_waits": [
+    {
+      "head": "e0ecb99155e7abd4b61bef272d75113723247b32",
+      "run_id": 42686945166,
+      "limit_min": 45,
+      "interval_min": 2,
+      "reads": 2,
+      "minutes": 3,
+      "result": "DONE"
+    }
+  ],
+  "cost": {
+    "billable_min": 5,
+    "flags": []
+  },
+  "delete_branch_on_merge_read": false,
+  "merge_oid": "665f0b9b0acb156f3574512ffcea390aa316660b",
+  "merged_at": "2026-11-09T19:52:10Z",
+  "landed_blobs": {
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md": "6f9728f28a17c5eb09d436811c9aa3b65b284777",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-01-PLAN.md": "c968f9369a02dee7bdda4b0c3a4541881161eadd",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-02-PLAN.md": "7524f5ccf4b55f420ddf12bc0084f198f8627812",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-03-PLAN.md": "f1253cf03fc07244c009a72f3c7bf25538b2395b",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-04-PLAN.md": "5cef1419d86e043659f4915f434f264b8906b755",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-05-PLAN.md": "1bcff4cee861ef6b21607d8b751c8d0ba701b404",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-06-PLAN.md": "6d810401d7f257d3b007c9f40ccec750a3685a3b",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-07-PLAN.md": "0678f1641354a398e0a41820ca75e8933d2088ca",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-08-PLAN.md": "fa954c932c90630abf53759cfa58008af509f605",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-RESEARCH.md": "885f75389ef7a4f935c53ad742a7a94bdf5e76a3",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-VALIDATION.md": "af1b168a7af8fd7c4595e820e63a616434fccfdd"
+  },
+  "worktree": {
+    "path": "~/projects/crosswake-201-plan-wt",
+    "removed": true
+  },
+  "local_branch_deleted": true,
+  "remote_branch_left": true
+}

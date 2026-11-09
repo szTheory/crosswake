@@ -1,0 +1,9 @@
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+cleanroom: leg hex PASS 0.2.13 checksum 5bc56ef49a79
+cleanroom: leg maven PASS 0.2.13 aar 76adb1341a57
+cleanroom: leg ios PASS 0.2.13 tag_commit 095267ea23c9
+cleanroom: docs source commit 407398160bb5761d90ade7182676dd76691617be
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+cleanroom: leg docs PASS 0.2.13 executed=20 not_applicable=0 deferred=none clone=4 shown=4 source=commit:407398160bb5761d90ade7182676dd76691617be phx_new=1.8.13
+cleanroom: result PASS legs hex,maven,ios,docs version 0.2.13
+cleanroom: rc 0

@@ -1,0 +1,22 @@
+{
+  "run_id": 42639651064,
+  "run_url": "https://github.com/szTheory/crosswake/actions/runs/42639651064",
+  "gate_id": "core-maven",
+  "gate_attempt": 1,
+  "environment_id": 26568192162,
+  "environment_name": "publish-maven",
+  "approval_comment": "200 core-maven attempt 1",
+  "approved_at_utc": "2026-11-09T15:33:13Z",
+  "job_conclusion": "success",
+  "job_started_at": "2026-11-09T15:33:16Z",
+  "job_completed_at": "2026-11-09T15:36:27Z",
+  "pom_status": 200,
+  "aar_status": 200,
+  "polls": 23,
+  "visible_at": "2026-11-09T15:47:53Z",
+  "pending_after": [
+    "publish-ios-mirror"
+  ],
+  "standing_note": "approved under the 2026-11-09 standing publish decision",
+  "recorded_at": "2026-11-09T15:48:02Z"
+}

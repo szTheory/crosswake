@@ -1,0 +1,39 @@
+{
+  "attestation_dispatch": {
+    "workflow": "ios-mirror-backfill.yml",
+    "dispatch_ref": "release-please--branches--main",
+    "prior_max_run_id": 42558247628,
+    "intent_at_utc": "2026-11-09T14:17:30Z",
+    "head_before": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+    "inputs": {
+      "operation": "candidate-receipt-attestation",
+      "package": "crosswake",
+      "version": "0.2.13",
+      "release_ref": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "candidate_head": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "candidate_tree": "4605bb05edf60b04f7330058a6c38675c064e746",
+      "candidate_base": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+      "candidate_ci_run_id": "42556235341",
+      "hex_run_id": "42558226150",
+      "ios_run_id": "42558247628",
+      "maven_run_id": "42632645093"
+    }
+  },
+  "dispatched_at_utc": "2026-11-09T14:17:39Z",
+  "attestation_run_id": 42633255271,
+  "attestation_run_head_sha": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+  "attestation_run_conclusion": "success",
+  "artifact_id": 13681238151,
+  "artifact_name": "phase168-candidate-receipt-5a6a752185cc557af30b0f87244b8088ac83ff93",
+  "expires_at": "2026-11-23T14:19:07Z",
+  "receipt_sha256": "8c905dea15a8ea285db0205d218f1d0a5d332474a28404b94b4027a2552f4507",
+  "state": "READY FOR APPROVAL",
+  "checks_passed": 13,
+  "checks_total": 13,
+  "publication": "NONE",
+  "identity_bound_equals_observed": true,
+  "credentials": {
+    "mirror_write_authority": "PROVEN",
+    "exercised": true
+  }
+}

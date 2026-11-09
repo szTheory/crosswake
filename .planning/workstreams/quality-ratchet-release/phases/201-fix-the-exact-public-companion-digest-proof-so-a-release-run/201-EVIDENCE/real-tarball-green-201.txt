@@ -1,0 +1,9 @@
+Compiling 4 files (.ex)
+Generated crosswake app
+Running ExUnit with seed: 968691, max_cases: 36
+Excluding tags: [requires_example_host: true, engine_present: true, collateral_binaries: true, advisory_only: true, generated_manifest: true]
+
+...................
+Finished in 1.6 seconds (1.6s async, 0.00s sync)
+19 tests, 0 failures
+mix-test-gate: rc=0 total=19 excluded=0 skipped=0 ran=19 failures=0 invalid=0 min=19 min_total=0 verdict=PASS

@@ -1,0 +1,13 @@
+mutation: name=description verdict_line=mix-test-gate: rc=2 total=22 excluded=0 skipped=0 ran=22 failures=1 invalid=0 min=22 min_total=0 verdict=FAIL reason=mix_rc
+mutation: name=description failed_prefix=control description: count=1
+mutation: name=requirement verdict_line=mix-test-gate: rc=2 total=22 excluded=0 skipped=0 ran=22 failures=1 invalid=0 min=22 min_total=0 verdict=FAIL reason=mix_rc
+mutation: name=requirement failed_prefix=control requirement: count=1
+mutation: name=links verdict_line=mix-test-gate: rc=2 total=22 excluded=0 skipped=0 ran=22 failures=1 invalid=0 min=22 min_total=0 verdict=FAIL reason=mix_rc
+mutation: name=links failed_prefix=control links: count=1
+mutation: name=payload-byte verdict_line=mix-test-gate: rc=2 total=22 excluded=0 skipped=0 ran=22 failures=1 invalid=0 min=22 min_total=0 verdict=FAIL reason=mix_rc
+mutation: name=payload-byte failed_prefix=control payload byte: count=1
+mutation: name=no-validation verdict_line=mix-test-gate: rc=2 total=22 excluded=0 skipped=0 ran=22 failures=6 invalid=0 min=22 min_total=0 verdict=FAIL reason=mix_rc
+mutation: name=no-validation failed_prefix=shape: count=6
+mutation: name=core-excluded verdict_line=mix-test-gate: rc=2 total=22 excluded=0 skipped=0 ran=22 failures=2 invalid=0 min=22 min_total=0 verdict=FAIL reason=mix_rc
+mutation: name=core-excluded failed_prefix=core build_env: count=2
+mutation: restored diff_rc=0

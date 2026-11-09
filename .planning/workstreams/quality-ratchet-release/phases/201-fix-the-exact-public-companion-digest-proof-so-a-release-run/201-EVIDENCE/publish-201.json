@@ -1,0 +1,54 @@
+{
+  "release_run_id": 42713010358,
+  "tags": {
+    "env_id": 26568191383,
+    "approval_comment": "201 core-tags standing",
+    "release_please_job": "success",
+    "peel": {
+      "hex-v0.2.14": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8",
+      "ios-core-v0.2.14": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8",
+      "android-core-v0.2.14": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8"
+    },
+    "releases": [
+      "android-core-v0.2.14",
+      "ios-core-v0.2.14",
+      "hex-v0.2.14"
+    ]
+  },
+  "hex": {
+    "env_id": 26568191797,
+    "approval_comment": "201 core-hex standing",
+    "job_conclusion": "success",
+    "api_version": "0.2.14",
+    "publication_record_artifact": "publication-record-crosswake-407398160bb5761d90ade7182676dd76691617be",
+    "hex_latest_at_approval": "2.7.0"
+  },
+  "maven": {
+    "env_id": 26568192162,
+    "approval_comment": "201 core-maven standing",
+    "job_conclusion": "success",
+    "polls": [
+      "poll: n=1 at=2026-11-09T22:55:58Z job=running pom=404 aar=404",
+      "poll: n=2 at=2026-11-09T22:57:03Z job=running pom=404 aar=404",
+      "poll: n=3 at=2026-11-09T22:58:07Z job=running pom=404 aar=404",
+      "poll: n=4 at=2026-11-09T22:59:10Z job=success pom=404 aar=404",
+      "poll: n=5 at=2026-11-09T23:00:15Z job=success pom=404 aar=404",
+      "poll: n=6 at=2026-11-09T23:01:22Z job=success pom=404 aar=404",
+      "poll: n=7 at=2026-11-09T23:02:28Z job=success pom=404 aar=404",
+      "poll: n=8 at=2026-11-09T23:03:32Z job=success pom=404 aar=404",
+      "poll: n=9 at=2026-11-09T23:04:37Z job=success pom=404 aar=404",
+      "poll: n=10 at=2026-11-09T23:05:41Z job=success pom=404 aar=404",
+      "poll: n=11 at=2026-11-09T23:06:45Z job=success pom=404 aar=404",
+      "poll: n=12 at=2026-11-09T23:07:49Z job=success pom=404 aar=404",
+      "poll: n=13 at=2026-11-09T23:08:53Z job=success pom=200 aar=200"
+    ],
+    "first_visible_at": "2026-11-09T23:08:53Z"
+  },
+  "ios": {
+    "env_id": 26568192607,
+    "approval_comment": "201 core-ios standing",
+    "job_conclusion": "success",
+    "mirror_main": "095267ea23c94cf397b620ab5015a7bf19377660",
+    "mirror_tag_v0.2.14": "095267ea23c94cf397b620ab5015a7bf19377660"
+  }
+}

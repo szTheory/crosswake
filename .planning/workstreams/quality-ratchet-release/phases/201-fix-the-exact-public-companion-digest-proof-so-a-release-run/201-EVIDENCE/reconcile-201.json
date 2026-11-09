@@ -1,0 +1,69 @@
+{
+  "observed_at_utc": "2026-11-09",
+  "run_0_2_12": {
+    "run_id": 42494651844,
+    "run_attempt": 1,
+    "conclusion": "failure",
+    "recorded_state": "PARTIAL",
+    "disposition": "stays as recorded, never re-run",
+    "superseded_by": { "version": "0.2.14", "run_id": 42713010358, "state": "COMPLETE" }
+  },
+  "run_0_2_13": {
+    "run_id": 42639651064,
+    "run_attempt": 1,
+    "conclusion": "failure",
+    "recorded_state": "FAILURE",
+    "disposition": "Hex, Maven and the iOS mirror were published and the iOS clean-room passed; the exact-public proof failed on the build_env definitional defect fixed by Phase 201. Stays as recorded, never re-run; its old-rule receipt is not re-proven under the new rule (research Pitfall 3).",
+    "superseded_by": { "version": "0.2.14", "run_id": 42713010358, "state": "COMPLETE" }
+  },
+  "issue_281": {
+    "state": "CLOSED",
+    "close_comment_url": "https://github.com/szTheory/crosswake/issues/281#issuecomment-6754328314",
+    "comment_privacy": "privacy-193.sh rc=0 before posting"
+  },
+  "pr_280": {
+    "state": "MERGED",
+    "disposition": "release PR that shipped 0.2.13",
+    "merge_oid": "0aa184704009c5baf9c3550cf7cf7fde9228f2b8"
+  },
+  "pr_283": {
+    "state": "MERGED",
+    "disposition": "release PR that shipped 0.2.14",
+    "merge_oid": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8"
+  },
+  "pr_282": {
+    "state": "MERGED",
+    "disposition": "fix PR for the default iOS generation defect behind issue 281",
+    "merge_oid": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c"
+  },
+  "pr_287": {
+    "state": "MERGED",
+    "disposition": "Phase 201 fix PR for the exact-public build_env defect",
+    "merge_oid": "fdc218f94851676b925c4e3042e3567baf5b8391"
+  },
+  "hex_retire_0_2_12": {
+    "in_scope": false,
+    "decided": false,
+    "retired": false,
+    "recommendation": "do not retire: 0.2.12's Hex, Maven and mirror artifacts pass their own checks and only the default generation without :ios_host was broken, which a retire advisory would not repair; a host that sees the build error upgrades to 0.2.13 or later",
+    "receiver": "a new plan with its own displayed one-way gate hex-retire-0.2.12"
+  },
+  "threadline_0_1_1": {
+    "pr": 262,
+    "state": "OPEN",
+    "head_oid": "0fc93dcf58d2478c639f76094f1832533a102e20",
+    "head_at_planning": "3d65f3fb154d1a99a2b2ee097954c2e2f7a8d47e",
+    "head_moved": true,
+    "disposition": "deferred",
+    "reopen_condition": "a COMPLETE core run (met by the 0.2.14 run 42713010358) and Phase 199 plans 13-14 revised for current facts",
+    "receiver": "Phase 199 plans 13-14 (companion-merge, companion-tags and companion-hex gates)",
+    "note": "head movement is Release Please refreshing the PR on main pushes; observed only, PR 262 and its branch were not touched"
+  },
+  "todo_012": {
+    "status_before": "open",
+    "status_after": "closed",
+    "reason": "premise superseded: per-package approved refs in script/verify_companion_cleanroom.sh; run 38155320492 COMPLETE with six packages; the 0.2.14 run 42713010358 COMPLETE with six packages fully proven"
+  },
+  "approvals_reused": 0,
+  "approvals_reused_basis": "gates-199.txt unchanged since e8dda2345e5e17865b4cc9e8832163a97fdec105 (git diff --quiet exit 0); gates-201.txt names neither the 0.2.12 head efbc79124e99f5e60f8b85cbad1a507d4763e476 nor the 0.2.13 head 5a6a752185cc557af30b0f87244b8088ac83ff93"
+}

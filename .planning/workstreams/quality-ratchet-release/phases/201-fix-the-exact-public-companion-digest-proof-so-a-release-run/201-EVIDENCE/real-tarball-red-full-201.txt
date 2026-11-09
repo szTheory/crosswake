@@ -1,0 +1,94 @@
+Running ExUnit with seed: 877241, max_cases: 36
+Excluding tags: [requires_example_host: true, engine_present: true, collateral_binaries: true, advisory_only: true, generated_manifest: true]
+
+.
+
+  1) test shape: a companion build_env that is a bare binary rather than a list is rejected (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:78
+     Expected exception ArgumentError but nothing was raised
+     code: assert_raise ArgumentError, fn ->
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:81: (test)
+
+....
+
+  2) test shape: a companion build_env whose version is not semver is rejected (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:54
+     Expected exception ArgumentError but nothing was raised
+     code: assert_raise ArgumentError, fn ->
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:55: (test)
+
+..
+
+  3) test shape: a companion build_env with a second tuple is rejected (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:65
+     Expected exception ArgumentError but nothing was raised
+     code: assert_raise ArgumentError, fn ->
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:68: (test)
+
+
+
+  4) test equality: public tarball and Hex 2.6+ rebuild of the same tag give equal digests (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:39
+     Assertion with == failed
+     code:  assert public.metadata_digest == rebuild.metadata_digest
+     left:  "5e444f8c518712ef42009fb4e0ad2b84dbd591178d0927939c628cc50c9ac3fe"
+     right: "edff10ce51ba3aa3bb63ede0c09ad36b77181d89060d61b571a4d1b096cf5eb6"
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:49: (test)
+
+
+
+  5) test shape: a companion build_env keyed by something other than hex is rejected (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:92
+     Expected exception ArgumentError but nothing was raised
+     code: assert_raise ArgumentError, fn ->
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:95: (test)
+
+
+
+  6) test companion build_env: a different valid semver changes no digest (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:130
+     Assertion with == failed
+     code:  assert changed.metadata_digest == public.metadata_digest
+     left:  "4ba4f545c68bfcd65a3cae98adb5392c24b8f7b3edec6f238a83d85b3e12360c"
+     right: "5e444f8c518712ef42009fb4e0ad2b84dbd591178d0927939c628cc50c9ac3fe"
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:138: (test)
+
+
+
+  7) test companion build_env: injecting the rebuild's own build_env into the public tarball changes no digest (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:113
+     Assertion with == failed
+     code:  assert injected.metadata_digest == public.metadata_digest
+     left:  "edff10ce51ba3aa3bb63ede0c09ad36b77181d89060d61b571a4d1b096cf5eb6"
+     right: "5e444f8c518712ef42009fb4e0ad2b84dbd591178d0927939c628cc50c9ac3fe"
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:126: (test)
+
+..
+
+  8) test shape: an empty companion build_env list is rejected (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:86
+     Expected exception ArgumentError but nothing was raised
+     code: assert_raise ArgumentError, fn ->
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:87: (test)
+
+
+
+  9) test shape: the core build_env is validated too, a non-semver version is rejected (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:105
+     Expected exception ArgumentError but nothing was raised
+     code: assert_raise ArgumentError, fn ->
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:106: (test)
+
+.
+Finished in 1.4 seconds (1.4s async, 0.00s sync)
+19 tests, 9 failures
+mix-test-gate: rc=2 total=19 excluded=0 skipped=0 ran=19 failures=9 invalid=0 min=19 min_total=0 verdict=FAIL reason=mix_rc

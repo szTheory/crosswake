@@ -1,0 +1,14 @@
+pre: mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+pre: [crosswake] What to do next: the mirror has no refs/tags/v0.2.14; the iOS mirror publish did not create it. Read the publish run before anything else.
+pre: mirror-tag: version 0.2.14 source_tag ios-core-v0.2.14 source_tree 75dcd5039028 verdict=FAIL reason=mirror_tag_missing
+pre: rc=1
+post: mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+post: mirror-tag: version 0.2.14 source_tag ios-core-v0.2.14 source_tree 75dcd5039028 mirror_tag v0.2.14 mirror_commit 095267ea23c9 mirror_tree 75dcd5039028 newest v0.2.14 verdict=PASS
+post: rc=0
+post-older: mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+post-older: [crosswake] What to do next: the mirror already carries v0.2.14, newer than v0.2.13; this check is for the release just published.
+post-older: mirror-tag: version 0.2.13 source_tag ios-core-v0.2.13 source_tree 75dcd5039028 mirror_tag v0.2.13 mirror_commit 095267ea23c9 mirror_tree 75dcd5039028 newest v0.2.14 verdict=FAIL reason=newer_mirror_tag
+post-older: rc=1
+parity: [crosswake] 0.2.4 is a recorded permanent PARTIAL with no iOS coordinate; no recovery is authorized. All other published iOS tags remain enforced.
+parity: [crosswake] OK: release.ios_mirror_parity - szTheory/crosswake-shell-core-ios carries a refs/tags/v* for every released ios-core-v* tag (0.1.2 0.2.0 0.2.1 0.2.10 0.2.11 0.2.12 0.2.13 0.2.14 0.2.2 0.2.3 0.2.4 0.2.5 0.2.6 0.2.8 0.2.9 ).
+parity: rc=0

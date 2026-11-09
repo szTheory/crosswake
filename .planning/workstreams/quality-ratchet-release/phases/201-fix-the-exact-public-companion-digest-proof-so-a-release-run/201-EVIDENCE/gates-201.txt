@@ -1,0 +1,16 @@
+precheck: core-maven-drill at=2026-11-09T21:55:26Z result=PASS prior_max_run=42632645093 head=407398160bb5761d90ade7182676dd76691617be
+gate: core-maven-drill attempt=1 displayed=2026-11-09T21:56:16Z scope="dispatch maven-publish-fire-drill.yml once for the 0.2.14 candidate; disposable coordinate validated then dropped" head=407398160bb5761d90ade7182676dd76691617be
+precheck: core-maven-drill at=2026-11-09T22:00:02Z result=PASS prior_max_run=42632645093 head=407398160bb5761d90ade7182676dd76691617be
+decision: core-maven-drill attempt=1 allow at=2026-11-09T22:00:03Z head=407398160bb5761d90ade7182676dd76691617be
+applied: core-maven-drill attempt=1 at=2026-11-09T22:03:27Z result=validated_then_dropped head=407398160bb5761d90ade7182676dd76691617be
+precheck: standing-rules at=2026-11-09T22:31:51Z result=PASS approvals_merge=44e2f69b09afded59088e7b7a891b248a9a068a6 agents_blob=6402f0c5f7ef32891137d01759f4af58c3edc55f bearings_blob=9f9827e5e27b890d46b5b5a9f951a7b4fd912807
+precheck: core-merge at=2026-11-09T22:33:42Z result=PASS base=fdc218f94851676b925c4e3042e3567baf5b8391 tree=16aca5ebc43d52ed69e32feb55f683218540ad29 ci_run=42703531929 receipt_expires=2026-11-23T22:05:52Z hex_0.2.14=404 maven_pom_0.2.14=404 mirror_tag=absent source_tags=absent delete_branch_on_merge=false env_preflight=0 guard_run=42702883131 guard_line=verdict=PASS default_ios_build=PASS remote_form=PASS trailer_check=PASS hex_latest=2.7.0 head=407398160bb5761d90ade7182676dd76691617be
+standing: core-merge at=2026-11-09T22:34:01Z basis=standing-release-approvals-2026-11-09 scope="merge release PR 283 (crosswake 0.2.14) pinned to its head" result=merged merge_commit=dc6a8ed30dd896f0cb3214276ecb922ac73b85a8 head=407398160bb5761d90ade7182676dd76691617be
+precheck: core-tags at=2026-11-09T22:36:14Z result=PASS env=26568191383 guard=success pending=1 hex=404 run=42713010358
+standing: core-tags at=2026-11-09T22:36:23Z basis=standing-release-approvals-2026-11-09 scope="approve the release-tags step: Release Please creates hex-v0.2.14, ios-core-v0.2.14 and android-core-v0.2.14 with their GitHub Releases at merge commit dc6a8ed30dd896f0cb3214276ecb922ac73b85a8" result=tags_created run=42713010358
+precheck: core-hex at=2026-11-09T22:43:18Z result=PASS env=26568191797 pending=1 hex=404 hex_latest=2.7.0 run=42713010358
+standing: core-hex at=2026-11-09T22:43:26Z basis=standing-release-approvals-2026-11-09 scope="approve the publish-hex step: publish crosswake 0.2.14 and its docs to hex.pm" result=published run=42713010358
+precheck: core-maven at=2026-11-09T22:55:48Z result=PASS env=26568192162 hex=200 pom=404 pending=1 run=42713010358
+standing: core-maven at=2026-11-09T22:55:48Z basis=standing-release-approvals-2026-11-09 scope="approve the publish-maven step: sign and publish io.github.sztheory:crosswake-shell-core-android 0.2.14 to Maven Central" result=published run=42713010358
+precheck: core-ios at=2026-11-09T23:09:22Z result=PASS env=26568192607 hex=200 pom=200 mirror_tag=absent run=42713010358
+standing: core-ios at=2026-11-09T23:09:22Z basis=standing-release-approvals-2026-11-09 scope="approve the publish-ios-mirror step: fast-forward the iOS SwiftPM mirror main to the split of the merge commit and push tag v0.2.14" result=published run=42713010358

@@ -1,0 +1,30 @@
+{
+  "run_id": 42639651064,
+  "run_url": "https://github.com/szTheory/crosswake/actions/runs/42639651064",
+  "guard": "success",
+  "gate_id": "core-tags",
+  "gate_attempt": 1,
+  "environment_id": 26568191383,
+  "environment_name": "release-tags",
+  "approval_comment": "200 core-tags attempt 1",
+  "approved_at_utc": "2026-11-09T15:00:11Z",
+  "tags": {
+    "hex-v0.2.13": "0aa184704009c5baf9c3550cf7cf7fde9228f2b8",
+    "ios-core-v0.2.13": "0aa184704009c5baf9c3550cf7cf7fde9228f2b8",
+    "android-core-v0.2.13": "0aa184704009c5baf9c3550cf7cf7fde9228f2b8"
+  },
+  "merge_oid": "0aa184704009c5baf9c3550cf7cf7fde9228f2b8",
+  "releases_present": 3,
+  "releases_exist": true,
+  "mirror_tag_exists": false,
+  "publish_hex_state": "waiting",
+  "pending_after": [
+    {
+      "environment": "publish-hex"
+    }
+  ],
+  "publishers_started": 0,
+  "hex_status": 404,
+  "recorded_at": "2026-11-09T15:05:56Z",
+  "shape_note": "tags as name to peeled oid, releases_present, guard, environment_id, approval_comment added in the 200-06 continuation to match the plan-declared schema; tags are lightweight and point at the merge commit (read via git ls-remote)"
+}

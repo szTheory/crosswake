@@ -1,0 +1,75 @@
+# 199-07 Task 3 proposal-run record (first push to main after PR 278 merged as a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9)
+run: 42387805006 (Release Please, push, merge commit a9c4ff74; completed success)
+guard: approved-release-guard success; release-tag-gate skipped, which only happens when the guard output linked_release is not true (the guard does not echo the value)
+job: approved-release-guard success
+job: release-tag-gate skipped
+job: release-please success
+job: publish-hex skipped
+job: publish-hex-rulestead skipped
+job: publish-hex-rindle skipped
+job: publish-hex-sigra skipped
+job: publish-hex-chimeway skipped
+job: publish-hex-threadline skipped
+job: publish-ios-core skipped
+job: release-mirror-tag-check skipped
+job: publish-android-core skipped
+job: clean-room-proof-ios skipped
+job: clean-room-proof-android skipped
+job: exact-public-proof skipped
+job: linked-release-rollup success
+job: native-release-rollup success
+job: lockstep-truth skipped
+job: clean-room-proof-rulestead skipped
+job: clean-room-proof-rindle skipped
+job: clean-room-proof-sigra skipped
+job: clean-room-proof-chimeway skipped
+job: clean-room-proof-threadline skipped
+job: release-as-cleanup skipped
+job: release-failure-alert skipped
+env_preflight_ci: PASS run=42387805006
+env_preflight_ci_lines (from the guard log, job 128448813853):
+  release-env: release-tags reviewer_rule=present branch_policy=protected verdict=PASS
+  release-env: publish-hex reviewer_rule=present branch_policy=protected verdict=PASS
+  release-env: publish-maven reviewer_rule=present branch_policy=protected verdict=PASS
+  release-env: publish-ios-mirror reviewer_rule=present branch_policy=protected verdict=PASS
+  release-env: verdict=PASS
+pending_deployments: 0
+# predicate controls (bash .planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/scripts/release-pr-head-controls-199.sh PREDICATE $PWD; also run under /bin/bash 3.2.57: same nineteen ok, verdict=PASS)
+rph-control: core_precedent_pass rc=0 reason=- result=ok
+rph-control: companion_precedent_pass rc=0 reason=- result=ok
+rph-control: extra_hand_commit rc=1 reason=commit_count result=ok
+rph-control: out_of_set_path rc=1 reason=path_outside_managed_set:lib/hand_edit.ex result=ok
+rph-control: in_set_hand_edit rc=1 reason=non_version_change:mix.exs result=ok
+rph-control: changelog_hand_append rc=1 reason=non_version_change:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: headline_mismatch rc=1 reason=headline_mismatch result=ok
+rph-control: parent_not_base rc=1 reason=parent_not_base result=ok
+rph-control: wrong_package_set rc=1 reason=path_outside_managed_set:packages/crosswake_chimeway/CHANGELOG.md,packages/crosswake_chimeway/mix.exs result=ok
+rph-control: changelog_hand_bullet rc=1 reason=changelog_unrendered_bullet:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: changelog_forged_linked_bullet rc=1 reason=changelog_unrendered_bullet:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: changelog_wrong_section rc=1 reason=changelog_unrendered_bullet:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: changelog_earlier_release_bullet rc=1 reason=changelog_repeated_commit:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: changelog_duplicate_bullet rc=1 reason=changelog_duplicate_bullet:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: changelog_hand_prose rc=1 reason=changelog_grammar:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: changelog_mid_file_section rc=1 reason=changelog_position:packages/crosswake_chimeway/CHANGELOG.md result=ok
+rph-control: mode_only_change rc=1 reason=mode_or_type_change:README.md result=ok
+rph-control: binary_change rc=1 reason=binary_change:mix.exs result=ok
+rph-control: trailing_newline_change rc=1 reason=eol_change:mix.exs result=ok
+rph-controls: verdict=PASS
+# mutant runs (variants written under $TMPDIR; always-pass stub and each rule's tagged lines deleted)
+rph-mutant: always-pass rc=1 verdict=FAIL wrong=extra_hand_commit,out_of_set_path,in_set_hand_edit,changelog_hand_append,headline_mismatch,parent_not_base,wrong_package_set,changelog_hand_bullet,changelog_forged_linked_bullet,changelog_wrong_section,changelog_earlier_release_bullet,changelog_duplicate_bullet,changelog_hand_prose,changelog_mid_file_section,mode_only_change,binary_change,trailing_newline_change
+rph-mutant: no-mode rc=1 verdict=FAIL wrong=mode_only_change
+rph-mutant: no-binary rc=1 verdict=FAIL wrong=binary_change
+rph-mutant: no-eol rc=1 verdict=FAIL wrong=trailing_newline_change
+rph-mutant: no-content rc=1 verdict=FAIL wrong=in_set_hand_edit
+rph-mutant: no-position rc=1 verdict=FAIL wrong=changelog_mid_file_section
+rph-mutant: no-grammar rc=1 verdict=FAIL wrong=changelog_hand_prose
+rph-mutant: no-duplicate rc=1 verdict=FAIL wrong=changelog_duplicate_bullet
+rph-mutant: no-render rc=1 verdict=FAIL wrong=changelog_hand_bullet,changelog_forged_linked_bullet,changelog_wrong_section
+rph-mutant: no-type rc=1 verdict=FAIL wrong=changelog_wrong_section
+rph-mutant: no-repeat rc=1 verdict=FAIL wrong=changelog_earlier_release_bullet
+# live predicate lines, verbatim
+release-pr-head: pr=236 head=efbc79124e99f5e60f8b85cbad1a507d4763e476 base=a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9 commits=1 authors=szTheory paths=10 managed=13 verdict=PASS
+release-pr-head: pr=262 head=76aee3f35fdcd46540d8b743981c85c4d0e352cf base=a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9 commits=1 authors=szTheory paths=3 managed=3 verdict=PASS
+pr236: head=efbc79124e99f5e60f8b85cbad1a507d4763e476 version=0.2.12 rph=PASS authors=szTheory ci=success ran_on=f96a2856af9309409b9fe95f6126702575531962 (base a9c4ff74, run 42388086844, 39 checks, none red; authors logged only, never a condition)
+pr262: head=76aee3f35fdcd46540d8b743981c85c4d0e352cf version=0.1.1 rph=PASS authors=szTheory ci=success ran_on=2cb4c5e8a7cb492ddb80a6253ff563233c99f401 (base a9c4ff74, run 42388084878, 39 checks, none red; authors logged only, never a condition)
+env_preflight: rc=0

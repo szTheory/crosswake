@@ -1,0 +1,38 @@
+{
+  "authorized": false,
+  "candidate": {
+    "base_oid": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+    "head_oid": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+    "merge_oid": null,
+    "package": "crosswake",
+    "pr": 280,
+    "tree_oid": "4605bb05edf60b04f7330058a6c38675c064e746",
+    "version": "0.2.13"
+  },
+  "consumed": false,
+  "evidence": {
+    "envelope_sha256": "9bb83bfad08b2cb0bb45f71605486e8008649b6c4856b623c103cc92043c0aec",
+    "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-result-200.json",
+    "verdict": "PASS"
+  },
+  "hex_rehearsal_run_id": 42558226150,
+  "identity": {
+    "leg_run_id": 42558226150,
+    "operation": "linked_release",
+    "receipt_digest": "8c905dea15a8ea285db0205d218f1d0a5d332474a28404b94b4027a2552f4507"
+  },
+  "operation": "linked_release",
+  "pending_authorization": {
+    "authorized": false,
+    "candidate_head": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+    "candidate_package": "crosswake",
+    "leg_run_id": 42558226150,
+    "operation": "linked_release",
+    "receipt_digest": "8c905dea15a8ea285db0205d218f1d0a5d332474a28404b94b4027a2552f4507",
+    "stage": "pre_merge",
+    "state": "PENDING"
+  },
+  "schema_version": 1,
+  "stage": "pre_merge",
+  "state": "PENDING"
+}

@@ -1,0 +1,93 @@
+{
+  "rehearsals": [
+    {
+      "workflow": "hex-publish.yml",
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 42558226150,
+      "intent_at_utc": "2026-11-09T21:51:56Z",
+      "head_before": "407398160bb5761d90ade7182676dd76691617be",
+      "dispatch_attempted": true,
+      "inputs": {
+        "operation": "candidate-rehearsal",
+        "release_version": "0.2.14",
+        "candidate_head": "407398160bb5761d90ade7182676dd76691617be",
+        "candidate_tree": "16aca5ebc43d52ed69e32feb55f683218540ad29",
+        "candidate_base": "fdc218f94851676b925c4e3042e3567baf5b8391",
+        "candidate_receipt": "d2827cd43f0a6e12f28ef82e741da243777d02c99bb275f5a2c15d78afcabe81"
+      },
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 42706539601,
+      "run_head_sha": "407398160bb5761d90ade7182676dd76691617be",
+      "run_conclusion": "success",
+      "head_after": "407398160bb5761d90ade7182676dd76691617be",
+      "external_effect": "none",
+      "artifact_id": 13713777563,
+      "rehearsal_json_sha256": "37d9874e9caf0fc01da95389f192caed69dd75cd2c876a8a91b2a6dbdba6b280",
+      "external_state_changed": false,
+      "verified": true
+    },
+    {
+      "workflow": "ios-mirror-backfill.yml",
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 42633255271,
+      "intent_at_utc": "2026-11-09T21:51:56Z",
+      "head_before": "407398160bb5761d90ade7182676dd76691617be",
+      "dispatch_attempted": true,
+      "inputs": {
+        "operation": "candidate-rehearsal",
+        "version": "0.2.14",
+        "release_ref": "407398160bb5761d90ade7182676dd76691617be",
+        "candidate_head": "407398160bb5761d90ade7182676dd76691617be",
+        "candidate_tree": "16aca5ebc43d52ed69e32feb55f683218540ad29",
+        "candidate_base": "fdc218f94851676b925c4e3042e3567baf5b8391",
+        "candidate_receipt": "d2827cd43f0a6e12f28ef82e741da243777d02c99bb275f5a2c15d78afcabe81"
+      },
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 42706550754,
+      "run_head_sha": "407398160bb5761d90ade7182676dd76691617be",
+      "run_conclusion": "success",
+      "head_after": "407398160bb5761d90ade7182676dd76691617be",
+      "external_effect": "none",
+      "artifact_id": 13713972222,
+      "rehearsal_json_sha256": "f7f47cf1d183ebb4a886d1abea75afb1204acdc6d1d5cfc063198bc3a7831338",
+      "external_state_changed": false,
+      "verified": true
+    },
+    {
+      "workflow": "maven-publish-fire-drill.yml",
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 42632645093,
+      "intent_at_utc": "2026-11-09T22:00:03Z",
+      "head_before": "407398160bb5761d90ade7182676dd76691617be",
+      "gate_id": "core-maven-drill",
+      "gate_attempt": 1,
+      "gate_head": "407398160bb5761d90ade7182676dd76691617be",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatched_by": "orchestrator (the user allow reached the orchestrator; the plan agent did not dispatch)",
+      "dispatched_at_utc": "2026-11-09T22:00:14Z",
+      "inputs": {
+        "fire_drill_version": "0.2.14",
+        "candidate_head": "407398160bb5761d90ade7182676dd76691617be",
+        "candidate_tree": "16aca5ebc43d52ed69e32feb55f683218540ad29",
+        "candidate_base": "fdc218f94851676b925c4e3042e3567baf5b8391"
+      },
+      "run_id": 42707774197,
+      "run_head_sha": "407398160bb5761d90ade7182676dd76691617be",
+      "run_conclusion": "success",
+      "head_after": "407398160bb5761d90ade7182676dd76691617be",
+      "external_effect": "validated_then_dropped",
+      "central_deployment_id": "not_exposed_by_run",
+      "central_state_reached": "VALIDATED",
+      "central_final_state": "DROPPED",
+      "disposable_coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.14-firedrill-42707774197",
+      "pom_status_after": 404,
+      "artifact_id": 13714871026,
+      "rehearsal_json_sha256": "577e566701c9d68801abaab397a8c4e75e5d60f19c8865338c61825f30ae8443",
+      "verified": true
+    }
+  ],
+  "superseded": []
+}

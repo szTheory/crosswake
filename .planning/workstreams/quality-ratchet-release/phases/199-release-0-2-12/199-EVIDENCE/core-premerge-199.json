@@ -1,0 +1,41 @@
+{
+  "authorization": "publish successor core 42390193460",
+  "candidate_head": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+  "captured_at": "2026-11-08T05:42:39Z",
+  "ids": {
+    "ci_run_id": 42388086844,
+    "leg_run_id": 42390193460,
+    "receipt_artifact_id": 13605577821,
+    "receipt_digest": "a77cb446a51de5404e21abd6e0acdeed0d25b5e2a57f769f9fb79e335634d69b",
+    "receipt_run_id": 42451279582
+  },
+  "merge_command": "gh pr merge 236 --repo szTheory/crosswake --merge --match-head-commit efbc79124e99f5e60f8b85cbad1a507d4763e476 --subject 'Merge pull request #236 from szTheory/release-please--branches--main' --body 'REL17-AUTHORIZATION: {\"authorization\":\"publish successor core 42390193460\",\"authorization_run_id\":null,\"base_oid\":\"a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9\",\"ci_run_id\":42388086844,\"consumed\":false,\"head_oid\":\"efbc79124e99f5e60f8b85cbad1a507d4763e476\",\"leg_run_id\":42390193460,\"operation\":\"linked_release\",\"package\":\"crosswake\",\"policy_sha256\":\"0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4\",\"pr\":236,\"receipt_artifact_id\":13605577821,\"receipt_digest\":\"a77cb446a51de5404e21abd6e0acdeed0d25b5e2a57f769f9fb79e335634d69b\",\"receipt_run_id\":42451279582,\"repository\":\"szTheory/crosswake\",\"runbook_commit\":\"d3401e516c5e158accf2b8c5629ce6bcf9bd80f8\",\"schema_version\":1,\"state\":\"AUTHORIZED\",\"tree_oid\":\"5cce613d376760ae16c5c6c7809845d88e3de660\",\"version\":\"0.2.12\"}'",
+  "merge_command_argv": {
+    "body": "REL17-AUTHORIZATION: {\"authorization\":\"publish successor core 42390193460\",\"authorization_run_id\":null,\"base_oid\":\"a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9\",\"ci_run_id\":42388086844,\"consumed\":false,\"head_oid\":\"efbc79124e99f5e60f8b85cbad1a507d4763e476\",\"leg_run_id\":42390193460,\"operation\":\"linked_release\",\"package\":\"crosswake\",\"policy_sha256\":\"0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4\",\"pr\":236,\"receipt_artifact_id\":13605577821,\"receipt_digest\":\"a77cb446a51de5404e21abd6e0acdeed0d25b5e2a57f769f9fb79e335634d69b\",\"receipt_run_id\":42451279582,\"repository\":\"szTheory/crosswake\",\"runbook_commit\":\"d3401e516c5e158accf2b8c5629ce6bcf9bd80f8\",\"schema_version\":1,\"state\":\"AUTHORIZED\",\"tree_oid\":\"5cce613d376760ae16c5c6c7809845d88e3de660\",\"version\":\"0.2.12\"}",
+    "match_head_commit": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+    "method": "merge",
+    "subject": "Merge pull request #236 from szTheory/release-please--branches--main"
+  },
+  "merge_executed": false,
+  "premerge": {
+    "command": "mix crosswake.release.gate --capture-live (options in core-premerge-authorization-199.json and this file)",
+    "envelope_sha256": "929be6364b9bce38b166b9471d3e09d3d50f69797481d3f022a438be80963996",
+    "expected_policy_note": "Reused from the 0.2.11 pre-merge options (0f851ff0...); the live branch-protection and ruleset digest matched it, so the required-check policy is unchanged since 0.2.11.",
+    "expected_policy_sha256": "0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4",
+    "gate_record_file": "core-premerge-gate-199.json",
+    "gate_record_state": "PENDING",
+    "gate_stdout": "REL-17 PASS stage=pre_merge operation=linked_release next=request_exact_gate",
+    "operation": "linked_release",
+    "package": "crosswake",
+    "pr": 236,
+    "result_file": "core-premerge-result-199.json",
+    "runbook_commit": "d3401e516c5e158accf2b8c5629ce6bcf9bd80f8",
+    "sources_dir": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources",
+    "stage": "pre_merge",
+    "state": "PASS",
+    "version": "0.2.12"
+  },
+  "trailer": "REL17-AUTHORIZATION: {\"authorization\":\"publish successor core 42390193460\",\"authorization_run_id\":null,\"base_oid\":\"a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9\",\"ci_run_id\":42388086844,\"consumed\":false,\"head_oid\":\"efbc79124e99f5e60f8b85cbad1a507d4763e476\",\"leg_run_id\":42390193460,\"operation\":\"linked_release\",\"package\":\"crosswake\",\"policy_sha256\":\"0f851ff07172993c88ff6f293273d138e911e01f0d51765904acd8865f998fa4\",\"pr\":236,\"receipt_artifact_id\":13605577821,\"receipt_digest\":\"a77cb446a51de5404e21abd6e0acdeed0d25b5e2a57f769f9fb79e335634d69b\",\"receipt_run_id\":42451279582,\"repository\":\"szTheory/crosswake\",\"runbook_commit\":\"d3401e516c5e158accf2b8c5629ce6bcf9bd80f8\",\"schema_version\":1,\"state\":\"AUTHORIZED\",\"tree_oid\":\"5cce613d376760ae16c5c6c7809845d88e3de660\",\"version\":\"0.2.12\"}",
+  "trailer_check": "PASS",
+  "trailer_check_basis": "linked_release_authorization.sh check passed against a scratch copy of the gate record marked AUTHORIZED (binding check only; the committed gate record stays PENDING and no allow exists for core-merge); a tampered trailer and the PENDING record were both rejected (rc 1); the release-please.yml guard jq predicate also passed on the trailer line with the live receipt facts"
+}
