@@ -4,7 +4,7 @@
 1. Land before leap: main green; nothing valuable only in /tmp, a stash or an unpushed branch. | script/bearings-report
 2. Fail-closed explicit denials; offline claims honest (cached read-only is not mutation; one island is not sync). | docs-contract + vector tests
 3. Privacy: opaque scope refs, scope-partitioned outboxes, no raw payloads, tokens or device ids in telemetry, doctor, logs or proof. | privacy scan before every push
-4. Irreversible steps follow the AGENTS.md approval gate (one-use allow, never standing). | AGENTS.md
+4. Irreversible steps follow the AGENTS.md approval rules: the Maven fire-drill dispatch and remote-branch deletion each need a one-use allow; merges (the release PR included), the release-tags step and the Hex, Maven and iOS mirror publishes run under the standing exceptions recorded there (user decisions 2026-11-05 and 2026-11-09); no approval transfers to a retry. | AGENTS.md
 5. Android posture: see ADR amendment A1. | .planning/ADR-FIRST-B2C-ADOPTER.md#a1
 6. Every milestone serves an AGENTS.md priority or names the repair it blocks. After 2 inward milestones the next is outward unless the scope doc records a user override.
 7. Never name, infer, search for or link the real first adopter. Synthetic profiles stay generic.
