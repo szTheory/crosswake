@@ -18,6 +18,7 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
   @input_keys ~w(output_root artifacts)a
   @metadata_keys ~w(app build_env build_tools description elixir files licenses links name requirements version)
   @required_metadata_keys ~w(build_tools files name requirements version)
+  @build_env_excluded_packages ~w(crosswake_rulestead crosswake_rindle crosswake_sigra crosswake_chimeway crosswake_threadline)
   @sha_pattern ~r/\A[0-9a-f]{64}\z/
   @ref_pattern ~r/\A[0-9a-f]{40}\z/
   @package_pattern ~r/\A[a-z][a-z0-9_]*\z/
@@ -173,18 +174,25 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
 
     unless metadata["name"] == package and metadata["version"] == version, do: invalid!()
     unless metadata["build_tools"] == ["mix"], do: invalid!()
+    build_env!(metadata["build_env"])
 
     declared_paths = normalize_declared_paths!(metadata["files"])
     requirements = normalize_requirements!(metadata["requirements"])
 
     normalized_metadata =
       metadata
+      |> drop_build_env(package)
       |> Map.put("files", declared_paths)
       |> Map.put("requirements", requirements)
       |> normalize_term()
 
     {normalized_metadata, digest_term(normalized_metadata), declared_paths, requirements}
   end
+
+  defp drop_build_env(metadata, package) when package in @build_env_excluded_packages,
+    do: Map.delete(metadata, "build_env")
+
+  defp drop_build_env(metadata, _package), do: metadata
 
   defp normalize_declared_paths!(paths) when is_list(paths) and paths != [] do
     normalized = Enum.map(paths, &safe_relative_path!/1) |> Enum.sort()
@@ -309,6 +317,22 @@ defmodule Crosswake.ReleaseCandidate.Artifact do
   end
 
   defp requirement!(_value), do: invalid!()
+
+  # `build_env` is toolchain provenance (the Hex version that built the tarball, Hex 2.6.0+), not
+  # package identity. Its shape is validated for every package so an unexpected value fails closed.
+  # It is excluded from the metadata digest only for the five companions, per the user's decision
+  # of 2026-11-09 (Phase 201 PD-01). The core `crosswake` keeps it, so the core proves the same Hex
+  # built its candidate and its public tarball. A package missing from the list keeps it as well.
+  defp build_env!(nil), do: :ok
+
+  defp build_env!([{"hex", version}]) when is_binary(version) do
+    case Version.parse(version) do
+      {:ok, _version} -> :ok
+      :error -> invalid!()
+    end
+  end
+
+  defp build_env!(_value), do: invalid!()
 
   defp boolean!(value) when is_boolean(value), do: value
   defp boolean!(_value), do: invalid!()

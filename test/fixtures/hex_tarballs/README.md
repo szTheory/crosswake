@@ -48,3 +48,19 @@ the version recorded in this section; the test reads the version from the fixtur
   the defect was not caught before release.
 
 All three are this repository's own public Apache-2.0 packages. No adopter data is involved.
+
+## Decision
+
+Companions only (user decision, 2026-11-09, Phase 201 PD-01). `Artifact` validates `build_env`
+fail-closed for every package, then excludes it from the metadata digest only for the five named
+companions (`@build_env_excluded_packages` in `lib/crosswake/release_candidate/artifact.ex`). The
+core `crosswake` keeps it in its digest.
+
+Consequence for the core: its metadata digest is Hex-version-sensitive. If a new Hex release lands
+between the core's candidate build and its public publish, the exact-public proof fails closed with
+`digest_mismatch`. The release plan therefore re-reads the newest Hex before the core merge and
+before the core Hex publish.
+
+The alternative the user did not choose: exclude `build_env` for all six packages, core included.
+That would make the core's proof independent of the Hex version as well, at the cost of no longer
+proving the same Hex built the core's candidate and its public tarball.
