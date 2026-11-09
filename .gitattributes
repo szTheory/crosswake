@@ -5,3 +5,4 @@ packages/crosswake-shell-core-android/src/test/resources/bridge_contract_vectors
 priv/contract_vectors/*.json text eol=lf
 packages/crosswake-shell-core-android/src/test/java/dev/crosswake/shell/core/VectorSetHash.kt text eol=lf
 packages/crosswake-shell-core-ios/Tests/CrosswakeShellCoreTests/VectorSetHash.swift text eol=lf
+test/fixtures/hex_tarballs/*.tar binary
