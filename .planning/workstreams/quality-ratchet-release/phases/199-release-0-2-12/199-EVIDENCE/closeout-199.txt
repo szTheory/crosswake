@@ -10,3 +10,5 @@ rel07_check: sc3 result=PASS facts=--version 0.2.14 exit 0 and --version 0.2.13 
 rel07: complete missing=none
 local: bearings-report run 2026-11-10 in the main checkout (exit 1, other lines ATTENTION until 199-19): cap: .planning/workstreams/quality-ratchet-release/STATE.md 35/40 ok
 local: agents_lines=99 (worktree crosswake-199-wt, branch docs/199-record-0-2-14-published, commit 26636628; cap 102; contract tests 98 ran 0 failures)
+decision: docs-branch-retire land_and_retire at=2026-11-10T05:24:24Z source=199-DECISIONS D-29
+apply: docs-branch-retire land_and_retire s2_landed=43 byte_identical=43 retire_blocked=false awk_rule=added scan_tests=mix-test-gate: rc=0 total=44 ran=44 failures=0 verdict=PASS adoption_context.scan=passed head=64860b1f

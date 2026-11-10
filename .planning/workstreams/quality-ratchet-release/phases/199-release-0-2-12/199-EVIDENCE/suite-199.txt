@@ -139,3 +139,8 @@ docs_sync_rc: 0
 ## HEAD note: after the gates above (all measured at c897b689), commit 19ff7859 changed only the fixture git identity values in test/crosswake/release_candidate/mirror_release_tag_test.exs (privacy email class). Only that file is affected, so only it was rerun:
 mix-test-gate: rc=0 total=11 excluded=0 skipped=0 ran=11 failures=0 invalid=0 min=11 min_total=0 verdict=PASS
 format_rc: 0 (mix format --check-formatted on that file)
+closeout_suite: head=55eab5e23dae6d657219931e5ecbf9bc21abba62
+closeout_floor: ran=3180 total=3256 removed=21 base=cbb900319b8f
+closeout_floor_lower_bound: ran=3155 total=3231
+mix-test-gate: rc=0 total=3256 excluded=76 skipped=0 ran=3180 failures=0 invalid=0 min=3180 min_total=3256 verdict=PASS
+docs_sync_closeout: crosswake.docs.sync --check passed (closeout head 55eab5e2)

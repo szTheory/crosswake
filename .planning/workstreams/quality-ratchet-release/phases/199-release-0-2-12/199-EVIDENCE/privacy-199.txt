@@ -46,3 +46,7 @@ privacy: rc 0
 # 199-13 CI fix PR scan (changed file, PR body, commit messages; WT head be6f1031)
 privacy: clean files 3
 privacy: run=4 input=ci-fix-pr rc=0
+# 199-19 closeout landing scan (closeout branch docs/199-record-0-2-14-published, head 55eab5e2)
+# Per-file scan of the 41 landing-scope paths: 40 clean, 1 email hit (generic SSH clone-URL form, not-identifying); detail in landing-privacy-199.txt.
+privacy-199-19: landing files=41 clean=40 hits=1 classes=email dispositions=1 rc_nonzero_without_disposition=0
+privacy-199-19: commit messages origin/main..55eab5e2 commits=6 privacy: clean files 1 rc=0
