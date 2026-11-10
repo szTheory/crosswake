@@ -43,3 +43,6 @@ privacy: rc 0
 # PR body scan (1 input, plain whole-file scan, before PR creation; HEAD 04e8160a)
 privacy: clean files 1
 privacy: rc 0
+# 199-13 CI fix PR scan (changed file, PR body, commit messages; WT head be6f1031)
+privacy: clean files 3
+privacy: run=4 input=ci-fix-pr rc=0

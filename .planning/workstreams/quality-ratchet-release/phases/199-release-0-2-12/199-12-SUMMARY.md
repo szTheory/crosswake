@@ -69,7 +69,8 @@ coverage:
 
 duration: "about 55 min of work; 49 min between the gate display and the reply"
 completed: 2026-11-08
-status: halted
+status: complete
+halt_resolved: "2026-11-09: the designed stop (release run 42494651844 ended PARTIAL at the iOS clean-room proof) was recovered forward by Phase 200 (0.2.13) and Phase 201 (0.2.14, release run 42713010358, COMPLETE); plans 199-13 to 199-20 were revised for those facts"
 ---
 
 # Phase 199 Plan 12: iOS mirror gate, SC3 on live data, and the run's final state (HALTED)
@@ -142,3 +143,11 @@ None.
 - Commits `c518c9d4` and `897eff9f` are ancestors of HEAD; measured count 2.
 - Task 1 and Task 2 verifies pass. Task 3 first verify fails because the run is PARTIAL (a true observation, not a recording error); the second verify passes.
 - `.planning/config.json` and `.review-diagnostics/` are in no plan commit.
+
+## Halt resolution (2026-11-09)
+
+This plan stopped by design: 0.2.12 published and SC3 was proven live, but the release run ended PARTIAL.
+The stop is resolved. Phase 200 shipped the forward fix as 0.2.13 and Phase 201 shipped 0.2.14, whose release run
+ended COMPLETE with both clean-room proofs and the exact-public proof passing. Plans 199-13 to 199-20 were revised
+for those facts (D-27 to D-30 in 199-DECISIONS.md). The frontmatter `status` changed from `halted` to `complete` so the
+dependency graph unblocks them; everything above this section is the original record and is unchanged.

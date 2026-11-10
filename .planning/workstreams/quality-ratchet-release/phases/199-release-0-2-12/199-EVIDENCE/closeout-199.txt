@@ -1,0 +1,12 @@
+# Plan 199-18 closeout record, written 2026-11-10 (UTC read times below). The rel07_check lines are a record for the reader; the plan's verify re-derives each condition itself.
+pre_edit_commit: 7af26fb190560a77f78dc3827c0ab3a2398f3f37
+rel07_check: core_run result=PASS facts=run-final-201.json linked_rollup_state=COMPLETE exact_public=success fully_proven_packages=6 run=42713010358
+rel07_check: core_steps result=PASS facts=gates-201.txt has precheck standing-rules PASS then exactly one standing line each for core-merge core-tags core-hex core-maven core-ios; one decision core-maven-drill attempt=1 allow with one applied line (validated_then_dropped)
+rel07_check: companion_deferred result=PASS facts=199-DECISIONS.md has the D-31 line (and D-32); gates-199.txt has 0 standing: companion- lines
+rel07_check: visible result=PASS facts=hex.pm crosswake release 0.2.14 reads version 0.2.14; Maven 0.2.14 POM HTTP 200 (read 2026-11-10)
+rel07_check: mirror_tag result=PASS facts=script/check_ios_mirror_release_tag.sh --version 0.2.14 exit 0 now (mirror v0.2.14 mirror_commit 095267ea23c9 newest v0.2.14); the newer-tag exception was not needed
+rel07_check: rel06 result=PASS facts=cleanroom-0.2.14-199.txt: result PASS legs hex,maven,ios,docs version 0.2.14; docs leg executed=20 deferred=none; cleanroom: rc 0
+rel07_check: sc3 result=PASS facts=--version 0.2.14 exit 0 and --version 0.2.13 exit 1 reason=newer_mirror_tag (negative control; newest v0.2.14)
+rel07: complete missing=none
+local: bearings-report run 2026-11-10 in the main checkout (exit 1, other lines ATTENTION until 199-19): cap: .planning/workstreams/quality-ratchet-release/STATE.md 35/40 ok
+local: agents_lines=99 (worktree crosswake-199-wt, branch docs/199-record-0-2-14-published, commit 26636628; cap 102; contract tests 98 ran 0 failures)
