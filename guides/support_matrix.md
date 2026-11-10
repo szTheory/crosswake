@@ -44,7 +44,7 @@ Per-vector Android parity: [parity ledger](parity_ledger.md).
 
 `manifest_schema_version` then moved `1.1.0` -> `1.2.0` (Phase 181): additive and iOS-only. Routes may carry `host_commands`, and `compatibility` may carry `host_command_seam_version`. The Android shell does not read either field. This is `compatibility-bump only` for hosts that declare no host commands.
 
-Manifest schema `1.2.0` is not in a published release yet; published 0.2.11 emits `1.1.0`; see CHANGELOG `[Unreleased]`.
+Manifest schema `1.2.0` is emitted from 0.2.12 on; 0.2.11 and earlier emit `1.1.0`.
 
 Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` now also declares an explicit `Capability.interaction` value alongside `Capability.rebuild`, enforced at compile time by `@enforce_keys`. Use these labels literally.
 
@@ -82,7 +82,7 @@ Every capability declared in `Crosswake.Manifest.Builder.capability_catalog/0` n
 
 ## iOS Host Generation and Xcode Settings
 
-The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. The `:ios_host` declaration is not in a published release yet (0.2.11 and earlier do not read it); see CHANGELOG `[Unreleased]`. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.
+The host's ordinary `:crosswake, :ios_host` Mix declaration supplies the compiled Phoenix router, declared entry route, HTTPS primary origin, app/proof identities, and device-signing settings. The `:ios_host` declaration is read from 0.2.12 on; 0.2.11 and earlier do not read it. An explicit `origin_mode: :local_loopback` allows only `http://127.0.0.1` or `http://localhost` (optional port) for Simulator demonstration and is reported as not production-ready. Compile-only generation compiles the router without starting the host application or loading its runtime-server configuration.
 
 `mix crosswake.gen.shell ios --diff` and `--check` inspect managed output without writing. Recognized manifest, static activation, and xcconfig projections have explicit ownership; interrupted publication blocks the Xcode build guard until `--recover`. Existing project settings use a separate opt-in migration limited to the recognized shell target blocks.
 

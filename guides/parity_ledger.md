@@ -9,13 +9,13 @@ The vector-set hash is the SHA-256 of the raw bytes of the shared bridge corpus.
 
 The evidence is continuous integration on the repository head, not on a published artifact. `JVM test executed` means a Kotlin unit test ran on the JVM in CI; it says nothing about Android hardware.
 
-The vector-set hash and this ledger are not in a published release yet; see CHANGELOG `[Unreleased]`.
+The vector-set hash and this ledger ship from 0.2.12 on; 0.2.11 and earlier have neither.
 
 ## Corpora
 
 The bridge corpus is shared: three byte-identical copies, one hash, and a generated constant on each native side that must equal it. Every other corpus is read from one location, so its hash is informational and no native constant pins it.
 
-The vector-set hash and this ledger are not in a published release yet; see CHANGELOG `[Unreleased]`.
+The vector-set hash and this ledger ship from 0.2.12 on; 0.2.11 and earlier have neither.
 
 | Corpus | Files | Bytes sha256 | Shared | Android evidence | Elixir consumer | Swift consumer | Android consumer | Pinned executions |
 |--------|-------|--------------|--------|------------------|-----------------|----------------|------------------|-------------------|

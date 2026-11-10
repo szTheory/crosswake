@@ -65,7 +65,7 @@ defmodule Crosswake.Planning.FirstAdopterContext do
   ]
 
   @scannable_extensions ~w(
-    .bak .bat .body .c .cjs .css .eex .entitlements .ex .exs .gradle .heex .html .java .js .json .jsonl .kt .kts
+    .awk .bak .bat .body .c .cjs .css .eex .entitlements .ex .exs .gradle .heex .html .java .js .json .jsonl .kt .kts
     .lock .log .md .mjs .orig .out .patch .pbxproj .plist .properties .py .sh .sha256 .source .stderr .stdout .svg
     .swift .tape .toml .ts .tsv .tsx .txt .xcconfig .xcprivacy .xcscheme .xctestplan .xml .yaml .yml
   )

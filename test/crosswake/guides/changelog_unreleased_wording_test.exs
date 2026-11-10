@@ -109,14 +109,12 @@ defmodule Crosswake.Guides.ChangelogUnreleasedWordingTest do
     assert release_version_literals(copy) == ["1.2.0"]
   end
 
-  test "[Unreleased] states that the :ios_host declaration is not in any published release" do
-    lines = String.split(unreleased(), "\n")
-
-    assert Enum.any?(lines, fn line ->
-             String.contains?(line, ":ios_host") and
-               (String.contains?(line, "not released") or
-                  String.contains?(line, "published release"))
-           end)
+  # 0.2.12 is the first published release that reads :ios_host (199 reader audit), so
+  # [Unreleased] no longer lists it, or the other shipped support claims, as unpublished.
+  test "[Unreleased] no longer lists the shipped :ios_host declaration as unpublished" do
+    refute unreleased() =~ ":ios_host"
+    refute unreleased() =~ "not released"
+    assert unreleased() =~ "There are no unpublished support claims at this time."
   end
 
   test "the required headings and the 0.1.0 section remain" do

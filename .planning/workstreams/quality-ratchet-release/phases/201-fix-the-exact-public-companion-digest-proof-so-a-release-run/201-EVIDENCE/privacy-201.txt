@@ -279,3 +279,4 @@ fixture-scan: total files=273 with_hits=0
 # commit-message scan before the first push (the four fix commits and the merge of origin/main)
 messages: head=57024c8726cdc665de950c0490a550dd3a14b6c5 commits=5 hits=0 classes=none rc=0
 privacy: run=2 input=issue-281-comment rc=0
+privacy: run=3 input=landing-pr rc=0

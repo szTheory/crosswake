@@ -1,0 +1,36 @@
+{
+  "initial": {
+    "head_oid": "e997a9d8af47f16a543aefd24d79c906d71bf5a2",
+    "base_oid": "af1dd94efffcbff66cd553fc5a396bcfd8330dcf",
+    "merge_state": "BLOCKED",
+    "ci_run_id": 42726500660,
+    "ci_conclusion": "cancelled",
+    "non_success_jobs": [
+      {
+        "name": "phase130-core-hermetic-proof",
+        "conclusion": "cancelled",
+        "minutes": 20.2,
+        "annotation": "The job has exceeded the maximum execution time of 20m0s"
+      },
+      {
+        "name": "Crosswake CI",
+        "conclusion": "failure",
+        "minutes": 0.07,
+        "annotation": "Process completed with exit code 1."
+      }
+    ]
+  },
+  "classification": "timeout_only",
+  "classification_basis": "The only non-aggregate non-success job is phase130-core-hermetic-proof, cancelled with annotation 'The job has exceeded the maximum execution time of 20m0s' (started 00:12:39Z, ended 00:32:50Z); the aggregate Crosswake CI job failed with 'proof leaf did not reach a closed accepted result: phase130-core-hermetic-proof' and every other of 38 jobs succeeded; base equals origin/main af1dd94e",
+  "refresh": {
+    "expected_by_plan": true,
+    "observed": false,
+    "release_please_run": 42748528740,
+    "release_please_head_sha": "00f3999585c69e57e7b88f971323f629a8805c4d",
+    "release_please_log": "PR https://github.com/szTheory/crosswake/pull/262 remained the same (and PR 288 remained the same); main reported No user facing commits (ci: and merge commits are not releasable)",
+    "pr262_head_after_fix_merge": "e997a9d8af47f16a543aefd24d79c906d71bf5a2",
+    "pr262_base_after_fix_merge": "af1dd94efffcbff66cd553fc5a396bcfd8330dcf",
+    "read_at": "2026-11-10T03:27:04Z",
+    "origin_main": "00f3999585c69e57e7b88f971323f629a8805c4d"
+  }
+}

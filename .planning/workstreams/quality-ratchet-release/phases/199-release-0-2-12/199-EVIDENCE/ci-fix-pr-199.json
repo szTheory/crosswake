@@ -1,0 +1,96 @@
+{
+  "applied": true,
+  "reason": "timeout_only",
+  "job": "phase130-core-hermetic-proof",
+  "durations_min": [
+    {
+      "run_id": 42726504485,
+      "minutes": 20.23,
+      "conclusion": "cancelled"
+    },
+    {
+      "run_id": 42726500660,
+      "minutes": 20.18,
+      "conclusion": "cancelled"
+    },
+    {
+      "run_id": 42722897153,
+      "minutes": 19.87,
+      "conclusion": "success"
+    },
+    {
+      "run_id": 42722231384,
+      "minutes": 5.18,
+      "conclusion": "cancelled"
+    },
+    {
+      "run_id": 42714204394,
+      "minutes": 19.45,
+      "conclusion": "success"
+    },
+    {
+      "run_id": 42703531929,
+      "minutes": 16.4,
+      "conclusion": "success"
+    },
+    {
+      "run_id": 42700233686,
+      "minutes": 14.02,
+      "conclusion": "success"
+    },
+    {
+      "run_id": 42691407076,
+      "minutes": 19.7,
+      "conclusion": "success"
+    },
+    {
+      "run_id": 42688429752,
+      "minutes": 13.17,
+      "conclusion": "success"
+    },
+    {
+      "run_id": 42643335000,
+      "minutes": 20.28,
+      "conclusion": "cancelled"
+    },
+    {
+      "run_id": 42641481915,
+      "minutes": 10.82,
+      "conclusion": "cancelled"
+    },
+    {
+      "run_id": 42641111026,
+      "minutes": 14.12,
+      "conclusion": "success"
+    }
+  ],
+  "durations_window": "32 completed Crosswake CI runs on 2026-11-06..2026-11-10 where the job ran; first 12 listed newest first; longest successful 19.87 min (run 42722897153); cancellations at 20.18 and 20.23 and 20.28 are the 20 minute cap",
+  "longest_success_min": 19.87,
+  "timeout_before": 20,
+  "timeout_after": 30,
+  "bound_basis": "max(timeout_before + 5 = 25, ceil_to_5(1.5 * 19.87 = 29.8) = 30) = 30",
+  "branch": "ci/199-ci-timeout-headroom",
+  "pr": 290,
+  "head_oid": "be6f10311ce773d340f301c5d0930414caf58d33",
+  "ci_run_id": 42745950708,
+  "ci_conclusion": "success",
+  "ci_ran_on": "38be7d1ba3c784ff20063a18a8e11e5f5f3415ec",
+  "cost": {
+    "billable_min": 176,
+    "flags": [
+      "wall clock 20.5 min, critical path phase130-core-hermetic-proof 20.2 min (baseline 20-44)",
+      "2 jobs with a full-suite step (baseline about 10)",
+      "no new duplicated full-suite runs flagged"
+    ]
+  },
+  "delete_branch_on_merge_read": false,
+  "merge_oid": "00f3999585c69e57e7b88f971323f629a8805c4d",
+  "merge_diff_files": [
+    ".github/workflows/crosswake-ci.yml"
+  ],
+  "merge_diff_changes": "one timeout-minutes line 20 to 30 plus one comment line",
+  "pr288_head_before": "a7b0f842fc6c7ba5eca9a7141bf6278f4442de5d",
+  "pr288_head_after": "a7b0f842fc6c7ba5eca9a7141bf6278f4442de5d",
+  "pr288_note": "head unchanged: Release Please run 42748528740 on the fix merge logged PR 288 remained the same",
+  "remote_branch_left": true
+}

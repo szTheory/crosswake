@@ -1,0 +1,49 @@
+docs-truth 199-16 (SC6 generated guides, D-27)
+docs_branch: docs/199-record-0-2-14-published base=cbb900319b8f4352c46f031927a75b38f5c36bbd
+first_release: ios_host=0.2.12 schema_1_2_0=0.2.12 parity_ledger=0.2.12
+baseline_suite: base=cbb900319b8f ran=3201 total=3277 failures=19 reason=all_19_ExUnit.TimeoutError_under_load_avg_11_to_30_no_assertion_failure
+baseline_suite_rerun: the 19 timed-out tests re-run in isolation: total=19 failures=0 (mix rc=0; the shared gate printed verdict=FAIL reason=below_min only because line-pinned runs make its excluded count exceed total)
+removed_tests: 21
+removed_tests_note: the qualifier guard was run through the shared gate after the capability map rewording (total=21 ran=21 failures=2, both the two capability_map claim tests that the reworded guide is meant to fail); 21 is the file's test count
+ledger_edit: script/collection_assertion_ledger.json lost the one row for unreleased_claim_qualifier_test.exs:64 (290 to 289 sites; --check OK; --emit-snapshot byte-identical to the committed file); test/crosswake/proof/phase170_vacuous_assertion_ledger_test.exs pins moved (audited 289, assert_any 146, safe-by-construction 146)
+site: lib/crosswake/capability_map/renderer.ex:82 before="The `:ios_host` declaration is not in a published release yet (0.2.11 and earlier do not read it); see CHANGELOG `[Unreleased]`." after="The `:ios_host` declaration is read from 0.2.12 on; 0.2.11 and earlier do not read it."
+docs_sync_check: rc=0 (task 1; docs.sync updated only guides/capability_map.md)
+gate_task1: total=75 ran=75 failures=0 verdict=PASS (capability_map renderer, capability_claims, docs.sync task, phase170 ledger, phase69 docs parity, android ceiling, native evidence drift, architecture walkthrough)
+commit_task1: b0daed0f (docs(199-16): name the first release for the ios_host claim in the capability map)
+site: lib/crosswake/support_matrix/renderer.ex:137 before="The `:ios_host` declaration is not in a published release yet (0.2.11 and earlier do not read it); see CHANGELOG `[Unreleased]`." after="The `:ios_host` declaration is read from 0.2.12 on; 0.2.11 and earlier do not read it."
+site: lib/crosswake/support_matrix/renderer.ex:274 before="Manifest schema `1.2.0` is not in a published release yet; published 0.2.11 emits `1.1.0`; see CHANGELOG `[Unreleased]`." after="Manifest schema `1.2.0` is emitted from 0.2.12 on; 0.2.11 and earlier emit `1.1.0`."
+site: lib/crosswake/parity_ledger/renderer.ex:13 before="The vector-set hash and this ledger are not in a published release yet; see CHANGELOG `[Unreleased]`." after="The vector-set hash and this ledger ship from 0.2.12 on; 0.2.11 and earlier have neither."
+docs_sync_check: rc=0 (task 2; docs.sync updated only guides/support_matrix.md and guides/parity_ledger.md)
+gate_task2: full suite on the closeout branch after both commits: total=3256 excluded=76 ran=3180 failures=0 verdict=PASS (total = baseline 3277 minus the 21 removed tests)
+renderer_hits_after: 0
+commit_task2: d9e11b55 (docs(199-16): name the first release in the support matrix and parity ledger)
+branch_head: d9e11b55 on docs/199-record-0-2-14-published (local only, not pushed)
+
+docs-truth 199-17 (SC6 hand-written guides and CHANGELOG, D-27)
+first_release: ios_host=0.2.12 schema_1_2_0=0.2.12 (read from cleanroom-reader-audit-199.txt)
+site: guides/architecture.md:108 before="shows schema `1.2.0`, which is not in a published release yet (0.2.11 emits `1.1.0`); see CHANGELOG `[Unreleased]`:" after="shows schema `1.2.0`, which is emitted from 0.2.12 on (0.2.11 and earlier emit `1.1.0`):"
+site: guides/compatibility.md:47 before="Manifest schema `1.2.0` is not in a published release yet; published 0.2.11 emits `1.1.0`; see CHANGELOG `[Unreleased]`." after="Manifest schema `1.2.0` is emitted from 0.2.12 on; 0.2.11 and earlier emit `1.1.0`."
+site: guides/native_shell.md:64 before="declaration is not in a published release yet (0.2.11 and earlier do not read it); see CHANGELOG `[Unreleased]`." after="declaration is read from 0.2.12 on; 0.2.11 and earlier do not read it."
+site: guides/native_shell_upgrade.md:20 before="The `:ios_host` declaration is not in a published release yet (0.2.11 and earlier do not read it); see CHANGELOG `[Unreleased]`." after="The `:ios_host` declaration is read from 0.2.12 on; 0.2.11 and earlier do not read it."
+site: guides/native_shell_upgrade.md:61 before="Nothing described here is a release. Manifest schema 1.2.0 is not in a published release yet; published 0.2.11 emits 1.1.0; see CHANGELOG `[Unreleased]`." after="Manifest schema 1.2.0 is emitted from 0.2.12 on; 0.2.11 and earlier emit 1.1.0."
+guard_updated: test/crosswake/guides/host_command_seam_guide_test.exs "edited guides make no release-done claim" asserted the sentence "Nothing described here is a release" (a shipped-as-unreleased claim); now asserts the 0.2.12 sentence and refutes the old one. The first-run failure (1 of 422) was exactly that assertion; no other guard failed.
+qualifier_hits_after: 0 (grep -rn 'not in a published release yet' guides lib in the worktree, rc=1 no hits)
+seven_guides_check: capability_map, native_shell, native_shell_upgrade name 0.2.12 (ios_host); support_matrix, compatibility, architecture, native_shell_upgrade name 0.2.12 (schema_1_2_0); parity_ledger names 0.2.12 -- OK
+banned_words_in_diff: none of latest / current release / [Unreleased] in added lines
+docs_sync_check: crosswake.docs.sync --check passed
+gate_task1: 30 test files that mention these guides: total=422 ran=422 failures=0 verdict=PASS
+note: the first gate attempt ran under zsh, which does not word-split an unquoted file list; mix reported no matching paths (rc=1 total=-). Re-run under bash.
+commit_task1: fba60249 (docs(199-17): name the first release for ios_host and schema 1.2.0 in the guides)
+site_count_total: 9 (4 from 199-16 plus 5 here)
+changelog_rule: removed from [Unreleased] > Unpublished support claims every bullet whose 199-15 audit line shows 0.2.14=found. All six did (host_command_seam, legacy_manifest_denial, doctor_offline_fidelity, nav_shell_provenance, ios_host, parity_ledger), so all six bullets were removed; the subsection stays with one plain line "There are no unpublished support claims at this time."
+changelog_bullet_check: six claims, bullets_now=0 want=0 each (plan verify script rc=0)
+changelog_guards: headings "### Unpublished support claims" 1, "### Published Hex truth" 1, "## [0.2.12|13|14]" sections 0; the GitHub Releases and hex.pm pointer sentence is untouched
+guard_updated: test/crosswake/guides/changelog_unreleased_wording_test.exs ":ios_host ... not in any published release" (Enum.any? over lines) now asserts [Unreleased] no longer mentions :ios_host or "not released" and has the no-unpublished-claims line, with no collection
+guard_updated: test/crosswake/guides/host_command_seam_guide_test.exs two tests regex-matched the removed seam and legacy-manifest bullets (and asserted "not released"); rewritten in place (test count unchanged) to assert the bullets are gone and that native_shell_upgrade.md carries "The Android shell is unchanged", `mix crosswake.gen.shell ios` and host_commands_legacy_manifest
+ledger_edit: script/collection_assertion_ledger.json lost the row for changelog_unreleased_wording_test.exs:115 (289 to 288 sites; elixir script/inventory_collection_assertions.exs --check OK); phase170 pins moved to audited 288, assert_any 145, safe-by-construction 145
+gate_changelog: test/crosswake/guides/changelog_unreleased_wording_test.exs release_boundaries_test.exs hex_page_test.exs total=36 ran=36 failures=0 verdict=PASS
+gate_changelog_wide: every test file that mentions CHANGELOG, unreleased_subsections, the ledger or Unpublished support: total=167 ran=167 failures=0 verdict=PASS
+docs_report: docs.warnings total=197 extras=2; docs.links broken=0 checked=235 files=31; docs.leaks hits=95 allowlisted=0 stale_allowlist=0 files=31 (REPORT-ONLY, not a gate)
+commit_task2: 4d74e27d (docs(199-17): stop listing shipped claims as unpublished)
+gate_full: full suite on the closeout branch at 4d74e27d: total=3256 excluded=76 ran=3180 failures=0 verdict=PASS (same total as after 199-16: guards were rewritten in place, none removed)
+branch_head: 4d74e27d on docs/199-record-0-2-14-published (local only, not pushed; four commits ahead of origin/main cbb90031: b0daed0f, d9e11b55, fba60249, 4d74e27d)

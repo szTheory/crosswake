@@ -44,7 +44,7 @@ cases into generic WebView behavior.
 
 ## Manifest 1.2.0: the host-command seam (iOS only)
 
-Manifest schema `1.2.0` is not in a published release yet; published 0.2.11 emits `1.1.0`; see CHANGELOG `[Unreleased]`.
+Manifest schema `1.2.0` is emitted from 0.2.12 on; 0.2.11 and earlier emit `1.1.0`.
 
 `manifest_schema_version` moved `1.1.0` -> `1.2.0`. The change is additive and affects the iOS shell only.
 `bridge_protocol_version` stays `1.1.0`. The Android shell, its vectors and its assets are unchanged.

@@ -1,0 +1,356 @@
+{
+  "pr": 289,
+  "branch": "docs/release-0-2-14-ledger-and-planning",
+  "bot_prs": [
+    285
+  ],
+  "bot_pr_0_2_14": null,
+  "ledger_0_2_14_source": "generated locally with script/append_release_ledger.sh from run-final-201.json ledger_job.env (PACKAGE=crosswake VERSION=0.2.14 APPROVED_HEAD=407398160bb5761d90ade7182676dd76691617be PUBLISHED_REF=dc6a8ed30dd896f0cb3214276ecb922ac73b85a8 LANE=ordinary RUN_ID=42713010358 OUTCOME=success); not a bot PR line",
+  "ledger_0_2_14_note": "the run's record-ledger job (job 129511426824) succeeded but opened no PR because ledger PR 285 was still open; its recorded_at (discarded in the runner workspace) differs from this line's recorded_at 2026-11-09T23:38:05Z; PR 285 was not touched, merged or edited, and the job was not re-run",
+  "lines": [
+    "{\"schema_version\":\"1.0.0\",\"package\":\"crosswake\",\"version\":\"0.2.13\",\"approved_head\":\"5a6a752185cc557af30b0f87244b8088ac83ff93\",\"ref\":\"0aa184704009c5baf9c3550cf7cf7fde9228f2b8\",\"lane\":\"ordinary\",\"run_id\":\"42639651064\",\"outcome\":\"failure\",\"recorded_at\":\"2026-11-09T15:58:59Z\"}",
+    "{\"schema_version\":\"1.0.0\",\"package\":\"crosswake\",\"version\":\"0.2.14\",\"approved_head\":\"407398160bb5761d90ade7182676dd76691617be\",\"ref\":\"dc6a8ed30dd896f0cb3214276ecb922ac73b85a8\",\"lane\":\"ordinary\",\"run_id\":\"42713010358\",\"outcome\":\"success\",\"recorded_at\":\"2026-11-09T23:38:05Z\"}"
+  ],
+  "line_0_2_13_byte_identical_to_pr_285": true,
+  "ledger_test": "mix-test-gate: rc=0 total=9 excluded=0 skipped=0 ran=9 failures=0 invalid=0 min=1 min_total=0 verdict=PASS",
+  "landing_route": "B",
+  "messages_route_b": false,
+  "scope_count": 229,
+  "explicit_paths": [
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/history/201-08-prior-handoff.md",
+    ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-08-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-09-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-08-BLOCKED.md",
+    ".planning/todos/TODO-012-exact-public-proof-assumes-a-linked-six-package-release.md"
+  ],
+  "explicit_paths_tracked_files": 108,
+  "explicit_paths_excluded": 14,
+  "explicit_paths_checked_on_origin_main": 94,
+  "explicit_paths_missing": [],
+  "landed_paths": 187,
+  "pr_changed_files": 178,
+  "pr_changed_files_non_planning": [
+    "docs/release-ledger/RELEASE-LEDGER.jsonl"
+  ],
+  "pr_changed_files_note": "read with gh api repos/szTheory/crosswake/pulls/289/files --paginate; gh pr view --json files is capped at 100 files and does not show the ledger",
+  "landing_privacy_note": "landed copies carry the local home-directory prefix written as ~ in 33 files, a temp prefix as <tmp>, and two placeholder spellings; 10 of the 11 planning-record paths from 201-02 are byte-identical to main's landed versions after that redaction",
+  "excluded_paths": [
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/envelope.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/facts/registry_response.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/live/request-1.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/live/request-10.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/live/request-2.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/live/request-3.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/live/request-4.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/live/request-7.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/live/request-9.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/raw/candidate_readiness.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/raw/leg_run.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/raw/registry_response.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-199-sources/raw/response_row.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-result-199.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/envelope.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/facts/registry_response.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-1.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-10.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-2.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-3.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-4.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-7.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/live/request-9.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/candidate_readiness.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/leg_run.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/registry_response.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-200-sources/raw/response_row.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/200-EVIDENCE/core-premerge-result-200.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/200-forward-fix-and-release-0-2-13-default-ios-generation-builds/scripts/gate-order-200.awk",
+      "reason": "the first-adopter scan (mix crosswake.adoption_context.scan) stops on routing.unclassified_path because it has no rule for the .awk extension; found by CI on the first push, fixed forward by leaving the file out",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the scan knows the .awk extension (a separate reviewed change) or the file is renamed with a scannable extension; then it lands with the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/envelope.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/facts/registry_response.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/live/request-1.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/live/request-10.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/live/request-2.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/live/request-3.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/live/request-4.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/live/request-7.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/live/request-9.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/raw/candidate_readiness.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/raw/leg_run.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/raw/registry_response.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-201-sources/raw/response_row.source",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    },
+    {
+      "path": ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/premerge-result-201.json",
+      "reason": "scanner class home_path (public API URL segment users/<name>; no local home directory); raw pre-merge source, envelope or pre-merge result file whose hashes are pinned, so it was not edited",
+      "receiver": "STATE.md handoff carried item (5), owned by the agent running the next command (/gsd-plan-phase 199 --ws quality-ratchet-release)",
+      "reopen_when": "the file is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR"
+    }
+  ],
+  "planning_record_resolved": [],
+  "docs_branch_commit_ids_on_main": false,
+  "landing_commits": [
+    "039777ba",
+    "3627b2f3",
+    "67ed4c1f"
+  ],
+  "head_oid": "67ed4c1f76f84dd2edbac75d583bfb9ea94b1c97",
+  "ci_run_id": 42722897153,
+  "ci_conclusion": "success",
+  "ci_ran_on": "fd00a09dfab366f6fb491ade56e9cae18931c8af",
+  "ci_ran_on_note": "synthetic merge of head 67ed4c1f into main dc6a8ed3, read from the checkout step of the e2e-proof job log",
+  "ci_waits": [
+    {
+      "head": "3627b2f310d7633e65e2d53376b9f7e581135bba",
+      "run_id": 42722231384,
+      "limit_min": 45,
+      "interval_min": 2,
+      "reads": 4,
+      "minutes": 6,
+      "result": "DONE",
+      "outcome": "red: documentation-contracts and hex-page-proof failed on routing.unclassified_path for gate-order-200.awk; fixed forward by leaving the file out; the run was cancelled by the next push, nothing re-run"
+    },
+    {
+      "head": "67ed4c1f76f84dd2edbac75d583bfb9ea94b1c97",
+      "run_id": 42722897153,
+      "limit_min": 45,
+      "interval_min": 2,
+      "reads": 12,
+      "minutes": 23,
+      "result": "DONE",
+      "outcome": "success, 38 pass, 1 skipping, 39 of 39 jobs"
+    }
+  ],
+  "cost": {
+    "billable_min": 162,
+    "flags": [],
+    "wall_min": 20.8,
+    "critical_path": "phase130-core-hermetic-proof 19.9 min",
+    "full_suite_jobs": 2,
+    "baseline_billable_min": 250
+  },
+  "delete_branch_on_merge_read": false,
+  "merge_oid": "af1dd94efffcbff66cd553fc5a396bcfd8330dcf",
+  "merged_at": "2026-11-10T00:08:02Z",
+  "bot_prs_closed": true,
+  "bot_branches_left": true,
+  "bot_pr_closures": [
+    {
+      "pr": 285,
+      "state": "CLOSED",
+      "branch": "chore/release-ledger-42639651064",
+      "branch_left": true
+    }
+  ]
+}

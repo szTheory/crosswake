@@ -36,12 +36,10 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
     assert text =~ "never grants it"
   end
 
-  test "the seam changelog entry says Android unchanged and claims no release" do
+  test "the seam is no longer listed as unreleased in the changelog and the upgrade guide says Android unchanged" do
     changelog = File.read!("CHANGELOG.md")
-    [entry] = Regex.run(~r/\* \*\*Host-command seam[^\n]*/, changelog)
-    assert entry =~ "not released"
-    assert entry =~ "This entry is not a release and claims no device or adopter result"
-    assert entry =~ "The Android shell, its vectors and its assets are unchanged"
+    refute changelog =~ ~r/\* \*\*Host-command seam/
+    assert guide("native_shell_upgrade.md") =~ "The Android shell is unchanged"
   end
 
   test "bridge states the per-route grant rule and keeps undeclared_capability" do
@@ -95,14 +93,12 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
     refute text =~ "refuses to activate a declaring route"
   end
 
-  test "the legacy-manifest changelog entry names the behaviour change and the repair" do
+  test "the legacy-manifest denial is no longer listed as unreleased and the upgrade guide names the repair" do
     changelog = File.read!("CHANGELOG.md")
-    [entry] = Regex.run(~r/\* \*\*Legacy-manifest denial[^\n]*/, changelog)
-    [seam] = Regex.run(~r/\* \*\*Host-command seam[^\n]*/, changelog)
-    refute entry == seam
-    assert entry =~ "mix crosswake.gen.shell ios"
-    assert entry =~ "host_commands_legacy_manifest"
-    assert entry =~ "not released"
+    refute changelog =~ ~r/\* \*\*Legacy-manifest denial/
+    upgrade = guide("native_shell_upgrade.md")
+    assert upgrade =~ "mix crosswake.gen.shell ios"
+    assert upgrade =~ "host_commands_legacy_manifest"
   end
 
   test "upgrade guide explains the remote shell package gate and its fix" do
@@ -156,6 +152,10 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
       refute text =~ ~r/\$\d/, "#{path} contains a price-like token"
     end
 
-    assert guide("native_shell_upgrade.md") =~ "Nothing described here is a release"
+    # 0.2.12 is the first published release that emits schema 1.2.0 (199 reader audit).
+    assert guide("native_shell_upgrade.md") =~
+             "Manifest schema 1.2.0 is emitted from 0.2.12 on; 0.2.11 and earlier emit 1.1.0."
+
+    refute guide("native_shell_upgrade.md") =~ "Nothing described here is a release"
   end
 end

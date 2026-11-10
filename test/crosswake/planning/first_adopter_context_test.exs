@@ -336,6 +336,22 @@ defmodule Crosswake.Planning.FirstAdopterContextTest do
            ] = FirstAdopterContext.scan_filesystem(missing_root, [])
   end
 
+  test "classifies planning .awk helpers for scanning while unknown extensions stay unclassified" do
+    awk_path = ".planning/workstreams/example/phases/200-example/scripts/helper.awk"
+    unknown_path = ".planning/workstreams/example/phases/200-example/scripts/helper.opaque"
+
+    with_temporary_repository([awk_path], "BEGIN { print \"safe\" }", fn root ->
+      assert FirstAdopterContext.discover_paths(root) == [awk_path]
+      assert FirstAdopterContext.scan_filesystem(root, []) == []
+    end)
+
+    with_temporary_repository([unknown_path], "safe", fn root ->
+      assert [
+               %{rule_id: "routing.unclassified_path", path: ^unknown_path}
+             ] = FirstAdopterContext.scan_filesystem(root, [])
+    end)
+  end
+
   test "classifies only the approved physical marker and reference-host AIFF resource" do
     completion_marker =
       ".planning/workstreams/first-b2c-adopter-readiness/phases/162-physical-iphone-adoption-proof/evidence/physical_iphone/.complete"

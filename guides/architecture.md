@@ -105,8 +105,7 @@ JSON encoding; Crosswake orders every map before encoding so equivalent policy p
 stable artifact bytes.
 
 The manifest, rather than raw router declarations, crosses into the shell. The example
-shows schema `1.2.0`, which is not in a published release yet (0.2.11 emits `1.1.0`);
-see CHANGELOG `[Unreleased]`:
+shows schema `1.2.0`, which is emitted from 0.2.12 on (0.2.11 and earlier emit `1.1.0`):
 
 ```elixir
 %{

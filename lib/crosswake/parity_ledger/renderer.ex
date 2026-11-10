@@ -10,7 +10,7 @@ defmodule Crosswake.ParityLedger.Renderer do
 
   @guide_path "guides/parity_ledger.md"
 
-  @qualifier "The vector-set hash and this ledger are not in a published release yet; see CHANGELOG `[Unreleased]`."
+  @qualifier "The vector-set hash and this ledger ship from 0.2.12 on; 0.2.11 and earlier have neither."
 
   @spec render() :: String.t()
   def render, do: render(ParityLedger.facts())
