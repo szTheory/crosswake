@@ -61,8 +61,7 @@ For a production iOS host, declare the build inputs once in the host's ordinary
 Phoenix/Mix configuration. `MIX_ENV` selects the normal environment; generation
 requires the compiled router but does not start the Phoenix application, evaluate
 `runtime.exs`, or load unrelated runtime-server credentials. The `:ios_host`
-declaration is not in a published release yet (0.2.11 and earlier do not read it); see
-CHANGELOG `[Unreleased]`.
+declaration is read from 0.2.12 on; 0.2.11 and earlier do not read it.
 
 ```elixir
 config :crosswake, :ios_host,

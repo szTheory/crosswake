@@ -156,6 +156,10 @@ defmodule Crosswake.Guides.HostCommandSeamGuideTest do
       refute text =~ ~r/\$\d/, "#{path} contains a price-like token"
     end
 
-    assert guide("native_shell_upgrade.md") =~ "Nothing described here is a release"
+    # 0.2.12 is the first published release that emits schema 1.2.0 (199 reader audit).
+    assert guide("native_shell_upgrade.md") =~
+             "Manifest schema 1.2.0 is emitted from 0.2.12 on; 0.2.11 and earlier emit 1.1.0."
+
+    refute guide("native_shell_upgrade.md") =~ "Nothing described here is a release"
   end
 end

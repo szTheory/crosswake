@@ -17,8 +17,7 @@ current `template_version`.
 
 The iOS host build inputs now come from the ordinary `:crosswake, :ios_host`
 configuration documented in [Native Shell Guide](native_shell.md#declared-ios-host-setup).
-The `:ios_host` declaration is not in a published release yet (0.2.11 and earlier do not
-read it); see CHANGELOG `[Unreleased]`.
+The `:ios_host` declaration is read from 0.2.12 on; 0.2.11 and earlier do not read it.
 The supported keys are `router`, `origin`, `entry_route_id`, `app_bundle_id`,
 `proof_app_bundle_id`, and `device_signing` (`mode` plus `team_id`). The shell test
 identity is `app_bundle_id <> ".tests"`; the proof app uses the declared proof identity,
@@ -57,8 +56,8 @@ unrelated proof-lane configuration.
 ## Host-command seam and offline-island admission (Phase 181)
 
 Manifest schema 1.2.0 adds a per-route `host_commands` field. The change is additive
-and iOS only. Nothing described here is a release. Manifest schema 1.2.0 is
-not in a published release yet; published 0.2.11 emits 1.1.0; see CHANGELOG `[Unreleased]`.
+and iOS only. Manifest schema 1.2.0 is emitted from 0.2.12 on; 0.2.11 and earlier
+emit 1.1.0.
 The Android shell is unchanged.
 
 Upgrade core and the iOS shell together. An older Swift package already built into an
