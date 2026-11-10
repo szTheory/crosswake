@@ -620,7 +620,8 @@ jobs:
     needs: [classify-change]
     if: needs.classify-change.outputs.classification == 'full_proof'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Longest successful run measured 2026-11-09: 19.9 min (32 recent runs); 1.5x rounded up to 5 is 30.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/setup-elixir-cache
