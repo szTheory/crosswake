@@ -40,8 +40,10 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # tamper control; all four are safe-by-construction. The phase 166 and drift rows only moved.
   # Phase 199 (2026-11-09) removed 1 any-site: the unreleased-claim qualifier guard test was
   # deleted once its claims were published, so its safe-by-construction row left the ledger.
-  @audited_site_count 289
-  @shape_counts %{"assert_all" => 84, "assert_any" => 146, "refute_any" => 59, "refute_all" => 0}
+  # Phase 199 plan 17 removed a second any-site: the changelog guard that pinned the :ios_host
+  # declaration as unpublished now asserts the opposite without a collection.
+  @audited_site_count 288
+  @shape_counts %{"assert_all" => 84, "assert_any" => 145, "refute_any" => 59, "refute_all" => 0}
   # Plan 170-02 Task 2 regenerated this after inserting guards at every needs-fix row: 8 of the
   # 60 rows were reclassified from needs-fix to safe-cardinality-pinned via manual override after
   # real test execution proved their collections are permanently empty by design (positive-path
@@ -51,7 +53,7 @@ defmodule Crosswake.Proof.Phase170VacuousAssertionLedgerTest do
   # `needs-fix` is intentionally absent: `Enum.frequencies_by/2` never emits a key for zero
   # occurrences, and the committed ledger now has zero `needs-fix` rows (VAC-02 complete).
   @bucket_counts %{
-    "safe-by-construction" => 146,
+    "safe-by-construction" => 145,
     "safe-compile-time-literal" => 9,
     "safe-cardinality-pinned" => 51,
     "safe-guarded" => 83
