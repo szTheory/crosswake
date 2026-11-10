@@ -1,0 +1,21 @@
+{
+  "pr": 236,
+  "merge_commit": "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c",
+  "parents": [
+    "a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9",
+    "efbc79124e99f5e60f8b85cbad1a507d4763e476"
+  ],
+  "tree": "5cce613d376760ae16c5c6c7809845d88e3de660",
+  "tree_equal": true,
+  "trailer_lines": 1,
+  "merge_method": "merge",
+  "match_head_commit": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+  "merged_at_utc": "2026-11-08T15:24:25Z",
+  "release_run_id": 42494651844,
+  "delivery": "ACCEPTED",
+  "merge_call_output": "",
+  "gate_id": "core-merge",
+  "gate_attempt": 1,
+  "recorded_at": "2026-11-08T15:25:09Z",
+  "merge_oid": "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c"
+}

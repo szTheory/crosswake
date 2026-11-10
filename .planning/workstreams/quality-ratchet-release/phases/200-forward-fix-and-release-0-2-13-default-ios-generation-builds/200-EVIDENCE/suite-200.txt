@@ -1,0 +1,11 @@
+# 200-02 Task 3 local gates for fix branch fix/default-ios-generation-builds head 3696f38cd8e4e158a6339eca1984d7b63dd03403 (3 commits over origin/main 1dcdaad8, no .planning path)
+floor: ran 3155 + 21 = 3176; total 3231 + 21 = 3252 (21 = 5 tests in crosswake_gen_shell_default_references_test.exs [grep -c 'test "' prints 4 because one test is generated for two forms] + 16 in default_ios_build_script_test.exs [grep -c prints 16]); baseline 3155 ran / 3231 total from 199-EVIDENCE/suite-199.txt; measured ran and total equal the floor exactly, so nothing else changed count
+suite: mix-test-gate: rc=0 total=3252 excluded=76 skipped=0 ran=3176 failures=0 invalid=0 min=3176 min_total=3252 verdict=PASS
+suite-time: about 10 min wall clock (02:47Z to 02:57Z)
+scanner: 106 of 106 roster checks emitted; 0 failed.
+leaf-manifest: rc=0
+leaf-manifest-detail: python3 script/check_ci_leaf_manifest.py --self-test rc=0; python3 script/check_ci_leaf_manifest.py --maximum-shape test/fixtures/ci/maximum-shape-crosswake-ci.yml --needs-fixture test/fixtures/ci/maximum-shape-needs.json rc=0 (pass jobs=38); script/ci_leaf_manifest.json unchanged vs origin/main; the plan's bare form without arguments exits 2 (usage) and is not a check
+format: rc=0
+compile: rc=0
+adoption-scan: rc=0
+branch: rev-list origin/main..HEAD = 3 (fix, guide, ci); changed paths = 7, none under .planning/

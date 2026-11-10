@@ -1,0 +1,9 @@
+{
+  "stage": "pre_merge",
+  "state": "PENDING",
+  "receipt_digest": "8c905dea15a8ea285db0205d218f1d0a5d332474a28404b94b4027a2552f4507",
+  "operation": "linked_release",
+  "leg_run_id": 42558226150,
+  "candidate_package": "crosswake",
+  "candidate_head": "5a6a752185cc557af30b0f87244b8088ac83ff93"
+}

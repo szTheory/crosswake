@@ -1,0 +1,46 @@
+Running ExUnit with seed: 998203, max_cases: 36
+Excluding tags: [requires_example_host: true, engine_present: true, collateral_binaries: true, advisory_only: true, generated_manifest: true]
+
+     warning: function rewrite_metadata!/2 is unused
+     │
+ 119 │   defp rewrite_metadata!(root, fun) do
+     │        ~
+     │
+     └─ test/crosswake/release_candidate/artifact_real_tarball_test.exs:119:8: Crosswake.ReleaseCandidate.ArtifactRealTarballTest (module)
+
+     warning: function put_build_env/1 is unused
+     │
+ 125 │   defp put_build_env(value) do
+     │        ~
+     │
+     └─ test/crosswake/release_candidate/artifact_real_tarball_test.exs:125:8: Crosswake.ReleaseCandidate.ArtifactRealTarballTest (module)
+
+     warning: function fixture_hex_version!/1 is unused
+     │
+ 140 │   defp fixture_hex_version!(fixture_name) do
+     │        ~
+     │
+     └─ test/crosswake/release_candidate/artifact_real_tarball_test.exs:140:8: Crosswake.ReleaseCandidate.ArtifactRealTarballTest (module)
+
+     warning: function drop_build_env/0 is unused
+     │
+ 133 │   defp drop_build_env do
+     │        ~
+     │
+     └─ test/crosswake/release_candidate/artifact_real_tarball_test.exs:133:8: Crosswake.ReleaseCandidate.ArtifactRealTarballTest (module)
+
+
+
+  1) test equality: public tarball and Hex 2.6+ rebuild of the same tag give equal digests (Crosswake.ReleaseCandidate.ArtifactRealTarballTest)
+     test/crosswake/release_candidate/artifact_real_tarball_test.exs:39
+     Assertion with == failed
+     code:  assert public.metadata_digest == rebuild.metadata_digest
+     left:  "5e444f8c518712ef42009fb4e0ad2b84dbd591178d0927939c628cc50c9ac3fe"
+     right: "edff10ce51ba3aa3bb63ede0c09ad36b77181d89060d61b571a4d1b096cf5eb6"
+     stacktrace:
+       test/crosswake/release_candidate/artifact_real_tarball_test.exs:49: (test)
+
+...
+Finished in 1.5 seconds (1.5s async, 0.00s sync)
+4 tests, 1 failure
+mix-test-gate: rc=2 total=4 excluded=0 skipped=0 ran=4 failures=1 invalid=0 min=4 min_total=0 verdict=FAIL reason=mix_rc

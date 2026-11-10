@@ -1,0 +1,3 @@
+candidate-remote: source=407398160bb5761d90ade7182676dd76691617be
+candidate-remote: rc=0
+candidate-remote: default-ios-build: mode=remote project=generated generator=407398160bb5761d90ade7182676dd76691617be generator_dirty=no remote_from=0.2.14 remote_min=0.2.13 resolved=0.2.13 build_rc=0 build_seconds=18 control_rc=65 control=detected verdict=PASS first_error=none

@@ -1,0 +1,32 @@
+{
+  "run_id": 42494651844,
+  "gate_id": "core-maven",
+  "gate_attempt": 1,
+  "approval": {
+    "environment_ids": [
+      26568192162
+    ],
+    "environment_name": "publish-maven",
+    "comment": "199 core-maven attempt 1",
+    "approved_at_utc": "2026-11-08T16:10:01Z"
+  },
+  "job_name": "Publish Android core to Maven Central",
+  "job_conclusion": "success",
+  "job_started_at": "2026-11-08T16:10:04Z",
+  "job_completed_at": "2026-11-08T16:12:55Z",
+  "coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.12",
+  "pom_status": 200,
+  "aar_status": 200,
+  "polls": 11,
+  "first_visible_pom": "2026-11-08T16:23:26Z",
+  "first_visible_aar": "2026-11-08T16:23:26Z",
+  "poll_interval_seconds": 60,
+  "poll_budget_minutes": 120,
+  "pending_after": [
+    {
+      "environment": "publish-ios-mirror",
+      "id": 26568192607
+    }
+  ],
+  "recorded_at": "2026-11-08T16:23:43Z"
+}

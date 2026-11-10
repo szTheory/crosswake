@@ -1,0 +1,21 @@
+{
+  "run_id": 42639651064,
+  "run_url": "https://github.com/szTheory/crosswake/actions/runs/42639651064",
+  "gate_id": "core-ios",
+  "gate_attempt": 1,
+  "environment_id": 26568192607,
+  "environment_name": "publish-ios-mirror",
+  "approval_comment": "200 core-ios attempt 1",
+  "approved_at_utc": "2026-11-09T15:48:22Z",
+  "job_conclusion": "success",
+  "mirror_main": "095267ea23c94cf397b620ab5015a7bf19377660",
+  "mirror_tag_v0.2.13": "095267ea23c94cf397b620ab5015a7bf19377660",
+  "mirror_job_window": "2026-11-09T15:48:25Z to 2026-11-09T15:50:05Z",
+  "ios_cleanroom_job": "success",
+  "ios_mirror_tag_check_job": "success",
+  "exact_public_proof_job": "failure",
+  "linked_release_rollup_job": "failure",
+  "run_conclusion": "failure",
+  "standing_note": "approved under the 2026-11-09 standing publish decision",
+  "recorded_at": "2026-11-09T16:02:40Z"
+}

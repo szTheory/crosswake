@@ -1,0 +1,48 @@
+{
+  "pr": 236,
+  "head_oid": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+  "base_oid": "a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9",
+  "tree_oid": "5cce613d376760ae16c5c6c7809845d88e3de660",
+  "version": "0.2.12",
+  "ci_run_id": 42388086844,
+  "ci_conclusion": "success",
+  "ci_ran_on": "f96a2856af9309409b9fe95f6126702575531962",
+  "release_pr_head": {
+    "verdict": "PASS",
+    "head": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+    "line": "release-pr-head: pr=236 head=efbc79124e99f5e60f8b85cbad1a507d4763e476 base=a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9 commits=1 authors=szTheory paths=10 managed=13 verdict=PASS"
+  },
+  "authors": [
+    "szTheory"
+  ],
+  "absent": {
+    "hex": 404,
+    "mirror_tag": "absent",
+    "maven_pom": 404
+  },
+  "capture_digest": "01057c8308dd249dc163935e578e320890d1736c9ec47d1e96bf84e14cb37bcd",
+  "secrets_present": [
+    "BRANCH_PROTECTION_READ_TOKEN",
+    "HEX_API_KEY",
+    "MIRROR_DEPLOY_KEY",
+    "MIRROR_PUSH_TOKEN",
+    "ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD",
+    "ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYID",
+    "ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD",
+    "RELEASE_PLEASE_TOKEN"
+  ],
+  "delete_branch_on_merge": false,
+  "env_preflight_rc": 0,
+  "captured_at": "2026-11-07T16:12:36Z",
+  "notes": {
+    "state": "OPEN",
+    "draft": false,
+    "mergeable": "MERGEABLE",
+    "merge_state_status": "CLEAN",
+    "ci_checks": "39 of 39 success",
+    "ci_ran_on_is_synthetic_merge": true,
+    "authors_are_informational_only": true
+  }
+}

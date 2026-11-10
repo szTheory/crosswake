@@ -1,0 +1,19 @@
+{
+  "pr": 283,
+  "merge_oid": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8",
+  "parents": [
+    "fdc218f94851676b925c4e3042e3567baf5b8391",
+    "407398160bb5761d90ade7182676dd76691617be"
+  ],
+  "tree_oid": "16aca5ebc43d52ed69e32feb55f683218540ad29",
+  "trailer_lines": 1,
+  "merged_at": "2026-11-09T22:33:55Z",
+  "release_run_id": 42713010358,
+  "release_run_url": "https://github.com/szTheory/crosswake/actions/runs/42713010358",
+  "guard_conclusion": "success",
+  "hex_latest_at_merge": "2.7.0",
+  "ci_ran_on": "a53bf4af8b42d9154f0b5838fd835e98e9ecfa61 (synthetic merge commit of CI run 42703531929 for PR head 407398160bb5761d90ade7182676dd76691617be; the head itself is 407398160bb5)",
+  "merge_command_invocations": 1,
+  "merge_cmd_exit_code": 0,
+  "merge_method": "merge commit, --match-head-commit 407398160bb5761d90ade7182676dd76691617be"
+}

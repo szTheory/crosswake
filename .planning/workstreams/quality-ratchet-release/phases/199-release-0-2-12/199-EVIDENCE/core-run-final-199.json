@@ -1,0 +1,106 @@
+{
+  "run_id": 42494651844,
+  "run_status": "completed",
+  "run_conclusion": "failure",
+  "observed_at_utc": "2026-11-08T17:20:43Z",
+  "jobs": {
+    "release: approved-candidate merge guard": "success",
+    "Assert lockstep version coordinates match": "skipped",
+    "release: approve tag creation": "success",
+    "Release Please": "success",
+    "Publish to Hex.pm": "success",
+    "Publish crosswake_threadline to Hex.pm": "skipped",
+    "Publish crosswake_chimeway to Hex.pm": "skipped",
+    "Clean-room proof — crosswake_rulestead resolvability + doctor": "skipped",
+    "Publish crosswake_sigra to Hex.pm": "skipped",
+    "Clean-room proof — crosswake_chimeway resolvability + doctor": "skipped",
+    "Publish crosswake_rindle to Hex.pm": "skipped",
+    "Clean-room proof — crosswake_rindle resolvability + doctor": "skipped",
+    "Publish crosswake_rulestead to Hex.pm": "skipped",
+    "Clean-room proof — crosswake_sigra resolvability + doctor": "skipped",
+    "Clean-room proof — crosswake_threadline module-shipment + zero-sibling-dep": "skipped",
+    "Strip stale release-as after companion release (PROOF-03b)": "skipped",
+    "Publish Android core to Maven Central": "success",
+    "Clean-room proof — Android gradle build": "success",
+    "Mirror iOS core to split repo": "success",
+    "release: ios mirror tag check": "success",
+    "Clean-room proof — iOS swift build": "failure",
+    "Native release status rollup": "failure",
+    "release: linked release rollup": "failure",
+    "release: exact-public artifact proof": "skipped",
+    "Alert on companion or native publish/proof failure (PROOF-03c, D-15)": "success"
+  },
+  "mirror_tag_check": "success",
+  "mirror_tag_check_line": "mirror-tag: version 0.2.12 source_tag ios-core-v0.2.12 source_tree 75dcd5039028 mirror_tag v0.2.12 mirror_commit 095267ea23c9 mirror_tree 75dcd5039028 newest v0.2.12 verdict=PASS",
+  "linked_rollup_state": "PARTIAL",
+  "linked_status": {
+    "failed_step": "ios_public_proof",
+    "next_action": "retry_failed_step_from_exact_ref_or_publish_forward_fix",
+    "child_states": {
+      "hex": "success",
+      "android": "success",
+      "ios_mirror": "success",
+      "ios_public_proof": "failed",
+      "android_public_proof": "success",
+      "exact_public": "skipped"
+    },
+    "successful_coordinates": [
+      "hex:crosswake@0.2.12",
+      "maven:io.github.sztheory:crosswake-shell-core-android@0.2.12",
+      "swift:crosswake-shell-core-ios@0.2.12"
+    ],
+    "merge_oid": "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c"
+  },
+  "native_core": "partial",
+  "native_status": {
+    "ios": {
+      "released": true,
+      "publish": "success",
+      "proof": "failure",
+      "state": "failed"
+    },
+    "android": {
+      "released": true,
+      "publish": "success",
+      "proof": "success",
+      "state": "proven"
+    },
+    "next_action": "Fix MIRROR_DEPLOY_KEY or run the iOS mirror backfill workflow."
+  },
+  "exact_public": "skipped",
+  "ios_clean_room_failure": {
+    "job": "Clean-room proof — iOS swift build",
+    "job_id": 128802980994,
+    "step": "Build generated iOS application against the public mirror",
+    "xcodebuild_exit": 65,
+    "cause": "error: Unable to open base configuration reference file '<runner temp>/clean-room-proof-ios/native/ios/crosswake_shell/CrosswakeHostSettings.xcconfig' (CrosswakeShell.xcodeproj:1:1). The shell was generated from the Hex 0.2.12 consumer host and resolved CrosswakeShellCore 0.2.12 from the public mirror; the project references an xcconfig file that the generation step did not write.",
+    "not_rerun": true
+  },
+  "ledger_pr": null,
+  "ledger_line": null,
+  "ledger_pr_reason": "record-ledger did not run: exact-public-proof was skipped because its needs include clean-room-proof-ios, which failed; no chore/release-ledger-* PR exists",
+  "release_failure_alert_issue": 281,
+  "other_new_prs": {
+    "280": "chore: release main (release-please--branches--main), opened after the merge; not touched"
+  },
+  "release_status_live": {
+    "summary_lines": [
+      "status: OK",
+      "live checks: enabled",
+      "- hex: manifest=0.2.11 configured=0.2.11 live_hex=ok",
+      "- ios-core: manifest=0.2.11 configured=0.2.11 live_ios_mirror=ok",
+      "- android-core: manifest=0.2.11 configured=0.2.11 live_maven=ok",
+      "- state: COMPLETE",
+      "- hex: manifest version=0.2.11 live registry state=ok source=hex",
+      "- ios-core: manifest version=0.2.11 live registry state=ok source=ios_mirror",
+      "- android-core: manifest version=0.2.11 live registry state=ok source=maven",
+      "- OK release.live_registry_presence: all live registry probes found manifest versions",
+      "- OK release.candidate_public_truth: all three linked 0.2.11 coordinates are public"
+    ],
+    "note": "read from the local docs/199-release-0-2-12 checkout, which is cut before the release PR content: manifests still read 0.2.11 and the exact candidate block describes 0.2.11 (COMPLETE); it does not describe the 0.2.12 run"
+  },
+  "open_items": [
+    "clean-room-proof-ios failed on the 0.2.12 public mirror (missing CrosswakeHostSettings.xcconfig in the generated project); linked state PARTIAL, native_core partial, exact-public skipped, no ledger PR; recorded not re-run; recovery needs a new plan",
+    "native status next_action text names MIRROR_DEPLOY_KEY / mirror backfill although the mirror publish succeeded and the failing step is the iOS public proof"
+  ]
+}

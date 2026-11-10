@@ -1,0 +1,10 @@
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+cleanroom: leg hex PASS 0.2.12 checksum 1ae48fe3f2e8
+cleanroom: leg maven PASS 0.2.12 aar 76adb1341a57
+cleanroom: leg ios PASS 0.2.12 tag_commit 095267ea23c9
+cleanroom: docs source commit 5a6a752185cc557af30b0f87244b8088ac83ff93
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+script/verify_published_cleanroom.sh: child setpgid (84829 to 84829): Operation not permitted
+cleanroom: leg docs PASS 0.2.12 executed=20 not_applicable=0 deferred=none clone=4 shown=4 source=commit:5a6a752185cc557af30b0f87244b8088ac83ff93 phx_new=1.8.13
+cleanroom: result PASS legs hex,maven,ios,docs version 0.2.12
+cleanroom: rc 0

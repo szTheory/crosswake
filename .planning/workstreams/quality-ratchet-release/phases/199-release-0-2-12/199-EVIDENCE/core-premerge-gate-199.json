@@ -1,0 +1,38 @@
+{
+  "authorized": false,
+  "candidate": {
+    "base_oid": "a9c4ff74cfd92b6ab3fa7da32dae2f346335e7b9",
+    "head_oid": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+    "merge_oid": null,
+    "package": "crosswake",
+    "pr": 236,
+    "tree_oid": "5cce613d376760ae16c5c6c7809845d88e3de660",
+    "version": "0.2.12"
+  },
+  "consumed": false,
+  "evidence": {
+    "envelope_sha256": "929be6364b9bce38b166b9471d3e09d3d50f69797481d3f022a438be80963996",
+    "path": ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/core-premerge-result-199.json",
+    "verdict": "PASS"
+  },
+  "hex_rehearsal_run_id": 42390193460,
+  "identity": {
+    "leg_run_id": 42390193460,
+    "operation": "linked_release",
+    "receipt_digest": "a77cb446a51de5404e21abd6e0acdeed0d25b5e2a57f769f9fb79e335634d69b"
+  },
+  "operation": "linked_release",
+  "pending_authorization": {
+    "authorized": false,
+    "candidate_head": "efbc79124e99f5e60f8b85cbad1a507d4763e476",
+    "candidate_package": "crosswake",
+    "leg_run_id": 42390193460,
+    "operation": "linked_release",
+    "receipt_digest": "a77cb446a51de5404e21abd6e0acdeed0d25b5e2a57f769f9fb79e335634d69b",
+    "stage": "pre_merge",
+    "state": "PENDING"
+  },
+  "schema_version": 1,
+  "stage": "pre_merge",
+  "state": "PENDING"
+}

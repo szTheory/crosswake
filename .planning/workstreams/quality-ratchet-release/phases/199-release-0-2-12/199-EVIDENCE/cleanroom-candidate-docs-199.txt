@@ -1,0 +1,11 @@
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+cleanroom: leg hex PASS 0.2.11 checksum 2f25d0270963
+cleanroom: leg maven PASS 0.2.11 aar ce617279241c
+cleanroom: leg ios PASS 0.2.11 tag_commit 424ab96ede1b
+cleanroom: docs source commit efbc79124e99f5e60f8b85cbad1a507d4763e476
+cleanroom: toolchain elixir 1.19.5-otp-27 erlang 27.3
+cleanroom: docs deferred ios_host README.md since=0.2.12 version=0.2.11
+cleanroom: docs deferred ios_host guides/install.md since=0.2.12 version=0.2.11
+cleanroom: leg docs PASS 0.2.11 executed=18 not_applicable=2 deferred=ios_host clone=4 shown=4 source=commit:efbc79124e99f5e60f8b85cbad1a507d4763e476 phx_new=1.8.13
+cleanroom: result PASS legs hex,maven,ios,docs version 0.2.11
+cleanroom: rc 0

@@ -1,0 +1,45 @@
+{
+  "pr": 282,
+  "branch": "fix/default-ios-generation-builds",
+  "head_oid": "3696f38cd8e4e158a6339eca1984d7b63dd03403",
+  "url": "https://github.com/szTheory/crosswake/pull/282",
+  "ci_run_id": 42554142308,
+  "ci_conclusion": "success",
+  "ci_ran_on": "6e511a9a83f2f40872357ebf73a1a9fb8a4c75e7",
+  "ci_ran_on_note": "synthetic merge of the head into main 1dcdaad8, read from the phase79-ios-proof checkout log (HEAD is now at 6e511a9 Merge 3696f38c... into 1dcdaad8...); the head itself is head_oid",
+  "phase79_job_id": 128956029623,
+  "gate_line": "default-ios-build: mode=local project=generated generator=6e511a9a83f2f40872357ebf73a1a9fb8a4c75e7 generator_dirty=no remote_from=- remote_min=- resolved=- build_rc=0 build_seconds=29 control_rc=65 control=detected verdict=PASS first_error=none",
+  "gate_step_seconds": 32,
+  "gate_build_seconds_in_line": 29,
+  "phase79_seconds": 122,
+  "phase79_baseline_seconds": 104,
+  "phase79_baseline_run": 42388086844,
+  "cost": {
+    "billable_min": 174,
+    "wall_min": 16.4,
+    "critical_path": "proof-requires-example-host 16.1 min",
+    "full_suite_jobs": 2,
+    "baseline_billable_min": 250,
+    "baseline_wall_max_min": 44,
+    "baseline_full_suite_jobs": 10,
+    "phase79_billable_min": 30,
+    "phase79_baseline_billable_min": 20,
+    "flags": [
+      "uncached: phase79-ios-proof has no dependency cache (setup-beam plus mix deps.get, no setup-elixir-cache); pre-existing in the job, not added by this PR, and the new step adds no job",
+      "info: phase79-ios-proof moved from 104 s (2 billable macOS min, 20 billed) to 122 s (3 billable macOS min, 30 billed): +10 billed min from the new step crossing a minute boundary"
+    ]
+  },
+  "main_findings_before": 1,
+  "main_findings_after": 0,
+  "issue_281_comment_url": "https://github.com/szTheory/crosswake/issues/281#issuecomment-6731425802",
+  "delete_branch_on_merge_read": false,
+  "merge_oid": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+  "parents": [
+    "1dcdaad8dea087ddebd62bf7ca0515988d2d3f9c",
+    "3696f38cd8e4e158a6339eca1984d7b63dd03403"
+  ],
+  "merged_at": "2026-11-09T03:20:47Z",
+  "merge_method": "merge commit, gh pr merge --merge --match-head-commit 3696f38c...",
+  "remote_branch_left": true,
+  "residual_in_pr_body": true
+}

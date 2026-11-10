@@ -2,30 +2,34 @@
 gsd_state_version: "1.0"
 milestone: v28.0
 milestone_name: Truth and Release Train
-current_plan: 7
+current_plan: 8
 status: executing
-stopped_at: Completed 199-06-PLAN.md
-last_updated: "2026-11-07T15:05:43.300Z"
-state_head: f849e11206a9a7819edf4283e2e14211166c431b
+stopped_at: Completed 201-07-PLAN.md
+last_updated: "2026-11-09T23:28:57.065Z"
+state_head: 437307329be7f2f49ff41d94a9410e7461391155
 progress:
-  total_phases: 6
+  total_phases: 8
   completed_phases: 3
-  total_plans: 93
-  completed_plans: 80
-  percent: 50
-current_phase: 199
-current_phase_name: Release 0.2.12
+  total_plans: 110
+  completed_plans: 100
+  percent: 38
+current_phase: 200
+current_phase_name: Fix the exact-public companion digest proof so a release run can complete
 last_activity_desc: "Phase 196 verified and complete 2026-10-29: UAT 36/36, security 39/39 closed, verification 5/5, full core suite 2923/0 on main 97ec5f7b; SPEC-04 moved to v29.0"
 ---
 
 ## Current Position
 
-Current Plan: 7
-Total Plans in Phase: 19
+Current Plan: 8
+Total Plans in Phase: 8
 
 ## Exact Next Action
 
-Last completed phase: 198 (Android foreign-host proof): verified 4 of 4, security verified (56 of 56 threats closed, 198-SECURITY.md), AND-01..03 complete. Merged: PR 270, 271 and 272 (closeout), PR 273 (security and standing merge rule), PR 274 (android-foreign-host promoted to a required Crosswake CI leaf, D-20; 39 of 39 CI green on its head), PR 275 (e2e-proof Playwright install recovers from an orphaned apt-get), PR 277 (umbrella accepts the promoted leaf as skippable on docs-only runs, with a checker guard that derives the skip set from the manifest; e2e-proof now installs Chromium dependencies only). Active phase: 199 (Release 0.2.12), 6 of 19 plans done (199-01 to 199-06 complete 2026-11-07, branch `ci/199-release-gates`, nothing pushed). 199-06 generalized the hosted companion receipt attestation to all five companions (`CANDIDATE_PACKAGE`) and added `script/release_candidate/companion_publish_authorization.sh render|check`, proven against the real release-please guard predicate and context loader; nothing was dispatched, so the hosted job is first exercised for threadline in 199-13. The gate design is in 199-DECISIONS.md (D-01..D-08). No Stop section, so plans 199-07..199-19 run as written. Exact next action: `/gsd-execute-phase 199 --ws quality-ratchet-release` (next plan 199-07). Every merge to main of a green-CI PR needs no gate (user decision 2026-11-05, AGENTS.md); the release-please PR, every Hex/Maven/iOS publish, every tag and any remote-branch deletion each need their own one-use `allow`. Open items: harden `release-candidate-full-proof`, which interpolates the PR base SHA directly in a `run:` body (informational, predates 198); phase 170 ledger and leaf-count pins now need a bump whenever a CI leaf is added (35 required leaves plus classify-change). Earlier handoffs are in `history/`.
+Last completed phase: 201 (Fix the exact-public companion digest proof). 0.2.14 is released COMPLETE: release run 42713010358 published Hex, Maven and the iOS mirror, both clean-room proofs passed, and the exact-public proof judged all six packages fully_proven under the user's companions-only rule (PD-01, user decision of 2026-11-09: the five companions' digests ignore Hex's `build_env` stamp, the core keeps it, so the core's exact-public digest depends on the Hex version). Phase 200 is complete (9 of 9): 0.2.13 stays recorded as published and FAILURE at the exact-public proof (run 42639651064), superseded by the 0.2.14 run, never re-run; 200-08 and 200-09 were closed by Phase 201 (200-08-BLOCKED.md stays as history). REL-08 and REL-09 are Complete (REL-09 carries the amendment: direction confirmed by the user on 2026-11-09, wording drafted by the planner). REL-07 stays Pending. Phase 199 is still halted at 12 of 19 plans, with plans 13-19 on hold. Standing release approvals are committed (PR 284 merged as 44e2f69b): merges including the release PR, the release-tags step and the Hex, Maven and iOS publishes need no gate; the Maven fire-drill dispatch and remote-branch deletion keep a one-use allow. Reconciled in writing (201-EVIDENCE/reconcile-201.json): runs 42494651844 (0.2.12, PARTIAL) and 42639651064 (0.2.13, FAILURE) each still on attempt 1; issue 281 closed with a scanned comment; PR 280 shipped 0.2.13 and PR 283 shipped 0.2.14; TODO-012 closed as stale; no earlier approval reused.
+
+Open items, each with its owner. (1) REL-07 and Phase 199 SC1 and SC2 carry the `(Annotated 2026-11-09, Phase 201: ...)` note, to be restated by the exact next command (the Phase 199 replanning); the two release runbooks already match the standing rule through PR 284. (2) Threadline 0.1.1 (PR 262) is deferred; reopening condition: a COMPLETE core run (met by 0.2.14) and Phase 199 plans 13-14 revised for current facts; receiver: Phase 199 plans 13-14. (3) Retiring 0.2.12 on Hex is undecided and not recommended; receiver: a new plan with its own one-way gate `hex-retire-0.2.12`. (4) Landing: one human PR from `docs/release-0-2-14-ledger-and-planning` (cut from origin/main, merge oid in 201-EVIDENCE/ledger-pr-201.json) carries the 0.2.13 and 0.2.14 ledger lines and the docs-branch planning record that was not yet on main. The 0.2.14 ledger line was appended by `script/append_release_ledger.sh` because the runner's record-ledger job could not open its own PR while ledger PR 285 (0.2.13) was open; PR 285 was closed with a reason after the landing merge, its branch left. (5) Route B exclusions: 13 retained pre-merge raw sources under 201-EVIDENCE/premerge-201-sources/ (class home_path, a public API URL segment, no local home directory) are left out of the landing; reopening condition: each is redacted in a new commit, or re-dispositioned as not-identifying, and then landed by the next landing PR; owner: the agent running the next command. Because Route B does not merge docs-branch history, the docs-branch commit ids that phase evidence records are not on main (references stay literal). (6) Trailing commits on `docs/199-release-0-2-12` after the landing (ledger-pr-201.json, the 201-08 summary and later metadata) land with the first PR of the next session's work, repeating this route; owner: the agent running the next command. (7) Pre-existing local worktree `~/projects/crosswake-agents-wt` (clean, holding the merged branch `docs/agents-standing-release-approvals`) is left in place for the next milestone-boundary hygiene pass (`docs/MILESTONE-BOUNDARY-HYGIENE.md`) to remove with `git worktree remove` without force. (8) Remote branches remain, and each deletion needs its own allow: `fix/default-ios-generation-builds`, `fix/exact-public-build-env-provenance`, `docs/agents-standing-release-approvals`, `docs/201-planning-record`, `docs/release-0-2-14-ledger-and-planning` and `chore/release-ledger-42639651064` (PR 285's branch); no 0.2.14 bot branch exists. Also open and not touched: release PR 288 (the next release), PR 279, PR 262.
+
+Exact next command: `/gsd-plan-phase 199 --ws quality-ratchet-release`, to revise plans 13-19 for current facts (they name 0.2.12 facts), then `/gsd-execute-phase 199 --ws quality-ratchet-release`. Previous handoff: history/201-08-prior-handoff.md.
 
 ## Carried debt
 
@@ -33,8 +37,8 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 ## Session
 
-**Last session:** 2026-11-07T15:05:42.953Z
-**Stopped at:** Completed 199-06-PLAN.md
+**Last session:** 2026-11-09T23:28:56.747Z
+**Stopped at:** Completed 201-07-PLAN.md
 **Resume file:** None
 
 ## Accumulated Context
@@ -43,6 +47,9 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 
 - Phase 196 edited: edited fields: requirements, success_criteria — SPEC-04 moved intact to v29.0 (overrun cut order, D-03/D-24); both attempts preserved
 - Phase 198 edited: AND-01 and SC1 corpus wording (D-01) and Phase 199 SC6 removal list gains guides/parity_ledger.md (D-08)
+- Phase 200 added 2026-11-08: forward fix and release 0.2.13 after Phase 199's 0.2.12 release run ended PARTIAL (iOS clean-room proof failed: default `gen.shell ios` writes a project that references a CrosswakeHostSettings.xcconfig it never writes). Phase 199 plans 13-19 are held until the fix path is settled.
+- Phase 201 added 2026-11-09: fix the exact-public companion digest proof so a release run can complete; 0.2.13's run ended FAILURE at that proof after every publish succeeded (see 200-08-BLOCKED.md)
+- Phase 201 closed 2026-11-09: 0.2.14 released COMPLETE (run 42713010358); Phase 200 closed with it (200-08 and 200-09 by Phase 201); REL-08 and REL-09 Complete, REL-07 annotated and still Pending
 
 ## Performance Metrics
 
@@ -84,6 +91,25 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 | Phase 199 P04 | 19 min | 3 tasks | 7 files |
 | Phase 199 P05 | 43min | 3 tasks | 10 files |
 | Phase 199 P06 | 14 min | 3 tasks | 6 files |
+| Phase 199 P07 | about 1h 20m (second session; first stopped on a safety-check denial) | 3 tasks | 7 files |
+| Phase 199 P08 | about 40 min of agent work (wall clock spans a 13-hour wait for the user's reply) | 3 tasks | 5 files |
+| Phase 199 P09 | about 25 min | 2 tasks | 8 files |
+| Phase 199 P10 | about 10 h wall clock (9.5 h waiting for the reply) | 3 tasks | 3 files |
+| Phase 199 P11 | about 40 min | 3 tasks | 3 files |
+| Phase 199 P12 | about 55 min (49 min waiting for the reply) | 3 tasks | 4 files |
+| Phase 200 P01 | 35 min | 2 tasks | 5 files |
+| Phase 200 P02 | about 20 min | 3 tasks | 5 files |
+| Phase 200 P03 | about 20 min | 3 tasks | 2 files |
+| Phase 200 P04 | 70 min | 3 tasks | 6 files |
+| Phase 200 P05 | about 10 min | 3 tasks | 31 files |
+| Phase 200 P06 | about 37 min wall clock (waiting on user replies) | 3 tasks | 3 files |
+| Phase 201 P01 | 30min | 2 tasks | 12 files |
+| Phase 201 P02 | 53 min | 3 tasks | 6 files |
+| Phase 201 P03 | about 35 min | 3 tasks | 3 files |
+| Phase 201 P04 | 32 min | 3 tasks | 7 files |
+| Phase 201 P05 | 45min | 3 tasks | 8 files |
+| Phase 201 P06 | 17 min | 3 tasks | 38 files |
+| Phase 201 P07 | 57 min | 3 tasks | 6 files |
 
 ## Decisions
 
@@ -126,6 +152,33 @@ WINDOWS46/47 record missing full coverage and blocked classification/decision;43
 - [Phase 199]: Anonymous environment reads include protection_rules and required reviewers, so the preflight needs no token; environment reads are cached 60s publicly
 - [Phase 199]: 199-04: iOS mirror waits only on publish-android-core (Hex, then Maven, then iOS); scanner pins release.ios.independent_publication and release.approval.linked_graph to the D-01/D-02 wiring
 - [Phase 199]: 199-06: companion receipt attestation takes any of the five companions via CANDIDATE_PACKAGE; companion_publish_authorization.sh render|check derives and verifies the companion REL-17 trailer (closed six-reason BLOCKED set, envelope content cross-check), proven on the real guard predicate and loader
+- [Phase 199]: 199-07: PR 278 merged (a9c4ff74) after green CI on head 04e8160a (ran on synthetic merge 40e9cbf9); first post-merge Release Please run flowed with hosted env preflight PASS; release-PR-head predicate proven by 19 controls and 11 mutants, PR 236 (0.2.12) and PR 262 (0.1.1) pass it with CI green; privacy scan scoped for five pre-existing email-shaped files by orchestrator decision
+- [Phase 199]: 199-08: PR 236 (0.2.12, head efbc7912) rehearsed and receipted: Hex run 42390193460 and iOS run 42390232440 changed nothing; Maven drill run 42450991698 ran once on the user's core-maven-drill allow (dispatched by the orchestrator) and was validated then dropped, POM still 404; attestation run 42451279582 gave a READY FOR APPROVAL receipt, 13 of 13 checks, publication NONE, expires 2026-11-22
+- [Phase 199]: 199-09: candidate docs at PR 236 head efbc7912 pass REL-06 against 0.2.11 (four legs, deferred=ios_host); REL-17 pre_merge gate PASS (expected policy digest unchanged since 0.2.11); trailer 'publish successor core 42390193460' rendered and checked, merge command staged with --match-head-commit and not run; raw pre-merge sources carry the maintainer noreply email, flagged for the 199-19 privacy scope
+- [Phase 199]: 199-10: precheck treats the guard-run age rule as satisfied by the latest main run on the current main head; merge_oid added to the merge record
+- [Phase 199]: 199-11: Hex then Maven published, each under its own allow; run 42494651844 waits at publish-ios-mirror
+- [Phase 199]: 199-12: iOS mirror v0.2.12 published and SC3 proven live both ways; run 42494651844 ended PARTIAL (iOS clean-room proof failed), recorded as observed, phase halted, REL-07 Pending
+- [Phase 200]: 200-01: default gen.shell ios writes CrosswakeHostSettings.xcconfig once (placeholder dev.crosswake.shell, scaffold-once, host-owned, not managed); regression test red on 0.2.12 then green; --local xcodebuild exit 65 then 0; declared output unchanged (61 tests before and after); the project has 4 base configurations and 6 mentions of the file, not six base configurations
+- [Phase 200]: 200-02: pre-release gate script/verify_default_ios_generation_build.sh builds both default iOS forms with an in-run negative control; red on the exact 0.2.12 generator and green on the fix (local 3 s then 13 s, no-flag remote against the public mirror at 0.2.12 4 s then 14 s); blocking step in phase79-ios-proof (local mode only), contract test 16 tests plus CI step pin; fix branch has 3 commits, 7 paths, full suite 3176 ran 0 failures, scanner 106 of 106, nothing pushed
+- [Phase 200]: 200-03: fix PR 282 merged to main as merge commit e8d44c6c (parents 1dcdaad8 and CI-green head 3696f38c) under the standing exception; CI run 42554142308 ran on synthetic merge 6e511a9a; hosted gate step 32 s PASS with control detected, phase79-ios-proof 122 s vs 104 s baseline, 174 billable min vs 250, advisory flags recorded; issue 281 commented; remote fix branch left; residual (remote-form compile not in PR CI) accepted knowingly
+- [Phase 200]: 200-04: drill uploads disposable 0.2.13-firedrill-<run id>, not 0.2.13; gated dispatch performed by the orchestrator on the user's allow (10 h display-to-reply gap, facts rechecked)
+- [Phase 200]: 200-05: candidate docs at PR 280 head 5a6a7521 pass REL-06 against 0.2.12 (four legs, deferred=none, executed=20); no-flag remote form of that head builds against the public mirror 0.2.12 with the control detected; REL-17 pre_merge PASS (policy digest unchanged since 0.2.11); trailer 'publish successor core 42558226150' rendered and checked, merge staged and not run; 23 retained raw sources listed in privacy-carry-200.txt (13 with scanner hits: public API URL path segments and git@github.com)
+- [Phase 201]: 201-01: test names are flat (no describe blocks) so failure output reads 'test <prefix>: ...' for the grading awk
+- [Phase 201]: 201-02: PR 284 was behind main when its pinned merge was attempted; main was merged into the branch (no rebase or force), CI was waited on again, and the merge was pinned to the new head ccfe93d8. Planning record (PR 286) merged first as 665f0b9b; PR 284 merged as 44e2f69b.
+- [Phase 201]: 201-03: companions-only fix landed on the fix branch (user decision 2026-11-09): build_env shape-validated for every package, dropped from the metadata digest only for the five literal companion names, core keeps it (its digest stays Hex-version-sensitive; release plan re-reads the newest Hex before the core merge and publish); real-tarball regression 19 red-to-green then 22 with three provenance tests; six mutations each red on their own controls and restored; release_candidate suite 218 (floor 196 plus 22), hermetic 3198 ran 0 failures, three guards rc 0; nothing pushed
+- [Phase 201]: Plan 201-04: the companions-only build_env fix was measured on the real 0.2.13 family (old rule reproduces metadata 1/6; fix gives 6/6 under Hex 2.7.0 and 5 of 5 companions under Hex 2.5.1, core differing by design) and merged to main as PR 287 (merge fdc218f9, CI ran on synthetic merge 76d6415f of head 57024c87).
+- [Phase 201]: 201-05: core candidate builder Hex read from the Hex rehearsal run provenance lines (attestation log has none); hex_latest 2.7.0 must be re-read at 201-07 prechecks
+- [Phase 201]: 201-06: every privacy-hit retained pre-merge source (13 of 23, all class home_path) is dispositioned exclude-from-landing under the disposition rule; Plan 08 decides the landing scope
+- [Phase 201]: 201-07: 0.2.14 shipped under the standing approvals; exact-public proof judged all six packages fully_proven (run 42713010358). Ledger line for 0.2.14 has no bot PR because ledger PR 285 (0.2.13) is still open; Plan 08 must choose the route.
+- [Phase 201]: PD-01 (user decision 2026-11-09): `build_env` is shape-validated for every package and excluded from the digest only for the five literal companion names; the core keeps it, so its exact-public digest depends on the Hex version.
+- [Phase 201]: PD-02: fixtures are three real Hex tarballs (public and Hex 2.6+ rebuild of rulestead 0.1.1, public core 0.2.13), with `inspect_single!/2` so tests use only real data.
+- [Phase 201]: PD-03: red-before-fix evidence captured on the unchanged digest rule; green captured after the fix.
+- [Phase 201]: PD-04: measurements M1 to M4 stay in phase evidence, not CI; the exact-public proof stays release-blocking and is not added to the required-check policy.
+- [Phase 201]: PD-05: REL-09 amended to name the 0.2.14 run, keeping the original sentence; the user confirmed the direction on 2026-11-09 and the planner drafted the wording.
+- [Phase 201]: PD-06: the planning record landed on main by PR first, the rest of the docs branch lands through 201-08; a named, narrowed exception to the one-main-checkout rule (worktrees for the parallel run and for code).
+- [Phase 201]: PD-07 (user decision 2026-11-09): PR 284 (standing release approvals) merges before any release step; the Maven fire drill and remote-branch deletion keep their own allow.
+- [Phase 201]: PD-08: `artifact-provenance:` stderr line per tarball names the builder Hex version and whether `build_env` was digested; one diagnostic line, no new label taxonomy.
+- [Phase 201]: 201-08: 0.2.12 and 0.2.13 reconciled from live reads (both runs still attempt 1, superseded by 0.2.14); issue 281 and TODO-012 closed; REL-08 and REL-09 Complete, REL-07 Pending; Phase 200 9/9 and Phase 201 8/8; the 0.2.14 ledger line was generated by script because ledger PR 285 was still open.
 
 ### Blockers
 

@@ -1,0 +1,7 @@
+Running ExUnit with seed: 193050, max_cases: 36
+Excluding tags: [requires_example_host: true, engine_present: true, collateral_binaries: true, advisory_only: true, generated_manifest: true]
+
+..........................................................................................................................................................................................................................
+Finished in 12.9 seconds (5.3s async, 7.5s sync)
+218 tests, 0 failures
+mix-test-gate: rc=0 total=218 excluded=0 skipped=0 ran=218 failures=0 invalid=0 min=218 min_total=0 verdict=PASS

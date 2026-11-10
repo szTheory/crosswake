@@ -1,0 +1,6 @@
+artifact-provenance: package=crosswake version=0.2.13 build_env_hex=none build_env_digested=no
+artifact-provenance: package=crosswake_rulestead version=0.1.1 build_env_hex=none build_env_digested=no
+artifact-provenance: package=crosswake_rindle version=0.1.0 build_env_hex=none build_env_digested=no
+artifact-provenance: package=crosswake_sigra version=0.1.3 build_env_hex=none build_env_digested=no
+artifact-provenance: package=crosswake_chimeway version=0.1.2 build_env_hex=none build_env_digested=no
+artifact-provenance: package=crosswake_threadline version=0.1.0 build_env_hex=none build_env_digested=no

@@ -1,0 +1,93 @@
+{
+  "rehearsals": [
+    {
+      "workflow": "hex-publish.yml",
+      "inputs": {
+        "operation": "candidate-rehearsal",
+        "release_version": "0.2.13",
+        "candidate_head": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+        "candidate_tree": "4605bb05edf60b04f7330058a6c38675c064e746",
+        "candidate_base": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+        "candidate_receipt": "eeed64caf141fe37a60804329848c0ba683ec9ec49166fb9020d37c5890bd347"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 42390193460,
+      "intent_at_utc": "2026-11-09T03:46:30Z",
+      "head_before": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 42558226150,
+      "run_head_sha": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "run_conclusion": "success",
+      "head_after": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "external_effect": "none",
+      "artifact_id": 13647959151,
+      "rehearsal_json_sha256": "bf0c3d55ecad300233ee98e673fb3dfd7d062276c9314dda65d6854e587f2bb3",
+      "external_state_changed": false,
+      "verified": true
+    },
+    {
+      "workflow": "ios-mirror-backfill.yml",
+      "inputs": {
+        "operation": "candidate-rehearsal",
+        "version": "0.2.13",
+        "release_ref": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+        "candidate_head": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+        "candidate_tree": "4605bb05edf60b04f7330058a6c38675c064e746",
+        "candidate_base": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c",
+        "candidate_receipt": "eeed64caf141fe37a60804329848c0ba683ec9ec49166fb9020d37c5890bd347"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 42451279582,
+      "intent_at_utc": "2026-11-09T03:46:51Z",
+      "head_before": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatch_exit_code": 0,
+      "run_id": 42558247628,
+      "run_head_sha": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "run_conclusion": "success",
+      "head_after": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "external_effect": "none",
+      "artifact_id": 13648014098,
+      "rehearsal_json_sha256": "6df32d20e0c717ff2ff4ff89d63da9bcad2a6aab2533600796e9bc04ff54287b",
+      "external_state_changed": false,
+      "verified": true
+    },
+    {
+      "workflow": "maven-publish-fire-drill.yml",
+      "inputs": {
+        "fire_drill_version": "0.2.13",
+        "candidate_head": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+        "candidate_tree": "4605bb05edf60b04f7330058a6c38675c064e746",
+        "candidate_base": "e8d44c6c907a5f16d333c62df6b8d6dcd4d32e3c"
+      },
+      "dispatch_ref": "release-please--branches--main",
+      "prior_max_run_id": 42450991698,
+      "intent_at_utc": "2026-11-09T14:13:56Z",
+      "head_before": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "gate_id": "core-maven-drill",
+      "gate_attempt": 1,
+      "gate_head": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "dispatch_attempted": true,
+      "delivery": "ACCEPTED",
+      "dispatched_by": "orchestrator (the user allow reached the orchestrator directly; the plan agent did not dispatch)",
+      "dispatched_at_utc": "2026-11-09T14:13:56Z",
+      "run_id": 42632645093,
+      "run_head_sha": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "run_conclusion": "success",
+      "head_after": "5a6a752185cc557af30b0f87244b8088ac83ff93",
+      "external_effect": "validated_then_dropped",
+      "central_deployment_id": "not_exposed_by_run",
+      "central_state_reached": "VALIDATED",
+      "central_final_state": "DROPPED",
+      "disposable_coordinate": "io.github.sztheory:crosswake-shell-core-android:0.2.13-firedrill-42632645093",
+      "pom_status_after": 404,
+      "artifact_id": 13681721995,
+      "rehearsal_json_sha256": "cf4e122d558e173f980810c144321a361e419c6b9df9f9a21e06911d700e2bd6",
+      "verified": true
+    }
+  ],
+  "superseded": []
+}

@@ -1,0 +1,130 @@
+==> mime
+Compiling 1 file (.ex)
+Generated mime app
+==> nimble_options
+Compiling 3 files (.ex)
+Generated nimble_options app
+==> fine
+Compiling 1 file (.ex)
+Generated fine app
+==> crosswake
+===> Analyzing applications...
+===> Compiling telemetry
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> phoenix_html
+Compiling 6 files (.ex)
+Generated phoenix_html app
+==> phoenix_template
+Compiling 4 files (.ex)
+Generated phoenix_template app
+==> phoenix_pubsub
+Compiling 12 files (.ex)
+Generated phoenix_pubsub app
+==> plug_crypto
+Compiling 5 files (.ex)
+Generated plug_crypto app
+==> plug
+Compiling 1 file (.erl)
+Compiling 42 files (.ex)
+Generated plug app
+==> elixir_make
+Compiling 8 files (.ex)
+Generated elixir_make app
+==> cc_precompiler
+Compiling 3 files (.ex)
+Generated cc_precompiler app
+==> lazy_html
+Compiling 3 files (.ex)
+Generated lazy_html app
+==> websock
+Compiling 1 file (.ex)
+Generated websock app
+==> websock_adapter
+Compiling 4 files (.ex)
+Generated websock_adapter app
+==> phoenix
+Compiling 74 files (.ex)
+Generated phoenix app
+==> phoenix_live_view
+Compiling 49 files (.ex)
+Generated phoenix_live_view app
+==> crosswake
+Compiling 174 files (.ex)
+Generated crosswake app
+Running ExUnit with seed: 698334, max_cases: 36
+Excluding tags: [requires_example_host: true, engine_present: true, collateral_binaries: true, advisory_only: true, generated_manifest: true]
+
+.
+
+  1) test negative control: removing "deleting a remote branch" breaks the gate predicate (Crosswake.Planning.AgentsContractTest)
+     test/crosswake/planning/agents_contract_test.exs:51
+     live AGENTS.md does not contain gate phrase "deleting a remote branch"
+     code: assert String.contains?(collapse(text), phrase),
+     stacktrace:
+       test/crosswake/planning/agents_contract_test.exs:55: (test)
+
+.
+
+  2) test live AGENTS.md keeps the approval gate and names the governing ADR (Crosswake.Planning.AgentsContractTest)
+     test/crosswake/planning/agents_contract_test.exs:36
+     Expected truthy, got false
+     code: assert gate_ok?(text)
+     arguments:
+
+         # 1
+         "# Crosswake Agent Guide\n\n## Project Context\n\nRead these before planning or implementation work, in this order:\n\n1. `.planning/BEARINGS.md` — posture invariants, tripwires, and the do-not-re-open list\n2. `.planning/ROADMAP-ROLLING.md` — NOW, NEXT, LATER, PARKED and DROPPED work\n3. `.planning/ADR-FIRST-B2C-ADOPTER.md` — governing decision, reversal conditions, privacy, stop list\n4. `.planning/PROJECT.md` — project thesis, constraints, history, and decisions\n5. The active workstream's `STATE.md` and `ROADMAP.md` (resolve it with `--ws`; never infer one)\n6. `.planning/FIRST-B2C-ADOPTER-ADOPTION-BRIEF.md` and `.planning/FIRST-B2C-ADOPTER-ROUTE-POLICY-MAP.md`\n   (read when resuming adopter work)\n\n## Current Priority\n\nCrosswake is infrastructure for the **First B2C Adopter**, not a separate business line: one real\nPhoenix application, one physical iPhone, one offline mutation island. Priority order: (1) explicit\nfirst-adopter route ownership; (2) host-reusable proof that preserves existing browser tests and\nfixtures; (3) privacy-safe scoped replay and backend auth authority; (4) real offline pronunciation\nmedia through one host-supplied foreground iOS adapter; (5) physical-iPhone offline/replay evidence;\n(6) only defects demonstrated by that evidence. If customer Alpha is web-only, Crosswake has no\nAlpha deliverable: complete the bounded route inventory, then pause until the public-v1 mobile path\nis active.\n\n## Working Rules\n\n- Preserve the core thesis: Crosswake is a Phoenix-first route-policy and runtime-contract system,\n  not a universal UI framework. Keep runtime ownership explicit per route; no generic WebView\n  wrapper behavior or LiveView-driven native rendering.\n- Treat bridge contracts as semantic, typed, versioned, and low-frequency; continuous client\n  authority belongs in an offline island or native screen. Keep offline claims honest: cached\n  read-only is not local mutation, and one study island is not generic sync.\n- Preserve fail-closed explicit denials; flag any path that can degrade silently. Treat diagnostics\n  and proof as product surface, but prefer one-command host proof over new label taxonomy.\n- Android is unfrozen only for proof and parity of existing contracts: generated-shell, Maven,\n  JVM-hermetic and shared-vector evidence. Claims stop at JVM-hermetic proof; no emulator, device or\n  feature-breadth claim is made until a later phase produces that evidence. Android never gates the\n  first adopter's physical-iPhone proof. Re-freeze if Android work delays any iOS gate by more than\n  one milestone.\n- Do not re-open the stop list in `.planning/BEARINGS.md` (`Do not re-open`) unless the governing\n  ADR's reversal condition is met.\n- For a just-displayed, one-use approval gate, accept a plain-language `allow` or `hold`, bound\n  to that attempt and its displayed scope. The gate is required for a Maven fire-drill dispatch\n  and remote-branch deletion. Feature-branch commits and pushes need no gate. The user never\n  copies hashes. Gate approvals are never standing and never transfer, except as stated below.\n- Standing exceptions (user decisions, 2026-11-05 and 2026-11-09): merging a PR to `main`, the\n  release PR included, approving the release-tags step, and the Hex, Maven and iOS mirror\n  publishes need no gate. Merge only with Crosswake CI green on the exact head, as a merge commit\n  pinned to it (`--match-head-commit`), saying which commit CI ran on. Every release precheck,\n  receipt check and drift recheck still runs, and a failed or uncertain step is never retried\n  under an earlier approval. Fire-drill dispatches and remote-branch deletion keep their own gate.\n\n## Sensitive Data Rules\n\n- Durable codename: **First B2C Adopter** (`first_b2c_adopter`).\n- Public guides: say **first adopter**.\n- Never record or infer the real adopter name, founder identity, price, geography, customer\n  information, proprietary taxonomy, or revealing links.\n- Never search git history or external sources to reidentify the adopter.\n- Treat offline mutation payloads as sensitive. Raw answers, media, transcripts, credentials,\n  ac" <> ...
+
+     stacktrace:
+       test/crosswake/planning/agents_contract_test.exs:39: (test)
+
+
+
+  3) test negative control: removing "merging a PR to `main` needs no gate" breaks the gate predicate (Crosswake.Planning.AgentsContractTest)
+     test/crosswake/planning/agents_contract_test.exs:51
+     live AGENTS.md does not contain gate phrase "merging a PR to `main` needs no gate"
+     code: assert String.contains?(collapse(text), phrase),
+     stacktrace:
+       test/crosswake/planning/agents_contract_test.exs:55: (test)
+
+...
+
+  4) test negative control: removing "never transfer to another attempt" breaks the gate predicate (Crosswake.Planning.AgentsContractTest)
+     test/crosswake/planning/agents_contract_test.exs:51
+     live AGENTS.md does not contain gate phrase "never transfer to another attempt"
+     code: assert String.contains?(collapse(text), phrase),
+     stacktrace:
+       test/crosswake/planning/agents_contract_test.exs:55: (test)
+
+
+
+  5) test negative control: removing "creating or pushing tags" breaks the gate predicate (Crosswake.Planning.AgentsContractTest)
+     test/crosswake/planning/agents_contract_test.exs:51
+     live AGENTS.md does not contain gate phrase "creating or pushing tags"
+     code: assert String.contains?(collapse(text), phrase),
+     stacktrace:
+       test/crosswake/planning/agents_contract_test.exs:55: (test)
+
+
+
+  6) test negative control: removing "Hex, Maven or iOS publish" breaks the gate predicate (Crosswake.Planning.AgentsContractTest)
+     test/crosswake/planning/agents_contract_test.exs:51
+     live AGENTS.md does not contain gate phrase "Hex, Maven or iOS publish"
+     code: assert String.contains?(collapse(text), phrase),
+     stacktrace:
+       test/crosswake/planning/agents_contract_test.exs:55: (test)
+
+
+
+  7) test negative control: removing "merging the release PR" breaks the gate predicate (Crosswake.Planning.AgentsContractTest)
+     test/crosswake/planning/agents_contract_test.exs:51
+     live AGENTS.md does not contain gate phrase "merging the release PR"
+     code: assert String.contains?(collapse(text), phrase),
+     stacktrace:
+       test/crosswake/planning/agents_contract_test.exs:55: (test)
+
+
+Finished in 0.06 seconds (0.06s async, 0.00s sync)
+12 tests, 7 failures
+mix-test-gate: rc=2 total=12 excluded=0 skipped=0 ran=12 failures=7 invalid=0 min=1 min_total=0 verdict=FAIL reason=mix_rc

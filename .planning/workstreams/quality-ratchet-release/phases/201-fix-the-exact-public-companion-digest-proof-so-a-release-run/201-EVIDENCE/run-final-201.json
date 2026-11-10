@@ -1,0 +1,190 @@
+{
+  "run_id": 42713010358,
+  "run_url": "https://github.com/szTheory/crosswake/actions/runs/42713010358",
+  "run_status": "completed",
+  "run_conclusion": "success",
+  "attempt": 1,
+  "observed_at_utc": "2026-11-09T23:25:00Z",
+  "jobs": {
+    "Alert on companion or native publish/proof failure (PROOF-03c, D-15)": "skipped",
+    "Assert lockstep version coordinates match": "skipped",
+    "Clean-room proof — Android gradle build": "success",
+    "Clean-room proof — crosswake_chimeway resolvability + doctor": "skipped",
+    "Clean-room proof — crosswake_rindle resolvability + doctor": "skipped",
+    "Clean-room proof — crosswake_rulestead resolvability + doctor": "skipped",
+    "Clean-room proof — crosswake_sigra resolvability + doctor": "skipped",
+    "Clean-room proof — crosswake_threadline module-shipment + zero-sibling-dep": "skipped",
+    "Clean-room proof — iOS swift build": "success",
+    "Mirror iOS core to split repo": "success",
+    "Native release status rollup": "success",
+    "Publish Android core to Maven Central": "success",
+    "Publish crosswake_chimeway to Hex.pm": "skipped",
+    "Publish crosswake_rindle to Hex.pm": "skipped",
+    "Publish crosswake_rulestead to Hex.pm": "skipped",
+    "Publish crosswake_sigra to Hex.pm": "skipped",
+    "Publish crosswake_threadline to Hex.pm": "skipped",
+    "Publish to Hex.pm": "success",
+    "Release Please": "success",
+    "Strip stale release-as after companion release (PROOF-03b)": "skipped",
+    "release: approve tag creation": "success",
+    "release: approved-candidate merge guard": "success",
+    "release: exact-public artifact proof / shared: exact-public artifact proof body": "success",
+    "release: exact-public artifact proof / shared: record the proof verdict in the release ledger": "success",
+    "release: ios mirror tag check": "success",
+    "release: linked release rollup": "success"
+  },
+  "ios_clean_room": "success",
+  "mirror_tag_check": "success",
+  "mirror_tag_check_line": "mirror-tag: version 0.2.14 source_tag ios-core-v0.2.14 source_tree 75dcd5039028 mirror_tag v0.2.14 mirror_commit 095267ea23c9 mirror_tree 75dcd5039028 newest v0.2.14 verdict=PASS",
+  "linked_rollup_state": "COMPLETE",
+  "linked_status": {
+    "version": "0.2.14",
+    "state": "COMPLETE",
+    "schema_version": "1.1.0",
+    "merge_oid": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8",
+    "successful_coordinates": [
+      "hex:crosswake@0.2.14",
+      "maven:io.github.sztheory:crosswake-shell-core-android@0.2.14",
+      "swift:crosswake-shell-core-ios@0.2.14"
+    ],
+    "failed_step": null,
+    "next_action": "no_action_required",
+    "approved_ref": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8",
+    "candidate_receipt": "aecf5b14bb3e1aa91705bee3b28eb10f263ca3c49eea2f89cae2e962b96ba5d8",
+    "child_states": {
+      "hex": "success",
+      "android": "success",
+      "ios_mirror": "success",
+      "ios_public_proof": "success",
+      "android_public_proof": "success",
+      "exact_public": "success"
+    },
+    "failed_ref": null,
+    "receipt_external_state": {
+      "changed": true,
+      "publication": "COMPLETE",
+      "successful_coordinates": [
+        "hex:crosswake@0.2.14",
+        "maven:io.github.sztheory:crosswake-shell-core-android@0.2.14",
+        "swift:crosswake-shell-core-ios@0.2.14"
+      ],
+      "failed_step": null,
+      "all_linked_proven": true
+    },
+    "approved_head": "407398160bb5761d90ade7182676dd76691617be",
+    "approved_tree": "16aca5ebc43d52ed69e32feb55f683218540ad29"
+  },
+  "native_core": "complete",
+  "native_status": {
+    "version": "0.2.14",
+    "native_core": "complete",
+    "ios": {
+      "released": true,
+      "publish": "success",
+      "proof": "success",
+      "state": "proven"
+    },
+    "android": {
+      "released": true,
+      "publish": "success",
+      "proof": "success",
+      "state": "proven"
+    },
+    "next_action": "No native recovery action needed."
+  },
+  "exact_public": "success",
+  "exact_public_result_state": "COMPLETE",
+  "exact_public_summary": {
+    "install_count": 2,
+    "package_count": 6,
+    "profile_count": 5,
+    "path_lock_count": 0,
+    "failed_packages": [],
+    "attested_packages": [],
+    "live_status": "PASS"
+  },
+  "exact_public_packages": [
+    {
+      "package": "crosswake",
+      "reason": null,
+      "claim": "fully_proven",
+      "reason_note": "the proof result carries no reason field for a fully_proven package"
+    },
+    {
+      "package": "crosswake_rulestead",
+      "reason": null,
+      "claim": "fully_proven",
+      "reason_note": "the proof result carries no reason field for a fully_proven package"
+    },
+    {
+      "package": "crosswake_rindle",
+      "reason": null,
+      "claim": "fully_proven",
+      "reason_note": "the proof result carries no reason field for a fully_proven package"
+    },
+    {
+      "package": "crosswake_sigra",
+      "reason": null,
+      "claim": "fully_proven",
+      "reason_note": "the proof result carries no reason field for a fully_proven package"
+    },
+    {
+      "package": "crosswake_chimeway",
+      "reason": null,
+      "claim": "fully_proven",
+      "reason_note": "the proof result carries no reason field for a fully_proven package"
+    },
+    {
+      "package": "crosswake_threadline",
+      "reason": null,
+      "claim": "fully_proven",
+      "reason_note": "the proof result carries no reason field for a fully_proven package"
+    }
+  ],
+  "exact_public_provenance_lines": [
+    "artifact-provenance: package=crosswake version=0.2.14 build_env_hex=2.7.0 build_env_digested=yes",
+    "artifact-provenance: package=crosswake_rulestead version=0.1.1 build_env_hex=none build_env_digested=no",
+    "artifact-provenance: package=crosswake_rindle version=0.1.0 build_env_hex=none build_env_digested=no",
+    "artifact-provenance: package=crosswake_sigra version=0.1.3 build_env_hex=none build_env_digested=no",
+    "artifact-provenance: package=crosswake_chimeway version=0.1.2 build_env_hex=none build_env_digested=no",
+    "artifact-provenance: package=crosswake_threadline version=0.1.0 build_env_hex=none build_env_digested=no"
+  ],
+  "ledger_pr": null,
+  "ledger_line": null,
+  "ledger_pr_reason": "record-ledger ran and succeeded (job 129511426824) and appended the 0.2.14 success line in the runner workspace, but opened no pull request: ledger PR 285 (the 0.2.13 failure line, run 42639651064, opened 2026-11-09T15:59:03Z) is still open, and the job does not open a duplicate (\"Ledger pull request #285 is already open - not opening a duplicate. Merge #285, then re-run this job\"). The 0.2.14 line therefore exists in no PR or branch. Nothing was re-run, PR 285 was not touched.",
+  "ledger_job": {
+    "id": 129511426824,
+    "conclusion": "success",
+    "env": {
+      "PACKAGE": "crosswake",
+      "VERSION": "0.2.14",
+      "APPROVED_HEAD": "407398160bb5761d90ade7182676dd76691617be",
+      "PUBLISHED_REF": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8",
+      "LANE": "ordinary",
+      "RUN_ID": "42713010358",
+      "OUTCOME": "success"
+    }
+  },
+  "release_status_live": {
+    "rev_parse_head": "dc6a8ed30dd896f0cb3214276ecb922ac73b85a8",
+    "summary_lines": [
+      "status: OK",
+      "- hex: manifest=0.2.14 configured=0.2.14 live_hex=ok",
+      "- ios-core: manifest=0.2.14 configured=0.2.14 live_ios_mirror=ok",
+      "- android-core: manifest=0.2.14 configured=0.2.14 live_maven=ok",
+      "- state: COMPLETE",
+      "- REL-17 evidence: BLOCKED (missing_evidence)",
+      "- REL-17 next step: gather fresh evidence and request a new gate"
+    ]
+  },
+  "release_failure_alert_issue": null,
+  "other_new_prs": [
+    {
+      "number": 288,
+      "head": "release-please--branches--main",
+      "title": "chore: release main",
+      "created_at": "2026-11-09T22:42:02Z",
+      "note": "opened by Release Please after the 0.2.14 merge; observed only"
+    }
+  ]
+}

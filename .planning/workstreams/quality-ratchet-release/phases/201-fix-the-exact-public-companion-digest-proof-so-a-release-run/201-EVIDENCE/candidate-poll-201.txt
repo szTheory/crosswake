@@ -1,0 +1,3 @@
+poll: at=2026-11-09T21:32:38Z n=1 head=1068230b56cf9383f21e62f06cc3b20cefd54fe2 base=0aa184704009c5baf9c3550cf7cf7fde9228f2b8 contains_fix=no contains_approvals=no
+poll: at=2026-11-09T21:34:40Z n=2 head=407398160bb5761d90ade7182676dd76691617be base=fdc218f94851676b925c4e3042e3567baf5b8391 contains_fix=yes contains_approvals=yes
+poll: result=READY reads=2 minutes=2

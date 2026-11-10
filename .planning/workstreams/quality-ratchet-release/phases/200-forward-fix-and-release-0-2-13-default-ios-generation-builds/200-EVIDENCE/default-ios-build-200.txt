@@ -1,0 +1,19 @@
+note: script/verify_default_ios_generation_build.sh, local form. 'before' generates with the main checkout (lib and priv equal to tag hex-v0.2.12, checked with git diff); 'after' generates with the fix branch worktree.
+before: rc=1
+before: default-ios-build: mode=local project=generated generator=2a95e0e874b91b5cb06a73ee158600343b75f90f generator_dirty=no remote_from=- remote_min=- resolved=- build_rc=65 build_seconds=2 control_rc=- control=skipped verdict=FAIL reason=build_failed first_error=<work>/target/native/ios/crosswake_shell/CrosswakeShell.xcodeproj: error: Unable to open base configuration reference file '<work>/target/native/ios/crosswake_shell/CrosswakeHostSettings.xcconfig'. (in target 'CrosswakeShell' from project 'CrosswakeShell')
+after: rc=0
+after: default-ios-build: mode=local project=generated generator=53f4338d8bf0e9d0727327abb39a573bb9059548 generator_dirty=no remote_from=- remote_min=- resolved=- build_rc=0 build_seconds=11 control_rc=65 control=detected verdict=PASS first_error=none
+time: before whole run 3 s (build 2 s, exit 65); after whole run 13 s (build 11 s, control 65 detected)
+remote-rehearsal-before: rc=1
+remote-rehearsal-before: default-ios-build: mode=remote project=generated generator=dbe33d4da6cb467110a2a016eb31c674820906b8 generator_dirty=no remote_from=0.2.11 remote_min=0.2.12 resolved=- build_rc=65 build_seconds=3 control_rc=- control=skipped verdict=FAIL reason=build_failed first_error=<work>/target/native/ios/crosswake_shell/CrosswakeShell.xcodeproj: error: Unable to open base configuration reference file '<work>/target/native/ios/crosswake_shell/CrosswakeHostSettings.xcconfig'. (in target 'CrosswakeShell' from project 'CrosswakeShell')
+remote-rehearsal: rc=0
+remote-rehearsal: default-ios-build: mode=remote project=generated generator=53f4338d8bf0e9d0727327abb39a573bb9059548 generator_dirty=no remote_from=0.2.12 remote_min=0.2.12 resolved=0.2.12 build_rc=0 build_seconds=11 control_rc=65 control=detected verdict=PASS first_error=none
+time: remote-rehearsal-before whole run 4 s (build 3 s, exit 65); remote-rehearsal whole run 14 s (build 11 s, resolved the public mirror tag v0.2.12, control 65 detected)
+note: remote_from=0.2.11 in the before line is the main checkout's mix.exs version on the docs branch; the scratch copy's minimumVersion was rewritten to 0.2.12 (mirror tag v0.2.12 exists: git ls-remote). upToNextMajorVersion resolves the newest 0.x mirror tag, so the rehearsal version must be the newest mirror tag (0.2.12 until 0.2.13 is published).
+tests: contract mix-test-gate: rc=0 total=16 excluded=0 skipped=0 ran=16 failures=0 invalid=0 min=12 min_total=0 verdict=PASS
+tests: contract+regression+ci-integrity mix-test-gate: rc=0 total=47 excluded=0 skipped=0 ran=47 failures=0 invalid=0 min=17 min_total=0 verdict=PASS
+tests: leaf-manifest self-test rc=0 (9 unit tests, 7 stage-parity controls)
+tests: leaf-manifest maximum-shape rc=0 (maximum-shape: pass jobs=38)
+tests: list_merge_blocking_checks --emitters rc=0
+tests: mutants of the script each turned the contract test red (resolved check removed, version compare removed, control keeps settings file, xcodebuild flags changed); the unmutated script is restored (cmp equal)
+note: the plan's bare 'python3 script/check_ci_leaf_manifest.py' is a usage error (exit 2; it requires --self-test or --maximum-shape), so the manifest evidence is the self-test plus the maximum-shape form that script/check_phase165_efficient_ci.sh uses

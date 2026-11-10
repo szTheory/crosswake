@@ -1,7 +1,8 @@
 ---
 id: TODO-012
 title: The exact-public proof requires one candidate ref for all six packages, which contradicts independent companion versioning
-status: open
+status: closed
+closed: 2026-11-09
 created: 2026-09-15
 severity: high
 surfaced_by: attempting 168-UAT test 1 after TODO-010 was closed
@@ -100,3 +101,11 @@ is the property worth having, while dropping an assumption the release design ne
   `gh run download` of an artifact that does not exist
 - `docs/COMPANION-PUBLISH-RUNBOOK.md:16-18` — companions are not members of the linked approval
 - `TODO-011` — the separate, already-failing per-companion clean-room lane
+
+## Resolution
+
+Closed as stale on 2026-11-09 (Phase 201, plan 08). The premise, that the exact-public proof needs one candidate ref for all six packages, no longer holds. Evidence:
+
+1. `script/verify_companion_cleanroom.sh` now reads a per-package `approved_ref` from the approved manifest and resolves each package's public source ref with `package_source_ref.sh ... public` (option 2 above, per-package approved refs).
+2. Release run 38155320492 (core 0.2.11) ended COMPLETE with six packages.
+3. Release run 42713010358 (core 0.2.14) ended COMPLETE with all six packages fully proven by the exact-public proof, under the companions-only `build_env` rule.

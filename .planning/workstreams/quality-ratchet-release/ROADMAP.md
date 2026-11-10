@@ -19,9 +19,9 @@
 - [x] **Phase 196: Spec and structure ratchet** - Sensitive offline, policy and bridge specs can no longer pass empty, boundary and exhaustive policy specs exist, a Muex pilot decides adopt or drop, and compile-cycle, bare-rescue and dependency ratchets hold (completed 2026-10-29)
 - [x] **Phase 197: Public docs truth** - The documented install path runs on a normal host, version and telemetry claims are true, "Android frozen" text is gone, and docs checks report counts (completed 2026-11-05)
 - [x] **Phase 198: Android foreign-host proof** - A generated parity ledger, a Kotlin test floor, and a fresh foreign Gradle project that resolves the published Maven coordinate and passes JVM tests on Linux CI (completed 2026-11-05)
-- [ ] **Phase 199: Release 0.2.12** - One real release, core first, with a separate `allow` per merge, publish and tag, and a post-publish check that the iOS mirror tag equals the release version
-- [ ] **Phase 200: Forward fix and release 0.2.13: default iOS generation builds** - The default `mix crosswake.gen.shell ios` output builds, a pre-release gate proves it, and the fix ships as 0.2.13 through the same individually approved pipeline
-- [ ] **Phase 201: Fix the exact-public companion digest proof so a release run can complete**
+- [ ] **Phase 199: Release 0.2.12** - One real release, core first, with a separate `allow` per merge, publish and tag, and a post-publish check that the iOS mirror tag equals the release version (see the 2026-11-09 annotation on SC2)
+- [x] **Phase 200: Forward fix and release 0.2.13: default iOS generation builds** - The default `mix crosswake.gen.shell ios` output builds, a pre-release gate proves it, and the fix ships as 0.2.13 through the same individually approved pipeline
+- [x] **Phase 201: Fix the exact-public companion digest proof so a release run can complete** - 0.2.14 shipped with the companions-only `build_env` fix and its release run ended COMPLETE with all six packages fully proven
 
 ### Phase 200: Forward fix and release 0.2.13: default iOS generation builds
 
@@ -29,12 +29,12 @@
 **Success Criteria** (what must be TRUE):
   1. The default iOS generation path produces a project whose referenced files all exist; a regression test asserts it on the real generator output, and the diagnosis reproduction (a default-generated project with 6 references and no file) fails the test before the fix and passes after.
   2. A pre-release gate builds the default-generated project with `xcodebuild` before any release; its findings are measured before it becomes merge-blocking, and it is shown to fail on the 0.2.12 behavior.
-  3. The fix is released as 0.2.13 from Hex, Maven and the iOS mirror, core first, with a separate one-use `allow` for the release-PR merge, the tags and each publish (approvals are never standing and never transfer from Phase 199), and the release run ends COMPLETE including the iOS clean-room proof and exact-public proof.
+  3. The fix is released as 0.2.13 from Hex, Maven and the iOS mirror, core first, with a separate one-use `allow` for the release-PR merge, the tags and each publish (approvals are never standing and never transfer from Phase 199), and the release run ends COMPLETE including the iOS clean-room proof and exact-public proof. (Annotated 2026-11-09, Phase 201: met by the 0.2.14 release run 42713010358, which ended COMPLETE including both proofs; 0.2.13's run 42639651064 published everything and ended FAILURE at the exact-public proof, superseded and not re-run.)
   4. The 0.2.12 PARTIAL release is reconciled in writing: release run 42494651844, issue 281 and PR 280 are dispositioned, whether to retire 0.2.12 on Hex is decided separately, and nothing is re-run or re-approved under a used `allow`.
   5. The threadline companion release (0.1.1, PR 262), deferred from Phase 199, is either released after 0.2.13 or recorded as deferred with the condition that reopens it.
 **Requirements**: REL-08, REL-09 (added 2026-11-08 at planning; REL-08 amended in plan revision 1 to name both default iOS forms, `--local` and the no-flag remote form, and the user accepted that wording on 2026-11-08; REL-07 stays Pending until the Phase 199 closeout)
 **Depends on:** Phase 199
-**Plans:** 7/9 plans executed (200-08 blocked after every publish succeeded; see 200-08-BLOCKED.md), sequential waves 1–9. Code work in a worktree on `fix/default-ios-generation-builds` (and later `docs/release-ledger-0-2-13`), each cut from `origin/main` with no `.planning/` path and merged under the standing exception; Phase 200 evidence on the local branch `docs/199-release-0-2-12`, never pushed by Phase 200 (its push stays with the Phase 199 closeout and its privacy scope). Six one-use gates for 0.2.13 (`core-maven-drill`, `core-merge`, `core-tags`, `core-hex`, `core-maven`, `core-ios`) in `200-EVIDENCE/gates-200.txt`, each displayed and performed by the orchestrator, each order-checked by the phase-local `scripts/gate-order-200.awk` (53 fixture controls, the plan checker's 18 included); no Phase 199 approval transfers. Both default iOS forms (`--local` and the no-flag remote form) are built before any irreversible step.
+**Plans:** 9/9 plans complete (200-08 and 200-09 closed by Phase 201 on 2026-11-09 after the 0.2.14 run 42713010358 ended COMPLETE; 200-08-BLOCKED.md stays as history), sequential waves 1–9. Code work in a worktree on `fix/default-ios-generation-builds` (and later `docs/release-ledger-0-2-13`), each cut from `origin/main` with no `.planning/` path and merged under the standing exception; Phase 200 evidence on the local branch `docs/199-release-0-2-12`, never pushed by Phase 200 (its push stays with the Phase 199 closeout and its privacy scope). Six one-use gates for 0.2.13 (`core-maven-drill`, `core-merge`, `core-tags`, `core-hex`, `core-maven`, `core-ios`) in `200-EVIDENCE/gates-200.txt`, each displayed and performed by the orchestrator, each order-checked by the phase-local `scripts/gate-order-200.awk` (53 fixture controls, the plan checker's 18 included); no Phase 199 approval transfers. Both default iOS forms (`--local` and the no-flag remote form) are built before any irreversible step.
 
 Plans:
 **Wave 1**
@@ -59,10 +59,10 @@ Plans:
 - [x] 200-07-PLAN.md — Gates core-hex and core-maven, each verified visible (REL-09)
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 200-08-PLAN.md — Gate core-ios; mirror tag check both ways; release run final state COMPLETE including the iOS clean-room and exact-public proofs (REL-08, REL-09)
+- [x] 200-08-PLAN.md — Gate core-ios; mirror tag check both ways; release run final state COMPLETE including the iOS clean-room and exact-public proofs (REL-08, REL-09) (closed by Phase 201: 0.2.14 run 42713010358 COMPLETE)
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 200-09-PLAN.md — Reconcile 0.2.12 (run 42494651844, issue 281, PR 280), Hex retire left to its own gate, threadline 0.1.1 deferred with condition and receiver, ledger line on main, planning truth and handoff (REL-08, REL-09)
+- [x] 200-09-PLAN.md — Reconcile 0.2.12 (run 42494651844, issue 281, PR 280), Hex retire left to its own gate, threadline 0.1.1 deferred with condition and receiver, ledger line on main, planning truth and handoff (REL-08, REL-09) (closed by Phase 201: 0.2.14 run 42713010358 COMPLETE)
 
 ### Phase 201: Fix the exact-public companion digest proof so a release run can complete
 
@@ -71,7 +71,7 @@ Plans:
 **Scope:** (1) find the differing metadata field with evidence (have the candidate run keep or print its tarball metadata, or compare against a CI-built tarball); (2) decide with a recommendation whether the expectation or the candidate build is wrong, and fix forward with a regression test on real tarballs, not invented fixtures; (3) measure the proof's findings before it stays merge- or release-blocking; (4) the 0.2.14 release PR 283 is the vehicle that proves it, run under the standing approvals (merge, tags, publishes need no gate; the Maven fire-drill dispatch and remote-branch deletion keep theirs).
 **Requirements**: REL-08, REL-09 (closeout of Phase 200 plans 200-08 and 200-09 follows a COMPLETE run)
 **Depends on:** Phase 200
-**Plans:** 1/8 plans executed in waves 1–7 (wave 1 runs 201-01 and 201-02 side by side, and their evidence commits to the main checkout take one lock; the rest are sequential). The planning set is committed on `docs/199-release-0-2-12` before wave 1, and 201-01 and 201-02 check that first; 201-02 Task 1 then lands that planning record on `main` by PR, before PR 284's merge and before any other irreversible step. The main checkout stays on the local docs branch, which is never pushed; worktrees are used only for wave 1's parallel run (`~/projects/crosswake-201-plan-wt` for the planning-record branch, removed after its merge, and the pre-existing `~/projects/crosswake-agents-wt`, which already holds PR 284's branch and is reused and left in place) and for code (`~/projects/crosswake-201-wt` on `fix/exact-public-build-env-provenance`, reused for 201-08's landing branch, and 201-04's detached measurement checkout), a named, narrowed exception to "work in the one main checkout" (PD-06). Each new branch comes from `origin/main`. Evidence lives in `201-EVIDENCE/` on the local docs branch until 201-08 lands it by PR (scope: the committed diff plus an explicit path list). Planning decisions PD-01 to PD-08 are in 201-01-PLAN.md. User decisions of 2026-11-09:
+**Plans:** 8/8 plans complete in waves 1–7 (wave 1 runs 201-01 and 201-02 side by side, and their evidence commits to the main checkout take one lock; the rest are sequential). The planning set is committed on `docs/199-release-0-2-12` before wave 1, and 201-01 and 201-02 check that first; 201-02 Task 1 then lands that planning record on `main` by PR, before PR 284's merge and before any other irreversible step. The main checkout stays on the local docs branch, which is never pushed; worktrees are used only for wave 1's parallel run (`~/projects/crosswake-201-plan-wt` for the planning-record branch, removed after its merge, and the pre-existing `~/projects/crosswake-agents-wt`, which already holds PR 284's branch and is reused and left in place) and for code (`~/projects/crosswake-201-wt` on `fix/exact-public-build-env-provenance`, reused for 201-08's landing branch, and 201-04's detached measurement checkout), a named, narrowed exception to "work in the one main checkout" (PD-06). Each new branch comes from `origin/main`. Evidence lives in `201-EVIDENCE/` on the local docs branch until 201-08 lands it by PR (scope: the committed diff plus an explicit path list). Planning decisions PD-01 to PD-08 are in 201-01-PLAN.md. User decisions of 2026-11-09:
 - PD-01: `build_env` is excluded for the five companions only, after fail-closed shape validation; the core keeps it.
 - PD-05: REL-09 is amended to name 0.2.14, keeping the original sentence (the user confirmed the direction; the planner drafted the wording).
 - PD-06: the planning record lands on `main` by PR first (201-02 Task 1: eleven explicit paths, the home prefix redacted to `~`, privacy-scanned files and commit messages, CI green, pinned merge); the main checkout may stay on the docs branch.
@@ -82,31 +82,31 @@ Only the Maven fire drill (201-05) needs the user's own `allow`. Merge, tags and
 Plans:
 **Wave 1**
 - [x] 201-01-PLAN.md — Three real tarballs (public and Hex 2.6+ rebuild of rulestead 0.1.1, public core 0.2.13), `inspect_single!/2`, and the 19-test regression captured red on the unchanged `artifact.ex` (REL-09)
-- [ ] 201-02-PLAN.md — First land the Phase 201 planning record on main by PR from `docs/201-planning-record` (user decision 2026-11-09); then land PR 284 (standing release approvals) from the pre-existing worktree `crosswake-agents-wt`, prior red CI diagnosed per failed job, with BEARINGS invariant 4 (off-cadence, on the user's 2026-11-09 decision, net line count unchanged), the two runbook approval sentences and the AGENTS contract test amended in the same PR, CI green on its exact head within 45 minutes, pinned merge under the 2026-11-05 exception (REL-09)
+- [x] 201-02-PLAN.md — First land the Phase 201 planning record on main by PR from `docs/201-planning-record` (user decision 2026-11-09); then land PR 284 (standing release approvals) from the pre-existing worktree `crosswake-agents-wt`, prior red CI diagnosed per failed job, with BEARINGS invariant 4 (off-cadence, on the user's 2026-11-09 decision, net line count unchanged), the two runbook approval sentences and the AGENTS contract test amended in the same PR, CI green on its exact head within 45 minutes, pinned merge under the 2026-11-05 exception (REL-09)
 
 **Wave 2** *(blocked on 201-01)*
-- [ ] 201-03-PLAN.md — Companions-only `build_env` fix turns the regression green; `artifact-provenance:` log line; six mutations prove the controls; suites with measured floors and guards (REL-09)
+- [x] 201-03-PLAN.md — Companions-only `build_env` fix turns the regression green; `artifact-provenance:` log line; six mutations prove the controls; suites with measured floors and guards (REL-09)
 
 **Wave 3** *(blocked on 201-03)*
-- [ ] 201-04-PLAN.md — Measure the fix on the real 0.2.13 family (M1 to M4: defect reproduces under the old rule, 6/6 under the fix, companions toolchain-invariant and the core strict under Hex 2.5.1), manifests retained in evidence, then land the fix PR on main (REL-09)
+- [x] 201-04-PLAN.md — Measure the fix on the real 0.2.13 family (M1 to M4: defect reproduces under the old rule, 6/6 under the fix, companions toolchain-invariant and the core strict under Hex 2.5.1), manifests retained in evidence, then land the fix PR on main (REL-09)
 
 **Wave 4** *(blocked on 201-04 and 201-02)*
-- [ ] 201-05-PLAN.md — 0.2.14 candidate (PR 283 containing the fix and PR 284) captured after a bounded wait, rehearsed, gate core-maven-drill, receipt and the core's Hex binding; every dispatch waited on within a named bound (45, 45, 120, 45 minutes) and a named Hex-release recovery route (REL-08, REL-09)
+- [x] 201-05-PLAN.md — 0.2.14 candidate (PR 283 containing the fix and PR 284) captured after a bounded wait, rehearsed, gate core-maven-drill, receipt and the core's Hex binding; every dispatch waited on within a named bound (45, 45, 120, 45 minutes) and a named Hex-release recovery route (REL-08, REL-09)
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 201-06-PLAN.md — Candidate docs REL-06 against 0.2.13, remote iOS form against mirror 0.2.13, pre-merge capture and trailer, privacy carry with a disposition per hit (REL-08, REL-09)
+- [x] 201-06-PLAN.md — Candidate docs REL-06 against 0.2.13, remote iOS form against mirror 0.2.13, pre-merge capture and trailer, privacy carry with a disposition per hit (REL-08, REL-09)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 201-07-PLAN.md — Committed standing rules checked first; merge, tags, Hex, Maven and iOS under them, Hex version re-read before the core merge and publish, every wait bounded (guard 30, tags 30, Hex 30, Maven 120, iOS 45, run 90 minutes); release run COMPLETE with exact-public six of six (REL-08, REL-09)
+- [x] 201-07-PLAN.md — Committed standing rules checked first; merge, tags, Hex, Maven and iOS under them, Hex version re-read before the core merge and publish, every wait bounded (guard 30, tags 30, Hex 30, Maven 120, iOS 45, run 90 minutes); release run COMPLETE with exact-public six of six (REL-08, REL-09)
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 201-08-PLAN.md — Reconcile 0.2.12 and 0.2.13, close issue 281 and TODO-012, the REL-09 amendment (direction confirmed by the user, wording drafted by the planner), REL-08's completion citing 200-01 and 200-02, REL-07 and Phase 199 SC1 and SC2 annotated, close 200-08/200-09, handoff; one privacy-cleared PR (files and commit messages scanned, explicit path list) lands both ledger lines and the rest of the docs-branch planning record on main; cleanup (REL-08, REL-09)
+- [x] 201-08-PLAN.md — Reconcile 0.2.12 and 0.2.13, close issue 281 and TODO-012, the REL-09 amendment (direction confirmed by the user, wording drafted by the planner), REL-08's completion citing 200-01 and 200-02, REL-07 and Phase 199 SC1 and SC2 annotated, close 200-08/200-09, handoff; one privacy-cleared PR (files and commit messages scanned, explicit path list) lands both ledger lines and the rest of the docs-branch planning record on main; cleanup (REL-08, REL-09)
 
 ### Ordering rules for v28.0
 
 - **Land before leap.** Phase 194 lands first so every later rule text (AGENTS.md, ADR, PROJECT.md, support truth) agrees with this roadmap before any Android or release work starts.
 - **A red base hides regressions.** Phase 195 makes `main` and the release PR green before the ratchet (196), docs (197) and Android (198) phases add checks.
-- **Every irreversible step has its own `allow`.** Merges to `main`, the release-PR merge, each Hex/Maven/iOS publish, each tag and each remote branch delete need a fresh one-use `allow` bound to the displayed attempt. No `--admin`, no force-push or hand edit to the release-please branch, never close release PR #236, never retry an uncertain delivery.
+- **Every irreversible step has its own `allow`.** Merges to `main`, the release-PR merge, each Hex/Maven/iOS publish, each tag and each remote branch delete need a fresh one-use `allow` bound to the displayed attempt. No `--admin`, no force-push or hand edit to the release-please branch, never close release PR #236, never retry an uncertain delivery. (Amended 2026-11-09: the standing exceptions in AGENTS.md and BEARINGS invariant 4, committed by PR 284, cover merges including the release PR, the release-tags step and the three publishes; the Maven fire drill and remote-branch deletion keep a one-use allow.)
 - **No new check is merge-blocking before its findings on `main` are measured.** Guards are delta-only; report-mode checks stay advisory for one cycle.
 - **Overrun cut order.** If Phase 196 overruns, move SPEC-04 (Muex pilot) and then ARCH-03 (dependency ratchet) to v29 through a recorded roadmap change; do not shrink their success criteria in place. SPEC-04 move applied 2026-10-27; ARCH-03 stays in v28.
 - **No twin run in v28.** twin-05 still attests `a53fbef`; the twin-06 decision is asked at v30 entry.
@@ -425,14 +425,14 @@ Plans:
 **Depends on**: Phases 194–198
 **Requirements**: REL-07
 **Success Criteria** (what must be TRUE):
-  1. The release-please PR is green on its head commit with zero hand edits and is merged only after its own `allow`.
-  2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven. (Amended 2026-11-07, Phase 199 D-04: the three linked source tags hex-v, ios-core-v and android-core-v and their GitHub Releases are created by one Release Please step and follow one shared one-use allow that names all three; the mirror tag v<version> is pushed by the iOS mirror publish and follows that publish's allow; a companion tag follows its own allow. Per-tag gating would need Release Please's tag creation replaced.) (Amended 2026-11-07, Phase 199 D-02: the core release run publishes Hex core, then Maven, then the iOS mirror, each behind its own allow; companions publish afterwards in their own release run, because release runs are serialized; companions still follow core.)
+  1. The release-please PR is green on its head commit with zero hand edits and is merged only after its own `allow`. (Annotated 2026-11-09, Phase 201: for releases after 0.2.13, the user's standing exceptions in AGENTS.md and BEARINGS invariant 4, committed by PR 284, cover the release-PR merge, the release-tags step and the Hex, Maven and iOS mirror publishes; each GitHub environment approval still covers one step of one run, and the Maven fire-drill dispatch and remote-branch deletion keep a one-use allow. The text above stays as Phase 199's plan of record; the Phase 199 replanning, the exact next command, restates it.)
+  2. Publishing runs core first, then companions, then Maven, then the iOS mirror; each publish and each tag follows a separate one-use `allow`; the published versions are visible on Hex and Maven. (Amended 2026-11-07, Phase 199 D-04: the three linked source tags hex-v, ios-core-v and android-core-v and their GitHub Releases are created by one Release Please step and follow one shared one-use allow that names all three; the mirror tag v<version> is pushed by the iOS mirror publish and follows that publish's allow; a companion tag follows its own allow. Per-tag gating would need Release Please's tag creation replaced.) (Amended 2026-11-07, Phase 199 D-02: the core release run publishes Hex core, then Maven, then the iOS mirror, each behind its own allow; companions publish afterwards in their own release run, because release runs are serialized; companions still follow core.) (Annotated 2026-11-09, Phase 201: for releases after 0.2.13, the user's standing exceptions in AGENTS.md and BEARINGS invariant 4, committed by PR 284, cover the release-PR merge, the release-tags step and the Hex, Maven and iOS mirror publishes; each GitHub environment approval still covers one step of one run, and the Maven fire-drill dispatch and remote-branch deletion keep a one-use allow. The text above stays as Phase 199's plan of record; the Phase 199 replanning, the exact next command, restates it.)
   3. A post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch.
   4. `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close.
   5. The REL-06 clean-room command against 0.2.12 reads README.md and guides/install.md from the 0.2.12 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step deferred in Phase 197 with no exemption.
   6. The D-26 "not in a published release yet" qualifiers on `guides/capability_map.md`, `guides/support_matrix.md`, `guides/native_shell.md`, `guides/native_shell_upgrade.md`, `guides/compatibility.md`, `guides/architecture.md` and `guides/parity_ledger.md`, and `test/crosswake/guides/unreleased_claim_qualifier_test.exs`, are removed or reworded in the human PR that records 0.2.12 as published (the two generated guides through `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `mix crosswake.docs.sync`), never in the release-please bot PR.
 
-**Plans**: 6/19 plans executed, sequential waves 1–19 in one checkout. Branch `ci/199-release-gates` (plans 01–07, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 08–19, one human closeout PR). Nine one-use gates (core Maven fire drill, merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md, the fire drill bound to one captured candidate head, so a new head needs a new allow; Plan 01 asks the gate-design decision first, records the D-04 tag-granularity note on SC2 and REL-07, and stops the phase for re-planning if the recommended package is not chosen (any D-06 answer continues).
+**Plans**: 12/19 plans executed, sequential waves 1–19 in one checkout. Branch `ci/199-release-gates` (plans 01–07, one pipeline PR merged under the standing exception), then `docs/199-release-0-2-12` (plans 08–19, one human closeout PR). Nine one-use gates (core Maven fire drill, merge, tags, Hex, Maven, iOS; companion merge, tags, Hex) per 199-DECISIONS.md, the fire drill bound to one captured candidate head, so a new head needs a new allow; Plan 01 asks the gate-design decision first, records the D-04 tag-granularity note on SC2 and REL-07, and stops the phase for re-planning if the recommended package is not chosen (any D-06 answer continues).
 
 Plans:
 **Wave 1**
@@ -454,22 +454,22 @@ Plans:
 - [x] 199-06-PLAN.md — Companion receipt attestation for any companion package (threadline, D-03), plus the companion trailer renderer and checker (REL-07)
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 199-07-PLAN.md — Land the gate pipeline PR; proposal run flows with the hosted-runner preflight PASS; release-PR-head predicate proven against controls; PR 236 green on its refreshed head with zero hand edits by that predicate (REL-07)
+- [x] 199-07-PLAN.md — Land the gate pipeline PR; proposal run flows with the hosted-runner preflight PASS; release-PR-head predicate proven against controls; PR 236 green on its refreshed head with zero hand edits by that predicate (REL-07)
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 199-08-PLAN.md — Core candidate capture, absences, ten secret names; Hex and iOS rehearsals; gate core-maven-drill, then the Maven fire drill validated then dropped; hosted receipt (REL-07)
+- [x] 199-08-PLAN.md — Core candidate capture, absences, ten secret names; Hex and iOS rehearsals; gate core-maven-drill, then the Maven fire drill validated then dropped; hosted receipt (REL-07)
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 199-09-PLAN.md — Candidate docs rehearsed with REL-06; pre-merge capture and checked trailer (REL-07)
+- [x] 199-09-PLAN.md — Candidate docs rehearsed with REL-06; pre-merge capture and checked trailer (REL-07)
 
 **Wave 10** *(blocked on Wave 9 completion)*
-- [ ] 199-10-PLAN.md — Gates core-merge and core-tags (REL-07)
+- [x] 199-10-PLAN.md — Gates core-merge and core-tags (REL-07)
 
 **Wave 11** *(blocked on Wave 10 completion)*
-- [ ] 199-11-PLAN.md — Gates core-hex and core-maven, each verified visible (REL-07)
+- [x] 199-11-PLAN.md — Gates core-hex and core-maven, each verified visible (REL-07)
 
 **Wave 12** *(blocked on Wave 11 completion)*
-- [ ] 199-12-PLAN.md — Gate core-ios; SC3 mirror tag check both ways on live data; release run final state (REL-07)
+- [x] 199-12-PLAN.md — Gate core-ios; SC3 mirror tag check both ways on live data; release run final state (REL-07) — HALTED: mirror v0.2.12 published and SC3 proven live, but release run 42494651844 ended PARTIAL (iOS clean-room proof failed); recovery needs a new plan
 
 **Wave 13** *(blocked on Wave 12 completion)*
 - [ ] 199-13-PLAN.md — Threadline 0.1.1 candidate preflight; gates companion-merge and companion-tags (REL-07)
@@ -503,9 +503,9 @@ Plans:
 | 196. Spec and structure ratchet | 17/17 | Complete (UAT 36/36, security 39/39 closed, verification 5/5; SPEC-04 moved to v29.0, 196-14 retired) | 2026-10-29 |
 | 197. Public docs truth | 15/15 | Complete (UAT complete, verification passed) | 2026-11-05 |
 | 198. Android foreign-host proof | 12/12 | Complete (verification 4/4, security 56/56; foreign-host leg promoted to required in PR 274) | 2026-11-05 |
-| 199. Release 0.2.12 | 6/19 | In Progress | - |
-| 200. Forward fix and release 0.2.13 | 7/9 | In Progress (08 blocked: exact-public proof failed) | - |
-| 201. Fix the exact-public companion digest proof | 1/8 | In Progress | - |
+| 199. Release 0.2.12 | 12/19 | In Progress | - |
+| 200. Forward fix and release 0.2.13 | 9/9 | Complete (200-08 and 200-09 closed by Phase 201; 0.2.14 run 42713010358 COMPLETE) | 2026-11-09 |
+| 201. Fix the exact-public companion digest proof | 8/8 | Complete (0.2.14 shipped, exact-public proof six of six) | 2026-11-09 |
 
 <details>
 <summary>✅ v27.0 Land and Clean Up (Phases 189–193) — SHIPPED 2026-10-24</summary>

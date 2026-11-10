@@ -1,0 +1,38 @@
+{
+  "pr": 287,
+  "branch": "fix/exact-public-build-env-provenance",
+  "head_oid": "57024c8726cdc665de950c0490a550dd3a14b6c5",
+  "ci_run_id": 42700233686,
+  "ci_conclusion": "success",
+  "ci_ran_on": "76d6415f9008398b9134d8a7fa37301cf10263f0",
+  "ci_ran_on_note": "synthetic merge of the head into main 44e2f69b09afded59088e7b7a891b248a9a068a6, read from the checkout step of the e2e-proof job log",
+  "ci_waits": [
+    {
+      "head": "57024c8726cdc665de950c0490a550dd3a14b6c5",
+      "run_id": 42700233686,
+      "limit_min": 45,
+      "interval_min": 2,
+      "reads": 8,
+      "minutes": 15,
+      "result": "DONE"
+    }
+  ],
+  "cost": {
+    "billable_min": 164,
+    "wall_min": 14.4,
+    "critical_path": "phase130-core-hermetic-proof 14 min",
+    "full_suite_jobs": 2,
+    "baseline_billable_min": 250,
+    "baseline_wall_max_min": 44,
+    "baseline_full_suite_jobs": 10,
+    "flags": []
+  },
+  "delete_branch_on_merge_read": false,
+  "merge_oid": "fdc218f94851676b925c4e3042e3567baf5b8391",
+  "parents": [
+    "44e2f69b09afded59088e7b7a891b248a9a068a6",
+    "57024c8726cdc665de950c0490a550dd3a14b6c5"
+  ],
+  "merged_at": "2026-11-09T21:28:48Z",
+  "remote_branch_left": true
+}

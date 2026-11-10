@@ -1,0 +1,29 @@
+{
+  "run_id": 42494651844,
+  "gate_id": "core-hex",
+  "gate_attempt": 1,
+  "approval": {
+    "environment_ids": [
+      26568191797
+    ],
+    "environment_name": "publish-hex",
+    "comment": "199 core-hex attempt 1",
+    "approved_at_utc": "2026-11-08T15:48:32Z"
+  },
+  "job_name": "Publish to Hex.pm",
+  "job_conclusion": "success",
+  "job_started_at": "2026-11-08T15:48:34Z",
+  "job_completed_at": "2026-11-08T16:03:33Z",
+  "hex_version": "0.2.12",
+  "hex_http": 200,
+  "hex_has_docs": true,
+  "hex_inserted_at": "2026-11-08T16:03:26Z",
+  "publication_record_artifact": "publication-record-crosswake-efbc79124e99f5e60f8b85cbad1a507d4763e476",
+  "pending_after": [
+    {
+      "environment": "publish-maven",
+      "id": 26568192162
+    }
+  ],
+  "recorded_at": "2026-11-08T16:04:01Z"
+}

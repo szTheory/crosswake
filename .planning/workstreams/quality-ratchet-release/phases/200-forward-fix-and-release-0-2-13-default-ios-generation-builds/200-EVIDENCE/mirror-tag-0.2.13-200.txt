@@ -1,0 +1,11 @@
+pre: mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+pre: [crosswake] What to do next: the mirror has no refs/tags/v0.2.13; the iOS mirror publish did not create it. Read the publish run before anything else.
+pre: mirror-tag: version 0.2.13 source_tag ios-core-v0.2.13 source_tree 75dcd5039028 verdict=FAIL reason=mirror_tag_missing
+pre: rc=1
+post: mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+post: mirror-tag: version 0.2.13 source_tag ios-core-v0.2.13 source_tree 75dcd5039028 mirror_tag v0.2.13 mirror_commit 095267ea23c9 mirror_tree 75dcd5039028 newest v0.2.13 verdict=PASS
+post: rc=0
+prior: mirror-tag: remote https://github.com/szTheory/crosswake-shell-core-ios.git
+prior: [crosswake] What to do next: the mirror already carries v0.2.13, newer than v0.2.12; this check is for the release just published.
+prior: mirror-tag: version 0.2.12 source_tag ios-core-v0.2.12 source_tree 75dcd5039028 mirror_tag v0.2.12 mirror_commit 095267ea23c9 mirror_tree 75dcd5039028 newest v0.2.13 verdict=FAIL reason=newer_mirror_tag
+prior: rc=1

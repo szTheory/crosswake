@@ -1,0 +1,97 @@
+{
+  "pr": 284,
+  "branch": "docs/agents-standing-release-approvals",
+  "head_oid": "ccfe93d82f8b83e173d6de49d6031e670b079b96",
+  "ci_run_id": 42691407076,
+  "ci_conclusion": "success",
+  "ci_ran_on": "3dfb8902ea9de914e998af75671a6fc7e0ba0358",
+  "cost": {
+    "billable_min": 166,
+    "flags": []
+  },
+  "delete_branch_on_merge_read": false,
+  "merge_oid": "44e2f69b09afded59088e7b7a891b248a9a068a6",
+  "merged_at": "2026-11-09T20:37:43Z",
+  "planning_record_merge_oid": "665f0b9b0acb156f3574512ffcea390aa316660b",
+  "ci_waits": [
+    {
+      "head": "1e5a2ea163fc4700cc2c0a8b6f01ab3fa3dc4adb",
+      "run_id": 42688429752,
+      "limit_min": 45,
+      "interval_min": 2,
+      "reads": 9,
+      "minutes": 17,
+      "result": "DONE",
+      "note": "green; GitHub then refused the merge because the branch was behind main, so main was merged into the branch (ccfe93d8) and CI waited on again"
+    },
+    {
+      "head": "ccfe93d82f8b83e173d6de49d6031e670b079b96",
+      "run_id": 42691407076,
+      "limit_min": 45,
+      "interval_min": 2,
+      "reads": 11,
+      "minutes": 21,
+      "result": "DONE"
+    }
+  ],
+  "prior_ci": [
+    {
+      "job": "ios-mirror-parity-proof",
+      "step": "Check iOS SwiftPM mirror parity",
+      "cause": "[crosswake] FAIL: release.ios_mirror_parity - SwiftPM mirror is missing refs/tags/v0.2.13.",
+      "status_on_new_head": "success"
+    },
+    {
+      "job": "proof-requires-example-host",
+      "step": "Run the bounded example-host isolation matrix",
+      "cause": "FAIL example-host-proof; corrective-command=MIX_ENV=test script/check_example_host_isolation.sh --matrix-only; EXAMPLE_HOST_DIAGNOSTIC kind=command_failure exit_code=2 (not tied to AGENTS.md; passed on the new head, nothing re-run)",
+      "status_on_new_head": "success"
+    }
+  ],
+  "prior_ci_cancelled": [
+    {
+      "job": "phase130-core-hermetic-proof",
+      "step": "Run root and companion proof"
+    }
+  ],
+  "committed_rules": {
+    "agents_blob": "6402f0c5f7ef32891137d01759f4af58c3edc55f",
+    "bearings_blob": "9f9827e5e27b890d46b5b5a9f951a7b4fd912807",
+    "incident_runbook_blob": "d7ec70ce0ac1245e4437b159ddc4b17ef39f3000",
+    "companion_runbook_blob": "161835bb1601d14bb6ce9e56337438fe8a6606ee"
+  },
+  "bearings_off_cadence": {
+    "authority": "user decision 2026-11-09, standing release approvals",
+    "lines_before": 35,
+    "lines_after": 35
+  },
+  "worktree": {
+    "path": "~/projects/crosswake-agents-wt",
+    "preexisting": true,
+    "left_in_place": true,
+    "head_after": "ccfe93d82f8b83e173d6de49d6031e670b079b96"
+  },
+  "follow_ups": [
+    {
+      "text": "REQUIREMENTS REL-07: a separate allow per merge, publish and tag",
+      "location": ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md (REL-07)",
+      "action": "annotate, keep the original text",
+      "receiver": "201-08 Task 2",
+      "due": "Phase 201 closeout, before the landing PR"
+    },
+    {
+      "text": "ROADMAP Phase 199 SC1: merged only after its own allow",
+      "location": ".planning/workstreams/quality-ratchet-release/ROADMAP.md (Phase 199 SC1)",
+      "action": "annotate, keep the original text",
+      "receiver": "201-08 Task 2",
+      "due": "Phase 201 closeout, before the landing PR"
+    },
+    {
+      "text": "ROADMAP Phase 199 SC2: each publish and each tag follows a separate one-use allow",
+      "location": ".planning/workstreams/quality-ratchet-release/ROADMAP.md (Phase 199 SC2)",
+      "action": "annotate, keep the original text",
+      "receiver": "201-08 Task 2",
+      "due": "Phase 201 closeout, before the landing PR"
+    }
+  ]
+}
