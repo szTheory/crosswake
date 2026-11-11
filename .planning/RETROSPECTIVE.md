@@ -994,6 +994,33 @@ See the [debt disposition](workstreams/quality-ratchet-release/milestones/v25.0-
 
 ---
 
+## Milestone: v28.0 — Truth and Release Train
+
+**Shipped:** 2026-11-10
+**Phases:** 8 (194 to 201) | **Plans:** 109
+
+### What Was Built
+Bearings and ADR amendments, a repaired release pipeline with secret masking, spec and structure ratchets, a clean-room docs proof, an Android foreign-host proof, and a real release: core 0.2.14 live on Hex, Maven and the iOS mirror with exact-public proof for all six packages.
+
+### What Worked
+- Individually approved, order-checked release gates, with the post-publish mirror-tag check proven on live data.
+- Measuring before making a check merge-blocking, and recording red-first controls.
+- Replanning (D-27, D-31) when a release target or dependency was not ready, instead of forcing it.
+
+### What Was Inefficient
+- Release 0.2.12 and 0.2.13 were permanent partial/failed publishes (a generator defect, then a digest-proof defect) that cost two forward fixes before 0.2.14.
+- A phase (200) reached the milestone audit with no VERIFICATION.md; closed during the audit.
+- Release Please does not refresh a release PR after a non-releasable commit, which stalled the threadline release.
+
+### Patterns Established
+- A halted plan SUMMARY blocks dependents; `superseded` removes a plan from the runnable set.
+- Say which commit CI ran on; GitHub also tests a synthetic merge.
+- Keep phase directories in place (tests read their evidence by live path); archive only the roadmap, requirements and audit.
+
+### Key Lessons
+- Check the real artifact (Hex 2.6+ rebuild, real tarball) rather than a fixture before trusting a digest proof.
+- Fix TODO-013 (record-ledger skips its line when another ledger PR is open) before the next release.
+
 ## Cross-Milestone Trends
 
 ### v27 additions
