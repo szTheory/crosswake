@@ -6,7 +6,7 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.31.0"
 }
 
-version = "0.2.14" // x-release-please-version
+version = "0.2.15" // x-release-please-version
 
 // A fire-drill may exercise the signed Portal upload with an invocation-owned coordinate.
 // Release Please still owns the literal above; the override never changes the checked-in version.
