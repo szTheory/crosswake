@@ -19,7 +19,7 @@
 - [x] **Phase 196: Spec and structure ratchet** - Sensitive offline, policy and bridge specs can no longer pass empty, boundary and exhaustive policy specs exist, a Muex pilot decides adopt or drop, and compile-cycle, bare-rescue and dependency ratchets hold (completed 2026-10-29)
 - [x] **Phase 197: Public docs truth** - The documented install path runs on a normal host, version and telemetry claims are true, "Android frozen" text is gone, and docs checks report counts (completed 2026-11-05)
 - [x] **Phase 198: Android foreign-host proof** - A generated parity ledger, a Kotlin test floor, and a fresh foreign Gradle project that resolves the published Maven coordinate and passes JVM tests on Linux CI (completed 2026-11-05)
-- [ ] **Phase 199: Release 0.2.12** - One real release, core first, with a separate `allow` per merge, publish and tag, and a post-publish check that the iOS mirror tag equals the release version (see the 2026-11-09 annotation on SC2)
+- [x] **Phase 199: Release 0.2.12** - One real release, core first, with a separate `allow` per merge, publish and tag, and a post-publish check that the iOS mirror tag equals the release version (see the 2026-11-09 annotation on SC2) (completed 2026-11-10)
 - [x] **Phase 200: Forward fix and release 0.2.13: default iOS generation builds** - The default `mix crosswake.gen.shell ios` output builds, a pre-release gate proves it, and the fix ships as 0.2.13 through the same individually approved pipeline
 - [x] **Phase 201: Fix the exact-public companion digest proof so a release run can complete** - 0.2.14 shipped with the companions-only `build_env` fix and its release run ended COMPLETE with all six packages fully proven
 
