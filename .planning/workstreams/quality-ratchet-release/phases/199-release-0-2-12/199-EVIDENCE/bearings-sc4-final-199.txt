@@ -1,0 +1,17 @@
+# SC4 re-check after landing PR 294 (main 5b52db30; CI ran on head ab6183fc, main tested only as a synthetic merge)
+# date: 2026-11-10
+BEARINGS: OK
+sync: ahead 0 behind 0
+ci: success on ab6183f (PR #294 head; main 5b52db3 is its merge commit, tested only as a synthetic merge)
+android_foreign: clean_runs=2/2 eligible=yes head=ab6183fcf847338a5333a746d82af9a9bc356590 ci_ran_on=synthetic_merge
+prs: open 3 (release-please 2, dependabot 0, feature 1)
+local: worktrees 1, stashes 0, unlanded branches 0
+cap: .planning/ROADMAP-ROLLING.md 67/120 ok
+cap: .planning/BEARINGS.md 35/60 ok
+cap: .planning/workstreams/quality-ratchet-release/STATE.md 35/40 ok
+cap: AGENTS.md 99/102 ok
+advisory: .planning/PROJECT.md 655 lines > 250 (split is a ROADMAP-ROLLING LATER row)
+seeds: open 21, machine-triggered 0, fired 0, prose-only 21 (info)
+debt: v27.0 carried 12 (info; rows wait for the E6 template)
+personas: 32/32 requirements tagged
+exit=0

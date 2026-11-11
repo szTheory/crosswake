@@ -1,8 +1,8 @@
 ---
 phase: 199-release-0-2-12
 verified: 2026-11-10T07:30:00Z
-status: human_needed
-score: 5/6 must-haves verified
+status: passed
+score: 6/6 must-haves verified
 covered_files:
   - .planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-01-PLAN.md
   - .planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-01-SUMMARY.md
@@ -56,18 +56,14 @@ advisory:
     reason: "Advisory, recorded in 199-REVIEW-DISPOSITION.md; none of the findings falsifies a Success Criterion as amended"
     evidence_status: "recorded in 199-REVIEW.md and TODO-015"
 coincidental_reliance_items: []
-human_verification:
-  - test: "Allow the local deletion of five branches (git branch -D chore/codex-model-profile chore/v27-milestone-close ci/199-release-gates docs/195-closeout fix/spec-structure-ratchet), each already preserved on origin as preserve/<name> with an equal tip; decide redact-and-squash or delete for docs/196-uat and docs/197-public-docs-truth; land the local docs/199-planning-closeout branch (the 199-20 summary, the SC4 annotation, the state and this report) by PR; then re-run bash script/bearings-report"
-    expected: "script/bearings-report exits 0 with no UNVERIFIED line (SC4). At verification time it exits 1 (ATTENTION) in the main checkout and nothing here can change that without the user's allow and decision"
-    why_human: "The permission system refused git branch -D for the five branches and the agent must not work around that; the two kept branches carry privacy-class hits in their history and need the user's redact-or-delete decision; both are trust actions, not checks an agent can run to green"
 ---
 
 # Phase 199: Release 0.2.12 - Verification Report
 
 **Phase Goal:** Users can install the next release from Hex, Maven and the iOS mirror, published core-first, with every irreversible step individually approved and verified after the fact. Amended by user decisions in `199-DECISIONS.md`: D-27 (SC5, SC6 and REL-07 target 0.2.14), D-29 (`land_and_retire`), D-30 (CI timeout fix forward once), D-31 (threadline 0.1.1 deferred; plans 199-13 and 199-14 superseded, never run), D-32 (REL-07 ticks on the core release alone with the deferral recorded).
 **Verified:** 2026-11-10T07:30:00Z
-**Status:** human_needed
-**Re-verification:** No - initial verification
+**Status:** passed
+**Re-verification:** Yes - SC4 re-checked 2026-11-10 after PR 294 (merge 5b52db30, CI green on head ab6183fc) landed and the local branches were retired; `script/bearings-report` exits 0 (`199-EVIDENCE/bearings-sc4-final-199.txt`)
 
 Code pin: the implementation and guides live on origin/main at merge commit 323227b5 (PR 293, CI green on exact head 2c722930). The main checkout is on the local branch `docs/199-planning-closeout` (two commits ahead of origin/main, unpushed), which holds the planning outputs. `covered_digest` covers this phase's planning files only; code was read with `git show origin/main:<path>` and run in a scratch worktree at 323227b5 (then removed by the caller, so the clean-room re-run used a copy of the script taken from origin/main). SUMMARY claims were not used as evidence.
 
@@ -86,7 +82,7 @@ SC1 to SC6 from ROADMAP.md with every dated annotation, judged as amended.
 | 1 | SC1 (amended): the release-please PR is green on its exact head with zero hand edits and is merged under the recorded approvals; companion publish deferred (D-31) | VERIFIED | PR 283 is MERGED (merge commit dc6a8ed3, 2026-11-09T22:33:55Z) with exactly one commit, `chore: release main` (head 40739816). Crosswake CI run 42703531929 is `success` on headSha 40739816 (the exact head). `201-EVIDENCE/gates-201.txt` has a PASS `standing-rules` precheck, then one PASS `core-merge` precheck and exactly one `standing: core-merge ... merge_commit=dc6a8ed3 head=40739816` line; the Maven fire drill has one `decision: ... allow` and one `applied: ... validated_then_dropped`, all bound to head 40739816. The companion step is deferred by D-31 (`199-DECISIONS.md`) and restated in the ROADMAP SC1 annotation. |
 | 2 | SC2 (amended): publishing runs core first, then Maven, then the iOS mirror, each tag and publish under its own recorded approval; versions visible on Hex and Maven; companion step deferred (D-31) | VERIFIED | Job timestamps of Release Please run 42713010358 (`Release Please` workflow, conclusion success, headSha dc6a8ed3): tag approval 22:36:26, Release Please 22:36:33, Publish to Hex 22:43:29 to 22:54:28, Publish Android core to Maven Central 22:55:51 to 22:59:01, Mirror iOS 23:09:25 to 23:11:31; the five companion publish jobs are `skipped`. `gates-201.txt` has one `standing:` line each for core-merge, core-tags, core-hex, core-maven and core-ios with one run id. Live: Hex API lists crosswake 0.2.14 first; Maven Central POM for `io.github.sztheory:crosswake-shell-core-android:0.2.14` returns HTTP 200. `gates-199.txt` has no `companion-` standing line. |
 | 3 | SC3: a post-publish check asserts the iOS mirror tag equals the release version and fails on a mismatch | VERIFIED | `script/check_ios_mirror_release_tag.sh` at origin/main is wired at `.github/workflows/release-please.yml:1126` (job `release: ios mirror tag check`, success in the 0.2.14 run) and pinned by `script/check_release_workflow_integrity.exs:2028`. Live positive: `--version 0.2.14` printed `verdict=PASS` (mirror tag v0.2.14, mirror_tree equal to source_tree 75dcd5039028, newest v0.2.14). Live negative control: `--version 0.2.13` printed `verdict=FAIL reason=newer_mirror_tag`. `mix test test/crosswake/release_candidate/mirror_release_tag_test.exs`: 11 tests, 0 failures. |
-| 4 | SC4: `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close | NOT MET AT PHASE CLOSE, routed to human (see below) | Re-ran in the main checkout: rc 1, `BEARINGS: ATTENTION (3)`: `sync: ahead 1` (2 now, after the review commit), `ci: CI has not run on HEAD`, `local: worktrees 2, stashes 0, unlanded branches 8`. No UNVERIFIED line. The 199-20 record (`199-EVIDENCE/closeout-final-199.txt`) shows rc 1 with one item and 7 branches. `git branch --no-merged origin/main` lists exactly the seven named in the annotation plus `docs/199-planning-closeout` (the current branch). Each of the five preserved branches equals its `origin/preserve/<name>` tip (`git ls-remote` checked: MATCH for all five). |
+| 4 | SC4: `script/bearings-report` exits 0 with no UNVERIFIED line at milestone close | VERIFIED on re-check (2026-11-10): `BEARINGS: OK`, exit 0, 0 unlanded branches, 1 worktree, ahead 0 behind 0. Earlier result, kept for history: | Re-ran in the main checkout: rc 1, `BEARINGS: ATTENTION (3)`: `sync: ahead 1` (2 now, after the review commit), `ci: CI has not run on HEAD`, `local: worktrees 2, stashes 0, unlanded branches 8`. No UNVERIFIED line. The 199-20 record (`199-EVIDENCE/closeout-final-199.txt`) shows rc 1 with one item and 7 branches. `git branch --no-merged origin/main` lists exactly the seven named in the annotation plus `docs/199-planning-closeout` (the current branch). Each of the five preserved branches equals its `origin/preserve/<name>` tip (`git ls-remote` checked: MATCH for all five). |
 | 5 | SC5 (amended): the REL-06 clean-room command reads README.md and guides/install.md from the 0.2.14 Hex tarball and its docs leg passes with `deferred=none`, executing the `:ios_host` step | VERIFIED | I re-ran `script/verify_published_cleanroom.sh 0.2.14` (script from origin/main) live: `leg hex PASS`, `leg maven PASS`, `leg ios PASS ... tag_commit 095267ea23c9`, `leg docs PASS 0.2.14 executed=20 not_applicable=0 deferred=none clone=4 shown=4 source=tarball`, `result PASS`, rc 0. An earlier attempt in the same session failed only the ios leg with `resolve_failed` (the `git ls-remote` of the mirror, a transient network read); a direct `git ls-remote` of `refs/tags/v0.2.14` then succeeded and the full re-run passed. The 0.2.14 tarball's `guides/install.md` carries `<!-- cleanroom:apply id=ios-host ... since=0.2.12 -->` at line 226 and the `:ios_host` config block. Recorded runs match: `cleanroom-0.2.14-199.txt`, `cleanroom-0.2.14-run1-199.txt`. |
 | 6 | SC6 (amended): the D-26 "not in a published release yet" qualifiers on seven guides and the qualifier test are removed or reworded in the human PR that records 0.2.14 as published, with the two generated guides changed through their renderers | VERIFIED | PR 293 (MERGED, merge commit 323227b5, second parent equals CI head 2c722930) changes the seven guides, `lib/crosswake/capability_map/renderer.ex`, `lib/crosswake/support_matrix/renderer.ex` and `lib/crosswake/parity_ledger/renderer.ex`. At 323227b5: `test/crosswake/guides/unreleased_claim_qualifier_test.exs` is absent; a grep for "published release yet", "not yet published", "unpublished" and "not published" over `guides/`, the two renderers and README.md returns nothing; each reworded sentence names a release (for example `guides/support_matrix.md:47`, `guides/parity_ledger.md:12`, `guides/capability_map.md:10`: "from 0.2.12 on; 0.2.11 and earlier ..."), and the renderer sources carry the same sentences. `199-EVIDENCE/cleanroom-reader-audit-199.txt` shows the readers present in 0.2.12 and absent in 0.2.11. `mix crosswake.docs.sync --check` passed; `mix test test/crosswake/guides`: 242 tests, 0 failures (5 excluded). |
 
@@ -167,7 +163,7 @@ Not asked of the human: the release itself (done), REL-06 (re-run green), SC3 (r
 
 ### Gaps Summary
 
-No gaps. One criterion (SC4) is open and waits on the user: see Human Verification Required.
+No gaps. SC4 was the only open criterion; it is now met (see the re-verification note above). The Human Verification Required section is retained as history and no longer applies.
 
 ---
 
