@@ -1,0 +1,79 @@
+# 199-20 closeout record (untracked; handed to the milestone close; 2026-11-10)
+pr258_read: state=CLOSED created=2026-10-27 age_days=14
+pr258: CLOSED action=already_settled
+worktree: crosswake-199-wt branch=docs/199-record-0-2-14-published clean=yes merged=yes action=removed
+worktree: crosswake-agents-wt branch=docs/agents-standing-release-approvals clean=yes merged=yes action=removed
+worktree: crosswake/.claude/worktrees/agent-a07b556eecad581fb branch=ci/dedupe-full-suite-runs clean=yes merged=yes action=removed
+stash: none
+branch: docs/199-record-0-2-14-published tip=2c7229302145 on=origin/docs/199-record-0-2-14-published action=deleted_merged
+branch: ci/199-ci-timeout-headroom tip=be6f10311ce7 on=origin/ci/199-ci-timeout-headroom action=deleted_merged
+branch: docs/agents-standing-release-approvals tip=ccfe93d82f8b on=origin/docs/agents-standing-release-approvals action=deleted_merged
+branch: ci/dedupe-full-suite-runs tip=0eb8e4902f84 on=origin/ci/dedupe-full-suite-runs action=deleted_merged
+branch: worktree-agent-a07b556eecad581fb tip=24fde71db5ac on=origin/main action=deleted_merged
+branch: chore/codex-model-profile tip=5f89afab1a14 on=origin/preserve/chore/codex-model-profile action=preserved_local_delete_denied
+branch: chore/v27-milestone-close tip=93234ab793cc on=origin/preserve/chore/v27-milestone-close action=preserved_local_delete_denied
+branch: ci/199-release-gates tip=ee60610e606a on=origin/preserve/ci/199-release-gates action=preserved_local_delete_denied
+branch: docs/195-closeout tip=101e853a0faf on=origin/preserve/docs/195-closeout action=preserved_local_delete_denied
+branch: fix/spec-structure-ratchet tip=e61bd0225d83 on=origin/preserve/fix/spec-structure-ratchet action=preserved_local_delete_denied
+branch: docs/196-uat tip=d830e220ca81 on=none action=kept_privacy_hits
+branch: docs/197-public-docs-truth tip=c43646b81658 on=none action=kept_privacy_hits
+remote_branch_left: chore/codex-model-profile deletion_needs_user_allow
+remote_branch_left: chore/release-ledger-42639651064 deletion_needs_user_allow
+remote_branch_left: ci/198-promote-android-foreign-host deletion_needs_user_allow
+remote_branch_left: ci/198-promotion-docs-only-skip deletion_needs_user_allow
+remote_branch_left: ci/199-ci-timeout-headroom deletion_needs_user_allow
+remote_branch_left: ci/199-release-gates deletion_needs_user_allow
+remote_branch_left: ci/dedupe-full-suite-runs deletion_needs_user_allow
+remote_branch_left: ci/e2e-playwright-install-recovery deletion_needs_user_allow
+remote_branch_left: collateral/auto-refresh deletion_needs_user_allow
+remote_branch_left: docs/195-closeout deletion_needs_user_allow
+remote_branch_left: docs/196-landed-evidence deletion_needs_user_allow
+remote_branch_left: docs/196-landed-evidence-2 deletion_needs_user_allow
+remote_branch_left: docs/196-uat deletion_needs_user_allow
+remote_branch_left: docs/197-public-docs-truth deletion_needs_user_allow
+remote_branch_left: docs/198-closeout deletion_needs_user_allow
+remote_branch_left: docs/198-promotion-handoff deletion_needs_user_allow
+remote_branch_left: docs/198-security-and-merge-rule deletion_needs_user_allow
+remote_branch_left: docs/199-record-0-2-14-published deletion_needs_user_allow
+remote_branch_left: docs/201-planning-record deletion_needs_user_allow
+remote_branch_left: docs/agents-standing-release-approvals deletion_needs_user_allow
+remote_branch_left: docs/release-0-2-14-ledger-and-planning deletion_needs_user_allow
+remote_branch_left: docs/todo-013-014-record-ledger-and-201-hardening deletion_needs_user_allow
+remote_branch_left: feat/198-android-foreign-host-proof deletion_needs_user_allow
+remote_branch_left: fix/196-landed-restoration deletion_needs_user_allow
+remote_branch_left: fix/default-ios-generation-builds deletion_needs_user_allow
+remote_branch_left: fix/exact-public-build-env-provenance deletion_needs_user_allow
+remote_branch_left: fix/hex-audit-phoenix-html-ecto deletion_needs_user_allow
+remote_branch_left: fix/spec-structure-ratchet deletion_needs_user_allow
+remote_branch_left: preserve/chore/codex-model-profile deletion_needs_user_allow
+remote_branch_left: preserve/chore/v27-milestone-close deletion_needs_user_allow
+remote_branch_left: preserve/ci/199-release-gates deletion_needs_user_allow
+remote_branch_left: preserve/docs/195-closeout deletion_needs_user_allow
+remote_branch_left: preserve/fix/spec-structure-ratchet deletion_needs_user_allow
+equivalence: authored=267 equal=157 redacted_equal=38 raw_equal=72 gaps=0
+carried: .planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/landing-privacy-199.txt
+carried: .planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-EVIDENCE/privacy-199.txt
+docs_branch: action=deleted tip=e540a41d6970fdce5827dbac4c193bf2300831c1
+kept: branch=chore/codex-model-profile reason=preserved on origin as preserve/chore/codex-model-profile but the local delete (git branch -D) was refused by the permission system; receiver=the user's allow, then the agent deletes it locally
+kept: branch=chore/v27-milestone-close reason=preserved on origin as preserve/chore/v27-milestone-close but the local delete (git branch -D) was refused by the permission system; receiver=the user's allow, then the agent deletes it locally
+kept: branch=ci/199-release-gates reason=preserved on origin as preserve/ci/199-release-gates but the local delete (git branch -D) was refused by the permission system; receiver=the user's allow, then the agent deletes it locally
+kept: branch=docs/195-closeout reason=preserved on origin as preserve/docs/195-closeout but the local delete (git branch -D) was refused by the permission system; receiver=the user's allow, then the agent deletes it locally
+kept: branch=fix/spec-structure-ratchet reason=preserved on origin as preserve/fix/spec-structure-ratchet but the local delete (git branch -D) was refused by the permission system; receiver=the user's allow, then the agent deletes it locally
+kept: branch=docs/196-uat reason=a privacy scan of its commit history found hits (home path, private string, account or credential-assignment classes) so it was not pushed as preserve/; receiver=the user decides redact-and-squash or delete, the agent executes it
+kept: branch=docs/197-public-docs-truth reason=a privacy scan of its commit history found hits (home path, private string, account or credential-assignment classes) so it was not pushed as preserve/; receiver=the user decides redact-and-squash or delete, the agent executes it
+sc4_annotated: yes
+bearings: BEARINGS: ATTENTION (1)
+bearings: local: worktrees 1, stashes 0, unlanded branches 7
+bearings: sync: ahead 0 behind 0
+bearings: ci: success on 2c72293 (PR #293 head; main 323227b is its merge commit, tested only as a synthetic merge)
+bearings: android_foreign: clean_runs=2/2 eligible=yes head=2c7229302145108a55b268b7fb1097c139ba3b6c ci_ran_on=synthetic_merge
+bearings: prs: open 3 (release-please 2, dependabot 0, feature 1)
+bearings: cap: .planning/ROADMAP-ROLLING.md 67/120 ok
+bearings: cap: .planning/BEARINGS.md 35/60 ok
+bearings: cap: .planning/workstreams/quality-ratchet-release/STATE.md 35/40 ok
+bearings: cap: AGENTS.md 99/102 ok
+bearings: advisory: .planning/PROJECT.md 655 lines > 250 (split is a ROADMAP-ROLLING LATER row)
+bearings: seeds: open 21, machine-triggered 0, fired 0, prose-only 21 (info)
+bearings: debt: v27.0 carried 12 (info; rows wait for the E6 template)
+bearings: personas: 32/32 requirements tagged
+bearings_rc: 1
