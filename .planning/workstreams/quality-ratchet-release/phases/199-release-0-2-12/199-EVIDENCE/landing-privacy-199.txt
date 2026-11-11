@@ -137,3 +137,5 @@ land-disposition: .planning/workstreams/quality-ratchet-release/phases/201-fix-t
 land: total files=84 with_hits=43 excluded=0 route=B
 land-rescan: closeout head 64860b1f changed paths=101 (1 deleted, unreadable by design) scanned=100 clean=57 with_hits=43 undispositioned=0
 land-messages: range=cbb900319b8f4352c46f031927a75b38f5c36bbd..64860b1fbafda8725854b10de775e8321bec9b53 commits=8 hits=0 classes=none rc=0
+land-rescan: closeout head 2c722930 changed paths=104 scanned=104 clean=61 with_hits=43 undispositioned=0 (42 pre-merge raw source and result files, 1 generic clone form in the state archive)
+land-messages: range=cbb900319b8f4352c46f031927a75b38f5c36bbd..2c7229302145108a55b268b7fb1097c139ba3b6c commits=10 hits=0 classes=none rc=0

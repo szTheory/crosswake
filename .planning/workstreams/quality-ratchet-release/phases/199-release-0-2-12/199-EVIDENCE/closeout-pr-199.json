@@ -1,0 +1,59 @@
+{
+  "final_docs_head": "57e4ef882f57a0a0fed82237a02ff55fd7479256",
+  "pr": 293,
+  "branch": "docs/199-record-0-2-14-published",
+  "head_oid": "2c7229302145108a55b268b7fb1097c139ba3b6c",
+  "ci_run_id": 42764123305,
+  "ci_conclusion": "success",
+  "ci_ran_on": "6514719e409f1b0272b8c6291593297ba7b661be",
+  "ci_waits": [
+    {
+      "head": "2c7229302145108a55b268b7fb1097c139ba3b6c",
+      "run_id": 42764123305,
+      "limit_min": 45,
+      "interval_min": 2,
+      "reads": 11,
+      "minutes": 20,
+      "result": "DONE"
+    }
+  ],
+  "cost": {
+    "billable_min": 182,
+    "flags": [],
+    "baseline_min": 250,
+    "wall_min": 19.7,
+    "full_suite_jobs": 2
+  },
+  "delete_branch_on_merge_read": false,
+  "merge_oid": "323227b52af8deefebbc2b20cf835870e48200cf",
+  "explicit_paths": [
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-13-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-14-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-15-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-16-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-17-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-18-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-19-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-20-PLAN.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-15-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-16-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-17-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-18-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-19-SUMMARY.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-13-BLOCKED.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-CONTEXT.md",
+    ".planning/workstreams/quality-ratchet-release/phases/199-release-0-2-12/199-DECISIONS.md",
+    ".planning/workstreams/quality-ratchet-release/ROADMAP.md",
+    ".planning/workstreams/quality-ratchet-release/STATE.md",
+    ".planning/workstreams/quality-ratchet-release/REQUIREMENTS.md",
+    ".planning/workstreams/quality-ratchet-release/history/phase-199-state-archive.md",
+    ".planning/workstreams/quality-ratchet-release/history/phase-199-closeout-prior-handoff.md",
+    ".planning/todos/TODO-013-record-ledger-drops-its-line-when-a-ledger-pr-is-open.md",
+    ".planning/todos/TODO-014-phase-201-review-hardening.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-VERIFICATION.md",
+    ".planning/workstreams/quality-ratchet-release/phases/201-fix-the-exact-public-companion-digest-proof-so-a-release-run/201-EVIDENCE/ledger-pr-201.json"
+  ],
+  "explicit_paths_missing": [],
+  "explicit_paths_note": "199-13-SUMMARY.md and 199-14-SUMMARY.md never existed (13 ended BLOCKED, 14 was not executed); 199-13-BLOCKED.md is checked instead",
+  "docs_branch_retire": "land_and_retire"
+}
